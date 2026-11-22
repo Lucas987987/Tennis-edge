@@ -2053,7 +2053,8 @@ def instantane(doc, m):
             'pin_cotes': m.get('pin_cotes'), 'matchs_joues': m.get('matchs_joues'),
             'modele': {'facteurs': doc.get('facteurs_adoptes') or [], 'combinaison': doc.get('combinaison'),
                        'profils_au': doc.get('profils_au'), 'elo_au': doc.get('elo_au')},
-            **{k: resume_version(m.get(k)) for k in VERSIONS}, 'direct': m.get('direct')}
+            **{k: resume_version(m.get(k)) for k in VERSIONS}, 'direct': m.get('direct'),
+            'en_salle': m.get('en_salle')}      # 22/11/2026 (paquet 344) : pour l'étude « salle » (etude_ancrage.py)
 
 
 def enregistrer_instantanes(racine, doc):

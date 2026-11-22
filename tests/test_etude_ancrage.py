@@ -46,3 +46,19 @@ def test_aucun_script_de_l_algo_ne_lit_le_rapport():
     for p in glob.glob(os.path.join(RACINE, 'simulateur', '*.py')) + glob.glob(os.path.join(RACINE, 'scripts', '*.py')):
         if os.path.basename(p) != 'etude_ancrage.py':
             assert 'rapport_ancrage' not in open(p, encoding='utf-8').read(), p
+
+
+def test_salle_jugee_seulement_apres_le_22_11():
+    assert EA.COUPURES['SALLE'] == '2026-11-23' and EA.N_SALLE_MIN == 300
+    assert EA.GRILLES['SALLE'][0] == 0.0
+    moy = lambda d: sum(k * v for k, v in d.items()) / sum(d.values())
+    assert moy(EA.variante(dict(X, salle=True), 0.0, 0.0, 0.2)[0]) > moy(EA.variante(dict(X, salle=False), 0.0, 0.0, 0.2)[0])
+    xs = [dict(X, circuit='CH', debut='2026-11-20', salle=bool(i % 2)) for i in range(10)]
+    r = EA.etudier(xs)
+    assert r['cases']['CH|SALLE']['n_jug'] == 0
+
+
+def test_journal_garde_en_salle():
+    src = open(os.path.join(RACINE, 'simulateur', 'pronostics_du_jour.py'), encoding='utf-8').read()
+    i = src.index('def instantane(doc, m):')
+    assert "'en_salle': m.get('en_salle')" in src[i:i + 1200]

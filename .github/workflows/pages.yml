@@ -165,6 +165,9 @@ jobs:
           # 338 : sorties du Lab et instantané data.js (version précédente, pour le contrôle de baisse) au coffre
           python scripts/coffre.py pull --groupe lab_sorties || true
           python scripts/coffre.py pull --groupe lab_donnees || true
+          # 345 : journaux des canaux (instantané du Lab) et verdicts en direct (réconciliation)
+          python scripts/coffre.py pull --groupe canaux || true
+          python scripts/coffre.py pull --groupe verdicts || true
       - name: Reconstruire les données Tennis Edge Lab
         env:
           LAB_CHECK_PREVIOUS: '1'

@@ -48,6 +48,10 @@ jobs:
           filter: blob:none
 
       - name: Vérifier la fraîcheur des livrables critiques
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: |
           # CORRIGÉ LE 29/08/2026 (audit v13 §BH) : à 36h, un run quotidien
           # manqué (~33,2h d'écart mesuré, cron observateur 09h30 / cron
@@ -111,6 +115,9 @@ jobs:
           verifier "moves_detail_hist.csv"
           verifier "set_results.json"
           verifier "polymarket_studies_report.md"
+          # 22/11/2026 (paquet 345) : verdicts_geles.json est au coffre privé (R2) — rapatrié avant le contrôle
+          # d'existence (il le serait sinon « ABSENT du dépôt » dès qu'il en sort, sans que rien ne soit cassé)
+          python3 scripts/coffre.py pull --groupe verdicts >/dev/null 2>&1 || true
           verifier_existence "verdicts_geles.json"
 
           echo

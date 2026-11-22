@@ -23,6 +23,15 @@ DEUX VARIANTES, chacune jugée à part : avant le réancrage, les deux logits re
     quinzaine à l'autre en Challenger : +0,2 jeu avant le 08/11, −0,7 après) ;
 puis réancrage sur le MÊME % (le % de victoire ne change jamais, ni la log loss du vainqueur). κ = δ = 0 : la
 production actuelle.
+22/11/2026 (paquet 344, Lucas : « fais-le ») — TROISIÈME VARIANTE, enregistrée à part et après le paquet 343 (en salle,
+les serveurs gagnent environ 1 point de plus que prévu ; la log loss par point ne pouvait pas le retenir) :
+  • SALLE : + δs sur les deux logits si le match se joue en salle (type de court de la feuille TennisApi du tournoi,
+    connu avant le match), rien en plein air ; grille δs = 0 · 0,05 · 0,1 · 0,15 · 0,2 · 0,3 ;
+  • APPRENTISSAGE : nos pronostics jusqu'au 22/11/2026 inclus ; JUGEMENT : SEULEMENT les matchs à partir du
+    23/11/2026 (jamais vus au moment d'écrire cette règle) ; matchs dont on ne sait pas s'ils sont en salle écartés ;
+  • même mesure (lignes « plus de L jeux »), mêmes seuils (≥ 1 000 matchs jugés dont ≥ 300 en salle, gain ≥ 0,001,
+    même sens, service pas dégradé de plus de 1 %), correction de Holm sur ses trois circuits, à part des six cases
+    du paquet 342 (qui gardent leur règle).
 
 RÈGLE FIXÉE AVANT DE REGARDER (22/11/2026) :
   • population : matchs au meilleur des 3 sets, terminés (ni abandon ni score invalide), pronostic figé avant le début ;
@@ -55,9 +64,12 @@ import modele as MM  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'rapport_ancrage.json')
 CIRCUITS = ('ATP', 'WTA', 'CH')
-GRILLES = {'ECART': (-0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4), 'NIVEAU': (-0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2)}
+GRILLES = {'ECART': (-0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4), 'NIVEAU': (-0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2),
+           'SALLE': (0.0, 0.05, 0.1, 0.15, 0.2, 0.3)}
 LIGNES = (18.5, 19.5, 20.5, 21.5, 22.5, 23.5)
 COUPURE = '2026-11-08'
+COUPURES = {'ECART': COUPURE, 'NIVEAU': COUPURE, 'SALLE': '2026-11-23'}
+N_SALLE_MIN = 300
 GAIN_MIN, N_MIN, TOL_MAE, ALPHA = 0.001, 1000, 1.01, 0.05
 TRANCHES = ((.5, .6), (.6, .7), (.7, .8), (.8, .9), (.9, 1.01))
 
@@ -91,12 +103,13 @@ def charger(racine):
                     derniers[r['uid']] = {'uid': r['uid'], 'home': r.get('home'), 'away': r.get('away'), 'passage': r['passage'], 'circuit': r.get('circuit'), 'debut': str(debut)[:10],
                                           'p': c['p_home'], 'a': d['a'], 'b': d['b'], 'sigma': d.get('sigma') or 0.0,
                                           'sg': d.get('sets_gagnants') or 2, 'tb': d.get('tb_final'),
-                                          'bo': r.get('meilleur_des')}
+                                          'bo': r.get('meilleur_des'), 'salle_journal': r.get('en_salle')}
     try:
         with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
             res = {m['uid']: m for m in json.load(f).get('matchs', [])}
     except (OSError, ValueError):
         res = {}
+    salles = salles_des_feuilles(racine)
     out = []
     for uid, x in derniers.items():
         m = res.get(uid) or {}
@@ -104,6 +117,7 @@ def charger(racine):
         if x['bo'] != 3 or x['sg'] != 2 or not re_.get('jeux') or re_.get('interrompu') or re_.get('score_invalide'):
             continue
         x['total'] = re_['jeux']
+        x['salle'] = x['salle_journal'] if x.get('salle_journal') is not None else salle_du_match(salles, x)
         x['service'] = None
         fe = re_.get('feuille')
         if isinstance(fe, list) and len(fe) == 2 and all(isinstance(v, dict) for v in fe):
@@ -116,12 +130,48 @@ def charger(racine):
     return out
 
 
-def variante(x, kappa, delta=0.0):
-    """(distribution des jeux, a, b) après + δ + κ·|écart| sur les deux logits et réancrage sur le même %."""
+def _cle_nom(n):
+    import unicodedata
+    return ''.join(ch for ch in unicodedata.normalize('NFKD', str(n or '')).encode('ascii', 'ignore').decode().lower()
+                   if ch.isalpha())
+
+
+def salles_des_feuilles(racine):
+    """{(jour, frozenset(noms)): True / False} — type de court de la feuille TennisApi du match (« … indoor » : salle).
+    Le type de court est une propriété du tournoi, connue avant le match : pas une information d'après coup."""
+    out = {}
+    for f in glob.glob(os.path.join(racine, 'feuilles', '2*.jsonl.gz')):
+        try:
+            with gzip.open(f, 'rt', encoding='utf-8') as fh:
+                for l in fh:
+                    r = json.loads(l)
+                    sb = str(r.get('surface') or '').lower()
+                    h, a = (r.get('home') or {}).get('nom'), (r.get('away') or {}).get('nom')
+                    if sb and h and a and r.get('jour'):
+                        out[(r['jour'], frozenset((_cle_nom(h), _cle_nom(a))))] = 'indoor' in sb
+        except (OSError, ValueError, EOFError):
+            continue
+    return out
+
+
+def salle_du_match(salles, x):
+    k = frozenset((_cle_nom(x.get('home')), _cle_nom(x.get('away'))))
+    j = dt.date.fromisoformat(x['debut'])
+    for d in (j, j - dt.timedelta(days=1), j + dt.timedelta(days=1)):
+        v = salles.get((d.isoformat(), k))
+        if v is not None:
+            return v
+    return None
+
+
+def variante(x, kappa, delta=0.0, salle=0.0):
+    """(distribution des jeux, a, b) après + δ + κ·|écart| (+ δs si en salle) sur les deux logits, réancrage sur le
+    même %."""
     a, b = x['a'], x['b']
-    if kappa or delta:
+    ds = salle if x.get('salle') else 0.0
+    if kappa or delta or ds:
         la, lb = _lg(a), _lg(b)
-        c = delta + kappa * abs(la - lb)
+        c = delta + ds + kappa * abs(la - lb)
         a, b = S.ancrer_rapide(_sg(la + c), _sg(lb + c), x['p'], x['sg'], x['sigma'])
     o = MM.match_forme(a, b, x['sg'], x['sigma'], x['tb'])
     return o['total_jeux'], a, b
@@ -136,11 +186,11 @@ def log_loss_lignes(dist, total):
     return ll / len(LIGNES)
 
 
-def mesurer(X, kappa, delta=0.0):
+def mesurer(X, kappa, delta=0.0, salle=0.0):
     """Par match : (log loss des lignes, jeux prévus, écart |prévu − réel| du service en points ou None)."""
     out = []
     for x in X:
-        dist, a, b = variante(x, kappa, delta)
+        dist, a, b = variante(x, kappa, delta, salle)
         tot = sum(dist.values()) or 1.0
         mae = None
         if x['service']:
@@ -179,18 +229,22 @@ def tranches(X, mes):
 
 
 def _mes(X, famille, v):
-    return mesurer(X, v, 0.0) if famille == 'ECART' else mesurer(X, 0.0, v)
+    return mesurer(X, v) if famille == 'ECART' else mesurer(X, 0.0, v) if famille == 'NIVEAU' else mesurer(X, 0.0, 0.0, v)
 
 
 def etudier(X):
     rapport, pv, brut = {'cases': {}}, {}, {}
     for c in CIRCUITS:
-        app = [x for x in X if x['circuit'] == c and x['debut'] < COUPURE]
-        jug = [x for x in X if x['circuit'] == c and x['debut'] >= COUPURE]
-        M_app0 = mesurer(app, 0.0) if app else []
-        M_jug0 = mesurer(jug, 0.0) if jug else []
+        cache = {}
         for fam, grille in GRILLES.items():
             cle = f'{c}|{fam}'
+            cut = COUPURES[fam]
+            pop = [x for x in X if x['circuit'] == c and (fam != 'SALLE' or x.get('salle') is not None)]
+            app = [x for x in pop if x['debut'] < cut]
+            jug = [x for x in pop if x['debut'] >= cut]
+            if (cut, fam == 'SALLE') not in cache:
+                cache[(cut, fam == 'SALLE')] = (mesurer(app, 0.0) if app else [], mesurer(jug, 0.0) if jug else [])
+            M_app0, M_jug0 = cache[(cut, fam == 'SALLE')]
             if not app:
                 rapport['cases'][cle] = {'n_app': 0, 'n_jug': len(jug), 'retenu': False, 'raison': "aucun match d'apprentissage"}
                 continue
@@ -202,6 +256,7 @@ def etudier(X):
             maes = [(a[2], b[2]) for a, b in zip(M_jug0, Mk) if a[2] is not None]
             ref, R0, Rk = (jug, M_jug0, Mk) if jug else (app, M_app0, M_app[par])
             e = {'n_app': len(app), 'n_jug': len(jug), 'parametre_appris': par,
+                 **({'n_jug_salle': sum(1 for x in jug if x.get('salle'))} if fam == 'SALLE' else {}),
                  'log_loss_app': {str(k): round(v, 5) for k, v in ll_app.items()},
                  'gain_app': round(ll_app[0.0] - ll_app[par], 5),
                  'gain_jug': round(sum(dif) / len(dif), 5) if dif else None,
@@ -214,12 +269,18 @@ def etudier(X):
             pv[cle] = p_unilaterale(dif) if par != 0.0 and dif else 1.0
             brut[cle] = e
             rapport['cases'][cle] = e
-    sig = holm(pv) if pv else {}
+    # Holm : les six cases du paquet 342 ensemble, les trois cases SALLE (paquet 344) à part
+    sig = {}
+    for groupe in (('ECART', 'NIVEAU'), ('SALLE',)):
+        sous = {k: v for k, v in pv.items() if k.split('|')[1] in groupe}
+        sig.update(holm(sous) if sous else {})
     for cle, e in brut.items():
         raisons = []
-        if e['n_jug'] < N_MIN:
+        if e['n_jug'] < N_MIN or ('n_jug_salle' in e and e['n_jug_salle'] < N_SALLE_MIN):
             e['retenu'] = False
-            e['raison'] = f"pas encore jugeable : {e['n_jug']} matchs jugés sur {N_MIN} (rien n'est conclu)"
+            e['raison'] = (f"pas encore jugeable : {e['n_jug']} matchs jugés sur {N_MIN}"
+                           + (f", dont {e['n_jug_salle']} en salle sur {N_SALLE_MIN}" if 'n_jug_salle' in e else '')
+                           + " (rien n'est conclu)")
             continue
         if e['parametre_appris'] == 0.0:
             raisons.append("l'apprentissage garde la production actuelle")
