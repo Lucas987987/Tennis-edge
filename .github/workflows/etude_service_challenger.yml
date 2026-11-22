@@ -1,0 +1,78 @@
+name: Étude - service en Challenger (paquet 336)
+
+# 22/11/2026 — paquet 336, demande de Lucas (« Points de vigilance » : en Challenger, points gagnés au service et
+# lignes « plus de X jeux » annoncés trop bas). Règle écrite dans l'en-tête de simulateur/etude_service_challenger.py
+# (appris 2018–2022, jugé une fois sur 2023 → mai 2026 ET sur les feuilles TennisApi depuis juin 2026).
+# Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit simulateur/rapport_service_challenger.json :
+# si la règle est passée (« retenu »), « Pronostics du jour » applique le décalage au Challenger seulement ; sinon rien
+# ne change. Le % de victoire n'est jamais modifié (réancrage). 0 requête d'API.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_service_challenger.py']
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'Matchs au plus par période (échantillon régulier)'
+        default: '3000'
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /feuilles/
+            /feuilles_points/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Apprendre sur 2018–2022, juger sur 2023 → mai 2026 et sur les feuilles TennisApi
+        env:
+          MAXI: ${{ github.event.inputs.max || '3000' }}
+        run: |
+          set -euo pipefail
+          python simulateur/etude_service_challenger.py /tmp/sackmann . --max="$MAXI" | tee /tmp/service_ch.log
+          cp simulateur/rapport_service_challenger.json /tmp/rapport_service_challenger.json
+          echo '### Service en Challenger (paquet 336)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/service_ch.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport (sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_service_challenger.json simulateur/rapport_service_challenger.json
+            git add -- simulateur/rapport_service_challenger.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 336 : service en Challenger (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
