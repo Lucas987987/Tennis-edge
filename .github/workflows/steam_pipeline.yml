@@ -420,6 +420,20 @@ jobs:
           python scripts/coffre.py rendre --groupe verdicts || true
           python scripts/coffre.py rendre --groupe canaux || true
 
+      # 22/11/2026 (paquet 351) — COTES EN PRIVÉ, ÉTAPE 3b : audit des mouvements (moves_detail*.csv) et résultats des
+      # alertes en direct (suivi_direct/resultats.json) envoyés au coffre à chaque passage ; en mode ETAT_CHAUD=prive,
+      # sortis du dépôt public (scripts/cotes_privees.py). Des nombres seulement dans le journal.
+      - name: Cotes privées — envoyer (mouvements, paquet 351)
+        if: always()
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python3 scripts/cotes_privees.py push --groupe mouvements || true
+          python3 scripts/cotes_privees.py retirer --groupe mouvements || true
+
       - name: Commit résultats + journaux
         if: always()
         run: |
@@ -466,7 +480,8 @@ jobs:
             # n'était committé par AUCUN workflow -- le mécanisme de lecture
             # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
             # le fichier ne survivait jamais à la fin du runner.
-            [ -f "$f" ] && git add -- "$f"
+            # 351 : un fichier au coffre (exclu de git sur ce runner en mode « prive ») n'est jamais ajouté
+            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi
           done
           echo "état git APRÈS add (diff --cached) :"
           git diff --cached --stat || true

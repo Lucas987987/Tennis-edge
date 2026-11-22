@@ -17,10 +17,21 @@ INTERRUPTEUR : la variable de dépôt ETAT_CHAUD (déjà utilisée par etat_chau
 RETOUR ARRIÈRE : remettre ETAT_CHAUD à « on » ; au passage suivant, la capture rapatrie de R2 ce qui manque dans le
 dépôt (pull, même hors « prive ») et le republie — rien n'est perdu.
 
+22/11/2026 (paquet 351, Lucas : « Cotes privées, étape 3b ») — fichiers ENTIERS, même interrupteur, même retour arrière :
+  mouvements           moves_detail.csv, moves_detail_hist.csv, moves_detail_live.csv (cotes d'ouverture et de
+                       clôture, books, CLV, P&L par mouvement), suivi_direct/resultats.json (clôture, CLV et P&L des
+                       alertes en direct, journaux privés compris) — rédacteur : steam_pipeline ;
+  resultats_reglement  resultats_oddspapi.json (résultats du règlement de la source de cotes) — rédacteur :
+                       fetch_results_settlement.
+  Au coffre (coffre.py, groupes du même nom). Le rédacteur envoie à chaque passage (push --groupe …), quel que soit
+  le mode ; en « prive », il les sort du dépôt (retirer --groupe …). Hors « prive », un lecteur ne rapatrie que ce
+  qui n'est NI sur le disque NI suivi par git (retour arrière) : jamais une copie par-dessus celle du dépôt.
+  age FICHIER : âge en heures de la copie du coffre (observateur externe, quand le fichier n'est plus dans git).
+
 Sans secrets R2 : tout est ignoré, rien ne casse. Jamais de nom de fichier ni de cote dans les journaux d'Actions :
 des nombres seulement.
 
-Usage : python scripts/cotes_privees.py pull | push | retirer
+Usage : python scripts/cotes_privees.py pull | push [--groupe G] | retirer [--groupe G] | age FICHIER
   pull     lecteurs et écrivains, au début : en « prive », tout ; sinon, seulement ce qui MANQUE dans le dépôt
            (retour arrière). En « prive », les fichiers sont aussi exclus de git sur ce runner (.git/info/exclude),
            pour qu'un « git add -A » ne les republie jamais.
@@ -37,7 +48,10 @@ sys.path.insert(0, ICI)
 
 CHAUDS = ('closing_lines.json', 'matches_oddspapi.json', 'live_odds.json')
 DOSSIER = 'closing_lines'
-EXCLUSIONS = ['/closing_lines.json', '/matches_oddspapi.json', '/live_odds.json', '/closing_lines/']
+GROUPES_ENTIERS = ('mouvements', 'resultats_reglement')     # 351 : groupes de coffre.py
+EXCLUSIONS = ['/closing_lines.json', '/matches_oddspapi.json', '/live_odds.json', '/closing_lines/',
+              '/moves_detail.csv', '/moves_detail_hist.csv', '/moves_detail_live.csv', '/suivi_direct/resultats.json',
+              '/resultats_oddspapi.json']
 
 
 def mode(environ=None):
@@ -71,6 +85,34 @@ def _coffre():
     return C
 
 
+def entiers(groupe=None):
+    C = _coffre()
+    return [f for g in ((groupe,) if groupe else GROUPES_ENTIERS) for f in C.GROUPES[g]]
+
+
+def _muet(fn, *a):
+    """Les journaux d'Actions sont publics : des nombres seulement (coffre.py affiche les noms)."""
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()):
+        return fn(*a)
+
+
+def pull_entiers(r2, m, racine='.'):
+    """Nombre de fichiers entiers rapatriés. « prive » : tous ; sinon ceux ni sur le disque ni suivis par git."""
+    C = _coffre()
+    fichiers = entiers()
+    if m != 'prive':
+        dans_git = suivis(fichiers)
+        fichiers = [f for f in fichiers if f not in dans_git and not os.path.exists(os.path.join(racine, f))]
+    n = 0
+    for f in fichiers:
+        avant = os.path.exists(os.path.join(racine, f))
+        _muet(C.pull, [f], r2)
+        n += int(os.path.exists(os.path.join(racine, f)) and (m == 'prive' or not avant))
+    return n
+
+
 def pull(r2, m, racine='.'):
     """(chauds rapatriés, archives rapatriées). En « prive » : tout ; sinon seulement ce qui manque en local."""
     import etat_chaud as EC
@@ -88,6 +130,39 @@ def pull(r2, m, racine='.'):
     if m == 'prive':
         exclure(racine)
     return len(pris), len(archives)
+
+
+def push_entiers(r2, groupe):
+    """(fichiers présents, échecs) — le rédacteur du groupe seulement."""
+    C = _coffre()
+    fichiers = [f for f in entiers(groupe) if os.path.exists(f)]
+    return len(fichiers), (_muet(C.push, fichiers, r2) if fichiers else 0)
+
+
+def retirer_entiers(r2, groupe):
+    """git rm --cached des fichiers du groupe encore suivis dont le coffre a une copie."""
+    C = _coffre()
+    fichiers = sorted(suivis(entiers(groupe)))
+    if not fichiers:
+        return 0
+    _muet(C.retirer, fichiers, r2, True)
+    return len(fichiers) - len(suivis(fichiers))
+
+
+def age_h(r2, f):
+    """Âge en heures de la copie du coffre, ou None."""
+    import datetime as dt
+    C = _coffre()
+    try:
+        h = r2.client.head_object(Bucket=r2.bucket, Key=C.cle(f))
+    except Exception:  # noqa: BLE001
+        return None
+    t = h.get('LastModified')
+    if t is None:
+        return None
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=dt.timezone.utc)
+    return (dt.datetime.now(dt.timezone.utc) - t).total_seconds() / 3600
 
 
 def push(r2):
@@ -115,9 +190,17 @@ def retirer(r2):
 
 def main(argv):
     action = argv[1] if len(argv) > 1 else ''
-    if action not in ('pull', 'push', 'retirer'):
+    groupe = argv[argv.index('--groupe') + 1] if '--groupe' in argv[:-1] else None
+    if action not in ('pull', 'push', 'retirer', 'age') or (groupe is not None and groupe not in GROUPES_ENTIERS) \
+            or (action == 'age' and len(argv) < 3):
         print(__doc__)
         return 2
+    if action == 'age':
+        import r2_io
+        r2 = r2_io.client(quiet=True)
+        a = age_h(r2, argv[2]) if r2 is not None else None
+        print('' if a is None else int(a))
+        return 0 if a is not None else 1
     m = mode()
     if m == 'off':
         print(f'Cotes privées : mode off ({action} ignoré)')
@@ -129,7 +212,11 @@ def main(argv):
         return 0
     if action == 'pull':
         n_c, n_a = pull(r2, m)
-        print(f'Cotes privées (mode {m}) : {n_c} fichier(s) chaud(s), {n_a} archive(s) rapatriés')
+        n_e = pull_entiers(r2, m)
+        print(f'Cotes privées (mode {m}) : {n_c} fichier(s) chaud(s), {n_a} archive(s), {n_e} fichier(s) entier(s) rapatriés')
+    elif action == 'push' and groupe:
+        n, echecs = push_entiers(r2, groupe)
+        print(f'Cotes privées : {n} fichier(s) envoyés au coffre ({echecs} échec(s))')
     elif action == 'push':
         echecs, n = push(r2)
         print(f'Cotes privées : {n} archive(s) envoyées au coffre ({echecs} échec(s))')
@@ -137,7 +224,8 @@ def main(argv):
         if m != 'prive':
             print(f'Cotes privées : retirer ignoré (mode {m})')
             return 0
-        print(f'Cotes privées : {retirer(r2)} fichier(s) sortis du dépôt public')
+        n = retirer_entiers(r2, groupe) if groupe else retirer(r2)
+        print(f'Cotes privées : {n} fichier(s) sortis du dépôt public')
     return 0
 
 

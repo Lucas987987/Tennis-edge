@@ -100,13 +100,19 @@ GROUPES['verdicts'] = ['verdicts_direct.json', 'suivi_canaux.json', 'verdicts_ge
 # 22/11/2026 (paquet 348) — fiches joueurs (cotes médianes, classement Pinnacle, cote de chaque match) : écrites par
 # player_profiles.yml, lues par le worker « joueurs » (R2, derrière connexion) et deux études
 GROUPES['profils'] = ['players_profile.json']
+# 22/11/2026 (paquet 351) — cotes en privé, étape 3b (scripts/cotes_privees.py) : audit des mouvements de cotes et
+# résultats des alertes en direct (clôture, CLV, P&L), écrits par steam_pipeline seul ; résultats du règlement de la
+# source de cotes, écrits par fetch_results_settlement seul. Un seul rédacteur par groupe : envoi simple.
+GROUPES['mouvements'] = ['moves_detail.csv', 'moves_detail_hist.csv', 'moves_detail_live.csv', 'suivi_direct/resultats.json']
+GROUPES['resultats_reglement'] = ['resultats_oddspapi.json']
 PROTEGES |= {'canaux', 'verdicts'}   # deux rédacteurs possibles, et des états à ne jamais écraser par une copie périmée
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
 
 
 DOSSIERS = {_LIVE + 'registre': 'registre',      # dossier entier au coffre → sous-préfixe propre
-            'closing_lines': 'closing_lines'}   # 346 : archives mensuelles des clôtures (scripts/cotes_privees.py)
+            'closing_lines': 'closing_lines',   # 346 : archives mensuelles des clôtures (scripts/cotes_privees.py)
+            'suivi_direct': 'suivi_direct'}     # 351 : clé prive/suivi_direct/resultats.json (jamais confondue)
 
 
 def cle(chemin):
