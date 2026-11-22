@@ -200,6 +200,12 @@ def garde(fichiers=FICHIERS, racine='.', lecteur=False, maintenant=None, interva
     retenus = []
     for f in fichiers:
         chemin = os.path.join(racine, f)
+        # 22/11/2026 (paquet 355) — BUG CORRIGÉ : en mode « prive », cotes_privees.py retirer sort ces fichiers du suivi
+        # git (git rm --cached) juste avant ; « git restore --staged » ci-dessous les y REMETTAIT, et le retrait
+        # n'était jamais commité (closing_lines.json, matches_oddspapi.json et live_odds.json restaient publics).
+        # Un fichier que l'index ne suit plus est sorti volontairement : on n'y touche pas.
+        if subprocess.run(['git', 'ls-files', '--error-unmatch', '--', chemin], capture_output=True).returncode != 0:
+            continue
         du = (not lecteur) and (maintenant - commit_git(chemin)) >= 60 * intervalle_min
         if du:
             continue
