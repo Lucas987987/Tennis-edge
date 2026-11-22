@@ -1,0 +1,497 @@
+{
+ "genere_le": "2026-11-22T12:55:35+00:00",
+ "regle": "log loss par point au service ; appris 2018–2022, jugé 2023 → mai 2026 ; retenu si gain ≥ 0,001 sur ≥ 1 000 matchs jugés, même sens sur l'apprentissage, significatif après Holm sur toutes les cases ; rien ne change en production sans la vérification sur les feuilles",
+ "diagnostic": {
+  "CH": {
+   "2015": {
+    "n": 5644,
+    "ecart_service_pts": 0.16,
+    "cours_moyen_pts": -0.01
+   },
+   "2016": {
+    "n": 9010,
+    "ecart_service_pts": -0.11,
+    "cours_moyen_pts": -0.25
+   },
+   "2017": {
+    "n": 8323,
+    "ecart_service_pts": 0.03,
+    "cours_moyen_pts": -0.14
+   },
+   "2018": {
+    "n": 9392,
+    "ecart_service_pts": 0.04,
+    "cours_moyen_pts": -0.09
+   },
+   "2019": {
+    "n": 8427,
+    "ecart_service_pts": 0.22,
+    "cours_moyen_pts": 0.08
+   },
+   "2020": {
+    "n": 3156,
+    "ecart_service_pts": 0.23,
+    "cours_moyen_pts": 0.02
+   },
+   "2021": {
+    "n": 7196,
+    "ecart_service_pts": 0.0,
+    "cours_moyen_pts": -0.08
+   },
+   "2022": {
+    "n": 9546,
+    "ecart_service_pts": 0.08,
+    "cours_moyen_pts": -0.0
+   },
+   "2023": {
+    "n": 10279,
+    "ecart_service_pts": 0.16,
+    "cours_moyen_pts": 0.0
+   },
+   "2024": {
+    "n": 10909,
+    "ecart_service_pts": 0.04,
+    "cours_moyen_pts": -0.07
+   },
+   "2025": {
+    "n": 10952,
+    "ecart_service_pts": 0.06,
+    "cours_moyen_pts": -0.02
+   },
+   "2026": {
+    "n": 11643,
+    "ecart_service_pts": 0.2,
+    "cours_moyen_pts": 0.04
+   }
+  },
+  "ATP": {
+   "2015": {
+    "n": 2526,
+    "ecart_service_pts": -0.17,
+    "cours_moyen_pts": -0.17
+   },
+   "2016": {
+    "n": 2819,
+    "ecart_service_pts": -0.6,
+    "cours_moyen_pts": -0.25
+   },
+   "2017": {
+    "n": 2770,
+    "ecart_service_pts": -0.17,
+    "cours_moyen_pts": -0.13
+   },
+   "2018": {
+    "n": 2876,
+    "ecart_service_pts": -0.25,
+    "cours_moyen_pts": -0.16
+   },
+   "2019": {
+    "n": 2552,
+    "ecart_service_pts": -0.1,
+    "cours_moyen_pts": -0.17
+   },
+   "2020": {
+    "n": 1389,
+    "ecart_service_pts": -0.61,
+    "cours_moyen_pts": -0.25
+   },
+   "2021": {
+    "n": 2573,
+    "ecart_service_pts": -0.32,
+    "cours_moyen_pts": -0.14
+   },
+   "2022": {
+    "n": 2673,
+    "ecart_service_pts": -0.06,
+    "cours_moyen_pts": -0.13
+   },
+   "2023": {
+    "n": 2741,
+    "ecart_service_pts": -0.23,
+    "cours_moyen_pts": -0.18
+   },
+   "2024": {
+    "n": 3007,
+    "ecart_service_pts": -0.19,
+    "cours_moyen_pts": -0.15
+   },
+   "2025": {
+    "n": 2485,
+    "ecart_service_pts": -0.15,
+    "cours_moyen_pts": -0.12
+   },
+   "2026": {
+    "n": 3090,
+    "ecart_service_pts": -0.19,
+    "cours_moyen_pts": -0.34
+   }
+  },
+  "WTA": {
+   "2015": {
+    "n": 1478,
+    "ecart_service_pts": 0.75,
+    "cours_moyen_pts": 0.32
+   },
+   "2016": {
+    "n": 2683,
+    "ecart_service_pts": -0.9,
+    "cours_moyen_pts": -0.32
+   },
+   "2017": {
+    "n": 2756,
+    "ecart_service_pts": -0.26,
+    "cours_moyen_pts": -0.07
+   },
+   "2018": {
+    "n": 2741,
+    "ecart_service_pts": -0.23,
+    "cours_moyen_pts": -0.08
+   },
+   "2019": {
+    "n": 2509,
+    "ecart_service_pts": -0.04,
+    "cours_moyen_pts": -0.11
+   },
+   "2020": {
+    "n": 1249,
+    "ecart_service_pts": -0.12,
+    "cours_moyen_pts": -0.09
+   },
+   "2021": {
+    "n": 2399,
+    "ecart_service_pts": -0.12,
+    "cours_moyen_pts": -0.11
+   },
+   "2022": {
+    "n": 2396,
+    "ecart_service_pts": -0.21,
+    "cours_moyen_pts": -0.07
+   },
+   "2023": {
+    "n": 2495,
+    "ecart_service_pts": -0.49,
+    "cours_moyen_pts": -0.2
+   },
+   "2024": {
+    "n": 2627,
+    "ecart_service_pts": -0.17,
+    "cours_moyen_pts": -0.11
+   },
+   "2025": {
+    "n": 2549,
+    "ecart_service_pts": -0.28,
+    "cours_moyen_pts": -0.13
+   },
+   "2026": {
+    "n": 3193,
+    "ecart_service_pts": -0.3,
+    "cours_moyen_pts": -0.22
+   }
+  }
+ },
+ "cases": {
+  "ATP|COURS>REF": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 7e-05,
+   "gain_jug": 0.00013,
+   "gain_feuilles": 0.00027,
+   "p_jug": 1.8892729294344962e-22,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.00013 < 0.001"
+  },
+  "ATP|EGAL>COURS": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 6e-05,
+   "gain_jug": 8e-05,
+   "gain_feuilles": 7e-05,
+   "p_jug": 1.7250540631072215e-14,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 8e-05 < 0.001"
+  },
+  "ATP|RECENT>COURS": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 6e-05,
+   "gain_jug": 9e-05,
+   "gain_feuilles": 8e-05,
+   "p_jug": 3.34117699554262e-17,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 9e-05 < 0.001"
+  },
+  "ATP|DERN>COURS": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 4e-05,
+   "gain_jug": 7e-05,
+   "gain_feuilles": 6e-05,
+   "p_jug": 1.1464446048498398e-11,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 7e-05 < 0.001"
+  },
+  "ATP|RECENT>EGAL": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 0.0,
+   "gain_jug": 1e-05,
+   "gain_feuilles": 0.0,
+   "p_jug": 0.003678066007033937,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 1e-05 < 0.001 ; pas le même sens sur les deux périodes"
+  },
+  "ATP|DERIVE>REF": {
+   "n_app": 12063,
+   "n_jug": 9393,
+   "n_feuilles": 1930,
+   "gain_app": 0.0,
+   "gain_jug": 0.0,
+   "gain_feuilles": -3e-05,
+   "p_jug": 0.03338505600695358,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.0 < 0.001 ; pas le même sens sur les deux périodes"
+  },
+  "WTA|COURS>REF": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": 3e-05,
+   "gain_jug": 4e-05,
+   "gain_feuilles": 0.00012,
+   "p_jug": 5.5925831239138735e-06,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 4e-05 < 0.001"
+  },
+  "WTA|EGAL>COURS": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": 2e-05,
+   "gain_jug": 2e-05,
+   "gain_feuilles": 1e-05,
+   "p_jug": 6.548691699184317e-05,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 2e-05 < 0.001"
+  },
+  "WTA|RECENT>COURS": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": 3e-05,
+   "gain_jug": 3e-05,
+   "gain_feuilles": 0.0,
+   "p_jug": 2.524054593102114e-06,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 3e-05 < 0.001"
+  },
+  "WTA|DERN>COURS": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": 3e-05,
+   "gain_jug": 3e-05,
+   "gain_feuilles": 0.0,
+   "p_jug": 8.837840951752555e-05,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 3e-05 < 0.001"
+  },
+  "WTA|RECENT>EGAL": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": 1e-05,
+   "gain_jug": 1e-05,
+   "gain_feuilles": -1e-05,
+   "p_jug": 0.005162619805406869,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 1e-05 < 0.001"
+  },
+  "WTA|DERIVE>REF": {
+   "n_app": 11294,
+   "n_jug": 8752,
+   "n_feuilles": 2112,
+   "gain_app": -0.0,
+   "gain_jug": 0.0,
+   "gain_feuilles": 0.0,
+   "p_jug": 0.013718299943132738,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.0 < 0.001 ; pas le même sens sur les deux périodes"
+  },
+  "CH|COURS>REF": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 0.00015,
+   "gain_jug": 0.00016,
+   "gain_feuilles": 0.00014,
+   "p_jug": 1.1666751256498203e-72,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.00016 < 0.001"
+  },
+  "CH|EGAL>COURS": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 5e-05,
+   "gain_jug": 5e-05,
+   "gain_feuilles": 2e-05,
+   "p_jug": 1.17874532951459e-21,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 5e-05 < 0.001"
+  },
+  "CH|RECENT>COURS": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 5e-05,
+   "gain_jug": 5e-05,
+   "gain_feuilles": 2e-05,
+   "p_jug": 3.931382578812534e-25,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 5e-05 < 0.001"
+  },
+  "CH|DERN>COURS": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 5e-05,
+   "gain_jug": 4e-05,
+   "gain_feuilles": 2e-05,
+   "p_jug": 2.7390295368323654e-19,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 4e-05 < 0.001"
+  },
+  "CH|RECENT>EGAL": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 0.0,
+   "gain_jug": 0.0,
+   "gain_feuilles": 0.0,
+   "p_jug": 0.0032826058258044384,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.0 < 0.001 ; pas le même sens sur les deux périodes"
+  },
+  "CH|DERIVE>REF": {
+   "n_app": 37717,
+   "n_jug": 37358,
+   "n_feuilles": 6425,
+   "gain_app": 0.0,
+   "gain_jug": 0.0,
+   "gain_feuilles": -0.0,
+   "p_jug": 0.00011358677215249845,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 0.0 < 0.001 ; pas le même sens sur les deux périodes"
+  }
+ },
+ "coefs": {
+  "ATP": {
+   "REF": [
+    -0.0101
+   ],
+   "COURS": [
+    -0.0048,
+    0.8166
+   ],
+   "EGAL": [
+    -0.0002,
+    0.5184,
+    0.6622
+   ],
+   "RECENT": [
+    -0.0003,
+    0.5019,
+    0.7274
+   ],
+   "DERN": [
+    -0.0023,
+    0.5863,
+    0.549
+   ],
+   "DERIVE": [
+    -0.0077,
+    0.0012
+   ]
+  },
+  "WTA": {
+   "REF": [
+    -0.0061
+   ],
+   "COURS": [
+    -0.0037,
+    0.6368
+   ],
+   "EGAL": [
+    -0.0025,
+    0.4967,
+    0.4489
+   ],
+   "RECENT": [
+    -0.0021,
+    0.4398,
+    0.5791
+   ],
+   "DERN": [
+    -0.0031,
+    0.4337,
+    0.5093
+   ],
+   "DERIVE": [
+    -0.0063,
+    -0.0001
+   ]
+  },
+  "CH": {
+   "REF": [
+    0.0042
+   ],
+   "COURS": [
+    0.0051,
+    0.944
+   ],
+   "EGAL": [
+    0.0042,
+    0.6826,
+    0.5699
+   ],
+   "RECENT": [
+    0.004,
+    0.6715,
+    0.6474
+   ],
+   "DERN": [
+    0.0038,
+    0.7224,
+    0.5209
+   ],
+   "DERIVE": [
+    0.0035,
+    -0.0003
+   ]
+  }
+ },
+ "duree_s": 34
+}
