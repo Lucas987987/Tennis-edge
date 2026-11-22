@@ -628,6 +628,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-grp{font-family:var(--disp);font-size:.72rem;color:var(--dim);letter-spacing:.5px;margin-top:12px}
 .lv-hors{color:var(--ko)!important}
 .am-j{display:grid;grid-template-columns:1fr 1fr;gap:10px}.am-j>div{background:rgba(var(--wv),.04);border-radius:12px;padding:10px}
+.am-se{display:flex;align-items:baseline;gap:6px;margin-top:4px}.am-se b{font-family:var(--cond);font-weight:700;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}.am-se.v b{color:var(--ok)}.am-se.d b{color:var(--ko)}.am-se span{font-size:.8rem;color:var(--dim)}.am-chs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.am-ch{font-size:.72rem;padding:2px 7px;border-radius:999px;background:rgba(var(--wv),.07);color:var(--dim)}
+.fm-l .bb>span{position:relative}.fm-l .bb u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.85;border-radius:1px;text-decoration:none}.ry-mir{padding:2px 16px 4px}.ry-rythmes{display:flex;justify-content:space-between;gap:8px;margin:10px 0 2px;flex-wrap:wrap}.ry-pas{font-size:.8rem;padding:3px 9px;border-radius:999px;background:rgba(var(--wv),.06)}.ry-pas.a{color:var(--p1)}.ry-pas.b{color:var(--p2)}.ry-pas i{font-style:normal;margin-right:5px}.ry-det{margin:6px 16px 0}.cj-cond .ry-det{margin:8px 0 0}.ry-det>summary{cursor:pointer;color:var(--dim);font-size:.85rem;padding:6px 0}
+.cj-vis{display:grid;gap:10px;margin:10px 0 4px}.cj-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;align-items:center}.cj-leg .a{color:var(--p1);font-weight:600}.cj-leg .b{color:var(--p2);font-weight:600}.cj-sens{color:var(--dim);font-size:.72rem;flex-basis:100%}.cj-r{display:grid;gap:3px}.cj-l{font-size:.85rem}.cj-b{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center}.cj-axe{position:relative;height:9px;border-radius:5px;background:rgba(var(--wv),.06)}.cj-axe s{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--dim)}.cj-axe i{position:absolute;top:0;bottom:0;border-radius:4px}.cj-axe i.c1{background:var(--p1)}.cj-axe i.c2{background:var(--p2)}.cj-axe i.pale{opacity:.35}.mt-det{margin:4px 16px 0}.cj-b em{font-style:normal;font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}.cj-b em.ok{color:var(--ok);font-weight:700}.cj-b em.ko{color:var(--ko);font-weight:700}
 .am-j .nm{font-weight:600}.am-j .nm.a{color:var(--p1)}.am-j .nm.b{color:var(--p2)}.am-j p{margin:4px 0 0;font-size:.83rem}
 .am-h2h{margin-top:12px}.am-h2h .bil{font-family:var(--disp);font-size:1.3rem;text-align:center}
 .am-h2h ul{list-style:none;margin:6px 0 0;padding:0}.am-h2h li{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding:6px 0;font-size:.82rem}
@@ -1619,6 +1622,23 @@ function conditionsLignes(m){
   }
   return out;
 }
+// 22/11/2026 (paquet 354) — BILANS DANS CES CONDITIONS EN BARRES : pour chaque condition, une barre par joueur partant
+// de 0 (« comme d'habitude ») : à droite il fait mieux, à gauche moins bien. En couleur seulement au-delà du bruit
+// (deux erreurs types) ; gris sinon ; « — » sous 15 matchs. Les chiffres exacts restent dans « Tous les chiffres ».
+function divergentConditions(R, N, pts, bruit, MIN){
+  const fr = L==='fr', V = [];
+  R.forEach(r => r.cel.forEach((c, i) => { if (c.n >= MIN) V.push(Math.abs(pts(c, i))); }));
+  if (!V.length) return '';
+  const ech = Math.max(10, Math.ceil(Math.max(...V) / 5) * 5);
+  const barre = (c, i) => {
+    if (c.n < MIN) return `<div class="cj-b vide"><span class="cj-axe"><s></s></span><em>${esc(c.n ? `— · ${fmt(c.n)} m.` : (fr?'— · jamais':'— · never'))}</em></div>`;
+    const p = pts(c, i), net = Math.abs(p) >= bruit(c.n), w = Math.min(50, Math.abs(p) / ech * 50);
+    const style = p >= 0 ? `left:50%;width:${w.toFixed(1)}%` : `left:${(50 - w).toFixed(1)}%;width:${w.toFixed(1)}%`;
+    return `<div class="cj-b"><span class="cj-axe"><s></s><i class="${i ? 'c2' : 'c1'}${net ? '' : ' pale'}" style="${style}"></i></span><em class="${net ? (p > 0 ? 'ok' : 'ko') : ''}">${p>0?'+':''}${dec(p,0)} · ${fmt(c.n)} m.</em></div>`;
+  };
+  return `<div class="cj-vis"><div class="cj-leg"><span class="a">${esc(N[0])}</span><span class="b">${esc(N[1])}</span><span class="cj-sens">${esc(fr ? `← moins bien · 0 = comme d’habitude · mieux → (échelle ±${ech} pts ; pâle = dans le bruit)` : `← worse · 0 = as usual · better → (scale ±${ech} pts; faded = within noise)`)}</span></div>
+    ${R.map(r => `<div class="cj-r"><div class="cj-l">${esc(r.lib)}</div>${barre(r.cel[0], 0)}${barre(r.cel[1], 1)}</div>`).join('')}</div>`;
+}
 function rendConditionsJoueurs(m){
   const R = conditionsLignes(m); if (!R || !R.length) return '';
   const fr = L==='fr', N = [court(m.home), court(m.away)], MIN = 15, A = m.avant_match || {};
@@ -1639,8 +1659,10 @@ function rendConditionsJoueurs(m){
   return `<div class="cj-cond"><h4>${esc(fr?'Bilans dans ces conditions':'Record in these conditions')}</h4>
     <p class="styles-note" style="margin-top:0">${esc(fr?'Pour chaque condition de ce match : fait-il mieux ou moins bien que d’habitude, à niveau d’adversaires égal (victoires réelles contre attendues d’après l’Elo, comparées à son écart habituel) ? +5 pts = 5 victoires de plus sur 100 matchs que d’habitude.':'For each condition of this match: better or worse than usual, opponents’ level accounted for (actual vs Elo-expected wins, compared with their usual gap)? +5 pts = 5 more wins per 100 matches than usual.')}</p>
     <div class="en-clair"><b>${esc(fr?'En clair':'In short')}</b>${clair.map(t_=>`<p>${esc(t_)}</p>`).join('')}</div>
+    ${divergentConditions(R, N, pts, bruit, MIN)}
+    <details class="ry-det"><summary>${esc(fr?'Tous les chiffres':'All figures')}</summary>
     <table class="s1-t cj-ct"><thead><tr><th></th><th style="color:var(--p1)">${esc(N[0])}</th><th style="color:var(--p2)">${esc(N[1])}</th></tr></thead>
-    <tbody>${R.map(r=>`<tr><th>${esc(r.lib)}</th><td>${cel(r.cel[0],0)}</td><td>${cel(r.cel[1],1)}</td></tr>`).join('')}</tbody></table>
+    <tbody>${R.map(r=>`<tr><th>${esc(r.lib)}</th><td>${cel(r.cel[0],0)}</td><td>${cel(r.cel[1],1)}</td></tr>`).join('')}</tbody></table></details>
     <p class="styles-note">${esc(fr?'Descriptif : la météo et le lieu ne changent pas le % (ils n’ont pas passé le jugement du lundi, sauf la densité de l’air en Challenger). Lieux depuis 2016 ; météo seulement depuis juin 2026, d’où peu de matchs pour l’instant. Moins de 15 matchs : non chiffré. En couleur seulement quand l’écart dépasse le bruit de l’échantillon (deux erreurs types).':'Descriptive: weather and venue do not change the % (they did not pass the Monday test, except air density on the Challenger tour). Venues since 2016; weather only since June 2026, hence few matches so far. Fewer than 15 matches: not rated. Coloured only when the gap exceeds sample noise (two standard errors).')}</p></div>`;
 }
 // 11/11/2026 (paquet 220) — MÉTÉO ET CONDITIONS (simulateur/meteo_match.py) : lieu du tournoi, météo du jour local
@@ -1709,7 +1731,7 @@ function rendMeteo(m){
   const src = mt.source === 'releve' ? (fr ? 'relevé' : 'recorded') : (fr ? 'prévision' : 'forecast');
   return `<div class="panel meteo"><h3>${esc(fr?'Météo et conditions':'Weather and conditions')}</h3>
     <p class="styles-intro">${esc(lieu)}${alt ? ' · ' + esc(alt) : ''} · ${esc(cadre)} · ${esc(jour)}</p>
-    ${meteoTuiles(mt)}<dl class="mt-l">${lignes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    ${meteoTuiles(mt)}<details class="ry-det mt-det"><summary>${esc(fr?'Tous les chiffres':'All figures')}</summary><dl class="mt-l">${lignes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>
     <p class="styles-note">${esc(note)} ${esc(fr?'Source :':'Source:')} Open-Meteo (${esc(src)}), ${esc(fr?'jour local du match':'local match day')}.</p>
     ${rendConditionsJoueurs(m)}</div>`;
 }
@@ -2524,6 +2546,46 @@ function barreDuree(pv, m){
   const ax = []; for (let v = 60; v <= hi; v += 60) ax.push(`<span style="left:${X(v).toFixed(1)}%">${esc(hm(v).replace(/ 00$|00m$/, ''))}</span>`);
   return `<div class="ry-bar" aria-hidden="true"><i style="left:${X(pv.minutes_p10).toFixed(1)}%;width:${(X(pv.minutes_p90) - X(pv.minutes_p10)).toFixed(1)}%"></i><u style="left:${X(pv.minutes).toFixed(1)}%"></u></div><div class="ry-ax" aria-hidden="true">${ax.join('')}</div>`;
 }
+// 22/11/2026 (paquet 354, Lucas : « Tiroirs du site » — plus de schémas, moins de texte) — BARRES MIROIR : une ligne par
+// chiffre, le joueur 1 à gauche, le joueur 2 à droite, longueur proportionnelle (même échelle des deux côtés) ; trait
+// fin = repère du circuit quand on l'a. Rien de nouveau : les chiffres du tableau, qui reste dans « Tous les chiffres ».
+function miroirLignes(L_){
+  return L_.map(x => {
+    const [a, b] = x.v, ok = v => v != null && isFinite(v);
+    const ech = Math.max(ok(a) ? a : 0, ok(b) ? b : 0, ok(x.ref) ? x.ref : 0, 1e-9) * 1.05;
+    const w = v => ok(v) ? Math.max(2, v / ech * 100).toFixed(1) : 0;
+    const u = ok(x.ref) ? (x.ref / ech * 100).toFixed(1) : null;
+    return `<div class="fm-l"><span class="v">${esc(x.txt[0])}</span><div><div class="n">${esc(x.lib)}</div>
+      <div class="bb" aria-hidden="true"><span><i class="c1" style="width:${w(a)}%"></i>${u ? `<u style="right:${u}%"></u>` : ''}</span><span><i class="c2" style="width:${w(b)}%"></i>${u ? `<u style="left:${u}%"></u>` : ''}</span></div></div>
+      <span class="v">${esc(x.txt[1])}</span></div>`;
+  }).join('');
+}
+function miroirRythme(r, m){
+  const J = (r && r.joueurs) || []; if (J.length !== 2 || !J[0] || !J[1]) return '';
+  const fr = L==='fr', R = r.reference || {}, E = Array.isArray(m.echanges) ? m.echanges : [null, null];
+  const pc_ = v => v == null ? '—' : dec(v, 0) + (fr ? ' %' : '%');
+  const L_ = [
+    {lib: t('ry_pts'), v: [J[0].points_par_match, J[1].points_par_match], txt: J.map(j => j.points_par_match == null ? '—' : fmt(Math.round(j.points_par_match)))},
+    {lib: t('ry_jeux'), v: [J[0].jeux_par_match, J[1].jeux_par_match], txt: J.map(j => j.jeux_par_match == null ? '—' : dec(j.jeux_par_match, 1))},
+    {lib: t('ry_min'), v: [J[0].minutes_par_match, J[1].minutes_par_match], txt: J.map(j => j.minutes_par_match == null ? '—' : hm(j.minutes_par_match))},
+    {lib: t('ry_tb'), v: [J[0].tiebreak_pct, J[1].tiebreak_pct], txt: J.map(j => pc_(j.tiebreak_pct)), ref: R.tiebreak_pct},
+    {lib: t('ry_3s'), v: [J[0].trois_sets_pct, J[1].trois_sets_pct], txt: J.map(j => pc_(j.trois_sets_pct)), ref: R.trois_sets_pct}];
+  if (E[0] || E[1]) {
+    L_.push({lib: fr ? 'Frappes par échange' : 'Shots per rally', v: E.map(e => e ? e.frappes : null), txt: E.map(e => e ? dec(e.frappes, 1) : '—')});
+    L_.push({lib: t('ry_long'), v: E.map(e => e ? e.long_pct : null), txt: E.map(e => e ? pc_(e.long_pct) : '—')});
+  }
+  const L2 = L_.filter(x => x.v.some(v => v != null));
+  // rythme (plus lent / plus rapide que la moyenne) : une pastille par joueur, sens et ampleur
+  const pas = (j, k) => {
+    const v = j.rythme_pct; if (v == null) return '<span></span>';
+    const sens = Math.abs(v) < 1.5 ? (fr ? 'rythme moyen' : 'average pace') : (v > 0 ? (fr ? `${dec(v,0)} % plus lent` : `${dec(v,0)}% slower`) : (fr ? `${dec(-v,0)} % plus rapide` : `${dec(-v,0)}% faster`));
+    return `<span class="ry-pas ${k}"><i>${Math.abs(v) < 1.5 ? '●' : (v > 0 ? '🐢' : '⚡')}</i>${esc(sens)}</span>`;
+  };
+  const leg = R.tiebreak_pct != null || R.trois_sets_pct != null
+    ? `<p class="fm-note">${esc(fr ? 'Même échelle des deux côtés. Trait fin : un joueur type du circuit.' : 'Same scale on both sides. Thin tick: a typical player on the tour.')}</p>` : '';
+  return `<div class="fm ry-mir"><div class="fm-tete"><span class="a">${esc(court(m.home))}</span><span class="b">${esc(court(m.away))}</span></div>
+    ${miroirLignes(L2)}<div class="ry-rythmes">${pas(J[0], 'a')}${pas(J[1], 'b')}</div>${leg}</div>`;
+}
 function rendRythme(r,m){
   if (!r || r.descriptif_seulement !== true) return '';
   const pv = r.prevision, J = r.joueurs || [];
@@ -2541,7 +2603,9 @@ function rendRythme(r,m){
   return `<div class="panel rythme"><h3>${esc(t('ry_titre'))}</h3>
     ${pv ? `<p class="ry-duree">${esc(t('ry_duree',pv.minutes,pv.minutes_p10,pv.minutes_p90))}</p>${barreDuree(pv, m)}<p class="ry-pts">${esc(t('ry_points',pv.points,pv.secondes_par_point))}</p>` : ''}
     ${phraseRythme(r,m)}
-    <table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${rows}</tbody></table>
+    ${miroirRythme(r, m)}
+    <details class="ry-det"><summary>${esc(L==='fr'?'Tous les chiffres':'All figures')}</summary>
+    <table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${rows}</tbody></table></details>
     <p class="styles-note">${esc(t('ry_note'))}${Array.isArray(m.echanges) ? ' '+esc(t('ry_ech_note')) : ''}</p></div>`;
 }
 function court(n){ const p = String(n).trim().split(/\s+/); return p.length>1 ? p.slice(1).join(' ') : n; }
@@ -7087,11 +7151,14 @@ function visAvantMatch(A, m){
 }
 function rendAvantMatch(m){
   const A = m.avant_match; if (!A) return '';
+  // 22/11/2026 (paquet 354) : la série en tuile (gros chiffre) ; victoires et attendues sont déjà sur la jauge au-dessus
+  const fr = L==='fr';
   const j = (x, k) => { if (!x) return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span><p class="lv-dim">—</p></div>`;
-    const se = x.serie || {}, re = x.reussite;
-    const ser = se.n ? (se.type === 'victoires' ? t('am_serie_v', se.n, se.sets_n) : t('am_serie_d', se.n, se.sets_n)) : '';
-    return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span>${ser ? `<p>${esc(ser)}</p>` : ''}
-      ${re ? `<p>${esc(t('am_reussite', re.victoires, re.matchs, dec(re.attendu,1)))} : <b class="${re.ecart>=1?'lv-up':(re.ecart<=-1?'lv-down':'')}">${esc(t('am_ecart', dec(re.ecart,1)))}</b></p>` : ''}</div>`; };
+    const se = x.serie || {}, re = x.reussite, v = se.type === 'victoires';
+    const serie = se.n ? `<div class="am-se ${v ? 'v' : 'd'}"><b>${se.n}</b><span>${esc(v ? (fr ? `victoire${se.n>1?'s':''} de suite` : `win${se.n>1?'s':''} in a row`) : (fr ? `défaite${se.n>1?'s':''} de suite` : `loss${se.n>1?'es':''} in a row`))}</span></div>` : '';
+    const sets = se.sets_n ? `<span class="am-ch">${esc(fr ? `${se.sets_n} set${se.sets_n>1?'s':''} ${v ? 'gagné' : 'perdu'}${se.sets_n>1?'s':''} de suite` : `${se.sets_n} set${se.sets_n>1?'s':''} ${v ? 'won' : 'lost'} in a row`)}</span>` : '';
+    const att = re ? `<span class="am-ch">${esc(fr ? `${re.victoires} victoires pour ${dec(re.attendu,1)} attendues` : `${re.victoires} wins for ${dec(re.attendu,1)} expected`)}</span>` : '';
+    return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span>${serie}<div class="am-chs">${sets}${att}</div></div>`; };
   const F = A.face_a_face;
   const h2h = F ? `<div class="am-h2h"><div class="lv-grp">${esc(t('am_h2h').toUpperCase())}</div>
       <div class="bil"><span style="color:var(--p1)">${F.home}</span> – <span style="color:var(--p2)">${F.away}</span></div>
