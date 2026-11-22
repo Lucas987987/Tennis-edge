@@ -167,6 +167,14 @@ jobs:
       - name: Coffre privé — rapatrier (journaux de suivi)
         run: python scripts/coffre.py pull --groupe suivi || true
 
+      # 22/11/2026 (paquet 345, cotes en privé, étape 2) : journaux et états des canaux d'alertes (canal public, MISER,
+      # H13 à H17, zone) et verdicts en direct, rangés au coffre privé ; rapatriés AVANT les scripts qui les prolongent
+      # (sans les états, une alerte déjà envoyée repartirait)
+      - name: Coffre privé — rapatrier (canaux et verdicts)
+        run: |
+          python scripts/coffre.py pull --groupe canaux || true
+          python scripts/coffre.py pull --groupe verdicts || true
+
       - name: Courbes live + alertes forward (0 requête API)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -358,6 +366,11 @@ jobs:
           # 334 : journaux de suivi — envoyés (fusion à trois voies si le coffre a bougé), puis sortis du dépôt public
           python scripts/coffre.py push --groupe suivi || true
           python scripts/coffre.py retirer --groupe suivi || true
+          # 345 : canaux d'alertes et verdicts — envoyés (fusion à trois voies si le coffre a bougé), puis sortis du dépôt
+          python scripts/coffre.py push --groupe canaux || true
+          python scripts/coffre.py retirer --groupe canaux || true
+          python scripts/coffre.py push --groupe verdicts || true
+          python scripts/coffre.py retirer --groupe verdicts || true
 
       - name: Commit (robuste — même boucle de reprise que la capture)
         run: |
