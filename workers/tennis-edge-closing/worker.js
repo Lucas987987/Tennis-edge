@@ -262,7 +262,9 @@ async function planifierCollecteur(cfg) {
 export const GARDE_PLAFOND_MIN = 45;
 export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes.yml': 10,
   // 23/10/2026 : workflows planifiés par période (planifierPeriodique) — plafond au-delà de leur timeout
-  'pronostics_quotidien.yml': 60, 'feuilles_match.yml': 360 };
+  'pronostics_quotidien.yml': 60, 'feuilles_match.yml': 360,
+  // 22/11/2026 (paquet 347) : rattrapage ATP/WTA (timeout 120 min) et point par point ITF (timeout 90 min)
+  'historique_feuilles.yml': 150, 'itf_points.yml': 120 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -538,6 +540,17 @@ async function run(env) {
   if ((env.FEUILLES_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Feuilles', evenement: 'feuilles_match',
       workflowFile: 'feuilles_match.yml', periodeMin: Math.max(30, Number(env.FEUILLES_PERIODE_MIN) || 120) });
+  }
+  // 22/11/2026 (paquet 347) — les crons GitHub du rattrapage ATP/WTA et du point par point ITF ne sont pas partis le
+  // 22/11 (ajoutés le matin, aucun passage dans la journée) : le worker les lance, toutes les 8 h par défaut. Chacun
+  // ne prend que le surplus du quota TennisApi (il s'arrête sous 7 000 requêtes restantes). Désactivables : *_ENABLED=0.
+  if ((env.HISTORIQUE_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Historique', evenement: 'historique_feuilles',
+      workflowFile: 'historique_feuilles.yml', periodeMin: Math.max(120, Number(env.HISTORIQUE_PERIODE_MIN) || 480) });
+  }
+  if ((env.ITF_POINTS_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
+      workflowFile: 'itf_points.yml', periodeMin: Math.max(120, Number(env.ITF_POINTS_PERIODE_MIN) || 480) });
   }
 
   return messages.join('\n');
