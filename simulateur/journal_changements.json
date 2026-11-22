@@ -1874,6 +1874,14 @@
    "paquet": 360,
    "quoi": "COUVERTURE ITF DES JOUEURS DE CHALLENGER (paquet 360) : après chaque passage de la collecte ITF point par point, un bilan dit, pour les Challengers des 30 derniers jours, combien de matchs ITF avec déroulé on a pour chaque joueur avant son match et combien de points de service ils ajoutent. C'est la question à trancher avant toute étude sur des profils de service enrichis par l'ITF.",
    "garde_fou": "Des comptes seulement, rien ne change dans l'algo. Une étude éventuelle aura sa règle écrite avant de regarder les résultats."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "collecte",
+   "paquet": 361,
+   "prive": true,
+   "quoi": "PRIORITÉ À L'ITF (paquet 361) : premier bilan de couverture (22/11) — 21 jours d'ITF collectés (1 199 matchs avec point par point), 88,6 % des joueurs des Challengers récents sans aucun match ITF avec déroulé avant leur match, 0,3 % à 500 points de service ou plus. Le passage du soir n'a rien collecté : il ne restait que 6 740 requêtes, sous la réserve de 7 000. L'historique ATP/WTA (3 % fait) s'arrête maintenant à 9 000 requêtes restantes, l'ITF à 7 000 : l'ITF passe en premier sur le surplus du quota ; il est lancé toutes les 4 h au lieu de 8.",
+   "garde_fou": "Le direct et la collecte quotidienne gardent les mêmes 7 000 requêtes de réserve. Retour arrière : FEUILLES_RESERVE de l'historique à 7000, ITF_POINTS_PERIODE_MIN=480 sur le worker."
   }
  ]
 }
