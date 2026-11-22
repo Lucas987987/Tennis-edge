@@ -32,6 +32,17 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      # 22/11/2026 (paquet 351) — COTES EN PRIVÉ, ÉTAPE 3b : en mode ETAT_CHAUD=prive, les fichiers de cotes (dont
+      # moves_detail*.csv, suivi_direct/resultats.json, resultats_oddspapi.json) ne sont plus dans le dépôt public ;
+      # rapatriés ici depuis R2 (lecture). Dans les autres modes, rien ne change.
+      - name: Cotes privées — rapatrier (paquet 351)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python3 scripts/cotes_privees.py pull || true
+
       - name: Résultats rapides via /settlement (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
@@ -46,6 +57,16 @@ jobs:
             echo "💰 économie quota jusqu'au 21/10 (quota renouvelé le 20/10) : $MAX_SETTLEMENT_CALLS appels max"
           fi
           python scripts/fetch_results_settlement.py
+      # 22/11/2026 (paquet 351) : resultats_oddspapi.json envoyé au coffre ; en mode ETAT_CHAUD=prive, sorti du dépôt
+      - name: Cotes privées — envoyer (résultats du règlement, paquet 351)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python3 scripts/cotes_privees.py push --groupe resultats_reglement || true
+          python3 scripts/cotes_privees.py retirer --groupe resultats_reglement || true
       - name: Commit
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
@@ -63,7 +84,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           for f in resultats_oddspapi.json backtest_tennis.csv; do
-            [ -f "$f" ] && git add -- "$f"
+            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi   # 351 : jamais un fichier au coffre
           done
           git diff --staged --quiet || git commit -m "Résultats rapides (settlement v5)"
           # COMMIT D'ABORD (ci-dessus), puis "merge" et non "rebase" : un
