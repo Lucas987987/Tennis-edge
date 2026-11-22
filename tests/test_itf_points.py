@@ -90,3 +90,12 @@ class Collecte(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def test_lance_par_le_worker_cloudflare():
+    w = open(os.path.join(RACINE, 'workers', 'tennis-edge-closing', 'worker.js'), encoding='utf-8').read()
+    for wf, ev in (('itf_points.yml', 'itf_points'), ('historique_feuilles.yml', 'historique_feuilles')):
+        assert f"workflowFile: '{wf}'" in w and f"evenement: '{ev}'" in w
+        y = open(os.path.join(RACINE, '.github', 'workflows', wf), encoding='utf-8').read()
+        assert f'types: [{ev}]' in y
+    assert "'historique_feuilles.yml': 150, 'itf_points.yml': 120" in w
