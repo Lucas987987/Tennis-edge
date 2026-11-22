@@ -554,7 +554,9 @@ async function run(env) {
   }
   if ((env.ITF_POINTS_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
-      workflowFile: 'itf_points.yml', periodeMin: Math.max(120, Number(env.ITF_POINTS_PERIODE_MIN) || 480) });
+      workflowFile: 'itf_points.yml', periodeMin: Math.max(120, Number(env.ITF_POINTS_PERIODE_MIN) || 240) });
+  // 22/11/2026 (paquet 361) : ITF toutes les 4 h (au lieu de 8) et prioritaire sur l'historique ATP/WTA (qui s'arrête à
+  // 9 000 requêtes restantes, l'ITF à 7 000) : un passage sans surplus ne coûte qu'une requête.
   }
   // 22/11/2026 (paquet 350) — études de la semaine (verdicts du lundi : ancrage, salle, recalage du service, Challenger
   // 50–60 %, chercheur et contrôle de ses candidates en direct) : le cron du lundi peut sauter, le worker relance si le
