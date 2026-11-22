@@ -1882,6 +1882,14 @@
    "prive": true,
    "quoi": "PRIORITÉ À L'ITF (paquet 361) : premier bilan de couverture (22/11) — 21 jours d'ITF collectés (1 199 matchs avec point par point), 88,6 % des joueurs des Challengers récents sans aucun match ITF avec déroulé avant leur match, 0,3 % à 500 points de service ou plus. Le passage du soir n'a rien collecté : il ne restait que 6 740 requêtes, sous la réserve de 7 000. L'historique ATP/WTA (3 % fait) s'arrête maintenant à 9 000 requêtes restantes, l'ITF à 7 000 : l'ITF passe en premier sur le surplus du quota ; il est lancé toutes les 4 h au lieu de 8.",
    "garde_fou": "Le direct et la collecte quotidienne gardent les mêmes 7 000 requêtes de réserve. Retour arrière : FEUILLES_RESERVE de l'historique à 7000, ITF_POINTS_PERIODE_MIN=480 sur le worker."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 362,
+   "prive": true,
+   "quoi": "LAB : MÉNAGE DES ONGLETS (paquet 362, choix de Lucas) : 7 onglets en tête (Découvertes, Explorateur, Matchs en direct, Réconciliation, Profils, Pistes V6.6, Stabilité 16 ans), sur plusieurs lignes au lieu d'une bande à faire défiler ; les 10 autres (hypothèses gelées, base des matchs, pistes gelées automatiquement, Bookmakers & Sets, suivi V6, V6.3, V6.1, sources, provenance) rangés sous « Archives ». Le dernier onglet ouvert est retenu.",
+   "garde_fou": "Rien n'est supprimé : mêmes onglets, mêmes données, un clic de plus pour les archives. Tests d'interface du Lab verts."
   }
  ]
 }
