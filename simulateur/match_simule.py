@@ -488,6 +488,18 @@ def appliquer_facteurs(c, d_service=0.0, d_aces=0.0, d_bp=0.0):
     return out
 
 
+def reglages_du_circuit(reglages, circuit):
+    """22/11/2026 (paquet 336) : réglages communs + ceux propres au circuit (« par_circuit » : {'CH': {...}}), qui
+    priment. Sans réglage propre, les réglages communs tels quels."""
+    if not reglages:
+        return reglages
+    propres = (reglages.get('par_circuit') or {}).get(circuit)
+    base = {k: v for k, v in reglages.items() if k != 'par_circuit'}
+    if not propres:
+        return base or None
+    return dict(base, **propres)
+
+
 def appliquer_reglages(c, reglages):
     """Applique les réglages avant l'ancrage de la probabilité de victoire.
 

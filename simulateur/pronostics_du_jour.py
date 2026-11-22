@@ -172,9 +172,20 @@ def charger_reglages(racine):
     try:
         with open(os.path.join(racine, 'simulateur', 'reglages_match_simule.json'), encoding='utf-8') as f:
             d = json.load(f)
-        return d['reglages'] if d.get('adopte') else None
+        reglages = d['reglages'] if d.get('adopte') else None
     except (OSError, ValueError, KeyError):
-        return None
+        reglages = None
+    # 22/11/2026 (paquet 336) : service en Challenger (etude_service_challenger.py), seulement si sa règle est passée
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_service_challenger.json'), encoding='utf-8') as f:
+            sc = json.load(f)
+        # la règle de l'étude ne suffit pas : elle rejoue le moteur SANS les facteurs du match de la production ; il faut
+        # aussi le contrôle « comme en production » (clé posée seulement par ce contrôle)
+        if sc.get('retenu') and sc.get('verifie_comme_en_production') and sc.get('delta_appris'):
+            reglages = dict(reglages or {}, par_circuit={'CH': {'jeux_delta': float(sc['delta_appris'])}})
+    except (OSError, ValueError, TypeError):
+        pass
+    return reglages
 
 
 REGLAGES = None
@@ -1373,13 +1384,16 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=F
     cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
     cH, cA = avec_facteurs(cH, cA, fct)
     sigma = sigma_sim() if p_home is None else sigma_de(c)
-    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES, circuit=c,
+    # 336 : réglages propres au circuit (service Challenger) ; la simulation pure (p_home None) garde les réglages
+    # communs, pour que son % de victoire, qui entre dans le mélange, ne bouge pas
+    reg = MS.reglages_du_circuit(REGLAGES, c) if p_home is not None else MS.reglages_du_circuit(REGLAGES, None)
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=reg, circuit=c,
                    seuils_forme=SEUILS_FORME.get(c))
     if controler_stabilite and STABILITE_BLOCS > 0:
         import stabilite_scores as SS
         r['stabilite_score'] = SS.controler(cH, cA, p_home, r, sg, SIMULATIONS, sigma, cle,
-                                           reglages=REGLAGES, blocs=STABILITE_BLOCS)
-    r['reglages'] = REGLAGES
+                                           reglages=reg, blocs=STABILITE_BLOCS)
+    r['reglages'] = reg
     r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
     niveau = lambda n: 'tres_faible' if n < 100 else 'faible' if n < 500 else 'documente'
@@ -1407,6 +1421,11 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
     """
     cH, cA, _, _ = composantes_du_match(P, h, a, c, s, pure=pure)
     cH, cA = avec_facteurs(cH, cA, fct)
+    # 22/11/2026 (paquet 336) : la même longueur de service que la simulation (service Challenger, s'il est retenu),
+    # pour que les lignes « plus de X jeux » et les scores suivent ; le % de victoire reste ancré sur p_home
+    reg = MS.reglages_du_circuit(REGLAGES, c) if p_home is not None else None   # jamais sur la simulation pure
+    if reg and reg.get('jeux_delta'):
+        cH, cA = MS.appliquer_reglages(cH, {'jeux_delta': reg['jeux_delta']}), MS.appliquer_reglages(cA, {'jeux_delta': reg['jeux_delta']})
     sigma = sigma if sigma is not None else (sigma_sim() if pure else sigma_de(c))
     distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
     if brut:                        # 29/10/2026 : distribution seule (fantôme de la forme du jour)
