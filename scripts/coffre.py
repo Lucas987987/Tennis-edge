@@ -102,7 +102,8 @@ PROTEGES |= {'canaux', 'verdicts'}   # deux rédacteurs possibles, et des états
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
 
 
-DOSSIERS = {_LIVE + 'registre': 'registre'}     # dossier entier au coffre → sous-préfixe propre
+DOSSIERS = {_LIVE + 'registre': 'registre',      # dossier entier au coffre → sous-préfixe propre
+            'closing_lines': 'closing_lines'}   # 346 : archives mensuelles des clôtures (scripts/cotes_privees.py)
 
 
 def cle(chemin):
