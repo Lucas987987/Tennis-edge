@@ -88,3 +88,21 @@ def test_workflow_manuel_lecture_seule():
     w = open(os.path.join(RACINE, '.github/workflows/sonde_matchstat.yml'), encoding='utf-8').read()
     assert 'workflow_dispatch' in w and 'contents: read' in w and 'git push' not in w
     assert 'secrets.RAPIDAPI_KEY' in w and 'sonde_matchstat.json' in w
+
+
+def test_331b_part_des_tournois_connus_sans_la_liste_du_jour(tmp_path, monkeypatch):
+    (tmp_path / 'tournois_ids.json').write_text(json.dumps({
+        'ATP Heilbronn Challenger': {'tour': 'atp', 'id': 7001}, 'WTA W35 Monastir': {'tour': 'wta', 'id': 9},
+        'WTA Midland': {'tour': 'wta', 'id': 7002}, '_discovered_at': 'x'}), encoding='utf-8')
+    monkeypatch.chdir(tmp_path)
+    ech = S.echantillons_connus(annee=2019)
+    assert ech == (('atp', '2019', 'challenger', 7001, 'ATP Heilbronn Challenger'), ('wta', '2019', 'principal', 7002, 'WTA Midland'))
+    appels = []
+    r = S.sonder(CLE, budget=6, sackmann=sackmann(tmp_path), ouvrir=faux(appels=appels), echantillons=ech[:1])
+    assert not any('/fixtures/' in u for u in appels) and len(appels) == 2
+    assert r['echantillons'][0]['comparaison_sackmann']['ace']['egal']
+
+
+def test_331b_resultats_ranges_par_tour():
+    doc = {'data': {'rounds': [{'name': 'R1', 'matches': [RES['data'][0]]}, {'name': 'F', 'matches': [{'match_winner': 3}]}]}}
+    assert len(S.tous_les_matchs(doc)) == 2
