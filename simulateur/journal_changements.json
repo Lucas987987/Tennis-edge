@@ -2123,6 +2123,13 @@
    "paquet": 393,
    "quoi": "AUDIT DES JOURNAUX GITHUB (paquet 393) : le dépôt est public, donc les journaux de ses runs et leurs artefacts aussi. 107 lancements de scripts d'étude et de collecte (dans 47 workflows) passent désormais par un lanceur discret : le journal ne montre que le nom du script, son code de sortie, le nombre de lignes écrites, les avertissements techniques et, en cas d'échec, la trace Python ; le journal complet part au coffre privé (lisible dans le Lab). Cinq artefacts téléchargeables (sorties d'études, audit des données de bookmakers, sauvegarde) sont remplacés par un rangement au coffre privé, un fichier n'est plus recopié dans le journal, et un rapport d'étude quitte le dépôt.",
    "garde_fou": "Le code de sortie des scripts est inchangé (un échec reste rouge). Un test vérifie que chaque script listé dans scripts/discret_scripts.txt est toujours lancé par le lanceur. Tests : tests/test_discret.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 394,
+   "quoi": "NETTOYAGE DES ANCIENS RUNS (paquet 394) : un workflow supprime chaque heure les runs terminés de plus de 2 jours des workflows sensibles (51, liste dans scripts/nettoyer_runs.py) : leur journal et leurs artefacts, publics puisque le dépôt l'est, sont effacés. 800 suppressions au plus par passage ; à la main : « simuler » pour compter, « tous » pour tous les workflows.",
+   "garde_fou": "Jamais un run en cours ; les 2 derniers jours restent pour lire un run rouge. Tests : tests/test_nettoyer_runs.py."
   }
  ]
 }
