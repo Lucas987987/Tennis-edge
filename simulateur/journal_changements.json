@@ -2137,6 +2137,13 @@
    "paquet": 395,
    "quoi": "NETTOYAGE SANS PERTE (paquet 395) : avant de supprimer un ancien run d'un workflow qui déposait des fichiers téléchargeables (audit quotidien du Lab, suivi des outsiders, études elo_mov et sonde v2), chaque fichier encore disponible est copié au coffre privé. Si la copie échoue, le run est gardé et repris au passage suivant.",
    "garde_fou": "Les données du projet (dépôt, coffre) ne sont jamais touchées ; seuls les journaux des runs disparaissent. Tests : tests/test_nettoyer_runs.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 396,
+   "quoi": "IDENTITÉS PAR IDENTIFIANT TENNISAPI (paquet 396) : deux écritures d'un même joueur sous le même identifiant TennisApi (feuilles de match et résultats ITF) sont désormais un seul classement. « Zach Viiala » (27 matchs ITF) et « Zachary Viiala » (le nom donné au Challenger de Champaign) avaient deux classements : il était compté comme presque inconnu. 8 joueurs concernés.",
+   "garde_fou": "Correction de données, aucun réglage du modèle ; le nom le plus vu garde la clé. Tests : tests/test_identites.py."
   }
  ]
 }
