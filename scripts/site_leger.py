@@ -14,6 +14,7 @@ visiteur, au moment de publier le site (workflow pages.yml) :
 La page lit site.json et, s'il manque, donnees.json : rien ne casse si ce script n'a pas tourné.
 Usage : python scripts/site_leger.py algo/donnees.json <dossier de sortie>
 """
+import datetime as dt
 import gzip
 import json
 import os
@@ -30,16 +31,32 @@ INTERNES = ('journal_changements', 'validation_fiabilite', 'desaccords', 'qualit
 AFFICHE = ('uid', 'debut', 'debut_utc', 'tournoi', 'circuit', 'surface', 'meilleur_des', 'home', 'away', 'pays', 'en_salle')
 
 
-def libre(site):
-    """Version sans accès Plus : le match du jour complet, les autres matchs à l'affiche seulement (« verrou »)."""
+def libre(site, maintenant=None):
+    """Version sans accès Plus : le match du jour complet, les autres matchs à l'affiche seulement (« verrou »).
+    23/11/2026 (paquet 390, Lucas : « un match commencé ne peut pas avoir toutes les statistiques affichées, juste le %
+    de l'algo ») : un match déjà commencé garde en plus le % de l'algo (déjà public dans le bilan), rien d'autre."""
+    maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     offert = ((site.get('match_du_jour') or {}).get('uid'))
-    # 389 : l'aperçu Plus (un match terminé, choisi par une règle fixe dans vitrine.choisir_apercu) reste complet
-    apercu = ((site.get('apercu_plus') or {}).get('uid'))
     out = dict(site)
-    out['matchs'] = [m if m.get('uid') in (offert, apercu) and m.get('uid') else dict({k: m[k] for k in AFFICHE if k in m}, verrou=True)
-                     for m in site.get('matchs') or []]
+    out.pop('apercu_plus', None)
+
+    def reduit(m):
+        r = dict({k: m[k] for k in AFFICHE if k in m}, verrou=True)
+        if isinstance(m.get('p_home'), (int, float)) and commence(m, maintenant):
+            r['p_home'] = m['p_home']
+        return r
+    out['matchs'] = [m if m.get('uid') == offert else reduit(m) for m in site.get('matchs') or []]
     out['acces'] = 'libre'
     return out
+
+
+def commence(m, maintenant):
+    d = m.get('debut_utc') or m.get('debut')
+    try:
+        t = dt.datetime.fromisoformat(str(d).replace('Z', '+00:00'))
+    except ValueError:
+        return False
+    return (t if t.tzinfo else t.replace(tzinfo=dt.timezone.utc)) <= maintenant
 
 
 def decouper(doc):
