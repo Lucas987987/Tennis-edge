@@ -8,6 +8,9 @@ visiteur, au moment de publier le site (workflow pages.yml) :
                    scores exacts, feuilles « brutes », horodatages internes…) ;
   site_plus.json — les blocs du bas de page (bilan détaillé, étalonnage, journal des changements, validation de la
                    fiabilité), chargés juste après le premier affichage.
+  site_libre.json — 23/11/2026 (paquet 377) : ce que reçoit un visiteur SANS accès Plus (le worker choisit) : le match du
+                   jour complet (le match offert), les autres matchs réduits à l'affiche (joueurs, tournoi, heure),
+                   sans aucun pourcentage ni détail ; les bilans des matchs passés restent publics.
 La page lit site.json et, s'il manque, donnees.json : rien ne casse si ce script n'a pas tourné.
 Usage : python scripts/site_leger.py algo/donnees.json <dossier de sortie>
 """
@@ -20,6 +23,18 @@ INUTILES_MATCH = ('distribution_scores', 'distribution_reste', 'feuille_prevue_b
                   'horodatage', 'scores_simules', 'scores_source', 'salle_appliquee', 'commence_garde', 'salle_brut')
 INUTILES_HAUT = ('qualite_horodatages', 'styles_descriptifs_source', 'bilan_lignes')
 PLUS = ('bilan', 'journal_changements', 'validation_fiabilite')
+# 377 : champs d'un match réservé gardés dans la version libre (l'affiche seulement)
+AFFICHE = ('uid', 'debut', 'debut_utc', 'tournoi', 'circuit', 'surface', 'meilleur_des', 'home', 'away', 'pays', 'en_salle')
+
+
+def libre(site):
+    """Version sans accès Plus : le match du jour complet, les autres matchs à l'affiche seulement (« verrou »)."""
+    offert = ((site.get('match_du_jour') or {}).get('uid'))
+    out = dict(site)
+    out['matchs'] = [m if m.get('uid') == offert else dict({k: m[k] for k in AFFICHE if k in m}, verrou=True)
+                     for m in site.get('matchs') or []]
+    out['acces'] = 'libre'
+    return out
 
 
 def decouper(doc):
@@ -36,7 +51,7 @@ def main(argv):
         doc = json.load(f)
     site, plus = decouper(doc)
     os.makedirs(dossier, exist_ok=True)
-    for nom, d in (('site.json', site), ('site_plus.json', plus)):
+    for nom, d in (('site.json', site), ('site_plus.json', plus), ('site_libre.json', libre(site))):
         b = json.dumps(d, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
         with open(os.path.join(dossier, nom), 'wb') as f:
             f.write(b)

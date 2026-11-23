@@ -38,7 +38,11 @@ test('site public : page et données relues sur GitHub Pages, le reste → 404',
   const r = await worker.fetch(req('/'), env);
   assert.equal(r.status, 200);
   assert.match(r.headers.get('Content-Security-Policy'), /frame-ancestors 'none'/);
-  assert.equal((await worker.fetch(req('/donnees.json'), env)).headers.get('Content-Type'), 'application/json; charset=utf-8');
+  // 377 : données complètes réservées — sans accès et sans copie R2, jamais de secours GitHub (503) ; avec la clé : servies
+  assert.equal((await worker.fetch(req('/donnees.json'), env)).status, 503);
+  const plein = await worker.fetch(req('/donnees.json', { 'X-Cle': CLE }), env);
+  assert.equal(plein.headers.get('Content-Type'), 'application/json; charset=utf-8');
+  assert.match(plein.headers.get('Cache-Control'), /no-store/);
   assert.equal((await worker.fetch(req('/Tennis_Edge_Lab/live/pronostics.json'), env)).status, 404);
   assert.deepEqual(vus, ['https://lucas987987.github.io/Tennis-edge/algo/index.html', 'https://lucas987987.github.io/Tennis-edge/algo/donnees.json']);
 });
@@ -277,7 +281,8 @@ test('modèles 3D : relus sur la copie GitHub Pages du site, binaire, sinon 502'
 test('site léger : site.json, site_plus.json, editeur.json, partage.png et polices servis avec le bon type', async () => {
   const vus = [];
   globalThis.fetch = async (u) => { vus.push(String(u)); return new Response('x', { status: 200 }); };
-  const types = { '/site.json': 'application/json; charset=utf-8', '/site_plus.json': 'application/json; charset=utf-8',
+  assert.equal((await worker.fetch(req('/site.json', { 'X-Cle': CLE }), env)).headers.get('Content-Type'), 'application/json; charset=utf-8');
+  const types = { '/site_plus.json': 'application/json; charset=utf-8',
     '/editeur.json': 'application/json; charset=utf-8', '/partage.png': 'image/png', '/polices/barlow-400.woff2': 'font/woff2' };
   for (const [c, t] of Object.entries(types)) {
     const r = await worker.fetch(req(c), env);

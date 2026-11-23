@@ -84,3 +84,29 @@ def test_rapport(tmp_path):
     assert CE.controler(r)['statut'] == 'alerte'
     assert CE.main(['x', r]) == 0
     assert len(json.load(open(os.path.join(r, CE.SORTIE)))['historique']) == 1
+
+
+def test_programme_cles_reliees_et_jour_voisin():
+    P.PROGRAMME = {('2026-11-22', *sorted(('a', 'b'))): {'tour': 'R32', 'home': 'A', 'away': 'B', 'tetes': ['WC', None]}}
+    P.PROGRAMME_CLE = lambda n: n.lower()
+    try:
+        d = dt.datetime(2026, 11, 23, 2, 15)                      # début en UTC le lendemain du jour du programme
+        assert P.tour_du_match('a', 'b', d) == 'R32'
+        assert P.entree_du_match('b', 'a', d) == [None, 'WC']
+        assert P.tour_du_match('a', 'b', dt.datetime(2026, 11, 25, 2, 15)) is None
+    finally:
+        P.PROGRAMME, P.PROGRAMME_CLE = None, None
+
+
+def test_programme_charge_avec_alias(tmp_path):
+    os.makedirs(os.path.join(tmp_path, 'feuilles', 'programme'))
+    with open(os.path.join(tmp_path, 'feuilles', 'programme', '2026-11-22.json'), 'w', encoding='utf-8') as f:
+        json.dump({'matchs': {'1': {'jour': '2026-11-22', 'home': 'Santiago Rodriguez Taverna', 'away': 'Gonzalo Bueno',
+                                    'tour': 'R16'}}}, f)
+    al = {E.cle('Santiago Rodriguez Taverna'): E.cle('Santiago Fa Rodriguez Taverna')}
+    cle = lambda n: al.get(E.cle(n), E.cle(n))
+    try:
+        P.PROGRAMME = P.charger_programme(str(tmp_path), cle=cle)
+        assert P.tour_du_match(cle('Santiago Fa Rodriguez Taverna'), cle('Gonzalo Bueno'), dt.date(2026, 11, 22)) == 'R16'
+    finally:
+        P.PROGRAMME, P.PROGRAMME_CLE = None, None
