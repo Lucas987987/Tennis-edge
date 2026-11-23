@@ -12,7 +12,8 @@
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
 export const COOKIE_COMPTE = 'gsa_compte';
-export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null });
+export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null,
+  admin: null });                     // 380 : admin = accès Plus illimité + sections internes du site
 const SESSION_J = 90, VERIF_H = 48, REINIT_H = 1, ITER = 100000;
 const MAX_ECHECS = 10, BLOCAGE_MIN = 15, ENVOI_MIN_S = 120, ENVOIS_JOUR = 250;
 
@@ -65,11 +66,12 @@ async function ecrire(env, u) {
 
 export function abonne(u, maintenant = Date.now()) {
   const a = (u && u.acces) || {};
-  if (a.formule === 'illimite') return true;
+  if (a.formule === 'illimite' || a.formule === 'admin') return true;
   return !!a.jusqu_au && Date.parse(a.jusqu_au) > maintenant;
 }
+export const estAdmin = (u) => !!u && (u.acces || {}).formule === 'admin';
 function vueCompte(u) {
-  return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), formule: (u.acces || {}).formule || null,
+  return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree };
 }
 
@@ -240,12 +242,12 @@ async function reinit(req, env, b) {
   return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
 }
 
-export async function apiCompte(req, env, url) {
+export async function apiCompte(req, env, url, cle = false) {
   const p = url.pathname.slice('/compte/api/'.length);
   if (!env.COFFRE || !env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep({ ok: false, erreur: 'ferme' }, 503);
   if (p === 'moi' && req.method === 'GET') {
     const u = await utilisateur(req, env);
-    return rep({ ok: true, compte: u ? vueCompte(u) : null });
+    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u) });
   }
   if (req.method !== 'POST') return rep({ ok: false, erreur: 'methode' }, 405);
   if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
@@ -284,7 +286,7 @@ export async function donnerAcces(env, email, formule, jours) {
   else {
     const j = Number(jours) > 0 ? Number(jours) : FORMULES[formule];
     const depart = Math.max(Date.now(), Date.parse((u.acces || {}).jusqu_au || 0) || 0);   // prolonge un accès en cours
-    u.acces = { formule, jusqu_au: formule === 'illimite' ? null : (j ? new Date(depart + j * 86400e3).toISOString() : null),
+    u.acces = { formule, jusqu_au: (formule === 'illimite' || formule === 'admin') ? null : (j ? new Date(depart + j * 86400e3).toISOString() : null),
       donne_le: new Date().toISOString() };
   }
   u.historique = [...(u.historique || []).slice(-19), { le: new Date().toISOString(), formule, jours: jours || null }];
@@ -297,7 +299,7 @@ export function pageAdmin() {
 .c{background:#1b1342;border-radius:12px;padding:12px;margin:10px 0}input,select,button{font:inherit;padding:10px;border-radius:9px;border:1px solid #443a7a;background:#0e0a24;color:#f4f1ff;margin:4px 0;width:100%;box-sizing:border-box}
 button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff9a}.non{color:#ff4fae}small{color:#a99fd6}</style></head><body>
 <h2>Comptes abonnés</h2><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
-<select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="retirer">Retirer l'accès</option></select>
+<select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="admin">Admin (toi : sections internes)</option><option value="retirer">Retirer l'accès</option></select>
 <input id="j" type="number" min="1" placeholder="jours (facultatif)"><button id="b">Valider</button><p id="r"></p></div><div id="l"></div>
 <script>
 const $=id=>document.getElementById(id);

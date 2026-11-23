@@ -1,7 +1,7 @@
 {
   "schema": "recap_apprentissage_v1",
   "semaine": "2026-W48",
-  "genere_le": "2026-11-23T15:10:47+00:00",
+  "genere_le": "2026-11-23T16:05:38+00:00",
   "statut": "a_verifier",
   "lecture_seule": true,
   "modifie_apprentissage": false,
@@ -9,11 +9,11 @@
   "sources": {
     "facteurs": {
       "disponible": true,
-      "genere_le": "2026-11-16T10:56:28+00:00"
+      "genere_le": "2026-11-23T15:12:31+00:00"
     },
     "choix": {
       "disponible": true,
-      "genere_le": "2026-11-16T10:37:08+00:00"
+      "genere_le": "2026-11-23T14:47:35+00:00"
     },
     "stabilite": {
       "disponible": true,
@@ -21,28 +21,28 @@
     },
     "evaluation": {
       "disponible": true,
-      "genere_le": "2026-11-16T11:35:23.034952+00:00"
+      "genere_le": "2026-11-23T16:05:27.988840+00:00"
     },
     "recalibrage": {
       "disponible": true,
-      "genere_le": "2026-11-16T11:35:22.820739+00:00"
+      "genere_le": "2026-11-23T16:05:27.639026+00:00"
     },
     "derive": {
       "disponible": true,
-      "genere_le": "2026-11-16T11:35:23+00:00"
+      "genere_le": "2026-11-23T16:05:28+00:00"
     },
     "gouvernance": {
       "disponible": true,
-      "genere_le": "2026-11-23T15:10:47.357738+00:00"
+      "genere_le": "2026-11-23T16:05:38.599793+00:00"
     }
   },
   "sources_manquantes": [],
   "facteurs": {
-    "apprentissage_n": 7417,
-    "jugement_n": 2606,
+    "apprentissage_n": 7808,
+    "jugement_n": 2602,
     "fenetres": {
       "apprentissage": "2026-06-01",
-      "jugement": "2026-10-05"
+      "jugement": "2026-10-12"
     },
     "adoptes": [
       "adversaires_communs",
@@ -66,28 +66,29 @@
         "nom": "blessure",
         "libelle": "Blessure",
         "adopte_brut": true,
-        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0002 ± 0.0002, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0003 ± 0.0002, sur 2933 matchs ; il en faut 300 et 2 erreurs types)"
       },
       {
         "nom": "charting",
         "libelle": "Match Charting",
-        "adopte_brut": false,
-        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0003 ± 0.0005, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+        "adopte_brut": true,
+        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0001 ± 0.0004, sur 2933 matchs ; il en faut 300 et 2 erreurs types)"
       },
       {
         "nom": "densite_air",
         "libelle": "densite_air",
         "adopte_brut": false,
-        "statut": "pas adopté (cumul : gain +0.0000 ± 0.0000, garde -0.0001 ± 0.0000, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+        "statut": "pas adopté (cumul : gain +0.0000 ± 0.0000, garde -0.0001 ± 0.0000, sur 2933 matchs ; il en faut 300 et 2 erreurs types)"
       }
     ],
     "candidats_en_attente": [
-      "blessure"
+      "blessure",
+      "charting"
     ],
     "avant_apres_jugement": {
-      "log_loss_avant": 0.63499,
-      "log_loss_apres": 0.6205,
-      "gain_log_loss": 0.01449,
+      "log_loss_avant": 0.63518,
+      "log_loss_apres": 0.62026,
+      "gain_log_loss": 0.01492,
       "exactitude_avant_pct": 63.8,
       "exactitude_apres_pct": 65.2,
       "gain_exactitude_points": 1.4
@@ -106,26 +107,26 @@
     "population": "premiers pronostics figés avec simulation et Elo, résultats ultérieurs"
   },
   "performance_recente": {
-    "matchs": 1244,
-    "log_loss": 0.602667,
-    "brier": 0.209654,
-    "exactitude": 0.657556,
-    "score_exact": 0.025786,
-    "jeux_mae": 4.914343,
+    "matchs": 1588,
+    "log_loss": 0.600838,
+    "brier": 0.20798,
+    "exactitude": 0.663098,
+    "score_exact": 0.029672,
+    "jeux_mae": 4.898043,
     "population": "pronostics récents évalués ; ne pas confondre avec le jugement des facteurs"
   },
   "recalibrage": {
     "direct": {
-      "n": 1248,
-      "semaines": 5,
+      "n": 1592,
+      "semaines": 6,
       "decisions": [
         {
           "nom": "contraction_hierarchique",
           "libelle": "Contraction hiérarchique",
           "adopte": false,
           "statut": "accumulation",
-          "gain_log_loss_pondere": 7.7e-05,
-          "fenetres_positives": 1,
+          "gain_log_loss_pondere": -0.015882,
+          "fenetres_positives": 0,
           "fenetres": 1
         },
         {
@@ -133,7 +134,7 @@
           "libelle": "Isotone",
           "adopte": false,
           "statut": "accumulation",
-          "gain_log_loss_pondere": -0.031115,
+          "gain_log_loss_pondere": -0.072072,
           "fenetres_positives": 0,
           "fenetres": 1
         },
@@ -142,7 +143,7 @@
           "libelle": "Régression logistique",
           "adopte": false,
           "statut": "accumulation",
-          "gain_log_loss_pondere": -0.000106,
+          "gain_log_loss_pondere": -2e-06,
           "fenetres_positives": 0,
           "fenetres": 1
         }
@@ -150,54 +151,58 @@
       "champion_actif_modifie": false
     },
     "rejoue": {
-      "n": 6263,
-      "semaines": 16,
+      "n": 6650,
+      "semaines": 17,
       "decisions": [
         {
           "nom": "contraction_hierarchique",
           "libelle": "Contraction hiérarchique",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.002251,
+          "gain_log_loss_pondere": -0.002123,
           "fenetres_positives": 4,
-          "fenetres": 7
+          "fenetres": 8
         },
         {
           "nom": "isotone",
           "libelle": "Isotone",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.05424,
+          "gain_log_loss_pondere": -0.05417,
           "fenetres_positives": 0,
-          "fenetres": 7
+          "fenetres": 8
         },
         {
           "nom": "logistique",
           "libelle": "Régression logistique",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.002291,
+          "gain_log_loss_pondere": -0.002234,
           "fenetres_positives": 2,
-          "fenetres": 7
+          "fenetres": 8
         }
       ]
     },
     "populations_separees": true
   },
   "derive": {
-    "statut": "accumulation",
-    "n": 1244,
-    "date_de_reference": "2026-11-16",
+    "statut": "surveillance",
+    "n": 1588,
+    "date_de_reference": "2026-11-23",
     "alertes": []
   },
   "champion": {
     "statut_gouvernance": "a_verifier",
     "initialisation": false,
     "empreinte_avant": "a2a6c9ecefcfd5f5a6e47f806bcce34ed5a8d4c24d4f07d0c5defc0885787549",
-    "empreinte_apres": "8c4361371082ac7c5e909370a8aad9c914f6304d7904b0d4846b6f930c1d7044",
+    "empreinte_apres": "c20d117a7524e2da0f45601a361c64cc4dfa25893032480bbcbeb52629ca4fdb",
     "modifie_cette_semaine": true,
-    "promotions_demande_es": [],
-    "promotions_retenues": [],
+    "promotions_demande_es": [
+      "profils_hierarchiques"
+    ],
+    "promotions_retenues": [
+      "profils_hierarchiques"
+    ],
     "promotions_differees": [],
     "periodes": {
       "juge_jusqua": "2026-11-23T02:30",
