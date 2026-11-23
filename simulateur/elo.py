@@ -46,15 +46,40 @@ def cle(nom):
     return ''.join(sorted(mots(nom)))
 
 
+def _par_collage(court, long_):
+    """23/11/2026 (paquet 371) — `court` s'obtient en collant des mots VOISINS de `long_`, dans l'ordre
+    (« Soonwoo Kwon » = « Soon Woo Kwon ») : même joueur, l'espace seul diffère."""
+    if len(court) >= len(long_):
+        return False
+    i = 0
+    for w in court:
+        acc = ''
+        while i < len(long_) and len(acc) < len(w):
+            acc += long_[i]
+            i += 1
+        if acc != w:
+            return False
+    return i == len(long_)
+
+
+def _meme_ecriture(a, b):
+    return tuple(sorted(a)) == tuple(sorted(b)) or _par_collage(a, b) or _par_collage(b, a)
+
+
 def collisions_identite(noms):
-    """Noms réellement différents qui partageraient une clé ; les permutations sont des alias volontaires."""
+    """Noms réellement différents qui partageraient une clé ; les permutations sont des alias volontaires,
+    les mots voisins collés aussi (« Soon Woo Kwon » / « Soonwoo Kwon », paquet 371 : le match était écarté)."""
     groupes = {}
     for nom in noms:
         k = cle(nom)
         if k:
             groupes.setdefault(k, set()).add(tuple(mots(nom)))
-    return [{'cle': k, 'noms': sorted(' '.join(t) for t in toks)}
-            for k, toks in groupes.items() if len({tuple(sorted(t)) for t in toks}) > 1]
+    out = []
+    for k, toks in groupes.items():
+        L = sorted(toks)
+        if any(not _meme_ecriture(L[i], L[j]) for i in range(len(L)) for j in range(i + 1, len(L))):
+            out.append({'cle': k, 'noms': sorted(' '.join(t) for t in toks)})
+    return out
 
 
 def migrer_etat(etat):
