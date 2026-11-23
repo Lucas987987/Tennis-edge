@@ -1,67 +1,67 @@
 {
- "genere_le": "2026-11-22T18:41:39+00:00",
+ "genere_le": "2026-11-23T20:08:51+00:00",
  "paquet": 269,
  "definition": "A = joueur donné gagnant par l'algo au premier pronostic ; pente 1 = % justes ; < 1 = trop sûrs ; > 1 = trop prudents",
  "regles": "— anatomie : un critère est « à étudier sur l'archive » si, avec au moins 30 matchs sur chacune des deux moitiés     chronologiques, A y réussit moins que prévu de plus de 1,96 erreur type sur les DEUX moitiés ; « trop tôt » sous     60 matchs ;   — correction du niveau : la pente a est ajustée sur la 1re moitié chronologique et appliquée à la 2de. « Correction     à proposer » si, avec au moins 100 matchs par moitié, la log loss de la 2de moitié baisse d'au moins 0,001 ET la     pente ajustée sur la 2de moitié est du même côté de 1 que celle de la 1re ; « trop tôt » sous 100 matchs par     moitié ; sinon « pas de correction ». Jugé en tout et circuit par circuit ; un circuit ne reprend pas le verdict     d'un autre. Rien n'est appliqué automatiquement : une correction passe ensuite par un paquet, avec sa règle de     retrait.   — RETRAIT d'une correction en place (paquet 270, simulateur/correction_niveaux.json) : sur les matchs corrigés jugés     (circuit et niveau de la correction), log loss AVEC et SANS la correction (les deux % sont gardés dans la fiche) ;     avec au moins 100 matchs, si la log loss AVEC dépasse celle SANS d'au moins 0,001, la correction est retirée     (retiree = true dans le fichier, lu à chaque passage des pronostics).",
  "descriptif": "le % de victoire ne change pas",
- "matchs": 1290,
+ "matchs": 1358,
  "niveaux": {
   "fragile": {
    "ensemble": {
-    "n": 271,
-    "reussite_reelle_pct": 64.9,
-    "reussite_annoncee_pct": 68.8,
-    "ecart_pts": -3.8,
-    "brier": 0.2056,
-    "log_loss": 0.5933,
-    "pente": 0.737
+    "n": 310,
+    "reussite_reelle_pct": 65.5,
+    "reussite_annoncee_pct": 68.5,
+    "ecart_pts": -3.0,
+    "brier": 0.2055,
+    "log_loss": 0.5945,
+    "pente": 0.748
    },
    "correction": {
     "n_moities": [
-     135,
-     136
+     155,
+     155
     ],
-    "pente_1re_moitie": 0.959,
-    "pente_2de_moitie": 0.665,
-    "gain_log_loss_2de_moitie": 0.0037,
+    "pente_1re_moitie": 0.823,
+    "pente_2de_moitie": 0.706,
+    "gain_log_loss_2de_moitie": 0.009,
     "verdict": "correction à proposer : rapprocher le % de 50 %"
    },
    "tranches": {
     "moins de 58 %": {
-     "n": 110,
-     "reussite_reelle_pct": 52.7,
+     "n": 124,
+     "reussite_reelle_pct": 54.0,
      "reussite_annoncee_pct": 53.5,
-     "ecart_pts": -0.7,
-     "brier": 0.2506,
-     "log_loss": 0.6943,
-     "pente": 0.33
+     "ecart_pts": 0.5,
+     "brier": 0.2477,
+     "log_loss": 0.6885,
+     "pente": 1.16
     },
     "58–70 %": {
-     "n": 55,
-     "reussite_reelle_pct": 56.4,
+     "n": 68,
+     "reussite_reelle_pct": 58.8,
      "reussite_annoncee_pct": 63.1,
-     "ecart_pts": -6.8,
-     "brier": 0.2518,
-     "log_loss": 0.6977,
-     "pente": 0.437
+     "ecart_pts": -4.3,
+     "brier": 0.2406,
+     "log_loss": 0.6741,
+     "pente": 0.745
     },
     "70–80 %": {
-     "n": 26,
-     "reussite_reelle_pct": 61.5,
-     "reussite_annoncee_pct": 74.8,
-     "ecart_pts": -13.3,
-     "brier": 0.2592,
-     "log_loss": 0.7219,
-     "pente": 0.387
+     "n": 31,
+     "reussite_reelle_pct": 64.5,
+     "reussite_annoncee_pct": 75.0,
+     "ecart_pts": -10.4,
+     "brier": 0.241,
+     "log_loss": 0.6803,
+     "pente": 0.532
     },
     "80 % et plus": {
-     "n": 80,
-     "reussite_reelle_pct": 88.8,
+     "n": 87,
+     "reussite_reelle_pct": 87.4,
      "reussite_annoncee_pct": 91.7,
-     "ecart_pts": -2.9,
-     "brier": 0.0946,
-     "log_loss": 0.3408,
-     "pente": 0.822
+     "ecart_pts": -4.3,
+     "brier": 0.1054,
+     "log_loss": 0.3678,
+     "pente": 0.775
     }
    },
    "par_circuit": {
@@ -103,156 +103,156 @@
     },
     "CH": {
      "mesures": {
-      "n": 264,
-      "reussite_reelle_pct": 65.5,
-      "reussite_annoncee_pct": 69.1,
-      "ecart_pts": -3.6,
-      "brier": 0.2043,
-      "log_loss": 0.5905,
-      "pente": 0.738
+      "n": 303,
+      "reussite_reelle_pct": 66.0,
+      "reussite_annoncee_pct": 68.8,
+      "ecart_pts": -2.8,
+      "brier": 0.2045,
+      "log_loss": 0.5921,
+      "pente": 0.749
      },
      "correction": {
       "n_moities": [
-       132,
-       132
+       151,
+       152
       ],
-      "pente_1re_moitie": 0.916,
-      "pente_2de_moitie": 0.669,
-      "gain_log_loss_2de_moitie": 0.0069,
+      "pente_1re_moitie": 0.861,
+      "pente_2de_moitie": 0.683,
+      "gain_log_loss_2de_moitie": 0.0084,
       "verdict": "correction à proposer : rapprocher le % de 50 %"
      }
     }
    },
    "anatomie": {
     "Elo et simulation en désaccord sur le vainqueur": {
-     "n": 154,
-     "reussite_reelle_pct": 55.8,
-     "reussite_annoncee_pct": 58.9,
-     "ecart_pts": -3.0,
+     "n": 172,
+     "reussite_reelle_pct": 56.4,
+     "reussite_annoncee_pct": 58.7,
+     "ecart_pts": -2.3,
      "moities_ecart_pts": [
-      -4.0,
-      -2.0
+      -2.5,
+      -2.2
      ],
      "verdict": "rien à signaler"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 65,
-     "reussite_reelle_pct": 52.3,
-     "reussite_annoncee_pct": 57.4,
-     "ecart_pts": -5.1,
+     "n": 71,
+     "reussite_reelle_pct": 53.5,
+     "reussite_annoncee_pct": 57.8,
+     "ecart_pts": -4.3,
      "moities_ecart_pts": [
-      -3.8,
-      -6.3
+      -8.2,
+      -0.5
      ],
      "verdict": "rien à signaler"
     },
     "score instable": {
-     "n": 83,
-     "reussite_reelle_pct": 68.7,
-     "reussite_annoncee_pct": 68.7,
-     "ecart_pts": -0.0,
+     "n": 94,
+     "reussite_reelle_pct": 70.2,
+     "reussite_annoncee_pct": 68.5,
+     "ecart_pts": 1.7,
      "moities_ecart_pts": [
-      -2.0,
-      2.0
+      -4.6,
+      8.1
      ],
      "verdict": "rien à signaler"
     },
     "surface : Clay": {
-     "n": 27,
-     "reussite_reelle_pct": 81.5,
+     "n": 40,
+     "reussite_reelle_pct": 80.0,
      "reussite_annoncee_pct": 73.1,
-     "ecart_pts": 8.4,
+     "ecart_pts": 6.9,
      "moities_ecart_pts": [
-      11.0,
-      5.9
+      7.8,
+      6.0
      ],
      "verdict": "trop tôt"
     },
     "surface : Hard": {
-     "n": 244,
-     "reussite_reelle_pct": 63.1,
-     "reussite_annoncee_pct": 68.3,
-     "ecart_pts": -5.2,
+     "n": 270,
+     "reussite_reelle_pct": 63.3,
+     "reussite_annoncee_pct": 67.8,
+     "ecart_pts": -4.5,
      "moities_ecart_pts": [
-      -4.8,
-      -5.5
+      -6.5,
+      -2.4
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 55,
-     "reussite_reelle_pct": 56.4,
+     "n": 68,
+     "reussite_reelle_pct": 58.8,
      "reussite_annoncee_pct": 63.1,
-     "ecart_pts": -6.8,
+     "ecart_pts": -4.3,
      "moities_ecart_pts": [
-      -7.4,
-      -6.2
+      -4.1,
+      -4.5
      ],
-     "verdict": "trop tôt"
+     "verdict": "rien à signaler"
     },
     "tranche : 70–80 %": {
-     "n": 26,
-     "reussite_reelle_pct": 61.5,
-     "reussite_annoncee_pct": 74.8,
-     "ecart_pts": -13.3,
+     "n": 31,
+     "reussite_reelle_pct": 64.5,
+     "reussite_annoncee_pct": 75.0,
+     "ecart_pts": -10.4,
      "moities_ecart_pts": [
-      -13.6,
-      -12.9
+      -15.0,
+      -6.1
      ],
      "verdict": "trop tôt"
     },
     "tranche : 80 % et plus": {
-     "n": 80,
-     "reussite_reelle_pct": 88.8,
+     "n": 87,
+     "reussite_reelle_pct": 87.4,
      "reussite_annoncee_pct": 91.7,
-     "ecart_pts": -2.9,
+     "ecart_pts": -4.3,
      "moities_ecart_pts": [
-      0.2,
-      -6.1
+      0.9,
+      -9.5
      ],
      "verdict": "rien à signaler"
     },
     "tranche : moins de 58 %": {
-     "n": 110,
-     "reussite_reelle_pct": 52.7,
+     "n": 124,
+     "reussite_reelle_pct": 54.0,
      "reussite_annoncee_pct": 53.5,
-     "ecart_pts": -0.7,
+     "ecart_pts": 0.5,
      "moities_ecart_pts": [
-      -4.8,
-      3.3
+      -7.1,
+      8.1
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 30 matchs": {
-     "n": 71,
-     "reussite_reelle_pct": 78.9,
-     "reussite_annoncee_pct": 86.6,
-     "ecart_pts": -7.8,
+     "n": 86,
+     "reussite_reelle_pct": 79.1,
+     "reussite_annoncee_pct": 84.6,
+     "ecart_pts": -5.5,
      "moities_ecart_pts": [
-      -1.0,
-      -14.3
+      -4.0,
+      -7.1
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 60 matchs": {
-     "n": 122,
-     "reussite_reelle_pct": 77.9,
-     "reussite_annoncee_pct": 81.6,
-     "ecart_pts": -3.7,
+     "n": 147,
+     "reussite_reelle_pct": 76.9,
+     "reussite_annoncee_pct": 79.7,
+     "ecart_pts": -2.8,
      "moities_ecart_pts": [
-      -0.6,
-      -6.8
+      -1.6,
+      -4.0
      ],
      "verdict": "rien à signaler"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 158,
-     "reussite_reelle_pct": 63.3,
-     "reussite_annoncee_pct": 68.0,
-     "ecart_pts": -4.7,
+     "n": 179,
+     "reussite_reelle_pct": 63.7,
+     "reussite_annoncee_pct": 67.1,
+     "ecart_pts": -3.5,
      "moities_ecart_pts": [
-      -3.6,
-      -5.8
+      -4.6,
+      -2.3
      ],
      "verdict": "rien à signaler"
     }
@@ -260,60 +260,60 @@
   },
   "prudent": {
    "ensemble": {
-    "n": 221,
-    "reussite_reelle_pct": 69.7,
-    "reussite_annoncee_pct": 71.3,
-    "ecart_pts": -1.6,
-    "brier": 0.1926,
-    "log_loss": 0.5588,
-    "pente": 0.961
+    "n": 236,
+    "reussite_reelle_pct": 69.1,
+    "reussite_annoncee_pct": 71.4,
+    "ecart_pts": -2.3,
+    "brier": 0.1959,
+    "log_loss": 0.566,
+    "pente": 0.925
    },
    "correction": {
     "n_moities": [
-     110,
-     111
+     118,
+     118
     ],
-    "pente_1re_moitie": 0.992,
-    "pente_2de_moitie": 0.929,
-    "gain_log_loss_2de_moitie": 0.0001,
+    "pente_1re_moitie": 0.979,
+    "pente_2de_moitie": 0.874,
+    "gain_log_loss_2de_moitie": 0.0005,
     "verdict": "pas de correction"
    },
    "tranches": {
     "moins de 58 %": {
-     "n": 36,
-     "reussite_reelle_pct": 47.2,
-     "reussite_annoncee_pct": 54.1,
-     "ecart_pts": -6.9,
-     "brier": 0.2545,
-     "log_loss": 0.7022,
-     "pente": -0.548
+     "n": 37,
+     "reussite_reelle_pct": 48.6,
+     "reussite_annoncee_pct": 54.0,
+     "ecart_pts": -5.4,
+     "brier": 0.2542,
+     "log_loss": 0.7016,
+     "pente": -0.5
     },
     "58–70 %": {
-     "n": 73,
-     "reussite_reelle_pct": 64.4,
-     "reussite_annoncee_pct": 63.3,
-     "ecart_pts": 1.1,
-     "brier": 0.2353,
-     "log_loss": 0.6642,
-     "pente": 0.871
+     "n": 77,
+     "reussite_reelle_pct": 62.3,
+     "reussite_annoncee_pct": 63.4,
+     "ecart_pts": -1.1,
+     "brier": 0.2414,
+     "log_loss": 0.6768,
+     "pente": 0.7
     },
     "70–80 %": {
-     "n": 51,
-     "reussite_reelle_pct": 68.6,
-     "reussite_annoncee_pct": 74.2,
-     "ecart_pts": -5.6,
-     "brier": 0.2178,
-     "log_loss": 0.629,
-     "pente": 0.738
+     "n": 58,
+     "reussite_reelle_pct": 67.2,
+     "reussite_annoncee_pct": 74.3,
+     "ecart_pts": -7.0,
+     "brier": 0.2252,
+     "log_loss": 0.6456,
+     "pente": 0.67
     },
     "80 % et plus": {
-     "n": 61,
-     "reussite_reelle_pct": 90.2,
+     "n": 64,
+     "reussite_reelle_pct": 90.6,
      "reussite_annoncee_pct": 88.5,
-     "ecart_pts": 1.6,
-     "brier": 0.0841,
-     "log_loss": 0.2892,
-     "pente": 1.137
+     "ecart_pts": 2.2,
+     "brier": 0.081,
+     "log_loss": 0.2823,
+     "pente": 1.169
     }
    },
    "par_circuit": {
@@ -355,22 +355,22 @@
     },
     "CH": {
      "mesures": {
-      "n": 207,
-      "reussite_reelle_pct": 69.6,
-      "reussite_annoncee_pct": 70.6,
-      "ecart_pts": -1.0,
-      "brier": 0.1929,
-      "log_loss": 0.5595,
-      "pente": 1.006
+      "n": 222,
+      "reussite_reelle_pct": 68.9,
+      "reussite_annoncee_pct": 70.8,
+      "ecart_pts": -1.9,
+      "brier": 0.1963,
+      "log_loss": 0.5672,
+      "pente": 0.96
      },
      "correction": {
       "n_moities": [
-       103,
-       104
+       111,
+       111
       ],
-      "pente_1re_moitie": 1.063,
-      "pente_2de_moitie": 0.955,
-      "gain_log_loss_2de_moitie": -0.0008,
+      "pente_1re_moitie": 0.997,
+      "pente_2de_moitie": 0.927,
+      "gain_log_loss_2de_moitie": 0.0,
       "verdict": "pas de correction"
      }
     }
@@ -388,24 +388,24 @@
      "verdict": "trop tôt"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 37,
-     "reussite_reelle_pct": 81.1,
+     "n": 39,
+     "reussite_reelle_pct": 79.5,
      "reussite_annoncee_pct": 73.1,
-     "ecart_pts": 7.9,
+     "ecart_pts": 6.3,
      "moities_ecart_pts": [
-      14.0,
-      2.2
+      14.2,
+      -1.1
      ],
      "verdict": "trop tôt"
     },
     "score instable": {
-     "n": 71,
-     "reussite_reelle_pct": 71.8,
-     "reussite_annoncee_pct": 70.3,
-     "ecart_pts": 1.5,
+     "n": 76,
+     "reussite_reelle_pct": 71.1,
+     "reussite_annoncee_pct": 70.4,
+     "ecart_pts": 0.7,
      "moities_ecart_pts": [
-      -3.7,
-      6.5
+      -2.5,
+      3.9
      ],
      "verdict": "rien à signaler"
     },
@@ -421,57 +421,57 @@
      "verdict": "trop tôt"
     },
     "surface : Hard": {
-     "n": 175,
-     "reussite_reelle_pct": 67.4,
-     "reussite_annoncee_pct": 71.6,
-     "ecart_pts": -4.1,
+     "n": 190,
+     "reussite_reelle_pct": 66.8,
+     "reussite_annoncee_pct": 71.7,
+     "ecart_pts": -4.9,
      "moities_ecart_pts": [
-      -2.2,
-      -6.1
+      -3.8,
+      -5.9
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 73,
-     "reussite_reelle_pct": 64.4,
-     "reussite_annoncee_pct": 63.3,
-     "ecart_pts": 1.1,
+     "n": 77,
+     "reussite_reelle_pct": 62.3,
+     "reussite_annoncee_pct": 63.4,
+     "ecart_pts": -1.1,
      "moities_ecart_pts": [
-      4.3,
-      -2.0
+      0.7,
+      -2.9
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 70–80 %": {
-     "n": 51,
-     "reussite_reelle_pct": 68.6,
-     "reussite_annoncee_pct": 74.2,
-     "ecart_pts": -5.6,
+     "n": 58,
+     "reussite_reelle_pct": 67.2,
+     "reussite_annoncee_pct": 74.3,
+     "ecart_pts": -7.0,
      "moities_ecart_pts": [
-      -2.4,
+      -5.3,
       -8.7
      ],
      "verdict": "trop tôt"
     },
     "tranche : 80 % et plus": {
-     "n": 61,
-     "reussite_reelle_pct": 90.2,
+     "n": 64,
+     "reussite_reelle_pct": 90.6,
      "reussite_annoncee_pct": 88.5,
-     "ecart_pts": 1.6,
+     "ecart_pts": 2.2,
      "moities_ecart_pts": [
-      -1.2,
+      0.0,
       4.3
      ],
      "verdict": "rien à signaler"
     },
     "tranche : moins de 58 %": {
-     "n": 36,
-     "reussite_reelle_pct": 47.2,
-     "reussite_annoncee_pct": 54.1,
-     "ecart_pts": -6.9,
+     "n": 37,
+     "reussite_reelle_pct": 48.6,
+     "reussite_annoncee_pct": 54.0,
+     "ecart_pts": -5.4,
      "moities_ecart_pts": [
       7.5,
-      -21.3
+      -17.6
      ],
      "verdict": "trop tôt"
     },
@@ -498,13 +498,13 @@
      "verdict": "trop tôt"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 87,
-     "reussite_reelle_pct": 75.9,
+     "n": 90,
+     "reussite_reelle_pct": 75.6,
      "reussite_annoncee_pct": 74.0,
-     "ecart_pts": 1.8,
+     "ecart_pts": 1.6,
      "moities_ecart_pts": [
-      6.8,
-      -3.1
+      6.6,
+      -3.5
      ],
      "verdict": "rien à signaler"
     }
@@ -512,51 +512,51 @@
   },
   "correct": {
    "ensemble": {
-    "n": 541,
+    "n": 546,
     "reussite_reelle_pct": 66.5,
     "reussite_annoncee_pct": 65.2,
     "ecart_pts": 1.3,
-    "brier": 0.211,
-    "log_loss": 0.6122,
-    "pente": 1.11
+    "brier": 0.2109,
+    "log_loss": 0.6119,
+    "pente": 1.113
    },
    "correction": {
     "n_moities": [
-     270,
-     271
+     273,
+     273
     ],
-    "pente_1re_moitie": 1.072,
-    "pente_2de_moitie": 1.145,
+    "pente_1re_moitie": 1.084,
+    "pente_2de_moitie": 1.142,
     "gain_log_loss_2de_moitie": 0.0009,
     "verdict": "pas de correction"
    },
    "tranches": {
     "moins de 58 %": {
-     "n": 145,
-     "reussite_reelle_pct": 55.9,
+     "n": 147,
+     "reussite_reelle_pct": 55.8,
      "reussite_annoncee_pct": 54.2,
      "ecart_pts": 1.6,
-     "brier": 0.244,
-     "log_loss": 0.6811,
-     "pente": 1.809
+     "brier": 0.2438,
+     "log_loss": 0.6808,
+     "pente": 1.851
     },
     "58–70 %": {
-     "n": 239,
-     "reussite_reelle_pct": 63.6,
-     "reussite_annoncee_pct": 63.8,
-     "ecart_pts": -0.2,
-     "brier": 0.2272,
-     "log_loss": 0.6462,
-     "pente": 1.082
+     "n": 240,
+     "reussite_reelle_pct": 63.3,
+     "reussite_annoncee_pct": 63.7,
+     "ecart_pts": -0.4,
+     "brier": 0.2279,
+     "log_loss": 0.6476,
+     "pente": 1.063
     },
     "70–80 %": {
-     "n": 113,
-     "reussite_reelle_pct": 78.8,
+     "n": 115,
+     "reussite_reelle_pct": 79.1,
      "reussite_annoncee_pct": 74.5,
-     "ecart_pts": 4.2,
-     "brier": 0.1673,
-     "log_loss": 0.5171,
-     "pente": 1.234
+     "ecart_pts": 4.6,
+     "brier": 0.1655,
+     "log_loss": 0.5132,
+     "pente": 1.254
     },
     "80 % et plus": {
      "n": 44,
@@ -607,22 +607,22 @@
     },
     "CH": {
      "mesures": {
-      "n": 361,
-      "reussite_reelle_pct": 66.5,
+      "n": 366,
+      "reussite_reelle_pct": 66.4,
       "reussite_annoncee_pct": 64.6,
-      "ecart_pts": 1.9,
-      "brier": 0.2109,
-      "log_loss": 0.6134,
-      "pente": 1.165
+      "ecart_pts": 1.8,
+      "brier": 0.2107,
+      "log_loss": 0.6129,
+      "pente": 1.17
      },
      "correction": {
       "n_moities": [
-       180,
-       181
+       183,
+       183
       ],
-      "pente_1re_moitie": 1.11,
-      "pente_2de_moitie": 1.218,
-      "gain_log_loss_2de_moitie": 0.0018,
+      "pente_1re_moitie": 1.115,
+      "pente_2de_moitie": 1.223,
+      "gain_log_loss_2de_moitie": 0.0019,
       "verdict": "correction à proposer : écarter le % de 50 %"
      }
     }
@@ -640,24 +640,24 @@
      "verdict": "trop tôt"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 110,
-     "reussite_reelle_pct": 66.4,
-     "reussite_annoncee_pct": 66.0,
-     "ecart_pts": 0.4,
+     "n": 112,
+     "reussite_reelle_pct": 67.0,
+     "reussite_annoncee_pct": 66.1,
+     "ecart_pts": 0.9,
      "moities_ecart_pts": [
-      1.3,
-      -0.5
+      0.1,
+      1.6
      ],
      "verdict": "rien à signaler"
     },
     "score instable": {
-     "n": 182,
-     "reussite_reelle_pct": 71.4,
-     "reussite_annoncee_pct": 66.1,
-     "ecart_pts": 5.3,
+     "n": 183,
+     "reussite_reelle_pct": 71.6,
+     "reussite_annoncee_pct": 66.2,
+     "ecart_pts": 5.4,
      "moities_ecart_pts": [
       3.1,
-      7.5
+      7.7
      ],
      "verdict": "rien à signaler"
     },
@@ -673,35 +673,35 @@
      "verdict": "rien à signaler"
     },
     "surface : Hard": {
-     "n": 421,
-     "reussite_reelle_pct": 67.0,
+     "n": 426,
+     "reussite_reelle_pct": 66.9,
      "reussite_annoncee_pct": 65.5,
-     "ecart_pts": 1.5,
+     "ecart_pts": 1.4,
      "moities_ecart_pts": [
       -0.8,
-      3.7
+      3.6
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 239,
-     "reussite_reelle_pct": 63.6,
-     "reussite_annoncee_pct": 63.8,
-     "ecart_pts": -0.2,
+     "n": 240,
+     "reussite_reelle_pct": 63.3,
+     "reussite_annoncee_pct": 63.7,
+     "ecart_pts": -0.4,
      "moities_ecart_pts": [
-      -1.8,
-      1.5
+      -1.5,
+      0.7
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 70–80 %": {
-     "n": 113,
-     "reussite_reelle_pct": 78.8,
+     "n": 115,
+     "reussite_reelle_pct": 79.1,
      "reussite_annoncee_pct": 74.5,
-     "ecart_pts": 4.2,
+     "ecart_pts": 4.6,
      "moities_ecart_pts": [
-      2.1,
-      6.3
+      2.5,
+      6.7
      ],
      "verdict": "rien à signaler"
     },
@@ -717,13 +717,13 @@
      "verdict": "trop tôt"
     },
     "tranche : moins de 58 %": {
-     "n": 145,
-     "reussite_reelle_pct": 55.9,
+     "n": 147,
+     "reussite_reelle_pct": 55.8,
      "reussite_annoncee_pct": 54.2,
      "ecart_pts": 1.6,
      "moities_ecart_pts": [
-      1.5,
-      1.7
+      0.8,
+      2.3
      ],
      "verdict": "rien à signaler"
     },
@@ -750,12 +750,12 @@
      "verdict": "trop tôt"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 203,
-     "reussite_reelle_pct": 65.0,
+     "n": 204,
+     "reussite_reelle_pct": 64.7,
      "reussite_annoncee_pct": 64.1,
-     "ecart_pts": 1.0,
+     "ecart_pts": 0.7,
      "moities_ecart_pts": [
-      -4.4,
+      -5.0,
       6.3
      ],
      "verdict": "rien à signaler"
@@ -764,22 +764,22 @@
   },
   "solide": {
    "ensemble": {
-    "n": 257,
-    "reussite_reelle_pct": 66.1,
-    "reussite_annoncee_pct": 63.8,
-    "ecart_pts": 2.3,
-    "brier": 0.2062,
-    "log_loss": 0.5971,
-    "pente": 1.364
+    "n": 266,
+    "reussite_reelle_pct": 66.5,
+    "reussite_annoncee_pct": 64.3,
+    "ecart_pts": 2.2,
+    "brier": 0.2044,
+    "log_loss": 0.5922,
+    "pente": 1.34
    },
    "correction": {
     "n_moities": [
-     128,
-     129
+     133,
+     133
     ],
-    "pente_1re_moitie": 1.326,
-    "pente_2de_moitie": 1.391,
-    "gain_log_loss_2de_moitie": 0.0075,
+    "pente_1re_moitie": 1.359,
+    "pente_2de_moitie": 1.328,
+    "gain_log_loss_2de_moitie": 0.0058,
     "verdict": "correction à proposer : écarter le % de 50 %"
    },
    "tranches": {
@@ -793,48 +793,48 @@
      "pente": -0.741
     },
     "58–70 %": {
-     "n": 101,
-     "reussite_reelle_pct": 72.3,
+     "n": 104,
+     "reussite_reelle_pct": 72.1,
      "reussite_annoncee_pct": 63.6,
-     "ecart_pts": 8.7,
-     "brier": 0.2166,
-     "log_loss": 0.6259,
-     "pente": 1.377
+     "ecart_pts": 8.5,
+     "brier": 0.2173,
+     "log_loss": 0.6273,
+     "pente": 1.355
     },
     "70–80 %": {
-     "n": 44,
-     "reussite_reelle_pct": 79.5,
+     "n": 46,
+     "reussite_reelle_pct": 78.3,
      "reussite_annoncee_pct": 74.5,
-     "ecart_pts": 5.1,
-     "brier": 0.1702,
-     "log_loss": 0.5269,
-     "pente": 1.189
+     "ecart_pts": 3.7,
+     "brier": 0.1764,
+     "log_loss": 0.5403,
+     "pente": 1.119
     },
     "80 % et plus": {
-     "n": 21,
+     "n": 25,
      "reussite_reelle_pct": 100.0,
-     "reussite_annoncee_pct": 86.4,
-     "ecart_pts": 13.6,
-     "brier": 0.0205,
-     "log_loss": 0.1474,
-     "pente": 26.488
+     "reussite_annoncee_pct": 87.2,
+     "ecart_pts": 12.8,
+     "brier": 0.0191,
+     "log_loss": 0.1391,
+     "pente": 26.41
     }
    },
    "par_circuit": {
     "ATP": {
      "mesures": {
-      "n": 35,
-      "reussite_reelle_pct": 77.1,
+      "n": 36,
+      "reussite_reelle_pct": 77.8,
       "reussite_annoncee_pct": 65.5,
-      "ecart_pts": 11.7,
-      "brier": 0.1625,
-      "log_loss": 0.5026,
-      "pente": 2.707
+      "ecart_pts": 12.3,
+      "brier": 0.1613,
+      "log_loss": 0.5004,
+      "pente": 2.787
      },
      "correction": {
       "verdict": "trop tôt",
       "n_moities": [
-       17,
+       18,
        18
       ]
      }
@@ -859,19 +859,19 @@
     },
     "CH": {
      "mesures": {
-      "n": 178,
-      "reussite_reelle_pct": 64.0,
-      "reussite_annoncee_pct": 64.6,
-      "ecart_pts": -0.5,
-      "brier": 0.2086,
-      "log_loss": 0.6014,
-      "pente": 1.224
+      "n": 186,
+      "reussite_reelle_pct": 64.5,
+      "reussite_annoncee_pct": 65.3,
+      "ecart_pts": -0.8,
+      "brier": 0.2064,
+      "log_loss": 0.5951,
+      "pente": 1.195
      },
      "correction": {
       "verdict": "trop tôt",
       "n_moities": [
-       89,
-       89
+       93,
+       93
       ]
      }
     }
@@ -889,79 +889,79 @@
      "verdict": "trop tôt"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 32,
-     "reussite_reelle_pct": 68.8,
-     "reussite_annoncee_pct": 62.0,
-     "ecart_pts": 6.8,
+     "n": 34,
+     "reussite_reelle_pct": 70.6,
+     "reussite_annoncee_pct": 62.5,
+     "ecart_pts": 8.1,
      "moities_ecart_pts": [
-      11.5,
-      2.1
+      7.9,
+      8.3
      ],
      "verdict": "trop tôt"
     },
     "score instable": {
-     "n": 69,
-     "reussite_reelle_pct": 71.0,
-     "reussite_annoncee_pct": 65.3,
-     "ecart_pts": 5.7,
+     "n": 73,
+     "reussite_reelle_pct": 72.6,
+     "reussite_annoncee_pct": 65.6,
+     "ecart_pts": 7.0,
      "moities_ecart_pts": [
-      6.6,
-      5.0
+      2.8,
+      11.1
      ],
      "verdict": "rien à signaler"
     },
     "surface : Clay": {
-     "n": 51,
-     "reussite_reelle_pct": 56.9,
+     "n": 52,
+     "reussite_reelle_pct": 57.7,
      "reussite_annoncee_pct": 62.9,
-     "ecart_pts": -6.1,
+     "ecart_pts": -5.2,
      "moities_ecart_pts": [
-      -2.0,
+      -0.5,
       -10.0
      ],
      "verdict": "trop tôt"
     },
     "surface : Hard": {
-     "n": 206,
-     "reussite_reelle_pct": 68.4,
-     "reussite_annoncee_pct": 64.1,
-     "ecart_pts": 4.4,
+     "n": 214,
+     "reussite_reelle_pct": 68.7,
+     "reussite_annoncee_pct": 64.7,
+     "ecart_pts": 4.0,
      "moities_ecart_pts": [
-      4.5,
-      4.3
+      4.6,
+      3.4
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 101,
-     "reussite_reelle_pct": 72.3,
+     "n": 104,
+     "reussite_reelle_pct": 72.1,
      "reussite_annoncee_pct": 63.6,
-     "ecart_pts": 8.7,
+     "ecart_pts": 8.5,
      "moities_ecart_pts": [
-      14.8,
-      2.8
+      11.8,
+      5.3
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 70–80 %": {
-     "n": 44,
-     "reussite_reelle_pct": 79.5,
+     "n": 46,
+     "reussite_reelle_pct": 78.3,
      "reussite_annoncee_pct": 74.5,
-     "ecart_pts": 5.1,
+     "ecart_pts": 3.7,
      "moities_ecart_pts": [
-      6.9,
-      3.2
+      7.9,
+      -0.4
      ],
      "verdict": "trop tôt"
     },
     "tranche : 80 % et plus": {
-     "n": 21,
+     "n": 25,
      "reussite_reelle_pct": 100.0,
-     "reussite_annoncee_pct": 86.4,
-     "ecart_pts": 13.6,
+     "reussite_annoncee_pct": 87.2,
+     "ecart_pts": 12.8,
      "moities_ecart_pts": [
-      14.8,
-      12.5
+      15.2,
+      10.7
      ],
      "verdict": "trop tôt"
     },
@@ -988,13 +988,13 @@
      "verdict": "trop tôt"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 57,
-     "reussite_reelle_pct": 68.4,
-     "reussite_annoncee_pct": 65.7,
-     "ecart_pts": 2.7,
+     "n": 58,
+     "reussite_reelle_pct": 69.0,
+     "reussite_annoncee_pct": 66.0,
+     "ecart_pts": 3.0,
      "moities_ecart_pts": [
-      -2.5,
-      7.7
+      -1.4,
+      7.3
      ],
      "verdict": "trop tôt"
     }
@@ -1005,9 +1005,9 @@
   "CH|correct": {
    "pente": 1.142,
    "retiree": false,
-   "n": 15,
-   "log_loss_avec": 0.674,
-   "log_loss_sans": 0.6655,
+   "n": 20,
+   "log_loss_avec": 0.6504,
+   "log_loss_sans": 0.646,
    "verdict": "trop tôt"
   }
  }
