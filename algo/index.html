@@ -240,6 +240,9 @@ svg.curve{width:100%;height:auto;display:block}
 .compte-boite .btn{width:100%;margin-top:14px}
 .compte-boite .lien{background:none;border:0;color:var(--p1);cursor:pointer;padding:6px 0;font:inherit;font-size:.88rem;text-decoration:underline;display:block}
 .compte-boite .msg{margin:10px 0 0;font-size:.9rem}.compte-boite .msg.ko{color:var(--ko)}.compte-boite .msg.ok{color:var(--ok)}
+.fondateurs{border-top:1px solid var(--line,rgba(255,255,255,.12));margin-top:16px}.fondateurs .actions{display:flex;gap:8px;flex-wrap:wrap}
+.fondateurs .msg{font-size:.9rem}.fondateurs .msg.ok{color:var(--ok)}.fondateurs .msg.ko{color:var(--ko)}
+.fondateurs .lien{background:none;border:0;color:var(--p1);cursor:pointer;padding:6px 0;font:inherit;font-size:.88rem;text-decoration:underline;display:block}
 .compte-boite .ferme{float:right;background:none;border:0;color:var(--dim);font-size:1.3rem;cursor:pointer;line-height:1}
 .verrou-b{display:inline-block;padding:3px 9px;border-radius:999px;border:1px solid var(--ball);font-size:.78rem;font-weight:700;color:var(--ink)}
 .verrou-p{padding:18px;text-align:center}.verrou-p .vs{font-family:var(--disp);font-size:1.15rem;margin:6px 0}
@@ -845,6 +848,11 @@ body.carte #video{display:block;width:1080px;height:1350px}
       <ul id="plus-list"></ul>
       <span class="badge soon" data-t="plus_bientot"></span>
       <p style="margin:12px 0 0"><button type="button" class="btn go" id="plus-compte" data-t="verrou_cta_compte"></button></p>
+      <div class="fondateurs" id="fondateurs" hidden>
+        <h3 style="margin:16px 0 6px" data-t="fd_titre"></h3>
+        <p style="margin:0" data-t="fd_texte"></p>
+        <div id="fd-etat" role="status" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
@@ -1077,6 +1085,11 @@ const T = {
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
   plus_items:['Le pronostic de tous les matchs : % de victoire et note de fiabilité','Sets, scores probables, statistiques prévues et scénarios du match','Le direct de chaque match et la simulation rejouable','À la semaine, au mois, au trimestre ou à l’année'],
   plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
+  fd_titre:'Offre fondateurs',
+  fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Le paiement n'est pas encore ouvert : réserve ta place, on te prévient par e-mail à l'ouverture. Réserver est gratuit et n'engage à rien.",
+  fd_reserver:'Réserver ma place', fd_compte:'Créer un compte pour réserver', fd_cx:'Se connecter',
+  fd_ok:d=>`Ta place est réservée depuis le ${d}. On te prévient par e-mail à l'ouverture.`, fd_annuler:'Annuler ma réservation',
+  fd_annule:'Réservation annulée.', fd_verif:"Confirme d'abord ton adresse e-mail (lien reçu à l'inscription) pour réserver ta place.",
   cp_btn:'Se connecter', cp_btn_moi:'Mon compte', cp_t_cx:'Connexion', cp_t_ins:'Créer un compte', cp_t_oubli:'Mot de passe oublié',
   cp_t_reinit:'Nouveau mot de passe', cp_t_moi:'Mon compte', cp_email:'Adresse e-mail', cp_mdp:'Mot de passe (8 caractères minimum)',
   cp_mdp_cx:'Mot de passe', cp_go_cx:'Se connecter', cp_go_ins:'Créer mon compte', cp_go_oubli:'Recevoir un lien', cp_go_reinit:'Enregistrer',
@@ -1092,8 +1105,9 @@ const T = {
   cp_t_mdp:'Changer de mot de passe', cp_mdp_ancien:'Mot de passe actuel', cp_mdp_nouveau:'Nouveau mot de passe (8 caractères minimum)',
   cp_go_mdp:'Enregistrer', cp_mdp_ok:'Mot de passe changé. Tes autres appareils sont déconnectés.', cp_l_mdp:'Changer de mot de passe',
   cp_l_export:'Télécharger mes données', cp_l_suppr:'Supprimer mon compte', cp_t_suppr:'Supprimer mon compte',
-  cp_suppr_txt:'Ton compte et tout ce qui s’y rattache (e-mail, accès Plus, historique) sont effacés tout de suite et pour de bon.',
+  cp_suppr_txt:'Ton compte et tout ce qui s’y rattache (e-mail, accès Plus, historique) sont effacés tout de suite et pour de bon. Seules tes factures éventuelles sont gardées 10 ans, comme la loi l’impose.',
   cp_go_suppr:'Supprimer définitivement', cp_suppr_ok:'Ton compte a été supprimé.',
+  cp_factures:'Mes factures',
   cp_code:'Tu as un code d’accès Plus ?', cp_go_code:'Activer le code', cp_code_ok:'Code activé : ton accès Plus est ouvert.', verrou_code:'J’ai un code',
   cp_bienvenue:'Adresse confirmée : tu es connecté.', cp_reinit_ok:'Mot de passe enregistré : tu es connecté.',
   cp_moi_plus:d=>`Accès Plus actif${d?` jusqu’au ${dateLong(d)}`:''}.`, cp_moi_libre:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs (paiement bientôt disponible).",
@@ -1399,6 +1413,11 @@ const T = {
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
   plus_items:['The forecast for every match: win % and reliability score','Sets, likely scores, predicted stats and match scenarios','Live coverage of every match and the replayable simulation','Weekly, monthly, quarterly or yearly'],
   plus_bientot:'Payment coming soon · create your account now.',
+  fd_titre:'Founders offer',
+  fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as the subscription stays active. Payment isn't open yet: reserve your spot and we'll email you when it opens. Reserving is free and commits you to nothing.",
+  fd_reserver:'Reserve my spot', fd_compte:'Create an account to reserve', fd_cx:'Log in',
+  fd_ok:d=>`Your spot has been reserved since ${d}. We'll email you when payment opens.`, fd_annuler:'Cancel my reservation',
+  fd_annule:'Reservation cancelled.', fd_verif:'Confirm your email address first (link sent at sign-up) to reserve your spot.',
   cp_btn:'Log in', cp_btn_moi:'My account', cp_t_cx:'Log in', cp_t_ins:'Create an account', cp_t_oubli:'Forgot password',
   cp_t_reinit:'New password', cp_t_moi:'My account', cp_email:'Email address', cp_mdp:'Password (at least 8 characters)',
   cp_mdp_cx:'Password', cp_go_cx:'Log in', cp_go_ins:'Create my account', cp_go_oubli:'Send me a link', cp_go_reinit:'Save',
@@ -1414,8 +1433,9 @@ const T = {
   cp_t_mdp:'Change password', cp_mdp_ancien:'Current password', cp_mdp_nouveau:'New password (at least 8 characters)',
   cp_go_mdp:'Save', cp_mdp_ok:'Password changed. Your other devices have been logged out.', cp_l_mdp:'Change password',
   cp_l_export:'Download my data', cp_l_suppr:'Delete my account', cp_t_suppr:'Delete my account',
-  cp_suppr_txt:'Your account and everything linked to it (email, Plus access, history) are erased immediately and for good.',
+  cp_suppr_txt:'Your account and everything linked to it (email, Plus access, history) are erased immediately and for good. Only any invoices are kept for 10 years, as required by law.',
   cp_go_suppr:'Delete permanently', cp_suppr_ok:'Your account has been deleted.',
+  cp_factures:'My invoices',
   cp_code:'Got a Plus access code?', cp_go_code:'Activate the code', cp_code_ok:'Code activated: your Plus access is open.', verrou_code:'I have a code',
   cp_bienvenue:'Address confirmed: you are logged in.', cp_reinit_ok:'Password saved: you are logged in.',
   cp_moi_plus:d=>`Plus access active${d?` until ${dateLong(d)}`:''}.`, cp_moi_libre:'Free access: the match of the day is on us. Plus access unlocks every match (payment coming soon).',
@@ -3180,6 +3200,7 @@ function rendTextes(){
   document.getElementById('retour-mdj').textContent = t('retour_mdj');
   document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
   if (typeof majBoutonCompte === 'function') majBoutonCompte();
+  if (typeof rendFondateurs === 'function' && !document.getElementById('fondateurs').hidden) rendFondateurs();
   boutonSon();
 }
 // 05/11/2026 — type de match (vitrine.type_de_match) : fiable / standard / fragile
@@ -7305,7 +7326,8 @@ function majLive(){
   document.querySelectorAll('[data-live]').forEach(el=>{
     const uid = el.getAttribute('data-live'), m = parUid[uid];
     const r = LIVE.par_uid[uid] || LIVE.vus[uid];
-    el.innerHTML = m && r && !m.verrou ? texteLive(m, r, !LIVE.par_uid[uid]) : '';
+    el.innerHTML = !m || !r ? '' : !m.verrou ? texteLive(m, r, !LIVE.par_uid[uid])
+      : (!LIVE.par_uid[uid] ? `<span class="lv-top"><span class="lv-fin">${esc(t('live_termine'))}</span></span>${tableauLive(m, r, true, false)}` : '');
   });
   rendStatsLive(); rendMatchLive(); statsFiche(); chargerPoints();
 }
@@ -7329,11 +7351,33 @@ function chargerLive(){
     if (avant !== apres) rendListe(); else majLive();
   }).catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
 }
+// 23/11/2026 (paquet 388, Lucas : « trouver les résultats dès la fin du match ») — /live/termines : score final et
+// vainqueur de chaque match sorti du direct depuis 36 h (vérifiés par le worker). Lu à l'ouverture puis toutes les 30 s :
+// un match fini passe aussitôt dans « Matchs terminés » avec son score, même après un rechargement de la page.
+let terminesEnCours = false;
+function chargerTermines(){
+  const now = Date.now(), A = (D && D.apres_match) || {};
+  const attendu = ((D && D.matchs) || []).some(m => { const d = now - utc(m.debut).getTime(); return d > 0 && d < 36*3600e3 && !(A[m.uid] && A[m.uid].reel); });
+  if (document.hidden || terminesEnCours || !attendu) return;
+  terminesEnCours = true;
+  fetch('/live/termines', {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(o => {
+    if (!o || !Array.isArray(o.termines)) return;
+    const lies = relierLive(o.termines);
+    let nouveaux = 0;
+    for (const [uid, r] of Object.entries(lies)) {
+      if (LIVE.par_uid[uid]) continue;                       // encore dans le direct : le direct fait foi
+      if (!LIVE.vus[uid] || !LIVE.vus[uid].final) nouveaux++;
+      LIVE.vus[uid] = Object.assign({}, r, { final: true });
+    }
+    if (nouveaux) rendListe(); else majLive();
+  }).catch(()=>{}).finally(()=>{ terminesEnCours = false; });
+}
 function demarrerLive(){
   // /live n'existe que derrière le worker « algo » : ailleurs (GitHub Pages) la requête échoue sans rien afficher.
-  chargerLive();
+  chargerLive(); chargerTermines();
   LIVE.minuterie = setInterval(chargerLive, 3000);
-  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) chargerLive(); });
+  setInterval(chargerTermines, 30000);
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) { chargerLive(); chargerTermines(); } });
 }
 // 23/11/2026 (paquet 377) — match réservé à l'accès Plus : l'affiche seulement, aucun pourcentage
 function ligneVerrou(m){
@@ -7367,7 +7411,9 @@ function rendListe(){
   const enCours = tous.filter(m => !estTermine(m));
   const termines = tous.filter(estTermine);
   const visibles = enCours.slice(0,nListe);
-  const visiblesFinis = termines.slice(0,Math.max(0,nListe-visibles.length));
+  // 23/11/2026 (paquet 388) : le groupe « Matchs terminés » s'ouvrait VIDE dès qu'il y avait 30 matchs à venir (il ne
+  // recevait que les places laissées par la liste). Il montre maintenant tous les matchs terminés, les plus récents d'abord.
+  const visiblesFinis = termines.slice().sort((a,b) => utc(b.debut) - utc(a.debut));
   const etaitOuvert = !!document.querySelector('#list .finished-group details[open]');   // replié par défaut ; reste ouvert seulement si le visiteur l'a ouvert
   const total = D.matchs.filter(m=>m.verrou || (m.simulation && m.simulation_disponible !== false)).length;
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
@@ -7389,8 +7435,8 @@ function rendListe(){
     </span></a></li>`; };
   ul.innerHTML = (termines.length && circuit!=='LIVE' ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '') + visibles.map(ligneMatch).join('');
   const more = document.getElementById('liste-more');
-  more.hidden = visibles.length + visiblesFinis.length >= tous.length;
-  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length-visiblesFinis.length));
+  more.hidden = visibles.length >= enCours.length;
+  more.textContent = t('voir_matchs',Math.min(30,enCours.length-visibles.length));
   majLive();
 }
 function courbeSvg(c){
@@ -7712,7 +7758,10 @@ function texteLegal(page, e){
   if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
     <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, pas de mesure d'audience, aucun traceur publicitaire.</p>
     <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
-    <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord.</p>
+    <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord. Si vous réservez une place sur la liste d'attente fondateurs, nous gardons la date de réservation et vous écrivons pour la confirmer, puis à l'ouverture du paiement ; annuler la réservation depuis la section Plus met fin à ces e-mails.</p>
+    <h3>Mesure d'audience</h3><p>Pour savoir combien de personnes ouvrent le site, notre serveur compte les ouvertures de la page, sans cookie ni traceur : une empreinte du jour, calculée à partir de l'adresse IP et du navigateur avec une clé qui change chaque jour, évite de compter deux fois la même visite. Ces empreintes sont effacées le lendemain ; seuls les totaux par jour sont gardés.</p>
+    <h3>Paiements et factures</h3><p>Quand vous payez par virement, nous gardons le montant, la date, la formule et la facture émise. Les factures sont conservées 10 ans, comme l'impose la loi, même si le compte est supprimé. Quelques jours avant la fin d'un accès payé, un e-mail de rappel vous est envoyé.</p>
+    <h3>Notifications internes</h3><p>L'éditeur reçoit une notification privée (Telegram) quand un compte est créé, confirmé, réserve une place fondateur ou utilise un code. L'adresse e-mail y est masquée (deux premiers caractères et domaine).</p>
     <h3>Cookie de connexion</h3><p>Un seul cookie, « gsa_compte », vous garde connecté (90 jours au plus) : il est strictement nécessaire au service que vous demandez et ne sert à rien d'autre ; il est supprimé à la déconnexion.</p>
     <h3>Anti-robots</h3><p>L'inscription et le mot de passe oublié sont protégés par Cloudflare Turnstile, qui vérifie que la demande vient d'une personne à partir de signaux techniques du navigateur, sans cookie publicitaire.</p>
     <h3>Ce qui reste sur votre appareil</h3><p>Vos réglages (langue, thème clair ou sombre, son, qualité de la 3D) sont gardés dans le stockage local de votre navigateur. Ils ne nous sont jamais envoyés ; vous pouvez les effacer en vidant les données du site dans votre navigateur.</p>
@@ -7721,7 +7770,10 @@ function texteLegal(page, e){
     <h3>Vos droits</h3><p>Vous pouvez accéder à vos données, les rectifier, les effacer ou les emporter (« Mon compte » → « Télécharger mes données »), ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
     : `<h2>Privacy</h2><p>An optional account, a single cookie (to keep you logged in), no advertising cookie, no analytics, no advertising tracker.</p>
     <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, and the state of your Plus access (plan, dates, code used). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
-    <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent.</p>
+    <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent. If you reserve a founders spot, we keep the reservation date and email you to confirm it, then when payment opens; cancelling the reservation in the Plus section stops these emails.</p>
+    <h3>Audience measurement</h3><p>To know how many people open the site, our server counts page openings, with no cookie or tracker: a daily fingerprint computed from the IP address and browser with a key that changes every day avoids counting the same visit twice. Fingerprints are erased the next day; only daily totals are kept.</p>
+    <h3>Payments and invoices</h3><p>When you pay by bank transfer, we keep the amount, date, plan and invoice. Invoices are kept for 10 years as required by law, even if the account is deleted. A few days before a paid access ends, a reminder email is sent.</p>
+    <h3>Internal notifications</h3><p>The publisher receives a private notification (Telegram) when an account is created, confirmed, reserves a founders spot or uses a code. The email address is masked (first two characters and domain).</p>
     <h3>Login cookie</h3><p>A single cookie, "gsa_compte", keeps you logged in (90 days at most). It is strictly necessary and removed when you log out.</p>
     <h3>Anti-bot</h3><p>Sign-up and password reset are protected by Cloudflare Turnstile, which checks technical browser signals, with no advertising cookie.</p>
     <h3>Stored on your device</h3><p>Your settings (language, theme, sound, 3D quality) stay in your browser's local storage and are never sent to us.</p>
@@ -7736,8 +7788,9 @@ function texteLegal(page, e){
     <h3>Disponibilité</h3><p>Le site est fourni tel quel ; il peut être interrompu, modifié ou comporter des erreurs, notamment dans les données sportives reçues de tiers.</p>
     <h3>Propriété</h3><p>Les contenus du site ne peuvent pas être reproduits ou revendus sans autorisation. Partager un lien ou une image publiée sur nos comptes est bienvenu.</p>
     <h3>Offre payante</h3><p>Aucune offre payante n'est ouverte aujourd'hui. Avant toute ouverture, des conditions générales de vente seront publiées ici (prix, durée, résiliation, droit de rétractation).</p>
+    <h3>Liste d'attente fondateurs</h3><p>Un compte confirmé peut réserver gratuitement une place sur la liste d'attente fondateurs ; réserver n'engage à rien et s'annule à tout moment. Les places sont attribuées dans l'ordre des réservations : les 100 premières donneront droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif, dans les conditions générales de vente publiées à l'ouverture. Un compte supprimé perd sa place.</p>
     <h3>Droit applicable</h3><p>Ces conditions relèvent du droit français.</p>${maj}`
-    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses (match of the day, public record); the full analysis of every match is reserved for Plus access, linked to an account. These are estimates without any guaranteed outcome; they are not betting advice. Accounts are personal (one person, one account); sharing access, automated scraping or abuse may lead to suspension; you can delete your account at any time. Until payment opens, Plus access is granted by the publisher, notably through single-use access codes valid until their expiry date. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. French law applies.</p>${maj}`;
+    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses (match of the day, public record); the full analysis of every match is reserved for Plus access, linked to an account. These are estimates without any guaranteed outcome; they are not betting advice. Accounts are personal (one person, one account); sharing access, automated scraping or abuse may lead to suspension; you can delete your account at any time. Until payment opens, Plus access is granted by the publisher, notably through single-use access codes valid until their expiry date. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. A confirmed account can reserve a founders spot for free (no commitment, cancel anytime); spots go in reservation order and the first 100 will get Plus access at €9.99 a month for life while the subscription stays active, under the terms of sale published at opening. French law applies.</p>${maj}`;
 }
 function ouvrirLegal(){
   const page = (location.hash || '').slice(1), box = document.getElementById('legal');
@@ -8189,6 +8242,24 @@ function majBoutonCompte(){
   b.textContent = COMPTE ? (COMPTE.abonne ? '★ ' : '') + t('cp_btn_moi') : t('cp_btn');
   b.classList.toggle('plus', !!(COMPTE && COMPTE.abonne));
 }
+// 23/11/2026 (paquet 384, Lucas) — liste d'attente fondateurs, dans la section Plus. Aucun compteur visible.
+function rendFondateurs(msg){
+  const z = document.getElementById('fondateurs'), e = document.getElementById('fd-etat'); if (!z || !e) return;
+  z.hidden = false;
+  const note = msg ? `<p class="msg ok" style="margin:8px 0 0">${esc(msg)}</p>` : '';
+  if (!COMPTE) e.innerHTML = `<div class="actions" style="margin-top:10px"><button type="button" class="btn go" data-compte="inscription">${esc(t('fd_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('fd_cx'))}</button></div>` + note;
+  else if (COMPTE.fondateur) e.innerHTML = `<p class="msg ok" style="margin:10px 0 0">${esc(t('fd_ok', String(COMPTE.fondateur).slice(0,10).split('-').reverse().join('/')))}</p><button type="button" class="lien" data-fd="annuler">${esc(t('fd_annuler'))}</button>`;
+  else if (!COMPTE.verifie) e.innerHTML = `<p class="msg" style="margin:10px 0 0">${esc(t('fd_verif'))}</p>`;
+  else e.innerHTML = `<p style="margin:10px 0 0"><button type="button" class="btn go" data-fd="reserver">${esc(t('fd_reserver'))}</button></p>` + note;
+}
+function fondateurAction(reserver, bouton){
+  if (bouton) bouton.disabled = true;
+  apiCompte('fondateur', { reserver }).then(o => {
+    if (bouton) bouton.disabled = false;
+    if (o.ok) { COMPTE = o.compte || COMPTE; return rendFondateurs(reserver ? '' : t('fd_annule')); }
+    const e = document.getElementById('fd-etat'); if (e) e.insertAdjacentHTML('beforeend', `<p class="msg ko" style="margin:8px 0 0">${esc(erreurCompte(o.erreur))}</p>`);
+  });
+}
 function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
 function ouvrirCompte(vue, msg, ok, jeton){
   const boite = document.getElementById('compte-boite'), fond = document.getElementById('compte-fond');
@@ -8200,6 +8271,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
     h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>
       <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
       <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
+      ${(COMPTE.factures||[]).length ? `<p style="margin:12px 0 4px"><b>${esc(t('cp_factures'))}</b></p>` + COMPTE.factures.map(n => `<a class="lien" target="_blank" rel="noopener" href="/compte/api/facture?n=${encodeURIComponent(n)}">${esc(n)}</a>`).join('') : ''}
       <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>
       <button type="button" class="lien" data-cp="mdp">${esc(t('cp_l_mdp'))}</button>
       <a class="lien" href="/compte/api/export" download>${esc(t('cp_l_export'))}</a>
@@ -8287,6 +8359,7 @@ function chargerInterne(){
 function brancherCompte(){
   const b = document.getElementById('b-compte');
   document.addEventListener('click', ev => {
+    const fd = ev.target.closest('[data-fd]'); if (fd) return fondateurAction(fd.dataset.fd === 'reserver', fd);
     const x = ev.target.closest('[data-cp],[data-compte],#b-compte,#plus-compte'); if (!x) { if (ev.target.id === 'compte-fond') fermerCompte(); return; }
     if (x.id === 'b-compte') return ouvrirCompte(COMPTE ? 'moi' : 'connexion');
     if (x.id === 'plus-compte') return ouvrirCompte(COMPTE ? 'moi' : 'inscription');
@@ -8300,7 +8373,7 @@ function brancherCompte(){
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
-    COMPTE = o.compte || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte();
+    COMPTE = o.compte || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));

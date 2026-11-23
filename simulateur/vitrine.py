@@ -887,8 +887,11 @@ def garder_commences(lignes, ancien_doc, maintenant, racine=None):
     Marqué « commence_garde » : validation_vitrine.py ne lui demande pas le nombre de simulations du passage en cours
     (il a été simulé, et contrôlé, au passage précédent)."""
     vus = {l.get('uid') for l in lignes}
+    # 23/11/2026 (paquet 387) : la version précédente peut être la copie PUBLIQUE du dépôt (paquet 378 : matchs « à
+    # l'affiche » seulement, marqués verrou, sans simulation) quand la version complète n'a pas été rapatriée (chaîne
+    # courte du paquet, panne du coffre). Ces entrées ne sont jamais gardées : elles rendraient le site invalide.
     garde = [dict(l, commence_garde=True) for l in (ancien_doc or {}).get('matchs') or []
-             if l.get('uid') and l['uid'] not in vus and l.get('debut')
+             if l.get('uid') and l['uid'] not in vus and l.get('debut') and not l.get('verrou')
              and maintenant - dt.timedelta(hours=GARDER_COMMENCES_H) < _utc(l['debut']) <= maintenant]
     if garde and racine:
         garde = retirer_annules(garde, racine, maintenant)
