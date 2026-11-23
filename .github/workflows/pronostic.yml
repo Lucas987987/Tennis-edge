@@ -79,6 +79,7 @@ jobs:
             /scripts/cotes_privees.py
             /scripts/etat_chaud.py
             /scripts/merge_json_state.py
+            scripts/discret.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -216,7 +217,7 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: |
-          python simulateur/roi_algo.py . --telegram
+          python scripts/discret.py -- python simulateur/roi_algo.py . --telegram
           # 28/10/2026 : désaccords algo / marché (loupe, jamais une entrée du modèle) — Telegram privé + coffre
           python simulateur/rapport_desaccords.py /tmp/sackmann . --telegram || echo '::warning::rapport des désaccords non fait'
           # 28/10/2026 : le rapport JSON du ROI va au coffre privé (R2) et sort du dépôt public

@@ -24,6 +24,10 @@ jobs:
             /scripts/oddspapi_v5.py
             /scripts/feuilles_match.py
             /scripts/sonde_marches_v2.py
+            scripts/discret.py
+            scripts/r2_io.py
+            simulateur/telegram_envoi.py
+            scripts/vers_coffre.py
 
       - uses: actions/setup-python@v6
         with:
@@ -33,13 +37,18 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           ODDS_RETRIES: '0'
-        run: python scripts/sonde_marches_v2.py
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/sonde_marches_v2.py
 
-      - name: Rapport (artefact)
+      # 393 : au coffre privé (un artefact de dépôt public est public)
+      - name: Garder la sonde (coffre privé)
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonde-marches-v2-${{ github.run_id }}
-          path: sonde_marches_v2.json
-          retention-days: 14
-          if-no-files-found: ignore
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/vers_coffre.py --nom sonde_marches_v2 sonde_marches_v2.json || true

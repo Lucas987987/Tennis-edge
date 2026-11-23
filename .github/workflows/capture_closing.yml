@@ -78,6 +78,9 @@ jobs:
             /*
             !/parts
             /parts/live_*
+            scripts/discret.py
+            scripts/r2_io.py
+            simulateur/telegram_envoi.py
 
       - uses: actions/setup-python@v6
         with:
@@ -134,7 +137,10 @@ jobs:
           # (workflow_dispatch) -- seul 'schedule' déclenche le
           # court-circuit de fraîcheur, jamais les deux autres.
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-        run: python scripts/capture_closing.py
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/discret.py -- python scripts/capture_closing.py
 
       - name: Rétention (allège les fichiers live — historique conservé)
         run: python scripts/purge_data.py || true

@@ -52,7 +52,12 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           RATTRAPAGE_MAX: ${{ github.event.inputs.max }}
-        run: python scripts/rattrapage_derives.py
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/rattrapage_derives.py
       - name: Commit
         run: |
           find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true

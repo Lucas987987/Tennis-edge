@@ -75,7 +75,7 @@ class Completer(unittest.TestCase):
         yml = (RACINE / '.github' / 'workflows' / 'steam_pipeline.yml').read_text(encoding='utf-8')
         i, j = yml.index('python scripts/fetch_set_results.py'), yml.index('python scripts/resultats_feuilles.py')
         self.assertLess(i, j)
-        self.assertLess(j, yml.index('MARKET=match python scripts/paper_journal.py'))
+        self.assertLess(j, yml.index('scripts/paper_journal.py'))      # 393 : lancé par scripts/discret.py
         self.assertIn('set_results.json set_results_feuilles.json', yml)
 
 

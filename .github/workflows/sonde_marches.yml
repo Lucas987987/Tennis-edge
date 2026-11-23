@@ -35,6 +35,7 @@ jobs:
             scripts
             closing_lines.json
             closing_lines
+            simulateur/telegram_envoi.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -55,6 +56,20 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           JOUR: ${{ github.event.inputs.jour }}
           BOOK: ${{ github.event.inputs.book }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ -n "$JOUR" ]; then python scripts/sonde_marches.py "$JOUR" "$BOOK"; else python scripts/sonde_marches.py; fi
-          cat sonde_marches.json | head -c 20000
+          if [ -n "$JOUR" ]; then python scripts/discret.py -- python scripts/sonde_marches.py "$JOUR" "$BOOK"; else python scripts/discret.py -- python scripts/sonde_marches.py; fi
+          # 393 : le fichier n'est plus recopié dans le journal (public) ; il part au coffre privé
+          python3 - <<'PY' || true
+          import os, sys
+          sys.path.insert(0, 'scripts')
+          import r2_io
+          c = r2_io.client(quiet=True)
+          if c and os.path.exists('sonde_marches.json'):
+              c.put('prive/site/Tennis_Edge_Lab/journaux/sonde_marches.json', open('sonde_marches.json', 'rb').read())
+              print('sonde_marches.json : au coffre privé (/lab/journaux/sonde_marches.json)')
+          PY

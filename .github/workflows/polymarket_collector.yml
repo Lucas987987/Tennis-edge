@@ -124,14 +124,25 @@ jobs:
 
       - name: Polymarket — sonde de découverte
         if: inputs.probe
-        run: python scripts/polymarket_collector_scripts.py --probe
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/polymarket_collector_scripts.py --probe
 
       - name: Polymarket — diagnostic
         if: inputs.diag && !inputs.probe
         env:
           PM_DIAG: '1'
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/polymarket_collector_scripts.py --once
+          python scripts/discret.py -- python scripts/polymarket_collector_scripts.py --once
           echo '================ polymarket_diag.json ================'
           python - <<'PY'
           import json
@@ -189,8 +200,10 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ACCESS_KEY_ID || '' }}
           R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_SECRET_ACCESS_KEY || '' }}
           R2_ENDPOINT: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ENDPOINT || '' }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/polymarket_collector_scripts.py \
+          python scripts/discret.py -- python scripts/polymarket_collector_scripts.py \
             --duration-seconds ${PM_DURATION:-900} \
             --refresh-seconds ${PM_REFRESH:-450}
 

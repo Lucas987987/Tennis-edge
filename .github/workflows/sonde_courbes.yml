@@ -32,6 +32,7 @@ jobs:
             scripts
             closing_lines.json
             closing_lines
+            simulateur/telegram_envoi.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -52,4 +53,9 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           JOUR: ${{ github.event.inputs.jour }}
           BOOK: ${{ github.event.inputs.book }}
-        run: python scripts/sonde_courbes.py "$JOUR" "$BOOK"
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/sonde_courbes.py "$JOUR" "$BOOK"

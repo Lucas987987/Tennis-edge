@@ -2116,6 +2116,13 @@
    "paquet": 392,
    "quoi": "JOURNAUX GITHUB : les trois études privées lancées avec les pronostics écrivaient leurs chiffres détaillés dans le journal du run GitHub, qui est public. Dans GitHub, elles n'écrivent plus que le nombre de matchs étudiés ; le détail part seulement sur le Telegram privé.",
    "garde_fou": "Hors de GitHub (sur un poste), le détail s'affiche comme avant. Tests : tests/test_journal_public.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 393,
+   "quoi": "AUDIT DES JOURNAUX GITHUB (paquet 393) : le dépôt est public, donc les journaux de ses runs et leurs artefacts aussi. 107 lancements de scripts d'étude et de collecte (dans 47 workflows) passent désormais par un lanceur discret : le journal ne montre que le nom du script, son code de sortie, le nombre de lignes écrites, les avertissements techniques et, en cas d'échec, la trace Python ; le journal complet part au coffre privé (lisible dans le Lab). Cinq artefacts téléchargeables (sorties d'études, audit des données de bookmakers, sauvegarde) sont remplacés par un rangement au coffre privé, un fichier n'est plus recopié dans le journal, et un rapport d'étude quitte le dépôt.",
+   "garde_fou": "Le code de sortie des scripts est inchangé (un échec reste rouge). Un test vérifie que chaque script listé dans scripts/discret_scripts.txt est toujours lancé par le lanceur. Tests : tests/test_discret.py."
   }
  ]
 }
