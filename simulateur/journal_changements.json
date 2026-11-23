@@ -1937,6 +1937,13 @@
    "prive": true,
    "quoi": "APPRENTISSAGE DU LUNDI PROTÉGÉ (paquet 367) : pronostic.yml (Elo, profils, réglages, candidates — dont les profils hiérarchiques des joueurs peu documentés, en confirmation depuis la semaine 47) n'était relancé par personne si son cron sautait. Le worker le relance si le dernier passage date de plus de 7 jours + 2 h. Diagnostic de la tranche 500–1 500 balles (nos pronostics, 250 matchs, 94 % Challenger) : favori annoncé 66,8 %, gagnant 58,8 % ; l'écart vient surtout de la simulation (−12,5 points) plus que de l'Elo (−4,3) ; il est le plus fort quand le joueur peu documenté est lui-même le favori (61 % annoncé, 42 % gagné, 59 matchs).",
    "garde_fou": "Rien ne change dans les % : la candidate « profils hiérarchiques » suit sa propre règle d'adoption (deux semaines de suite meilleure, sous-groupes peu documentés contrôlés). Interrupteur APPRENTISSAGE_ENABLED=0."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "etude",
+   "paquet": 368,
+   "quoi": "MATCHS MOYENNEMENT DOCUMENTÉS, 500 À 1 500 POINTS (paquet 368) : même méthode que l'étude du 05/11 sur les matchs peu documentés (pente sur le % de l'algo, apprise avant le 29/09, jugée après, documentation comptée au jour du match). Challenger : pente apprise 1,00 sur 376 matchs, jugement sur 237 matchs : favori annoncé 68,7 %, gagnant 67,5 %, gain nul. NON ADOPTÉ. Le tableau du site classait les matchs avec la documentation d'aujourd'hui ; comptée au jour du match, l'écart en direct tombe à −7 points sur 147 matchs (1,8 erreur type). La documentation au moment du pronostic est maintenant enregistrée avec chaque pronostic.",
+   "garde_fou": "Règle écrite avant de regarder la tranche : au moins 100 matchs appris et 100 jugés, −0,001 de log loss et pente < 1 sur les deux périodes. Rien ne change dans les %."
   }
  ]
 }
