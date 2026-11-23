@@ -26,6 +26,11 @@ RÈGLE ÉCRITE LE 23/11/2026 AVANT D'EXÉCUTER L'ÉTUDE :
 documenté » (Challenger 500–1 500, pente 0,775), écrites dans simulateur/favori_moins_documente.json ; seule la PART DE
 L'ELO du % bouge (l'étude porte sur l'Elo) ; retrait par la règle cumulée des signaux (fantomes_circuits.py).
 Les cases « favori le plus documenté » et « tous » sous 500 points recouvrent la correction du 05/11 : non reprises.
+23/11/2026 (paquet 375) — SUIVI EN DIRECT (décision de Lucas), règle écrite avant : une case « favori le moins
+documenté » NON retenue passe en suivi si sa pente est du même côté de 1 sur les deux périodes et qu'elle a au moins
+500 matchs jugés. Sa pente est alors apprise sur les deux périodes réunies (le jugement se fait désormais en direct) ;
+le % affiché ne change pas : le signal est jugé avec / sans sur nos matchs par la règle cumulée de fantomes_circuits.py
+(adopté s'il gagne de plus de 2 erreurs types sur au moins 300 matchs concernés).
 Usage : python simulateur/etude_favori_moins_documente.py /tmp/sackmann .
 Sortie : simulateur/rapport_favori_moins_documente.json
 """
@@ -50,7 +55,38 @@ CONFIG = os.path.join(ICI, 'favori_moins_documente.json')
 BORNES = {lib: (a, z) for a, z, lib in TRANCHES}
 
 
-def config(cases):
+MIN_SUIVI = 500
+NOMS_SUIVI = {'moins de 500': 'favori_moins_doc_sous_500', '1 500 à 3 000': 'favori_moins_doc_1500_3000'}
+
+
+def suivi(cases, pentes_reunies):
+    """{signal: {circuit: {pente, de, a}}} — cases en suivi (voir l'en-tête, paquet 375)."""
+    out = {}
+    for x in cases:
+        if x['cote'] != 'favori_moins_documente' or x.get('retenue') or x['tranche'] not in NOMS_SUIVI:
+            continue
+        if x.get('pente_apprise') is None or not x.get('meme_sens') or x['jugement']['n'] < MIN_SUIVI:
+            continue
+        k = pentes_reunies.get((x['circuit'], x['tranche']))
+        if k is None or (k - 1) * (x['pente_apprise'] - 1) <= 0:
+            continue
+        de, a = BORNES[x['tranche']]
+        out.setdefault(NOMS_SUIVI[x['tranche']], {})[x['circuit']] = {
+            'pente': round(k, 3), 'de': de, 'a': a if a != float('inf') else None, 'tranche': x['tranche'],
+            'pente_2018_2022': x['pente_apprise'], 'pente_2023_2026': x['pente_jugement'],
+            'matchs_archive': x['apprentissage']['n'] + x['jugement']['n']}
+    return out
+
+
+def pentes_reunies(rows):
+    G = collections.defaultdict(list)
+    for jour, c, tr, cote, pf, y in rows:
+        if cote == 'favori_moins_documente':
+            G[(c, tr)].append((pf, y))
+    return {k: EDO.pente(v) for k, v in G.items() if len(v) >= 2 * MIN_SUIVI}
+
+
+def config(cases, suivis=None):
     """{'pentes': {circuit: {pente, de, a}}} — cases retenues « favori le moins documenté » seulement."""
     out = {}
     for x in cases:
@@ -58,7 +94,7 @@ def config(cases):
             de, a = BORNES[x['tranche']]
             out[x['circuit']] = {'pente': x['pente_apprise'], 'de': de, 'a': a if a != float('inf') else None,
                                  'tranche': x['tranche'], 'gain_jugement': x['gain'], 'matchs_juges': x['jugement']['n']}
-    return {'pentes': out, 'source': 'etude_favori_moins_documente.py (paquet 373), mise en service le 23/11/2026 (paquet 374)',
+    return {'pentes': out, 'suivi': suivis or {}, 'source': 'etude_favori_moins_documente.py (paquet 373), mise en service le 23/11/2026 (paquet 374)',
             'regle': "part de l'Elo du % : décalage = poids de l'Elo × (pente − 1) × logit(p Elo), si le favori de l'Elo "
                      "est le moins documenté des deux et que sa documentation est dans la tranche"}
 
@@ -150,7 +186,7 @@ def main(argv):
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     with open(CONFIG, 'w', encoding='utf-8') as f:
-        json.dump(config(cases), f, ensure_ascii=False, indent=1)
+        json.dump(config(cases, suivi(cases, pentes_reunies(rows))), f, ensure_ascii=False, indent=1)
     print(f"Favori moins documenté : {len(rows)} matchs rejoués, {len(cases)} cases, {len(doc['retenues'])} retenue(s)")
     return 0
 

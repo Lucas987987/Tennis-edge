@@ -400,6 +400,7 @@ STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match 
 ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
 SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
 FAVORI_MOINS_DOC = {}  # 23/11/2026 (paquet 374) : {circuit: {pente, de, a}} (simulateur/favori_moins_documente.json)
+FMD_SUIVI = {}         # 23/11/2026 (paquet 375) : {signal: {circuit: {pente, de, a}}} — suivis en direct, % inchangé
 QUALIFS_GC = {}       # 11/11/2026 (paquet 232) : {circuit: pente de l'Elo en qualifications de Grand Chelem} (simulateur/qualifs_grand_chelem.json)
 GRAND_CHELEM = {}     # 11/11/2026 (paquet 231) : {circuit: pente de l'Elo en Grand Chelem, tableau principal} (simulateur/grand_chelem.json)
 FORMAT_MATCH = {}     # 11/11/2026 (paquet 228) : {circuit: {sets gagnants: pente de l'Elo}} (simulateur/format_match.json)
@@ -423,6 +424,14 @@ NAISSANCES = None     # 04/11/2026 : {joueur: date de naissance estimée} (etude
 # moins vu, l'algo était trop prudent (Challenger : pente d'étalonnage 1,84 apprise août–sept, −0,030 de log loss en
 # oct–nov). p' = σ(a · logit p) sur les circuits adoptés (rapport_documentation.json).
 BALLES_CUMULEES = None   # {clé joueur: points de service cumulés jusqu'à aujourd'hui}
+ALIAS_BALLES = {}        # 23/11/2026 (paquet 375) : alias du classement, pour compter un joueur et non une écriture
+
+
+def balles_de(nom):
+    """Points de service cumulés du joueur (toutes ses écritures réunies), 0 si inconnu."""
+    import elo as E_
+    k = E_.cle(nom)
+    return (BALLES_CUMULEES or {}).get(ALIAS_BALLES.get(k, k), 0)
 PENTES_DOCUMENTATION = {}  # {circuit: a}
 DATES_MATCHS = None   # 04/11/2026 : {joueur: jours de ses matchs} (etude_retour_absence.dates_matchs)
 # 04/11/2026 — ADOPTION DIRECTE (décision de Lucas, etude_signaux_combines.py) : là où les quatre signaux appris
@@ -1099,13 +1108,35 @@ def charger_qualifs_gc(racine):
         return {}
 
 
-def charger_favori_moins_doc(racine):
+def charger_favori_moins_doc(racine, cle='pentes'):
+    """cle='pentes' : {circuit: v} en service ; cle='suivi' : {signal: {circuit: v}} suivis en direct."""
     try:
         with open(os.path.join(racine, 'simulateur', 'favori_moins_documente.json'), encoding='utf-8') as f:
             doc = json.load(f)
+        if cle == 'suivi':
+            return {sg: {c: v for c, v in (d or {}).items() if v and v.get('pente')}
+                    for sg, d in (doc.get('suivi') or {}).items()}
         return {c: v for c, v in (doc.get('pentes') or {}).items() if v and v.get('pente')}
     except (OSError, ValueError, TypeError, AttributeError):
         return {}
+
+
+def controles_fmd_suivi(p_home, p_elo, c, h, a):
+    """23/11/2026 (paquet 375) — mêmes calculs que controle_favori_moins_doc pour les cases en SUIVI (Challenger sous
+    500 et 1 500–3 000 points) : {signal: contrôle} ; appliqué seulement si fantomes_circuits.py l'adopte."""
+    out = {}
+    for sg, d in FMD_SUIVI.items():
+        f = _favori_moins_doc(d.get(c), p_home, p_elo, c, h, a)
+        if f:
+            out[sg] = f
+    return out
+
+
+def _avec_fmd_suivi(ct, ctl, adoptes):
+    for sg, f in (ctl or {}).items():
+        if sg not in adoptes:
+            ct = _avec_cle(ct, sg, f)
+    return ct
 
 
 def controle_favori_moins_doc(p_home, p_elo, c, h, a):
@@ -1113,11 +1144,14 @@ def controle_favori_moins_doc(p_home, p_elo, c, h, a):
     favori de l'Elo est le MOINS documenté des deux, il gagne moins que l'annoncé (2023 → juin 2026 : 62,3 % annoncés,
     56,9 % gagnés sur 1 253 matchs ; pente 0,775 apprise sur 2018–2022, gain 0,0019). Seule la PART DE L'ELO du % est
     ramenée vers 50 %, comme pour le format et le Grand Chelem. None hors de cette case."""
-    v = FAVORI_MOINS_DOC.get(c)
+    return _favori_moins_doc(FAVORI_MOINS_DOC.get(c), p_home, p_elo, c, h, a)
+
+
+def _favori_moins_doc(v, p_home, p_elo, c, h, a):
     if not v or p_home is None or p_elo is None or BALLES_CUMULEES is None or not h or not a:
         return None
     import elo as E_
-    bh, ba = BALLES_CUMULEES.get(E_.cle(h), 0), BALLES_CUMULEES.get(E_.cle(a), 0)
+    bh, ba = balles_de(h), balles_de(a)
     b_fav, b_aut = (bh, ba) if p_elo >= .5 else (ba, bh)
     if not b_fav < b_aut or b_fav < (v.get('de') or 0) or (v.get('a') is not None and b_fav >= v['a']):
         return None
@@ -1147,7 +1181,8 @@ def controle_qualifs_gc(p_home, p_elo, c, tournoi, tour):
 
 
 def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
-                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None, fmd_ctl=None):
+                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None, fmd_ctl=None,
+                     fmd_suivi=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -1163,6 +1198,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'grand_chelem': (gc_ctl or {}).get('decalage'),
             'qualifs_grand_chelem': (qgc_ctl or {}).get('decalage'),
             'favori_moins_documente': (fmd_ctl or {}).get('decalage')}
+    for sg, f in (fmd_suivi or {}).items():
+        cand[sg] = (f or {}).get('decalage')
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -1180,7 +1217,7 @@ def controle_documentation(p_home, c, h, a):
     if p_home is None or not k or BALLES_CUMULEES is None:
         return None
     import elo as E_
-    n = min(BALLES_CUMULEES.get(E_.cle(h), 0), BALLES_CUMULEES.get(E_.cle(a), 0))
+    n = min(balles_de(h), balles_de(a))
     import etude_documentation as EDO
     if n >= EDO.SEUIL_BALLES:
         return None
@@ -1658,6 +1695,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     global FORMAT_MATCH, GRAND_CHELEM, QUALIFS_GC
     global FAVORI_MOINS_DOC
     FAVORI_MOINS_DOC = charger_favori_moins_doc(racine)     # 23/11/2026 (paquet 374) : favori le moins documenté (Challenger)
+    global FMD_SUIVI
+    FMD_SUIVI = charger_favori_moins_doc(racine, 'suivi')   # 23/11/2026 (paquet 375) : mêmes cases, suivies en direct
     QUALIFS_GC = charger_qualifs_gc(racine)                 # 11/11/2026 (paquet 232) : pente de l'Elo en qualifications de Grand Chelem
     GRAND_CHELEM = charger_grand_chelem(racine)             # 11/11/2026 (paquet 231) : pente de l'Elo en Grand Chelem
     FORMAT_MATCH = charger_format_match(racine)             # 11/11/2026 (paquet 228) : pente de l'Elo selon le format
@@ -1704,13 +1743,15 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
         print(f"::warning::résidus favori / outsider non chargés : {type(e_).__name__}: {e_}")
         RESIDUS_ROLE = None
     try:                            # 05/11/2026 : points de service cumulés (matchs peu documentés)
-        global BALLES_CUMULEES, PENTES_DOCUMENTATION
+        global BALLES_CUMULEES, PENTES_DOCUMENTATION, ALIAS_BALLES
         import etude_documentation as EDO
         with open(os.path.join(racine, 'simulateur', 'rapport_documentation.json'), encoding='utf-8') as f_:
             PENTES_DOCUMENTATION = {c_: v['pente'] for c_, v in (json.load(f_).get('circuits') or {}).items()
                                     if v.get('adopte') and v.get('pente', 0) > 1}
-        BALLES_CUMULEES = dict(EDO.Compteur(EDO.evenements(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine))
-                               .au((dt.date.today() + dt.timedelta(days=1)).isoformat()))
+        ALIAS_BALLES = dict(etat.get('alias') or {})
+        BALLES_CUMULEES = dict(EDO.fusionner(EDO.Compteur(EDO.evenements(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'),
+                                                                         racine))
+                                             .au((dt.date.today() + dt.timedelta(days=1)).isoformat()), ALIAS_BALLES))
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::documentation des joueurs (points cumulés) non chargée : {type(e_).__name__}: {e_}")
         BALLES_CUMULEES = None
@@ -1802,6 +1843,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
                            [n for x in venir for n in (x['home'], x['away'])]))
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
+    for k_, v_ in alias.items():                     # 23/11/2026 (paquet 375) : noms nouveaux reliés, comptés au joueur
+        ALIAS_BALLES.setdefault(k_, v_)
     noms = [v.get('nom', k) for k, v in etat['joueurs'].items()] + [n for x in venir for n in (x['home'], x['away'])]
     ambigus = {c['cle'] for c in E.collisions_identite(noms)}
     out, rejets = [], []
@@ -1926,7 +1969,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                                        controle_format(p_base, stats['p_home'], c, sg_fmt),
                                        controle_grand_chelem(p_base, stats['p_home'], c, x['tournoi'], tour_),
                                        controle_qualifs_gc(p_base, stats['p_home'], c, x['tournoi'], tour_),
-                                       controle_favori_moins_doc(p_base, stats['p_home'], c, h, a))
+                                       controle_favori_moins_doc(p_base, stats['p_home'], c, h, a),
+                                       fmd_suivi=controles_fmd_suivi(p_base, stats['p_home'], c, h, a))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 so_ = signaux_outsiders(c, p_base, h, a, x['tournoi'], x['debut'])      # paquet 274
                 if so_:
@@ -1998,7 +2042,7 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                     'entree': entree_du_match(h, a, x['debut']),
                     'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
                     'en_salle': salle_du_match(h, a, x['debut']),   # 12/11/2026 : pour les statistiques annoncées
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_fmd_suivi(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -2030,7 +2074,9 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                         'qualifs_grand_chelem', None if 'qualifs_grand_chelem' in adoptes_ici else
                         controle_qualifs_gc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_)),
                         'favori_moins_documente', None if 'favori_moins_documente' in adoptes_ici else
-                        controle_favori_moins_doc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, h, a))})
+                        controle_favori_moins_doc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, h, a)),
+                        controles_fmd_suivi((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, h, a),
+                        adoptes_ici)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
@@ -2152,7 +2198,7 @@ def balles_min(m):
         return None
     try:
         import elo as E_
-        return int(min(BALLES_CUMULEES.get(E_.cle(m['home']), 0), BALLES_CUMULEES.get(E_.cle(m['away']), 0)))
+        return int(min(balles_de(m['home']), balles_de(m['away'])))
     except Exception:  # noqa: BLE001
         return None
 

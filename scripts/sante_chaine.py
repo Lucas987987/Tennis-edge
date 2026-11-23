@@ -67,15 +67,32 @@ def verifier(racine, maintenant, etat):
     return msgs
 
 
+def _morceaux_tg(t, n=4000):
+    """23/11/2026 (paquet 375) : Telegram refuse au-delà de 4 096 caractères ; coupe entre deux lignes."""
+    out, cur = [], None
+    for ligne in str(t or '').split('\n'):
+        while len(ligne) > n:
+            if cur is not None:
+                out.append(cur)
+                cur = None
+            out.append(ligne[:n])
+            ligne = ligne[n:]
+        cur = ligne if cur is None else (cur + '\n' + ligne if len(cur) + 1 + len(ligne) <= n else (out.append(cur) or ligne))
+    if cur is not None and cur.strip():
+        out.append(cur)
+    return out or ['']
+
+
 def envoyer(texte):
     token, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
     if not token or not chat or os.environ.get('DRY_RUN') == '1':
         print(f"[non envoyé] {texte}")
         return False
     try:
-        req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
-                                     data=urllib.parse.urlencode({'chat_id': chat, 'text': texte}).encode())
-        urllib.request.urlopen(req, timeout=15)
+        for morceau in _morceaux_tg(texte):
+            req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
+                                         data=urllib.parse.urlencode({'chat_id': chat, 'text': morceau}).encode())
+            urllib.request.urlopen(req, timeout=15)
         return True
     except Exception as ex:  # noqa: BLE001 — une alerte ratée ne casse pas le workflow des courbes
         print(f"⚠️ Telegram : {ex}")

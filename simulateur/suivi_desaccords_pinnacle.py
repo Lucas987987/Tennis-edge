@@ -163,12 +163,9 @@ def main(argv):
         import urllib.request
         tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
         if tok and chat:
-            try:
-                data = urllib.parse.urlencode({'chat_id': chat, 'text': message(doc), 'parse_mode': 'HTML'}).encode()
-                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+            import telegram_envoi as TE    # 23/11/2026 (paquet 375) : coupé sous 4 096 caractères, jamais bloquant
+            if TE.envoyer(message(doc), html=True, apercu=True, tok=tok, chat=chat):
                 print('Désaccords algo / Pinnacle : envoyés sur le Telegram privé.')
-            except Exception as e:  # noqa: BLE001
-                print(f'::warning::Telegram impossible ({type(e).__name__})')
     return 0
 
 
