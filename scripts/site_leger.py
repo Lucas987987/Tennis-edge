@@ -22,7 +22,7 @@ import sys
 INUTILES_MATCH = ('distribution_scores', 'distribution_reste', 'feuille_prevue_brute', 'feuille_fourchette_brute',
                   'horodatage', 'scores_simules', 'scores_source', 'salle_appliquee', 'commence_garde', 'salle_brut')
 INUTILES_HAUT = ('qualite_horodatages', 'styles_descriptifs_source', 'bilan_lignes')
-PLUS = ('bilan', 'journal_changements', 'validation_fiabilite')
+PLUS = ('bilan', 'bilan_30j', 'journal_changements', 'validation_fiabilite')
 # 23/11/2026 (paquet 380, Lucas) : sections internes (journal des changements, suivi de la fiabilité, données de service,
 # calibration) — jamais dans les fichiers des visiteurs ni des abonnés ; site_admin.json, servi au seul administrateur
 INTERNES = ('journal_changements', 'validation_fiabilite', 'desaccords', 'qualite_donnees', 'rejoue')
@@ -33,8 +33,10 @@ AFFICHE = ('uid', 'debut', 'debut_utc', 'tournoi', 'circuit', 'surface', 'meille
 def libre(site):
     """Version sans accès Plus : le match du jour complet, les autres matchs à l'affiche seulement (« verrou »)."""
     offert = ((site.get('match_du_jour') or {}).get('uid'))
+    # 389 : l'aperçu Plus (un match terminé, choisi par une règle fixe dans vitrine.choisir_apercu) reste complet
+    apercu = ((site.get('apercu_plus') or {}).get('uid'))
     out = dict(site)
-    out['matchs'] = [m if m.get('uid') == offert else dict({k: m[k] for k in AFFICHE if k in m}, verrou=True)
+    out['matchs'] = [m if m.get('uid') in (offert, apercu) and m.get('uid') else dict({k: m[k] for k in AFFICHE if k in m}, verrou=True)
                      for m in site.get('matchs') or []]
     out['acces'] = 'libre'
     return out
@@ -45,8 +47,9 @@ def decouper(doc):
     site['matchs'] = [{k: v for k, v in m.items() if k not in INUTILES_MATCH} for m in doc.get('matchs') or []]
     site['_plus'] = 'site_plus.json'
     plus = {k: doc[k] for k in PLUS if k in doc and k not in INTERNES}
-    if isinstance(plus.get('bilan'), dict) and 'calibration' in plus['bilan']:
-        plus['bilan'] = {k: v for k, v in plus['bilan'].items() if k != 'calibration'}
+    for kb in ('bilan', 'bilan_30j'):
+        if isinstance(plus.get(kb), dict) and 'calibration' in plus[kb]:
+            plus[kb] = {k: v for k, v in plus[kb].items() if k != 'calibration'}
     return site, plus
 
 

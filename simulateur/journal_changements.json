@@ -2088,6 +2088,13 @@
    "paquet": 388,
    "quoi": "MATCHS TERMINÉS (paquet 388) : 1) le groupe « Matchs terminés » s'ouvrait vide dès que 30 matchs étaient à venir ; il montre maintenant tous les matchs terminés, les plus récents d'abord. 2) Résultat dès la fin du match : quand un match sort du direct, le serveur vérifie une fois s'il est fini et garde 36 h son score final et son vainqueur ; la page les lit à l'ouverture puis toutes les 30 secondes, et le match passe aussitôt dans « Matchs terminés » avec son score, même après un rechargement. Un match réservé Plus montre aussi son score final (sans aucun %).",
    "garde_fou": "Une seule requête TennisApi par match terminé (6 au plus par rafraîchissement du direct, 3 essais au plus) ; la lecture des terminés n'interroge jamais TennisApi. Le bilan après match (prévu contre réel) reste celui de la chaîne. Tests : workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 389,
+   "quoi": "APERÇU PLUS ET BILAN SUR 30 JOURS (paquet 389) : 1) un visiteur sans accès Plus voit en entier un match terminé (pronostic, scénarios, direct, bilan), signalé « Aperçu Plus » dans la liste et ouvert depuis la section Plus. Règle fixe, qui ne regarde jamais le résultat : le match le plus relevé (somme des Elo) commencé il y a 3 à 24 h, hors match du jour, ATP et WTA d'abord. 2) Le bilan public a deux périodes : depuis le 21 octobre, ou les 30 derniers jours (le modèle d'aujourd'hui).",
+   "garde_fou": "L'aperçu est un match déjà commencé : aucun pronostic à venir n'est donné. Choix sans le résultat. Tests : tests/test_apercu_plus.py."
   }
  ]
 }
