@@ -1929,6 +1929,14 @@
    "prive": true,
    "quoi": "TEST INSTABLE RENDU FIXE (paquet 366) : tests/test_direct_3d_webgl.py::test_gestes_et_realisation tirait ses échanges au hasard ; environ 1 run sur 25, un échange ne finissait pas en 40 s simulées et le paquet 365 est passé au rouge sans rien de cassé (le moteur 3D est identique). Tirages fixés et 80 s de marge.",
    "garde_fou": "Le test vérifie toujours la même chose (gros plan sur le vainqueur, gestes, ralenti court). 10 runs sur 10 verts."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 367,
+   "prive": true,
+   "quoi": "APPRENTISSAGE DU LUNDI PROTÉGÉ (paquet 367) : pronostic.yml (Elo, profils, réglages, candidates — dont les profils hiérarchiques des joueurs peu documentés, en confirmation depuis la semaine 47) n'était relancé par personne si son cron sautait. Le worker le relance si le dernier passage date de plus de 7 jours + 2 h. Diagnostic de la tranche 500–1 500 balles (nos pronostics, 250 matchs, 94 % Challenger) : favori annoncé 66,8 %, gagnant 58,8 % ; l'écart vient surtout de la simulation (−12,5 points) plus que de l'Elo (−4,3) ; il est le plus fort quand le joueur peu documenté est lui-même le favori (61 % annoncé, 42 % gagné, 59 matchs).",
+   "garde_fou": "Rien ne change dans les % : la candidate « profils hiérarchiques » suit sa propre règle d'adoption (deux semaines de suite meilleure, sous-groupes peu documentés contrôlés). Interrupteur APPRENTISSAGE_ENABLED=0."
   }
  ]
 }
