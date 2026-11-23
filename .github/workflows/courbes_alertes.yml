@@ -74,6 +74,9 @@ jobs:
             !/parts
             /parts/live_*
             /parts/hist_*
+            scripts/discret.py
+            scripts/r2_io.py
+            simulateur/telegram_envoi.py
 
       - uses: actions/setup-python@v6
         with:
@@ -208,7 +211,7 @@ jobs:
           # Les fichiers plats ne sont plus commités : on les reconstruit depuis
           # les partitions append-only (parts/). Reconstruction identique au point près.
           python scripts/curves_parts.py rebuild
-          python scripts/build_live_curves.py
+          python scripts/discret.py -- python scripts/build_live_curves.py
 
           # ══ ORDRE REVU LE 05/09/2026 : CE QUI ALERTE D'ABORD ══════════
           # Tout ce qui suit coûte le même temps total, mais l'ORDRE décide
@@ -227,9 +230,9 @@ jobs:
           PALIERS="3,5,8,12" python scripts/canal_public.py || true
 
           # TRACK_CURVES = historique riche pour calibrer les seuils par book (sinon "indicatif")
-          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/steam_alert.py || true
-          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
-          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
+          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/discret.py -- python scripts/steam_alert.py || true
+          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/discret.py -- python scripts/steam_alert.py || true
+          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/discret.py -- python scripts/steam_alert.py || true
 
           # Signal PRIVÉ de l'hypothèse gelée n°13 (bande de cote 2,00-3,00).
           # Canal PRIVÉ uniquement : l'hypothèse n'est pas validée (ROI
@@ -278,13 +281,13 @@ jobs:
           # Tennis_Edge_Lab/registry/gel_h19.json, empreinte vérifiée). Évaluée à
           # l'instant de décision de chaque horizon (24 h, 6 h, 1 h, 10 min).
           # Canal PRIVÉ. Le verdict officiel reste celui du Lab (courbes complètes).
-          python scripts/h19_signal.py || true
+          python scripts/discret.py -- python scripts/h19_signal.py || true
 
           # H20 — outsider WTA soutenu par Pinnacle (cote 2-3,19, probabilité
           # +3,15 à +20 pts depuis l'ouverture), gelée le 21/10 (règle lue dans
           # Tennis_Edge_Lab/registry/gel_h20.json, empreinte vérifiée). Canal
           # PRIVÉ. Verdict officiel : Tennis_Edge_Lab/h20.py (CLV, cible 100).
-          python scripts/h20_signal.py || true
+          python scripts/discret.py -- python scripts/h20_signal.py || true
 
           # H14 — amplitude + timing (mouvement Pinnacle > 5 % à la détection,
           # 8-24 h avant le match), gelée le 02/10. CANAL CRÉÉ LE 16/10/2026 :
@@ -311,9 +314,9 @@ jobs:
           # n'existe pas encore, et le lendemain le match est passé (= journal vide).
           # Dédup par id (uid|book|palier) -> pas de doublon d'un cycle à l'autre.
           # 0 requête API (fichiers locaux). Le dénouement reste au pipeline nocturne.
-          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
-          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
-          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
+          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/discret.py -- python scripts/paper_journal.py || true
+          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/discret.py -- python scripts/paper_journal.py || true
+          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/discret.py -- python scripts/paper_journal.py || true
           # JOURNAL ALIGNÉ SUR LE CANAL.
           # paper_journal.py ci-dessus enregistre selon les seuils ADAPTATIFS
           # par book de steam_alert. canal_public, lui, publie sur des paliers
@@ -327,13 +330,19 @@ jobs:
           # Les DEUX tournent — les seuils adaptatifs restent une stratégie
           # légitime, simplement différente. Deux fichiers, aucune confusion.
           python scripts/results_bridge.py || true
-          python scripts/paper_journal_canal.py || true
+          python scripts/discret.py -- python scripts/paper_journal_canal.py || true
 
       # 23/10/2026 : la ligne « Cote Pinnacle » du Lab suit les cotes capturées (les pronostics complets ne
       # sont recalculés que toutes les 2 h). 0 requête d'API, fichier écrit seulement si une cote a bougé.
       - name: Cote Pinnacle du Lab (pronostics_marche.json)
         if: always()
-        run: python simulateur/marche_du_lab.py . || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python simulateur/marche_du_lab.py . || true
       # 23/10/2026 : alerte (canal privé) si pronostics, feuilles ou verdicts ne sont plus mis à jour.
       - name: Santé de la chaîne (pronostics, feuilles, verdicts)
         if: always()

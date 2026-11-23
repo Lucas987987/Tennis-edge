@@ -64,11 +64,8 @@ jobs:
             telecharger) python scripts/sauvegarde_depot.py telecharger "$EMPLACEMENT" "$RUNNER_TEMP/sauvegarde-$EMPLACEMENT.tar.gz" ;;
           esac
 
-      - name: Archive téléchargée (artefact)
+      # 393 : plus d'artefact (il serait public, dépôt public) : télécharger la sauvegarde depuis Cloudflare → R2 →
+      # sauvegardes/depot/ (fichier .tar.gz).
+      - name: Télécharger (désactivé)
         if: github.event.inputs.action == 'telecharger'
-        uses: actions/upload-artifact@v4
-        with:
-          name: sauvegarde-${{ github.event.inputs.emplacement }}
-          path: ${{ runner.temp }}/sauvegarde-*.tar.gz
-          retention-days: 7
-          compression-level: 0
+        run: echo '::warning::Artefact désactivé (il serait public). Télécharger la sauvegarde depuis le tableau de bord Cloudflare, R2, sauvegardes/depot/.'
