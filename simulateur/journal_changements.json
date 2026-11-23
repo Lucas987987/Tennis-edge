@@ -1905,6 +1905,14 @@
    "prive": true,
    "quoi": "Vidéo du jour, carte bilan, résumé de la veille et carte de la semaine : relancés par le worker tennis-edge-closing si leur cron saute (dernier passage de plus de 26 h, 7 jours + 2 h pour la semaine). La vidéo du jour sort en 4 jobs (FR/EN × longue/courte).",
    "garde_fou": "Interrupteur CONTENUS_X_ENABLED=0 ; un jour normal le cron passe le premier et le worker ne fait rien."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 364,
+   "prive": true,
+   "quoi": "CORRECTIF fetch_book_curves (paquet 364) : le run du 23/11 a planté (TypeError int > None) parce que le run précédent n'avait reçu aucune réponse de quota et avait écrit remaining = None. Sans mesure, la réserve retombe sur le plancher ; et un run sans réponse de quota garde la dernière mesure connue au lieu d'écrire None.",
+   "garde_fou": "Même réserve qu'avant quand le quota est connu. Test ajouté dans tests/test_fetch_book_curves_budget.py."
   }
  ]
 }
