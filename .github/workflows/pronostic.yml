@@ -17,6 +17,9 @@ on:
   # 22/10/2026 — APPRENTISSAGE CONTINU : chaque lundi, tout est ré-appris sur les données de la semaine
   # (Elo, profils, réglage de la simulation, facteurs sur les 6 dernières semaines, mélange simulation + Elo
   # sur nos propres matchs joués), toujours avec les règles d'adoption fixées d'avance.
+  # 23/11/2026 (paquet 367) : relancé par le worker Cloudflare si le cron du lundi saute (dernier passage > 7 j + 2 h)
+  repository_dispatch:
+    types: [pronostic_hebdo]
   schedule:
     - cron: '37 2 * * 1'
 
