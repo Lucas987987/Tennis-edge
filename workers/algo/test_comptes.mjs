@@ -6,11 +6,14 @@ import { hacher, normaliser, abonne } from './comptes.js';
 
 const CLE = 'k'.repeat(40);
 function r2() {
-  const m = new Map();
+  const m = new Map(), v = new Map();
   return {
     m,
-    get: async (k) => (m.has(k) ? { body: m.get(k), size: m.get(k).length, text: async () => m.get(k) } : null),
-    put: async (k, v) => { m.set(k, String(v)); },
+    get: async (k) => (m.has(k) ? { body: m.get(k), size: m.get(k).length, etag: 'e' + (v.get(k) || 0), text: async () => m.get(k) } : null),
+    put: async (k, x, o = {}) => {
+      if (o.onlyIf && o.onlyIf.etagMatches && o.onlyIf.etagMatches !== 'e' + (v.get(k) || 0)) return null;
+      m.set(k, String(x)); v.set(k, (v.get(k) || 0) + 1); return { key: k };
+    },
     list: async ({ prefix }) => ({ objects: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })), truncated: false }),
   };
 }
@@ -153,4 +156,46 @@ test('380 : sections internes réservées à l’administrateur ; un abonné re�
   // la clé privée (Lab) suffit aussi
   assert.equal((await worker.fetch(get('/site_admin.json', { 'X-Cle': CLE }, DEV), env)).status, 200);
   assert.equal((await (await worker.fetch(get('/compte/api/moi', { 'X-Cle': CLE }, DEV), env)).json()).admin, true);
+});
+
+
+test('381 : code d’accès à usage unique, durée limitée, réservé à un compte connecté', async () => {
+  const { env, mails, C } = monde();
+  const r = await (await worker.fetch(post('/compte/admin/api/codes', { formule: 'offert', jours: 10, validite: 5, nombre: 2, note: 'test' },
+    { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(r.ok, true);
+  assert.equal(r.codes.length, 2);
+  assert.match(r.codes[0], /^GSA-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/);
+  // au coffre : l'empreinte, jamais le code en clair
+  assert.ok(![...C.m.values()].some((x) => x.includes(r.codes[0])));
+  // sans connexion : refusé
+  assert.equal((await worker.fetch(post('/compte/api/code', { code: r.codes[0] }), env)).status, 401);
+  await worker.fetch(post('/compte/api/inscription', { email: 'f@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  // saisie souple (minuscules, sans tirets)
+  let o = await (await worker.fetch(post('/compte/api/code', { code: r.codes[0].toLowerCase().replace(/-/g, ' ') }, { Cookie: c }), env)).json();
+  assert.equal(o.ok, true);
+  assert.equal(o.compte.abonne, true);
+  const fin = Date.parse(o.compte.jusqu_au) - Date.now();
+  assert.ok(fin > 9.9 * 86400e3 && fin < 10.1 * 86400e3);
+  assert.equal(await (await worker.fetch(get('/site.json', { Cookie: c }), env)).text(), '{"plein":true}');
+  // une seule utilisation
+  o = await (await worker.fetch(post('/compte/api/code', { code: r.codes[0] }, { Cookie: c }), env)).json();
+  assert.equal(o.erreur, 'code_utilise');
+  // code expiré
+  for (const [k, x] of C.m) if (k.startsWith('comptes/codes/') && !JSON.parse(x).utilise_par)
+    C.m.set(k, JSON.stringify({ ...JSON.parse(x), expire: '2000-01-01T00:00:00Z' }));
+  o = await (await worker.fetch(post('/compte/api/code', { code: r.codes[1] }, { Cookie: c }), env)).json();
+  assert.equal(o.erreur, 'code_expire');
+  // liste de l'administration : indice, état, jamais le code entier
+  const l = await (await worker.fetch(get('/compte/admin/api/codes', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(l.codes.length, 2);
+  assert.ok(l.codes.some((x) => x.utilise_par === 'f@exemple.fr'));
+  assert.ok(!JSON.stringify(l).includes(r.codes[0]));
+  // pas de création de code sans la clé, ni de code « admin »
+  assert.equal((await worker.fetch(post('/compte/admin/api/codes', { formule: 'mois' }, {}, DEV), env)).status, 303);
+  assert.equal((await worker.fetch(post('/compte/admin/api/codes', { formule: 'admin' }, { 'X-Cle': CLE }, DEV), env)).status, 400);
+  // 10 essais ratés par heure au plus
+  for (let i = 0; i < 10; i++) await worker.fetch(post('/compte/api/code', { code: 'GSA-AAAA-AAAA-AAA' + 'B' }, { Cookie: c }), env);
+  assert.equal((await worker.fetch(post('/compte/api/code', { code: r.codes[0] }, { Cookie: c }), env)).status, 429);
 });

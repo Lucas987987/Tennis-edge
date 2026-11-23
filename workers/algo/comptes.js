@@ -259,7 +259,78 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'verifier') return verifier(req, env, b);
   if (p === 'oubli') return oubli(req, env, b);
   if (p === 'reinit') return reinit(req, env, b);
+  if (p === 'code') return utiliserCode(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
+}
+
+// --------------------------------------------------------------------------------------------- codes d'accès
+// 23/11/2026 (paquet 381, Lucas) : un CODE À USAGE UNIQUE active l'accès Plus d'un compte, sans paiement. Créé depuis
+// /compte/admin : formule (semaine, mois, trimestre, année, ou un nombre de jours), validité du code (il ne marche plus
+// après cette date même jamais utilisé). Au coffre, seule l'empreinte du code (SHA-256) : la liste ne montre que ses
+// 4 derniers caractères. Utilisation : un compte connecté et confirmé le saisit dans « Mon compte » ; le code est marqué
+// utilisé par une écriture conditionnelle (deux comptes en même temps : un seul gagne). 10 essais ratés par heure au plus.
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // sans 0/O ni 1/I : se dicte et se recopie sans erreur
+const MAX_ESSAIS_CODE = 10;
+export function nouveauCode() {
+  const r = crypto.getRandomValues(new Uint8Array(12));
+  const c = [...r].map((x) => ALPHABET[x % ALPHABET.length]).join('');
+  return `GSA-${c.slice(0, 4)}-${c.slice(4, 8)}-${c.slice(8, 12)}`;
+}
+export function normaliserCode(c) {
+  const s = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const corps = s.startsWith('GSA') ? s.slice(3) : s;
+  return corps.length === 12 ? `GSA-${corps.slice(0, 4)}-${corps.slice(4, 8)}-${corps.slice(8, 12)}` : null;
+}
+const cheminCode = async (code) => `comptes/codes/${hex(new Uint8Array(await crypto.subtle.digest('SHA-256', te.encode('gsa-code:' + code))))}.json`;
+export async function creerCodes(env, formule, jours, validiteJours, nombre = 1, note = '') {
+  if (!(formule in FORMULES) || formule === 'admin' || formule === 'illimite') return { ok: false, erreur: 'formule' };
+  const j = Number(jours) > 0 ? Math.min(Number(jours), 3660) : FORMULES[formule];
+  if (!j) return { ok: false, erreur: 'jours' };
+  const v = Math.max(1, Math.min(Number(validiteJours) || 30, 365));
+  const n = Math.max(1, Math.min(Number(nombre) || 1, 50));
+  const codes = [];
+  for (let i = 0; i < n; i++) {
+    const code = nouveauCode(), maintenant = Date.now();
+    await env.COFFRE.put(await cheminCode(code), JSON.stringify({ indice: code.slice(-4), formule, jours: j,
+      cree: new Date(maintenant).toISOString(), expire: new Date(maintenant + v * 86400e3).toISOString(),
+      note: String(note || '').slice(0, 80), utilise_par: null, utilise_le: null }));
+    codes.push(code);
+  }
+  return { ok: true, codes, formule, jours: j, valide_jours: v };
+}
+export async function listeCodes(env) {
+  const out = [];
+  let curseur;
+  do {
+    const l = await env.COFFRE.list({ prefix: 'comptes/codes/', cursor: curseur, limit: 1000 });
+    for (const o of l.objects || []) {
+      try { const x = JSON.parse(await (await env.COFFRE.get(o.key)).text()); out.push(x); } catch (e) { /* ignoré */ }
+    }
+    curseur = l.truncated ? l.cursor : undefined;
+  } while (curseur);
+  return out.sort((a, b) => String(b.cree).localeCompare(String(a.cree))).slice(0, 200);
+}
+async function utiliserCode(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!u.verifie) return rep({ ok: false, erreur: 'non_verifie' }, 403);
+  const heure = Math.floor(Date.now() / 3600e3);
+  if (u.essais_code && u.essais_code.h === heure && u.essais_code.n >= MAX_ESSAIS_CODE) return rep({ ok: false, erreur: 'bloque' }, 429);
+  const code = normaliserCode(b.code), cle = code ? await cheminCode(code) : null;
+  const o = cle ? await env.COFFRE.get(cle) : null;
+  let x = null;
+  try { x = o ? JSON.parse(await o.text()) : null; } catch (e) { x = null; }
+  const raison = !x ? 'code_invalide' : x.utilise_par ? 'code_utilise' : Date.parse(x.expire) < Date.now() ? 'code_expire' : null;
+  if (raison) {
+    u.essais_code = { h: heure, n: (u.essais_code && u.essais_code.h === heure ? u.essais_code.n : 0) + 1 };
+    await ecrire(env, u);
+    return rep({ ok: false, erreur: raison }, 400);
+  }
+  x.utilise_par = u.email; x.utilise_le = new Date().toISOString();
+  const pose = await env.COFFRE.put(cle, JSON.stringify(x), { onlyIf: { etagMatches: o.etag } });
+  if (!pose) return rep({ ok: false, erreur: 'code_utilise' }, 400);           // un autre compte l'a pris à l'instant
+  const r = await donnerAcces(env, u.email, x.formule, x.jours, 'code ' + x.indice);
+  return rep(r.ok ? { ok: true, compte: r.compte, jours: x.jours } : r, r.ok ? 200 : 400);
 }
 
 // --------------------------------------------------------------------------------------------- administration
@@ -277,7 +348,7 @@ export async function listeComptes(env) {
   } while (curseur);
   return out.sort((a, b) => String(b.cree).localeCompare(String(a.cree)));
 }
-export async function donnerAcces(env, email, formule, jours) {
+export async function donnerAcces(env, email, formule, jours, origine = 'admin') {
   const e = normaliser(email);
   if (!e || !(formule in FORMULES || formule === 'retirer')) return { ok: false, erreur: 'requete' };
   const u = await lire(env, await idCompte(e));
@@ -289,7 +360,7 @@ export async function donnerAcces(env, email, formule, jours) {
     u.acces = { formule, jusqu_au: (formule === 'illimite' || formule === 'admin') ? null : (j ? new Date(depart + j * 86400e3).toISOString() : null),
       donne_le: new Date().toISOString() };
   }
-  u.historique = [...(u.historique || []).slice(-19), { le: new Date().toISOString(), formule, jours: jours || null }];
+  u.historique = [...(u.historique || []).slice(-19), { le: new Date().toISOString(), formule, jours: jours || null, origine }];
   await ecrire(env, u);
   return { ok: true, compte: vueCompte(u) };
 }
@@ -300,12 +371,18 @@ export function pageAdmin() {
 button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff9a}.non{color:#ff4fae}small{color:#a99fd6}</style></head><body>
 <h2>Comptes abonnés</h2><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
 <select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="admin">Admin (toi : sections internes)</option><option value="retirer">Retirer l'accès</option></select>
-<input id="j" type="number" min="1" placeholder="jours (facultatif)"><button id="b">Valider</button><p id="r"></p></div><div id="l"></div>
+<input id="j" type="number" min="1" placeholder="jours (facultatif)"><button id="b">Valider</button><p id="r"></p></div>
+<div class="c"><b>Créer des codes à usage unique</b><select id="cf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Nombre de jours ci-dessous</option></select>
+<input id="cj" type="number" min="1" placeholder="jours d'accès (facultatif)"><input id="cv" type="number" min="1" max="365" value="30" placeholder="code valable (jours)">
+<input id="cn" type="number" min="1" max="50" value="1" placeholder="nombre de codes"><input id="cno" type="text" maxlength="80" placeholder="note (pour qui ?)">
+<button id="cb">Créer</button><pre id="cr" style="white-space:pre-wrap;font-size:16px;user-select:all"></pre></div><div id="lc"></div><div id="l"></div>
 <script>
 const $=id=>document.getElementById(id);
 function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{$('l').innerHTML='<p><small>'+o.comptes.length+' compte(s)</small></p>'+o.comptes.map(c=>'<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+'</div>').join('')});}
 $('b').onclick=()=>fetch('/compte/admin/api/acces',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('e').value,formule:$('f').value,jours:$('j').value||null})}).then(r=>r.json()).then(o=>{$('r').textContent=o.ok?'Fait.':'Refusé : '+o.erreur;charger();});
-charger();
+function codes(){fetch('/compte/admin/api/codes',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lc').innerHTML='<p><small>Codes ('+o.codes.length+')</small></p>'+o.codes.map(c=>'<div class="c">…'+e(c.indice)+' · '+e(c.formule)+' '+c.jours+' j'+(c.note?' · '+e(c.note):'')+'<br><small>'+(c.utilise_par?'<span class="ok">utilisé par '+e(c.utilise_par)+' le '+String(c.utilise_le).slice(0,10)+'</span>':(Date.parse(c.expire)<Date.now()?'<span class="non">expiré</span>':'libre jusqu’au '+String(c.expire).slice(0,10)))+'</small></div>').join('')});}
+$('cb').onclick=()=>fetch('/compte/admin/api/codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formule:$('cf').value,jours:$('cj').value||null,validite:$('cv').value||30,nombre:$('cn').value||1,note:$('cno').value})}).then(r=>r.json()).then(o=>{$('cr').textContent=o.ok?o.codes.join('\n')+'\n('+o.jours+' jours d’accès, code valable '+o.valide_jours+' jours, une seule utilisation)':'Refusé : '+o.erreur;codes();});
+charger();codes();
 </script></body></html>`;
 }
 export async function adminComptes(req, env, url) {
@@ -314,6 +391,14 @@ export async function adminComptes(req, env, url) {
     'X-Robots-Tag': 'noindex', 'X-Frame-Options': 'DENY',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'" } });
   if (p === '/compte/admin/api/liste' && req.method === 'GET') return rep({ ok: true, comptes: await listeComptes(env) });
+  if (p === '/compte/admin/api/codes' && req.method === 'GET') return rep({ ok: true, codes: await listeCodes(env) });
+  if (p === '/compte/admin/api/codes' && req.method === 'POST') {
+    if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
+    const b = await corps(req);
+    if (!b) return rep({ ok: false, erreur: 'requete' }, 400);
+    const r = await creerCodes(env, b.formule, b.jours, b.validite, b.nombre, b.note);
+    return rep(r, r.ok ? 200 : 400);
+  }
   if (p === '/compte/admin/api/acces' && req.method === 'POST') {
     if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
     const b = await corps(req);
