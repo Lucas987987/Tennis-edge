@@ -276,13 +276,8 @@ def envoyer(texte):
         return
     # 23/11/2026 (paquet 370) : le message a dépassé 4 096 caractères (limite Telegram → HTTP 400, run rouge) :
     # envoi en plusieurs messages coupés entre deux lignes ; un échec d'envoi n'arrête plus le run.
-    for i, morceau in enumerate(morceaux(texte)):
-        data = urllib.parse.urlencode({'chat_id': chat, 'text': morceau, 'parse_mode': 'HTML',
-                                       'disable_web_page_preview': 'true'}).encode()
-        try:
-            urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
-        except Exception as e_:  # noqa: BLE001
-            print(f"::warning::Telegram : message {i + 1} non envoyé ({getattr(e_, 'code', type(e_).__name__)})")
+    import telegram_envoi as TE        # 23/11/2026 : module commun (paquet 375), « < » hors balises échappé en plus
+    TE.envoyer(texte, html=True, tok=tok, chat=chat)
 
 
 def morceaux(texte, limite=LIMITE_TELEGRAM):

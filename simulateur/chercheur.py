@@ -272,8 +272,8 @@ def telegram(texte):
     if not tok or not chat:
         print('Telegram non configuré : message non envoyé.')
         return
-    data = urllib.parse.urlencode({'chat_id': chat, 'text': texte}).encode()
-    urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=30).read()
+    import telegram_envoi as TE        # 23/11/2026 (paquet 375) : coupé sous 4 096 caractères, jamais bloquant
+    TE.envoyer(texte, html=False, timeout=30, apercu=True, tok=tok, chat=chat)
 
 
 def main(argv):

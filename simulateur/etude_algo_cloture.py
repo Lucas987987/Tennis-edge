@@ -118,11 +118,8 @@ def main(argv):
         import urllib.request
         tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
         if tok and chat:
-            try:
-                data = urllib.parse.urlencode({'chat_id': chat, 'text': txt}).encode()
-                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
-            except Exception as e:  # noqa: BLE001
-                print(f'::warning::Telegram impossible ({type(e).__name__})')
+            import telegram_envoi as TE    # 23/11/2026 (paquet 375) : coupé sous 4 096 caractères, jamais bloquant
+            TE.envoyer(txt, html=False, apercu=True, tok=tok, chat=chat)
     return 0
 
 

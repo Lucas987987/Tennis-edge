@@ -17,7 +17,9 @@ sys.path.insert(0, ICI)
 NOMS = {'changement_surface': 'changement de surface', 'retour_absence': "retour d'absence", 'age': 'âge',
         'favori_outsider': 'profil favori / outsider', 'parcours_tournoi': 'parcours dans le tournoi',
         'tiebreak': 'tie-breaks (ligne)', 'documentation_faible': 'matchs peu documentés (< 500 balles)',
-        'favori_moins_documente': 'favori le moins documenté (Challenger, 500 à 1 500 balles)', 'montee_petits_tournois': 'montée des petits tournois'}
+        'favori_moins_documente': 'favori le moins documenté (Challenger, 500 à 1 500 balles)',
+        'favori_moins_doc_sous_500': 'favori le moins documenté, moins de 500 balles (suivi)',
+        'favori_moins_doc_1500_3000': 'favori le moins documenté, 1 500 à 3 000 balles (suivi)', 'montee_petits_tournois': 'montée des petits tournois'}
 STATS = {'premiere_pct': '% de 1res balles', 'aces': 'aces', 'doubles_fautes': 'doubles fautes', 'breaks': 'breaks'}
 
 
