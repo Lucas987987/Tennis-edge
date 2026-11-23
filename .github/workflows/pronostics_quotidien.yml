@@ -152,6 +152,10 @@ jobs:
         run: python simulateur/recap_apprentissage.py --racine .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
+      # 23/11/2026 (paquet 371) : matchs écartés (identité, surface, doublon) et joueurs réunis — lecture seule, jamais bloquant
+      - name: Contrôle des entrées (matchs écartés, identités)
+        continue-on-error: true
+        run: python simulateur/controle_entrees.py .
       # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances d'avant match (descriptif, fiche)
       # 11/11/2026 (paquet 223) : lieu des tournois de l'archive (une fois par tournoi, Open-Meteo, gratuit) pour les
       # bilans « dans ces conditions » des joueurs (pays, continent, altitude) — descriptif, jamais bloquant
@@ -200,6 +204,9 @@ jobs:
           # 28/10/2026 : analyse après match (descriptive, pour l'algo) — publiée si elle a été écrite
           if [ -e simulateur/analyse_apres_match.json ]; then git add -- simulateur/analyse_apres_match.json; fi
           if [ -e feuilles/lieux_archive.json ]; then git add -- feuilles/lieux_archive.json; fi
+          for f in simulateur/rapport_entrees.json simulateur/alias_observes.json; do
+            if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi
+          done
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
