@@ -85,3 +85,20 @@ def test_doublon_a_venir_paire_reliee_et_cas_legitimes():
     assert len(P.doublons_a_venir(v, E.cle, {})[0]) == 2
     v = [_m('A Bcd', 'Efg Hij', 1), {**_m('A Bcd', 'Efg Hij', 1), 'debut': dt.datetime(2026, 11, 24, 21)}]
     assert len(P.doublons_a_venir(v, E.cle, {})[0]) == 2
+
+
+def test_396_meme_identifiant_tennisapi_relie_deux_ecritures(tmp_path):
+    import gzip as _gz
+    import json as _js
+    (tmp_path / 'feuilles').mkdir()
+    (tmp_path / 'resultats_itf').mkdir()
+    with _gz.open(tmp_path / 'resultats_itf' / '2026-08.jsonl.gz', 'wt') as f:
+        for i in range(5):
+            f.write(_js.dumps({'home': {'id': 387395, 'nom': 'Zach Viiala'}, 'away': {'id': 10 + i, 'nom': f'Autre {i}'}}) + '\n')
+    with _gz.open(tmp_path / 'feuilles' / '2026-11-16.jsonl.gz', 'wt') as f:
+        f.write(_js.dumps({'home': {'id': 384145, 'nom': 'Sebastian Dominko'}, 'away': {'id': 387395, 'nom': 'Zachary Viiala'}}) + '\n')
+        f.write(_js.dumps({'home': {'id': 1, 'nom': 'Karolina Pliskova'}, 'away': {'id': 2, 'nom': 'Kristyna Pliskova'}}) + '\n')
+    import identites as I
+    lid, det = I.liens_identifiant(str(tmp_path))
+    assert lid == {I.E.cle('Zachary Viiala'): I.E.cle('Zach Viiala')}
+    assert det[0]['source'] == 'meme_identifiant_tennisapi'
