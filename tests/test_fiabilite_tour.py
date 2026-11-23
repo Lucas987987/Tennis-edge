@@ -98,7 +98,9 @@ class Programme(unittest.TestCase):
             PJ.PROGRAMME = PJ.charger_programme(d)
             import elo as E
             self.assertEqual(PJ.tour_du_match(E.cle('Bob Deux'), E.cle('Ana Une'), dt.datetime(2026, 10, 29, 12)), 'Round of 16')
-            self.assertIsNone(PJ.tour_du_match(E.cle('Bob Deux'), E.cle('Ana Une'), dt.datetime(2026, 10, 30, 12)))
+            # 23/11/2026 (paquet 376) : la veille ou le lendemain (UTC) est accepté, pas au-delà
+            self.assertEqual(PJ.tour_du_match(E.cle('Bob Deux'), E.cle('Ana Une'), dt.datetime(2026, 10, 30, 12)), 'Round of 16')
+            self.assertIsNone(PJ.tour_du_match(E.cle('Bob Deux'), E.cle('Ana Une'), dt.datetime(2026, 10, 31, 12)))
             PJ.PROGRAMME = {}
 
 

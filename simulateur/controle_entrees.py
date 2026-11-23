@@ -92,13 +92,18 @@ def controler(racine):
         'fusions': F,
         'alias_observes': {'n': len(obs), 'conflits': sorted(x.get('nom') for x in obs.values() if x.get('conflit'))},
         'sans_historique': {'n': len(SH), 'suspects': [x for x in SH if x['meme_nom_de_famille']], 'liste': SH},
+        # 23/11/2026 (paquet 376) : matchs sans fiche au programme (ni tour, ni statut d'entrée, ni salle)
+        'sans_programme': {'n': sum(1 for m in doc.get('matchs') or [] if m.get('tour') is None),
+                           'exemples': [{k: m.get(k) for k in ('debut', 'tournoi', 'home', 'away')}
+                                        for m in doc.get('matchs') or [] if m.get('tour') is None][:20]},
         'regle': "lecture seule ; alerte si un joueur réuni garde deux classements ou si un doublon écarté avait deux "
                  "classements différents (lien alors appris en direct)",
     }
     ancien = _lire(racine, SORTIE, {}) or {}
     H = [h for h in (ancien.get('historique') or []) if h.get('jour') != jour]
     H.append({'jour': jour, 'matchs': rap['matchs_pronostiques'], 'rejets': dict(par_raison),
-              'sans_historique': len(SH), 'deux_classements': len(F['deux_classements'])})
+              'sans_historique': len(SH), 'deux_classements': len(F['deux_classements']),
+              'sans_programme': rap['sans_programme']['n']})
     H = sorted(H, key=lambda h: h['jour'])[-JOURS_HISTORIQUE:]
     rap['historique'] = H
     return rap
@@ -111,7 +116,7 @@ def main(argv):
         json.dump(rap, f, ensure_ascii=False, indent=1)
     print(f"Entrées : {rap['matchs_pronostiques']} matchs pronostiqués · écartés {sum(rap['rejets_par_raison'].values())} "
           f"{rap['rejets_par_raison']} · sans historique {rap['sans_historique']['n']} "
-          f"(dont {len(rap['sans_historique']['suspects'])} à vérifier) · fusions {rap['fusions']['n']}, "
+          f"(dont {len(rap['sans_historique']['suspects'])} à vérifier) · sans programme {rap['sans_programme']['n']} · fusions {rap['fusions']['n']}, "
           f"encore doubles {len(rap['fusions']['deux_classements'])} · statut {rap['statut']}")
     if rap['statut'] == 'alerte':
         print("::warning::contrôle des entrées : voir simulateur/rapport_entrees.json")
