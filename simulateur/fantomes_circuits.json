@@ -1,46 +1,46 @@
 {
- "genere_le": "2026-11-16T11:35:01+00:00",
+ "genere_le": "2026-11-23T16:04:50+00:00",
  "regle": "par signal et par circuit, règle cumulée : en place → retiré si, depuis son adoption, sur au moins 300 matchs concernés, le gain propre est négatif de plus de 2 erreurs types ; en attente → adopté si, sur au moins 300 matchs, il est positif de plus de 2 erreurs types ; compteurs remis à zéro à chaque changement ; un signal adopté ne touche que son circuit",
  "semaine": {
   "forme_service|ATP": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": -0.04223,
+   "matchs_semaine": 13,
+   "gain_semaine": 0.0273,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": -0.04223,
-   "erreur_type_total": 0.04249,
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain -0.04223 ; depuis le début : 8 matchs, gain -0.04223"
+   "matchs_total": 21,
+   "gain_total": 0.00082,
+   "erreur_type_total": 0.02446,
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain 0.0273 ; depuis le début : 21 matchs, gain 0.00082"
   },
   "forme_service|WTA": {
    "adopte": false,
-   "matchs_semaine": 6,
-   "gain_semaine": 0.06606,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 6,
    "gain_total": 0.06606,
    "erreur_type_total": 0.03484,
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.06606 ; depuis le début : 6 matchs, gain 0.06606"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.06606"
   },
   "forme_service|CH": {
    "adopte": false,
-   "matchs_semaine": 101,
-   "gain_semaine": -0.00814,
+   "matchs_semaine": 230,
+   "gain_semaine": 0.00238,
    "depuis": "2026-11-12",
-   "matchs_total": 101,
-   "gain_total": -0.00814,
-   "erreur_type_total": 0.01468,
-   "raison": "CH · semaine du 2026-11-09 : 101 matchs, gain -0.00814 ; depuis le début : 101 matchs, gain -0.00814"
+   "matchs_total": 331,
+   "gain_total": -0.00083,
+   "erreur_type_total": 0.00892,
+   "raison": "CH · semaine du 2026-11-16 : 230 matchs, gain 0.00238 ; depuis le début : 331 matchs, gain -0.00083"
   },
   "entree|ATP": {
    "adopte": false,
-   "matchs_semaine": 1,
-   "gain_semaine": -0.03853,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 1,
    "gain_total": -0.03853,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 1 matchs, gain -0.03853 ; depuis le début : 1 matchs, gain -0.03853"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 1 matchs, gain -0.03853"
   },
   "entree|WTA": {
    "adopte": false,
@@ -50,17 +50,17 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "entree|CH": {
    "adopte": false,
-   "matchs_semaine": 2,
-   "gain_semaine": 0.10692,
+   "matchs_semaine": 32,
+   "gain_semaine": -0.02236,
    "depuis": "2026-11-12",
-   "matchs_total": 2,
-   "gain_total": 0.10692,
-   "erreur_type_total": 0.0096,
-   "raison": "CH · semaine du 2026-11-09 : 2 matchs, gain 0.10692 ; depuis le début : 2 matchs, gain 0.10692"
+   "matchs_total": 34,
+   "gain_total": -0.01476,
+   "erreur_type_total": 0.01999,
+   "raison": "CH · semaine du 2026-11-16 : 32 matchs, gain -0.02236 ; depuis le début : 34 matchs, gain -0.01476"
   },
   "serveuses_wta|ATP": {
    "adopte": false,
@@ -70,7 +70,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "serveuses_wta|WTA": {
    "adopte": false,
@@ -80,7 +80,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "serveuses_wta|CH": {
    "adopte": false,
@@ -90,47 +90,47 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "elo_service_retour|ATP": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": 0.01765,
+   "matchs_semaine": 13,
+   "gain_semaine": 0.02585,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": 0.01765,
-   "erreur_type_total": 0.01179,
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain 0.01765 ; depuis le début : 8 matchs, gain 0.01765"
+   "matchs_total": 21,
+   "gain_total": 0.02272,
+   "erreur_type_total": 0.00554,
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain 0.02585 ; depuis le début : 21 matchs, gain 0.02272"
   },
   "elo_service_retour|WTA": {
    "adopte": false,
-   "matchs_semaine": 6,
-   "gain_semaine": 0.0136,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 6,
    "gain_total": 0.0136,
    "erreur_type_total": 0.014,
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.0136 ; depuis le début : 6 matchs, gain 0.0136"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.0136"
   },
   "elo_service_retour|CH": {
    "adopte": true,
-   "matchs_semaine": 115,
-   "gain_semaine": 0.01856,
+   "matchs_semaine": 246,
+   "gain_semaine": 0.00482,
    "depuis": "2026-11-12",
-   "matchs_total": 115,
-   "gain_total": 0.01856,
-   "erreur_type_total": 0.00642,
-   "raison": "CH · semaine du 2026-11-09 : 115 matchs, gain 0.01856 ; depuis le début : 115 matchs, gain 0.01856"
+   "matchs_total": 361,
+   "gain_total": 0.0092,
+   "erreur_type_total": 0.00354,
+   "raison": "CH · semaine du 2026-11-16 : 246 matchs, gain 0.00482 ; depuis le début : 361 matchs, gain 0.0092"
   },
   "forme_set|ATP": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": 0.00664,
+   "matchs_semaine": 13,
+   "gain_semaine": -0.02234,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": 0.00664,
-   "erreur_type_total": 0.02117,
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain 0.00664 ; depuis le début : 8 matchs, gain 0.00664"
+   "matchs_total": 21,
+   "gain_total": -0.0113,
+   "erreur_type_total": 0.01141,
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain -0.02234 ; depuis le début : 21 matchs, gain -0.0113"
   },
   "forme_set|WTA": {
    "adopte": false,
@@ -140,7 +140,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "forme_set|CH": {
    "adopte": false,
@@ -150,7 +150,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "changement_surface|ATP": {
    "adopte": false,
@@ -160,7 +160,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "changement_surface|WTA": {
    "adopte": false,
@@ -170,17 +170,17 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "changement_surface|CH": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": -0.02258,
+   "matchs_semaine": 7,
+   "gain_semaine": 0.01539,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": -0.02258,
-   "erreur_type_total": 0.03363,
-   "raison": "CH · semaine du 2026-11-09 : 8 matchs, gain -0.02258 ; depuis le début : 8 matchs, gain -0.02258"
+   "matchs_total": 15,
+   "gain_total": -0.00486,
+   "erreur_type_total": 0.02713,
+   "raison": "CH · semaine du 2026-11-16 : 7 matchs, gain 0.01539 ; depuis le début : 15 matchs, gain -0.00486"
   },
   "retour_absence|ATP": {
    "adopte": false,
@@ -190,7 +190,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "retour_absence|WTA": {
    "adopte": false,
@@ -200,77 +200,77 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "retour_absence|CH": {
    "adopte": false,
-   "matchs_semaine": 31,
-   "gain_semaine": -0.04726,
+   "matchs_semaine": 43,
+   "gain_semaine": -0.01412,
    "depuis": "2026-11-12",
-   "matchs_total": 31,
-   "gain_total": -0.04726,
-   "erreur_type_total": 0.0291,
-   "raison": "CH · semaine du 2026-11-09 : 31 matchs, gain -0.04726 ; depuis le début : 31 matchs, gain -0.04726"
+   "matchs_total": 74,
+   "gain_total": -0.028,
+   "erreur_type_total": 0.01881,
+   "raison": "CH · semaine du 2026-11-16 : 43 matchs, gain -0.01412 ; depuis le début : 74 matchs, gain -0.028"
   },
   "age|ATP": {
    "adopte": false,
-   "matchs_semaine": 3,
-   "gain_semaine": -0.04751,
+   "matchs_semaine": 7,
+   "gain_semaine": -0.02759,
    "depuis": "2026-11-12",
-   "matchs_total": 3,
-   "gain_total": -0.04751,
-   "erreur_type_total": 0.01357,
-   "raison": "ATP · semaine du 2026-11-09 : 3 matchs, gain -0.04751 ; depuis le début : 3 matchs, gain -0.04751"
+   "matchs_total": 10,
+   "gain_total": -0.03356,
+   "erreur_type_total": 0.01188,
+   "raison": "ATP · semaine du 2026-11-16 : 7 matchs, gain -0.02759 ; depuis le début : 10 matchs, gain -0.03356"
   },
   "age|WTA": {
    "adopte": false,
-   "matchs_semaine": 6,
-   "gain_semaine": -0.00234,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 6,
    "gain_total": -0.00234,
    "erreur_type_total": 0.02184,
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain -0.00234 ; depuis le début : 6 matchs, gain -0.00234"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain -0.00234"
   },
   "age|CH": {
    "adopte": false,
-   "matchs_semaine": 72,
-   "gain_semaine": -0.00011,
+   "matchs_semaine": 168,
+   "gain_semaine": -0.00455,
    "depuis": "2026-11-12",
-   "matchs_total": 72,
-   "gain_total": -0.00011,
-   "erreur_type_total": 0.00823,
-   "raison": "CH · semaine du 2026-11-09 : 72 matchs, gain -0.00011 ; depuis le début : 72 matchs, gain -0.00011"
+   "matchs_total": 240,
+   "gain_total": -0.00322,
+   "erreur_type_total": 0.00451,
+   "raison": "CH · semaine du 2026-11-16 : 168 matchs, gain -0.00455 ; depuis le début : 240 matchs, gain -0.00322"
   },
   "favori_outsider|ATP": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": -0.08492,
+   "matchs_semaine": 13,
+   "gain_semaine": -0.07157,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": -0.08492,
-   "erreur_type_total": 0.03787,
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain -0.08492 ; depuis le début : 8 matchs, gain -0.08492"
+   "matchs_total": 21,
+   "gain_total": -0.07666,
+   "erreur_type_total": 0.0179,
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain -0.07157 ; depuis le début : 21 matchs, gain -0.07666"
   },
   "favori_outsider|WTA": {
    "adopte": false,
-   "matchs_semaine": 6,
-   "gain_semaine": 0.00816,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 6,
    "gain_total": 0.00816,
    "erreur_type_total": 0.0207,
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.00816 ; depuis le début : 6 matchs, gain 0.00816"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.00816"
   },
   "favori_outsider|CH": {
    "adopte": false,
-   "matchs_semaine": 145,
-   "gain_semaine": -0.00476,
+   "matchs_semaine": 308,
+   "gain_semaine": 0.0007,
    "depuis": "2026-11-12",
-   "matchs_total": 145,
-   "gain_total": -0.00476,
-   "erreur_type_total": 0.00423,
-   "raison": "CH · semaine du 2026-11-09 : 145 matchs, gain -0.00476 ; depuis le début : 145 matchs, gain -0.00476"
+   "matchs_total": 453,
+   "gain_total": -0.00105,
+   "erreur_type_total": 0.00266,
+   "raison": "CH · semaine du 2026-11-16 : 308 matchs, gain 0.0007 ; depuis le début : 453 matchs, gain -0.00105"
   },
   "parcours_tournoi|ATP": {
    "adopte": false,
@@ -280,7 +280,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "parcours_tournoi|WTA": {
    "adopte": false,
@@ -290,7 +290,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "parcours_tournoi|CH": {
    "adopte": false,
@@ -300,37 +300,37 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "favori_sous_estime|ATP": {
    "adopte": false,
-   "matchs_semaine": 2,
-   "gain_semaine": 0.07256,
+   "matchs_semaine": 3,
+   "gain_semaine": 0.06247,
    "depuis": "2026-11-12",
-   "matchs_total": 2,
-   "gain_total": 0.07256,
-   "erreur_type_total": 0.02498,
-   "raison": "ATP · semaine du 2026-11-09 : 2 matchs, gain 0.07256 ; depuis le début : 2 matchs, gain 0.07256"
+   "matchs_total": 5,
+   "gain_total": 0.06651,
+   "erreur_type_total": 0.01504,
+   "raison": "ATP · semaine du 2026-11-16 : 3 matchs, gain 0.06247 ; depuis le début : 5 matchs, gain 0.06651"
   },
   "favori_sous_estime|WTA": {
    "adopte": false,
-   "matchs_semaine": 1,
-   "gain_semaine": -0.12049,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
    "depuis": "2026-11-12",
    "matchs_total": 1,
    "gain_total": -0.12049,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 1 matchs, gain -0.12049 ; depuis le début : 1 matchs, gain -0.12049"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 1 matchs, gain -0.12049"
   },
   "favori_sous_estime|CH": {
-   "adopte": false,
-   "matchs_semaine": 20,
-   "gain_semaine": -0.01478,
+   "adopte": true,
+   "matchs_semaine": 48,
+   "gain_semaine": 0.0096,
    "depuis": "2026-11-12",
-   "matchs_total": 20,
-   "gain_total": -0.01478,
-   "erreur_type_total": 0.02103,
-   "raison": "CH · semaine du 2026-11-09 : 20 matchs, gain -0.01478 ; depuis le début : 20 matchs, gain -0.01478"
+   "matchs_total": 68,
+   "gain_total": 0.00243,
+   "erreur_type_total": 0.01104,
+   "raison": "CH · semaine du 2026-11-16 : 48 matchs, gain 0.0096 ; depuis le début : 68 matchs, gain 0.00243"
   },
   "tiebreak|ATP": {
    "adopte": false,
@@ -340,7 +340,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "tiebreak|WTA": {
    "adopte": false,
@@ -350,17 +350,17 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "tiebreak|CH": {
    "adopte": true,
-   "matchs_semaine": 145,
-   "gain_semaine": 0.00382,
+   "matchs_semaine": 311,
+   "gain_semaine": 0.00217,
    "depuis": "2026-11-12",
-   "matchs_total": 145,
-   "gain_total": 0.00382,
-   "erreur_type_total": 0.00501,
-   "raison": "CH · semaine du 2026-11-09 : 145 matchs, gain 0.00382 ; depuis le début : 145 matchs, gain 0.00382"
+   "matchs_total": 456,
+   "gain_total": 0.0027,
+   "erreur_type_total": 0.00276,
+   "raison": "CH · semaine du 2026-11-16 : 311 matchs, gain 0.00217 ; depuis le début : 456 matchs, gain 0.0027"
   },
   "documentation_faible|ATP": {
    "adopte": false,
@@ -370,7 +370,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "documentation_faible|WTA": {
    "adopte": false,
@@ -380,27 +380,27 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "documentation_faible|CH": {
-   "adopte": true,
-   "matchs_semaine": 37,
-   "gain_semaine": 0.03363,
+   "adopte": false,
+   "matchs_semaine": 74,
+   "gain_semaine": -0.01726,
    "depuis": "2026-11-12",
-   "matchs_total": 37,
-   "gain_total": 0.03363,
-   "erreur_type_total": 0.03069,
-   "raison": "CH · semaine du 2026-11-09 : 37 matchs, gain 0.03363 ; depuis le début : 37 matchs, gain 0.03363"
+   "matchs_total": 111,
+   "gain_total": -0.0003,
+   "erreur_type_total": 0.02679,
+   "raison": "CH · semaine du 2026-11-16 : 74 matchs, gain -0.01726 ; depuis le début : 111 matchs, gain -0.0003"
   },
   "format_match|ATP": {
    "adopte": false,
-   "matchs_semaine": 8,
-   "gain_semaine": -0.00765,
+   "matchs_semaine": 13,
+   "gain_semaine": -0.02779,
    "depuis": "2026-11-12",
-   "matchs_total": 8,
-   "gain_total": -0.00765,
-   "erreur_type_total": 0.011,
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain -0.00765 ; depuis le début : 8 matchs, gain -0.00765"
+   "matchs_total": 21,
+   "gain_total": -0.02012,
+   "erreur_type_total": 0.00509,
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain -0.02779 ; depuis le début : 21 matchs, gain -0.02012"
   },
   "format_match|WTA": {
    "adopte": false,
@@ -410,7 +410,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "format_match|CH": {
    "adopte": false,
@@ -420,7 +420,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "grand_chelem|ATP": {
    "adopte": false,
@@ -430,7 +430,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "grand_chelem|WTA": {
    "adopte": false,
@@ -440,7 +440,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "grand_chelem|CH": {
    "adopte": false,
@@ -450,7 +450,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "qualifs_grand_chelem|ATP": {
    "adopte": false,
@@ -460,7 +460,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "qualifs_grand_chelem|WTA": {
    "adopte": false,
@@ -470,7 +470,7 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "qualifs_grand_chelem|CH": {
    "adopte": false,
@@ -480,139 +480,230 @@
    "matchs_total": 0,
    "gain_total": null,
    "erreur_type_total": null,
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_documente|ATP": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_documente|WTA": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_documente|CH": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_sous_500|ATP": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_sous_500|WTA": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_sous_500|CH": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_1500_3000|ATP": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_1500_3000|WTA": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
+  },
+  "favori_moins_doc_1500_3000|CH": {
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-12",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   }
  },
  "decisions": {
   "forme_service|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain -0.04223 ; depuis le début : 8 matchs, gain -0.04223 — depuis le 2026-11-12, erreur type 0.04249 : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain 0.0273 ; depuis le début : 21 matchs, gain 0.00082 — depuis le 2026-11-12, erreur type 0.02446 : en attente"
   },
   "forme_service|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.06606 ; depuis le début : 6 matchs, gain 0.06606 — depuis le 2026-11-12, erreur type 0.03484 : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.06606 — depuis le 2026-11-12, erreur type 0.03484 : en attente"
   },
   "forme_service|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 101 matchs, gain -0.00814 ; depuis le début : 101 matchs, gain -0.00814 — depuis le 2026-11-12, erreur type 0.01468 : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 230 matchs, gain 0.00238 ; depuis le début : 331 matchs, gain -0.00083 — depuis le 2026-11-12, erreur type 0.00892 : en attente"
   },
   "entree|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 1 matchs, gain -0.03853 ; depuis le début : 1 matchs, gain -0.03853 — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 1 matchs, gain -0.03853 — depuis le 2026-11-12, erreur type None : en attente"
   },
   "entree|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "entree|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 2 matchs, gain 0.10692 ; depuis le début : 2 matchs, gain 0.10692 — depuis le 2026-11-12, erreur type 0.0096 : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 32 matchs, gain -0.02236 ; depuis le début : 34 matchs, gain -0.01476 — depuis le 2026-11-12, erreur type 0.01999 : en attente"
   },
   "serveuses_wta|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "serveuses_wta|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "serveuses_wta|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "elo_service_retour|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain 0.01765 ; depuis le début : 8 matchs, gain 0.01765 — depuis le 2026-11-12, erreur type 0.01179 : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain 0.02585 ; depuis le début : 21 matchs, gain 0.02272 — depuis le 2026-11-12, erreur type 0.00554 : en attente"
   },
   "elo_service_retour|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.0136 ; depuis le début : 6 matchs, gain 0.0136 — depuis le 2026-11-12, erreur type 0.014 : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.0136 — depuis le 2026-11-12, erreur type 0.014 : en attente"
   },
   "elo_service_retour|CH": {
-   "adopte": false,
-   "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 115 matchs, gain 0.01856 ; depuis le début : 115 matchs, gain 0.01856 — depuis le 2026-11-12, erreur type 0.00642 : en attente"
+   "adopte": true,
+   "depuis": "2026-11-23",
+   "stabilite": "adopté",
+   "raison": "CH · semaine du 2026-11-16 : 246 matchs, gain 0.00482 ; depuis le début : 361 matchs, gain 0.0092 — depuis le 2026-11-12, erreur type 0.00354 : positif de 2 erreurs types sur ≥ 300 matchs, adopté"
   },
   "forme_set|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain 0.00664 ; depuis le début : 8 matchs, gain 0.00664 — depuis le 2026-11-12, erreur type 0.02117 : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain -0.02234 ; depuis le début : 21 matchs, gain -0.0113 — depuis le 2026-11-12, erreur type 0.01141 : en attente"
   },
   "forme_set|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "forme_set|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "changement_surface|ATP": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "changement_surface|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "changement_surface|CH": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "CH · semaine du 2026-11-09 : 8 matchs, gain -0.02258 ; depuis le début : 8 matchs, gain -0.02258 — depuis le 2026-11-12, erreur type 0.03363 : en place"
+   "raison": "CH · semaine du 2026-11-16 : 7 matchs, gain 0.01539 ; depuis le début : 15 matchs, gain -0.00486 — depuis le 2026-11-12, erreur type 0.02713 : en place"
   },
   "retour_absence|ATP": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "retour_absence|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "retour_absence|CH": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "CH · semaine du 2026-11-09 : 31 matchs, gain -0.04726 ; depuis le début : 31 matchs, gain -0.04726 — depuis le 2026-11-12, erreur type 0.0291 : en place"
+   "raison": "CH · semaine du 2026-11-16 : 43 matchs, gain -0.01412 ; depuis le début : 74 matchs, gain -0.028 — depuis le 2026-11-12, erreur type 0.01881 : en place"
   },
   "age|ATP": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "ATP · semaine du 2026-11-09 : 3 matchs, gain -0.04751 ; depuis le début : 3 matchs, gain -0.04751 — depuis le 2026-11-12, erreur type 0.01357 : en place"
+   "raison": "ATP · semaine du 2026-11-16 : 7 matchs, gain -0.02759 ; depuis le début : 10 matchs, gain -0.03356 — depuis le 2026-11-12, erreur type 0.01188 : en place"
   },
   "age|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain -0.00234 ; depuis le début : 6 matchs, gain -0.00234 — depuis le 2026-11-12, erreur type 0.02184 : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain -0.00234 — depuis le 2026-11-12, erreur type 0.02184 : en place"
   },
   "age|CH": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "CH · semaine du 2026-11-09 : 72 matchs, gain -0.00011 ; depuis le début : 72 matchs, gain -0.00011 — depuis le 2026-11-12, erreur type 0.00823 : en place"
+   "raison": "CH · semaine du 2026-11-16 : 168 matchs, gain -0.00455 ; depuis le début : 240 matchs, gain -0.00322 — depuis le 2026-11-12, erreur type 0.00451 : en place"
   },
   "favori_outsider|ATP": {
    "adopte": false,
@@ -623,7 +714,7 @@
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 6 matchs, gain 0.00816 ; depuis le début : 6 matchs, gain 0.00816 — depuis le 2026-11-12, erreur type 0.0207 : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.00816 — depuis le 2026-11-12, erreur type 0.0207 : en place"
   },
   "favori_outsider|CH": {
    "adopte": false,
@@ -638,7 +729,7 @@
   "parcours_tournoi|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "parcours_tournoi|CH": {
    "adopte": false,
@@ -648,98 +739,144 @@
   "favori_sous_estime|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 2 matchs, gain 0.07256 ; depuis le début : 2 matchs, gain 0.07256 — depuis le 2026-11-12, erreur type 0.02498 : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 3 matchs, gain 0.06247 ; depuis le début : 5 matchs, gain 0.06651 — depuis le 2026-11-12, erreur type 0.01504 : en attente"
   },
   "favori_sous_estime|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 1 matchs, gain -0.12049 ; depuis le début : 1 matchs, gain -0.12049 — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 1 matchs, gain -0.12049 — depuis le 2026-11-12, erreur type None : en attente"
   },
   "favori_sous_estime|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 20 matchs, gain -0.01478 ; depuis le début : 20 matchs, gain -0.01478 — depuis le 2026-11-12, erreur type 0.02103 : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 48 matchs, gain 0.0096 ; depuis le début : 68 matchs, gain 0.00243 — depuis le 2026-11-12, erreur type 0.01104 : en attente"
   },
   "tiebreak|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "tiebreak|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "tiebreak|CH": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "CH · semaine du 2026-11-09 : 145 matchs, gain 0.00382 ; depuis le début : 145 matchs, gain 0.00382 — depuis le 2026-11-12, erreur type 0.00501 : en place"
+   "raison": "CH · semaine du 2026-11-16 : 311 matchs, gain 0.00217 ; depuis le début : 456 matchs, gain 0.0027 — depuis le 2026-11-12, erreur type 0.00276 : en place"
   },
   "documentation_faible|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "documentation_faible|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "documentation_faible|CH": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "CH · semaine du 2026-11-09 : 37 matchs, gain 0.03363 ; depuis le début : 37 matchs, gain 0.03363 — depuis le 2026-11-12, erreur type 0.03069 : en place"
+   "raison": "CH · semaine du 2026-11-16 : 74 matchs, gain -0.01726 ; depuis le début : 111 matchs, gain -0.0003 — depuis le 2026-11-12, erreur type 0.02679 : en place"
   },
   "format_match|ATP": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "ATP · semaine du 2026-11-09 : 8 matchs, gain -0.00765 ; depuis le début : 8 matchs, gain -0.00765 — depuis le 2026-11-12, erreur type 0.011 : en place"
+   "raison": "ATP · semaine du 2026-11-16 : 13 matchs, gain -0.02779 ; depuis le début : 21 matchs, gain -0.02012 — depuis le 2026-11-12, erreur type 0.00509 : en place"
   },
   "format_match|WTA": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "format_match|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "grand_chelem|ATP": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "grand_chelem|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "grand_chelem|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "qualifs_grand_chelem|ATP": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "ATP · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   },
   "qualifs_grand_chelem|WTA": {
    "adopte": true,
    "direct": true,
    "stabilite": "en place",
-   "raison": "WTA · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
   },
   "qualifs_grand_chelem|CH": {
    "adopte": false,
    "stabilite": "en attente",
-   "raison": "CH · semaine du 2026-11-09 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_documente|ATP": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_documente|WTA": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_documente|CH": {
+   "adopte": true,
+   "direct": true,
+   "stabilite": "en place",
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en place"
+  },
+  "favori_moins_doc_sous_500|ATP": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_doc_sous_500|WTA": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_doc_sous_500|CH": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_doc_1500_3000|ATP": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "ATP · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_doc_1500_3000|WTA": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
+  },
+  "favori_moins_doc_1500_3000|CH": {
+   "adopte": false,
+   "stabilite": "en attente",
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-12, erreur type None : en attente"
   }
  }
 }
