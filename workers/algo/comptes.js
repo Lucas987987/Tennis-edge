@@ -11,6 +11,8 @@
 // CLE_PRIVEE), HttpOnly, Secure, SameSite=Lax, 90 jours ; un changement de mot de passe ferme toutes les sessions.
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
+import { adminVentes, factureClient } from './ventes.js';
+
 export const COOKIE_COMPTE = 'gsa_compte';
 export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null,
   admin: null });                     // 380 : admin = accès Plus illimité + sections internes du site
@@ -54,13 +56,13 @@ export async function hacher(mdp, selB64, iter = ITER) {
 
 // --------------------------------------------------------------------------------------------- stockage
 const chemin = (id) => `comptes/u/${id}.json`;
-async function lire(env, id) {
+export async function lire(env, id) {
   try {
     const o = await env.COFFRE.get(chemin(id));
     return o ? JSON.parse(await o.text()) : null;
   } catch (e) { return null; }
 }
-async function ecrire(env, u) {
+export async function ecrire(env, u) {
   await env.COFFRE.put(chemin(u.id), JSON.stringify(u), { httpMetadata: { contentType: 'application/json' } });
 }
 
@@ -70,9 +72,13 @@ export function abonne(u, maintenant = Date.now()) {
   return !!a.jusqu_au && Date.parse(a.jusqu_au) > maintenant;
 }
 export const estAdmin = (u) => !!u && (u.acces || {}).formule === 'admin';
+// 23/11/2026 (paquet 384) : référence de virement propre au compte (6 caractères de l'identifiant), à mettre dans le
+// libellé du virement pour retrouver le compte. Elle ne révèle rien : l'identifiant est une empreinte de l'e-mail.
+export const referenceVirement = (u) => 'GSA-' + String(u.id || '').slice(0, 6).toUpperCase();
 function vueCompte(u) {
   return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
-    jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree };
+    jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
+    reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [] };
 }
 
 // --------------------------------------------------------------------------------------------- session
@@ -113,7 +119,7 @@ async function lireLien(env, jeton, but) {
 }
 
 // --------------------------------------------------------------------------------------------- e-mails (Brevo)
-const ESC = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+export const ESC = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function messageMail(but, url, lang) {
   const fr = lang !== 'en';
   const T = {
@@ -123,12 +129,32 @@ export function messageMail(but, url, lang) {
       : ['New password', 'You asked to change your password:', 'Choose a new password', "This link is valid for 1 hour. If you didn't ask, ignore this email."],
     existe: fr ? ['Ton compte Game Set Algo', 'Un compte existe déjà avec cette adresse. Si tu as oublié ton mot de passe :', 'Choisir un nouveau mot de passe', "Si tu n'as rien demandé, ignore cet e-mail."]
       : ['Your Game Set Algo account', 'An account already exists with this address. If you forgot your password:', 'Choose a new password', "If you didn't ask, ignore this email."],
+    fondateur: fr ? ['Ta place fondateur est réservée', "Merci ! Ta place sur la liste d'attente fondateurs de l'accès Plus est réservée. Le paiement n'est pas encore ouvert : on te préviendra par e-mail à l'ouverture.", 'Voir Game Set Algo', "Réserver n'engage à rien. Tu peux annuler depuis « Mon compte »."]
+      : ['Your founder spot is reserved', "Thank you! Your spot on the Plus founders waiting list is reserved. Payment isn't open yet: we'll email you when it opens.", 'Open Game Set Algo', 'Reserving commits you to nothing. You can cancel from "My account".'],
   }[but];
   const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e">
 <h2 style="margin:0 0 12px">${ESC(T[0])}</h2><p>${ESC(T[1])}</p>
 <p style="margin:24px 0"><a href="${ESC(url)}" style="background:#2ee6ff;color:#0e0a24;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">${ESC(T[2])}</a></p>
 <p style="color:#666;font-size:13px">${ESC(T[3])}</p><p style="color:#666;font-size:13px">Game Set Algo · gamesetalgo.com</p></div>`;
   return { sujet: T[0], html, texte: `${T[1]}\n${url}\n\n${T[3]}` };
+}
+// 23/11/2026 (paquet 385, Lucas : « recevoir une alerte dès que quelqu'un crée un compte ») : message sur le Telegram
+// privé à chaque nouveau compte, confirmation d'adresse, place fondateur et code utilisé. L'adresse y est masquée
+// (2 premiers caractères + domaine) ; l'adresse complète reste dans /compte/admin. Sans TELEGRAM_TOKEN ni
+// TELEGRAM_CHAT_ID : rien. Un échec de Telegram ne bloque jamais le compte (3 s au plus).
+export function masquer(email) {
+  const [l, d] = String(email || '').split('@');
+  return d ? `${l.slice(0, 2)}***@${d}` : '***';
+}
+export async function alerte(env, texte) {
+  if (!env.TELEGRAM_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(3000),
+      body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: `👤 Game Set Algo · ${texte}`, disable_web_page_preview: true }),
+    });
+    return r.ok;
+  } catch (e) { return false; }
 }
 async function quotaJour(env) {
   const cle = `comptes/envois/${new Date().toISOString().slice(0, 10)}.json`;
@@ -151,20 +177,20 @@ export async function envoyerMail(env, a, m) {
   });
   return { ok: r.ok, raison: r.ok ? null : 'brevo_' + r.status };
 }
-function base(req, env) {
+export function base(req, env) {
   return String(env.SITE_URL || new URL(req.url).origin).replace(/\/+$/, '');
 }
 
 // --------------------------------------------------------------------------------------------- API
 const H = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store',
   'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
-const rep = (o, status = 200, extra = {}) => new Response(JSON.stringify(o), { status, headers: { ...H, ...extra } });
+export const rep = (o, status = 200, extra = {}) => new Response(JSON.stringify(o), { status, headers: { ...H, ...extra } });
 
-function memeOrigine(req) {
+export function memeOrigine(req) {
   const o = req.headers.get('Origin');
   return !o || o === new URL(req.url).origin;
 }
-async function corps(req) {
+export async function corps(req) {
   if (!(req.headers.get('Content-Type') || '').includes('application/json')) return null;
   try { const t = await req.text(); return t.length > 4000 ? null : JSON.parse(t); } catch (e) { return null; }
 }
@@ -210,6 +236,7 @@ async function inscription(req, env, b) {
   const u = { id, email, ...(await hacher(b.mdp, null, env.PBKDF2_TOURS)), v: 0, verifie: false, cree: new Date(maintenant).toISOString(),
     acces: { formule: null, jusqu_au: null }, echecs: 0, dernier_mail: maintenant, lang: LANG(b) };
   await ecrire(env, u);
+  await alerte(env, `nouveau compte : ${masquer(email)} (adresse pas encore confirmée)`);
   const m = await envoyerMail(env, email, messageMail('verif', `${base(req, env)}/?verifier=${await lien(env, u, 'verif', VERIF_H)}`, LANG(b)));
   return rep({ ok: true, envoye: m.ok, raison: m.raison || undefined });
 }
@@ -234,9 +261,11 @@ async function connexionCompte(req, env, b) {
 async function verifier(req, env, b) {
   const u = await lireLien(env, b.jeton, 'verif');
   if (!u) return rep({ ok: false, erreur: 'lien_invalide' }, 400);
+  const nouveau = !u.verifie;
   if (!u.verifie) { u.verifie = true; u.verifie_le = new Date().toISOString(); }
   u.v = (u.v || 0) + 1;                                         // le lien ne sert qu'une fois
   await ecrire(env, u);
+  if (nouveau) await alerte(env, `adresse confirmée : ${masquer(u.email)}`);
   return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
 }
 async function oubli(req, env, b) {
@@ -288,7 +317,7 @@ async function supprimer(req, env, b) {
 async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
-  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang'];
+  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -303,6 +332,7 @@ export async function apiCompte(req, env, url, cle = false) {
       turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
   if (p === 'export' && req.method === 'GET') return exporter(req, env);
+  if (p === 'facture' && req.method === 'GET') return factureClient(req, env, url);        // 386 : ses propres factures
   if (req.method !== 'POST') return rep({ ok: false, erreur: 'methode' }, 405);
   if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
   if (p === 'deconnexion') return rep({ ok: true }, 200, { 'Set-Cookie': `${COOKIE_COMPTE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
@@ -316,7 +346,38 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'code') return utiliserCode(req, env, b);
   if (p === 'mdp') return changerMdp(req, env, b);
   if (p === 'supprimer') return supprimer(req, env, b);
+  if (p === 'fondateur') return fondateur(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
+}
+
+// --------------------------------------------------------------------------------------------- liste d'attente fondateurs
+// 23/11/2026 (paquet 384, Lucas : « liste d'attente fondateurs sur la page Plus », « pas de compteur visible ») : un compte
+// connecté et CONFIRMÉ réserve (ou annule) sa place. L'ordre des réservations décide des places ; il n'est visible que dans
+// /compte/admin. Réserver ne coûte rien et n'engage à rien ; un e-mail de confirmation part une seule fois.
+async function fondateur(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!u.verifie) return rep({ ok: false, erreur: 'non_verifie' }, 403);
+  const maintenant = new Date().toISOString();
+  if (b.reserver === false) {
+    if (u.fondateur) {
+      delete u.fondateur;
+      u.historique = [...(u.historique || []).slice(-19), { le: maintenant, fondateur: 'annule' }];
+      await ecrire(env, u);
+      await alerte(env, `place fondateur annulée : ${masquer(u.email)}`);
+    }
+    return rep({ ok: true, compte: vueCompte(u) });
+  }
+  if (!u.fondateur) {
+    u.fondateur = { le: maintenant };
+    u.historique = [...(u.historique || []).slice(-19), { le: maintenant, fondateur: 'reserve' }];
+    const premier = !u.fondateur_mail;
+    u.fondateur_mail = true;
+    await ecrire(env, u);
+    if (premier) { try { await envoyerMail(env, u.email, messageMail('fondateur', base(req, env), u.lang || LANG(b))); } catch (e) { /* la place reste réservée */ } }
+    await alerte(env, `place fondateur réservée : ${masquer(u.email)}`);
+  }
+  return rep({ ok: true, compte: vueCompte(u) });
 }
 
 // --------------------------------------------------------------------------------------------- codes d'accès
@@ -387,6 +448,7 @@ async function utiliserCode(req, env, b) {
   const pose = await env.COFFRE.put(cle, JSON.stringify(x), { onlyIf: { etagMatches: o.etag } });
   if (!pose) return rep({ ok: false, erreur: 'code_utilise' }, 400);           // un autre compte l'a pris à l'instant
   const r = await donnerAcces(env, u.email, x.formule, x.jours, 'code ' + x.indice);
+  if (r.ok) await alerte(env, `code utilisé (…${x.indice}, ${x.jours} j) : ${masquer(u.email)}`);
   return rep(r.ok ? { ok: true, compte: r.compte, jours: x.jours } : r, r.ok ? 200 : 400);
 }
 
@@ -428,24 +490,43 @@ export function pageAdmin() {
 <meta name="robots" content="noindex"><title>Comptes · Game Set Algo</title><style>body{font:15px system-ui,sans-serif;background:#0e0a24;color:#f4f1ff;margin:0;padding:16px}
 .c{background:#1b1342;border-radius:12px;padding:12px;margin:10px 0}input,select,button{font:inherit;padding:10px;border-radius:9px;border:1px solid #443a7a;background:#0e0a24;color:#f4f1ff;margin:4px 0;width:100%;box-sizing:border-box}
 button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff9a}.non{color:#ff4fae}small{color:#a99fd6}</style></head><body>
-<h2>Comptes abonnés</h2><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
+<h2>Comptes abonnés</h2>
+<div class="c"><b>Entonnoir</b><div id="en"><small>…</small></div></div>
+<div class="c"><b>Virement reçu</b><br><small>Donne l'accès, crée la facture numérotée et l'envoie au client.</small>
+<input id="vc" type="text" placeholder="e-mail ou référence (GSA-…)"><select id="vf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option></select>
+<input id="vm" type="text" inputmode="decimal" placeholder="montant reçu (€), ex. 9,99"><input id="vd" type="date"><label style="display:block;margin:6px 0"><input id="vfo" type="checkbox" style="width:auto"> tarif fondateur</label>
+<button id="vb">Valider le virement</button><p id="vr"></p></div>
+<div class="c"><b>Factures</b><div id="lfa"><small>…</small></div></div><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
 <select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="admin">Admin (toi : sections internes)</option><option value="retirer">Retirer l'accès</option></select>
 <input id="j" type="number" min="1" placeholder="jours (facultatif)"><button id="b">Valider</button><p id="r"></p></div>
 <div class="c"><b>Créer des codes à usage unique</b><select id="cf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Nombre de jours ci-dessous</option></select>
 <input id="cj" type="number" min="1" placeholder="jours d'accès (facultatif)"><input id="cv" type="number" min="1" max="365" value="30" placeholder="code valable (jours)">
 <input id="cn" type="number" min="1" max="50" value="1" placeholder="nombre de codes"><input id="cno" type="text" maxlength="80" placeholder="note (pour qui ?)">
-<button id="cb">Créer</button><pre id="cr" style="white-space:pre-wrap;font-size:16px;user-select:all"></pre></div><div id="lc"></div><div id="l"></div>
+<button id="cb">Créer</button><pre id="cr" style="white-space:pre-wrap;font-size:16px;user-select:all"></pre></div><div class="c"><b>Liste d'attente fondateurs</b><div id="lf"><small>…</small></div><button id="cf2" style="margin-top:8px">Copier les e-mails (ordre de réservation)</button></div>
+<input id="q" type="search" placeholder="chercher : e-mail ou référence de virement (GSA-…)"><div id="lc"></div><div id="l"></div>
 <script>
 const $=id=>document.getElementById(id);
-function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{$('l').innerHTML='<p><small>'+o.comptes.length+' compte(s)</small></p>'+o.comptes.map(c=>'<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+'</div>').join('')});}
+let TOUS=[],FOND=[];
+function rendre(){const q=$('q').value.trim().toLowerCase(),L=TOUS.filter(c=>!q||c.email.toLowerCase().includes(q)||String(c.reference).toLowerCase().includes(q));
+$('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
+function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{TOUS=o.comptes;FOND=TOUS.filter(c=>c.fondateur&&c.verifie).sort((a,b)=>String(a.fondateur).localeCompare(String(b.fondateur))).map(c=>c.email);
+$('lf').innerHTML='<small>'+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
+$('q').oninput=rendre;$('cf2').onclick=()=>{const t=FOND.join('\\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('cf2').textContent='Copié ('+FOND.length+')';},()=>{$('lf').insertAdjacentHTML('beforeend','<pre style="white-space:pre-wrap;user-select:all">'+t.replace(/</g,'&lt;')+'</pre>');});};
 $('b').onclick=()=>fetch('/compte/admin/api/acces',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('e').value,formule:$('f').value,jours:$('j').value||null})}).then(r=>r.json()).then(o=>{$('r').textContent=o.ok?'Fait.':'Refusé : '+o.erreur;charger();});
 function codes(){fetch('/compte/admin/api/codes',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lc').innerHTML='<p><small>Codes ('+o.codes.length+')</small></p>'+o.codes.map(c=>'<div class="c">…'+e(c.indice)+' · '+e(c.formule)+' '+c.jours+' j'+(c.note?' · '+e(c.note):'')+'<br><small>'+(c.utilise_par?'<span class="ok">utilisé par '+e(c.utilise_par)+' le '+String(c.utilise_le).slice(0,10)+'</span>':(Date.parse(c.expire)<Date.now()?'<span class="non">expiré</span>':'libre jusqu’au '+String(c.expire).slice(0,10)))+'</small></div>').join('')});}
-$('cb').onclick=()=>fetch('/compte/admin/api/codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formule:$('cf').value,jours:$('cj').value||null,validite:$('cv').value||30,nombre:$('cn').value||1,note:$('cno').value})}).then(r=>r.json()).then(o=>{$('cr').textContent=o.ok?o.codes.join('\n')+'\n('+o.jours+' jours d’accès, code valable '+o.valide_jours+' jours, une seule utilisation)':'Refusé : '+o.erreur;codes();});
-charger();codes();
+$('cb').onclick=()=>fetch('/compte/admin/api/codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formule:$('cf').value,jours:$('cj').value||null,validite:$('cv').value||30,nombre:$('cn').value||1,note:$('cno').value})}).then(r=>r.json()).then(o=>{$('cr').textContent=o.ok?o.codes.join('\\n')+'\\n('+o.jours+' jours d’accès, code valable '+o.valide_jours+' jours, une seule utilisation)':'Refusé : '+o.erreur;codes();});
+function entonnoir(){fetch('/compte/admin/api/entonnoir',{cache:'no-store'}).then(r=>r.json()).then(o=>{const F=o.fenetres,T=o.total,ligne=(t,k)=>'<tr><td>'+t+'</td><td>'+F[1][k]+'</td><td>'+F[7][k]+'</td><td>'+F[30][k]+'</td></tr>';
+$('en').innerHTML='<table style="width:100%;font-size:14px"><tr><td></td><td>24 h</td><td>7 j</td><td>30 j</td></tr>'+ligne('Visiteurs','visiteurs')+ligne('Comptes créés','comptes')+ligne('Confirmés','confirmes')+ligne('Fondateurs','fondateurs')+'</table><small>Aujourd’hui en tout : '+T.comptes+' comptes, '+T.confirmes+' confirmés, '+T.fondateurs+' fondateurs, '+T.plus_payes+' Plus payés ('+T.plus_tous+' Plus en tout). Visiteurs : sans cookie, compte approché.</small>';});}
+function factures(){fetch('/compte/admin/api/factures',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lfa').innerHTML=(o.vendeur?'':'<p class="non"><small>Secret FACTURE_VENDEUR absent : aucune facture possible.</small></p>')+(o.factures.length?o.factures.map(f=>'<div><a style="color:#2ee6ff" target="_blank" href="/compte/admin/facture?n='+e(f.numero)+'">'+e(f.numero)+'</a> · '+e(f.email)+' · '+String(f.total.toFixed(2)).replace('.',',')+' € · '+String(f.emise_le).slice(0,10)+'</div>').join(''):'<small>Aucune facture.</small>');});}
+$('vd').value=new Date().toISOString().slice(0,10);
+$('vb').onclick=()=>{$('vb').disabled=true;fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vr').textContent=o.ok?'Fait : facture '+o.numero+', accès jusqu’au '+String(o.jusqu_au).slice(0,10)+(o.mail?', e-mail envoyé.':', e-mail NON envoyé.'):'Refusé : '+o.erreur;charger();factures();entonnoir();});};
+charger();codes();entonnoir();factures();
 </script></body></html>`;
 }
 export async function adminComptes(req, env, url) {
   const p = url.pathname;
+  const v = await adminVentes(req, env, url);                     // 386 : entonnoir, virements, factures
+  if (v) return v;
   if (p === '/compte/admin') return new Response(pageAdmin(), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store',
     'X-Robots-Tag': 'noindex', 'X-Frame-Options': 'DENY',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'" } });
