@@ -1,49 +1,49 @@
 {
- "genere_le": "2026-11-22T18:28:53+00:00",
+ "genere_le": "2026-11-23T16:32:03+00:00",
  "paquet": 350,
  "regle": "Challenger, favori annoncé 50–60 % ; logit du favori + δ ; δ appris jusqu'au 22/11/2026, jugé à partir du 23/11/2026 sur ≥ 1 000 matchs ; retenu si gain ≥ 0,001, même signe, significatif. Rien ne change dans les pronostics.",
  "apprentissage": {
-  "matchs": 424,
+  "matchs": 430,
   "delta": -0.15,
-  "log_loss_production": 0.69025,
-  "log_loss_variante": 0.68804
+  "log_loss_production": 0.69056,
+  "log_loss_variante": 0.68798
  },
  "jugement": {
-  "matchs": 0
+  "matchs": 14
  },
- "verdict": "pas encore jugeable (0 matchs jugés sur 1000)",
+ "verdict": "pas encore jugeable (14 matchs jugés sur 1000)",
  "diagnostic": {
   "apprentissage": {
    "CH": [
     {
      "tranche": "50–60 %",
-     "matchs": 424,
-     "annonce_pct": 54.8,
-     "gagne_pct": 51.4
+     "matchs": 430,
+     "annonce_pct": 54.7,
+     "gagne_pct": 51.2
     },
     {
      "tranche": "60–70 %",
-     "matchs": 336,
-     "annonce_pct": 64.6,
-     "gagne_pct": 67.3
+     "matchs": 357,
+     "annonce_pct": 64.7,
+     "gagne_pct": 66.7
     },
     {
      "tranche": "70–80 %",
-     "matchs": 196,
+     "matchs": 202,
      "annonce_pct": 74.4,
-     "gagne_pct": 71.4
+     "gagne_pct": 71.8
     },
     {
      "tranche": "80–90 %",
-     "matchs": 101,
-     "annonce_pct": 84.4,
-     "gagne_pct": 86.1
+     "matchs": 110,
+     "annonce_pct": 84.5,
+     "gagne_pct": 85.5
     },
     {
      "tranche": "90–100 %",
-     "matchs": 59,
-     "annonce_pct": 95.6,
-     "gagne_pct": 96.6
+     "matchs": 79,
+     "annonce_pct": 95.5,
+     "gagne_pct": 96.2
     }
    ],
    "ATP": [
@@ -55,9 +55,9 @@
     },
     {
      "tranche": "60–70 %",
-     "matchs": 62,
+     "matchs": 63,
      "annonce_pct": 64.5,
-     "gagne_pct": 61.3
+     "gagne_pct": 61.9
     },
     {
      "tranche": "70–80 %",
@@ -111,6 +111,39 @@
     }
    ]
   },
-  "jugement": {}
+  "jugement": {
+   "CH": [
+    {
+     "tranche": "50–60 %",
+     "matchs": 14,
+     "annonce_pct": 55.1,
+     "gagne_pct": 78.6
+    },
+    {
+     "tranche": "60–70 %",
+     "matchs": 9,
+     "annonce_pct": 64.8,
+     "gagne_pct": 11.1
+    },
+    {
+     "tranche": "70–80 %",
+     "matchs": 10,
+     "annonce_pct": 74.5,
+     "gagne_pct": 70.0
+    },
+    {
+     "tranche": "80–90 %",
+     "matchs": 2,
+     "annonce_pct": 86.9,
+     "gagne_pct": 50.0
+    },
+    {
+     "tranche": "90–100 %",
+     "matchs": 2,
+     "annonce_pct": 96.3,
+     "gagne_pct": 100.0
+    }
+   ]
+  }
  }
 }
