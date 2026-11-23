@@ -2046,6 +2046,19 @@ def resume_version(v):
     return out
 
 
+def balles_min(m):
+    """23/11/2026 (paquet 368) — points de service cumulés du joueur le moins documenté, AU MOMENT DU PRONOSTIC (même
+    compteur que controle_documentation) ; None si le compteur n'est pas chargé. Le bilan « selon la documentation » du
+    site classait les matchs avec les balles d'aujourd'hui : ce champ permettra de les classer comme le jour du match."""
+    if BALLES_CUMULEES is None or not m.get('home') or not m.get('away'):
+        return None
+    try:
+        import elo as E_
+        return int(min(BALLES_CUMULEES.get(E_.cle(m['home']), 0), BALLES_CUMULEES.get(E_.cle(m['away']), 0)))
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def instantane(doc, m):
     return {'passage': doc['genere_le'], 'uid': m['uid'], 'debut': m['debut'],
             'debut_utc': m.get('debut_utc'), 'horodatage': m.get('horodatage'), 'home': m['home'], 'away': m['away'],
@@ -2054,7 +2067,8 @@ def instantane(doc, m):
             'modele': {'facteurs': doc.get('facteurs_adoptes') or [], 'combinaison': doc.get('combinaison'),
                        'profils_au': doc.get('profils_au'), 'elo_au': doc.get('elo_au')},
             **{k: resume_version(m.get(k)) for k in VERSIONS}, 'direct': m.get('direct'),
-            'en_salle': m.get('en_salle')}      # 22/11/2026 (paquet 344) : pour l'étude « salle » (etude_ancrage.py)
+            'en_salle': m.get('en_salle'),      # 22/11/2026 (paquet 344) : pour l'étude « salle » (etude_ancrage.py)
+            'balles_min': balles_min(m)}        # 23/11/2026 (paquet 368) : documentation au moment du pronostic
 
 
 def enregistrer_instantanes(racine, doc):
@@ -2139,7 +2153,7 @@ def journaliser(racine, doc):
                                 'detail': {k: resume_version(m.get(k)) for k in VERSIONS},
                                 'pin_cotes': m.get('pin_cotes'), 'surface': m.get('surface'),
                                 'meilleur_des': m.get('meilleur_des'), 'matchs_joues': m.get('matchs_joues'),
-                                'fiabilite': m.get('fiabilite'),
+                                'fiabilite': m.get('fiabilite'), 'balles_min': balles_min(m),   # 368
                                 'profil_contexte': (m.get('match_simule') or {}).get('profil_contexte'),
                                 'stabilite_score': (m.get('match_simule') or {}).get('stabilite_score'),
                                 'feuille': feuille_prevue(m)},
