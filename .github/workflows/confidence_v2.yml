@@ -41,9 +41,14 @@ jobs:
           BACKTEST_FILE: backtest_tennis.csv
           OUT: confidence_calib.json
           MIN_CAL: "20"
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ ! -f backtest_tennis.csv ]; then echo "Pas de backtest"; exit 0; fi
-          python scripts/confidence_v2.py
+          python scripts/discret.py -- python scripts/confidence_v2.py
       - name: Committer la calibration
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.

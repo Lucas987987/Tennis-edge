@@ -75,14 +75,21 @@ jobs:
       # player_form les lit pour ses résidus de marché. Sans elles il tourne
       # quand même, en perdant cette seule section.
       - name: Forme et fatigue des joueurs
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
         run: |
           python scripts/curves_parts.py rebuild || true
-          python scripts/player_form.py || true
+          python scripts/discret.py -- python scripts/player_form.py || true
 
       # build_profiles ne lit QUE des fichiers plats a la racine : ni
       # partitions, ni releases. Pas de restore_curves a prevoir.
       - name: Construire les fiches
-        run: python scripts/build_profiles.py
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/build_profiles.py
 
       # 22/11/2026 (paquet 348) : les fiches (construites sur les cotes) vont au coffre privé ; le worker « joueurs »
       # les lit dans R2, derrière connexion. Sorties du dépôt public dès que le coffre en a une copie identique.

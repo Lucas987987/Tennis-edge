@@ -40,7 +40,13 @@ jobs:
         run: python3 scripts/cotes_privees.py pull || true
 
       - name: Calcul des candidats value + jointure CLV
-        run: python scripts/value_journal.py
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/value_journal.py
       # 22/11/2026 (paquet 352) — COTES EN PRIVÉ, ÉTAPE 4 : value_candidates.jsonl envoyé(s) au coffre à chaque passage ; en mode
       # ETAT_CHAUD=prive, sorti(s) du dépôt public (scripts/cotes_privees.py). Des nombres seulement dans le journal.
       - name: Cotes privées — envoyer (value, paquet 352)

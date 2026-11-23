@@ -78,16 +78,23 @@ jobs:
         run: python scripts/elo_fetch.py || echo "⚠️ récupération échouée — le modèle tournera sans référence"
 
       - name: Construire le modèle et comparer au marché
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
         run: |
           python scripts/curves_parts.py rebuild || true
-          python scripts/elo_model.py --eval
+          python scripts/discret.py -- python scripts/elo_model.py --eval
 
       # Même famille que l'Elo : des signaux qui ne regardent AUCUNE cote, et la
       # même cadence hebdomadaire. Plutôt qu'un 44e workflow pour un script qui
       # tourne en 30 s, on le rattache ici — la charge de maintenance d'un dépôt
       # à 43 workflows et 93 scripts est déjà le vrai facteur limitant.
       - name: Fatigue et forme récente
-        run: python scripts/player_form.py --eval || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/player_form.py --eval || true
 
       - name: Commit
         if: always()
