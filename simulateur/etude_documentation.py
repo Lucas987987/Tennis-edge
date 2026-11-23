@@ -72,6 +72,22 @@ class Compteur:
         return self.n
 
 
+def fusionner(n, alias):
+    """23/11/2026 (paquet 375) — compteur par JOUEUR et non par écriture du nom : l'archive écrit « Santiago Fa Rodriguez
+    Taverna », les feuilles « Santiago Rodriguez Taverna » ; sans fusion, le joueur était compté 1 513 points au lieu de
+    15 580 (46 matchs sur 1 561 en direct, 43 classés dans la mauvaise tranche). alias : celui du classement Elo."""
+    out = collections.Counter()
+    for k, v in (n or {}).items():
+        out[(alias or {}).get(k, k)] += v
+    return out
+
+
+def balles(n_fusionne, alias, nom):
+    import elo as E
+    k = E.cle(nom)
+    return n_fusionne.get((alias or {}).get(k, k), 0)
+
+
 def pente(R):
     a = 1.0
     for _ in range(40):

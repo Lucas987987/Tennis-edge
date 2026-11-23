@@ -24,20 +24,37 @@ def _esc(s):
     """Échappe les caractères spéciaux HTML pour parse_mode=HTML (évite Bad Request)."""
     return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
+def _morceaux_tg(t, n=4000):
+    """23/11/2026 (paquet 375) : Telegram refuse au-delà de 4 096 caractères ; coupe entre deux lignes."""
+    out, cur = [], None
+    for ligne in str(t or '').split('\n'):
+        while len(ligne) > n:
+            if cur is not None:
+                out.append(cur)
+                cur = None
+            out.append(ligne[:n])
+            ligne = ligne[n:]
+        cur = ligne if cur is None else (cur + '\n' + ligne if len(cur) + 1 + len(ligne) <= n else (out.append(cur) or ligne))
+    if cur is not None and cur.strip():
+        out.append(cur)
+    return out or ['']
+
+
 def send_telegram(msg):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("Telegram non configuré, message:\n", msg)
         return
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = urllib.parse.urlencode({
-        'chat_id': TELEGRAM_CHAT_ID,
-        'text': msg,
-        'parse_mode': 'HTML',
-    }).encode()
-    try:
-        urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=20)
-    except Exception as e:
-        print(f"Erreur envoi Telegram: {e}")
+    for morceau in _morceaux_tg(msg):
+        data = urllib.parse.urlencode({
+            'chat_id': TELEGRAM_CHAT_ID,
+            'text': morceau,
+            'parse_mode': 'HTML',
+        }).encode()
+        try:
+            urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=20)
+        except Exception as e:
+            print(f"Erreur envoi Telegram: {getattr(e, 'code', type(e).__name__)}")
 
 # ── 1. Fraîcheur des fichiers ────────────────────────────
 def file_age_hours(path):

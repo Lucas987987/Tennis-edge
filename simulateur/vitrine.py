@@ -642,9 +642,13 @@ def documentation_au_jour(racine, matchs, archive=None):
         import elo as E_
         import etude_documentation as EDO
         C = EDO.Compteur(EDO.evenements(archive, racine))
+        al = (_lire(os.path.join(racine, 'simulateur', 'elo_etat.json'), {}) or {}).get('alias') or {}
+        jour_, n = None, None
         for m in sorted(a_recalculer, key=lambda m: str(m.get('debut'))):
-            n = C.au(str(m.get('debut'))[:10])
-            cache[m.get('uid')] = int(min(n.get(E_.cle(m['home']), 0), n.get(E_.cle(m['away']), 0)))
+            if str(m.get('debut'))[:10] != jour_:
+                jour_ = str(m.get('debut'))[:10]
+                n = EDO.fusionner(C.au(jour_), al)                    # paquet 375 : un joueur, pas une écriture
+            cache[m.get('uid')] = int(min(EDO.balles(n, al, m['home']), EDO.balles(n, al, m['away'])))
     sources = _co.Counter()
 
     def f(m):
@@ -745,7 +749,8 @@ def journal_changements(racine, analyse=None):
                                                  'fantome_favori_outsider', 'fantome_favori_sous_estime',
                                                  'fantome_tiebreak', 'fantome_documentation_faible', 'fantome_format_match',
                                                  'fantome_grand_chelem', 'fantome_qualifs_grand_chelem',
-                                                 'fantome_favori_moins_documente') if T.get(k)]
+                                                 'fantome_favori_moins_documente', 'fantome_favori_moins_doc_sous_500',
+                                                 'fantome_favori_moins_doc_1500_3000') if T.get(k)]
     return doc
 
 

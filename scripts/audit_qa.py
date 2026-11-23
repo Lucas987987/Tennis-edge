@@ -375,19 +375,38 @@ def check_joins(problems):
                                      f"l'orthographe des noms."))
 
 
+def _morceaux_tg(t, n=4000):
+    """23/11/2026 (paquet 375) : Telegram refuse au-delà de 4 096 caractères ; coupe entre deux lignes."""
+    out, cur = [], None
+    for ligne in str(t or '').split('\n'):
+        while len(ligne) > n:
+            if cur is not None:
+                out.append(cur)
+                cur = None
+            out.append(ligne[:n])
+            ligne = ligne[n:]
+        cur = ligne if cur is None else (cur + '\n' + ligne if len(cur) + 1 + len(ligne) <= n else (out.append(cur) or ligne))
+    if cur is not None and cur.strip():
+        out.append(cur)
+    return out or ['']
+
+
 def send_telegram(token, chat_id, text):
     import urllib.request, urllib.parse
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = urllib.parse.urlencode({'chat_id': chat_id, 'text': text,
-                                   'parse_mode': 'HTML',
-                                   'disable_web_page_preview': 'true'}).encode()
-    req = urllib.request.Request(url, data=data, headers={'User-Agent': 'tennis-edge-audit/1.0'})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return r.status == 200
-    except Exception as e:
-        print(f"  ⚠️ Telegram: {e}")
-        return False
+    ok = True
+    for morceau in _morceaux_tg(text):
+        data = urllib.parse.urlencode({'chat_id': chat_id, 'text': morceau,
+                                       'parse_mode': 'HTML',
+                                       'disable_web_page_preview': 'true'}).encode()
+        req = urllib.request.Request(url, data=data, headers={'User-Agent': 'tennis-edge-audit/1.0'})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                ok = ok and r.status == 200
+        except Exception as e:
+            print(f"  ⚠️ Telegram: {getattr(e, 'code', type(e).__name__)}")
+            ok = False
+    return ok
 
 
 def _esc(s):
