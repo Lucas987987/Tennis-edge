@@ -1890,6 +1890,21 @@
    "prive": true,
    "quoi": "LAB : MÉNAGE DES ONGLETS (paquet 362, choix de Lucas) : 7 onglets en tête (Découvertes, Explorateur, Matchs en direct, Réconciliation, Profils, Pistes V6.6, Stabilité 16 ans), sur plusieurs lignes au lieu d'une bande à faire défiler ; les 10 autres (hypothèses gelées, base des matchs, pistes gelées automatiquement, Bookmakers & Sets, suivi V6, V6.3, V6.1, sources, provenance) rangés sous « Archives ». Le dernier onglet ouvert est retenu.",
    "garde_fou": "Rien n'est supprimé : mêmes onglets, mêmes données, un clic de plus pour les archives. Tests d'interface du Lab verts."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 363,
+   "quoi": "CONTENUS X (paquet 363) : sur chaque match terminé, un bouton « Image pour X (résultat) » donne une image sombre : le % publié avant le match, le vrai vainqueur et le score, ce qui était juste ou faux (sets, durée, score le plus probable) et quatre lignes de l'algo avec leur %. La vidéo du jour garde en haut, tout le long, le % d'avant match (lisible sans le son) et sort aussi en version courte d'environ 30 secondes (trois moments forts).",
+   "garde_fou": "Aucune cote ni adresse sur les images et vidéos. En bas de l'image : un match ne prouve rien, tous les pronostics restent publiés."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 363,
+   "prive": true,
+   "quoi": "Vidéo du jour, carte bilan, résumé de la veille et carte de la semaine : relancés par le worker tennis-edge-closing si leur cron saute (dernier passage de plus de 26 h, 7 jours + 2 h pour la semaine). La vidéo du jour sort en 4 jobs (FR/EN × longue/courte).",
+   "garde_fou": "Interrupteur CONTENUS_X_ENABLED=0 ; un jour normal le cron passe le premier et le worker ne fait rien."
   }
  ]
 }
