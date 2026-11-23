@@ -11,11 +11,19 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+      # 23/11/2026 (paquet 378) : cartes de tous les matchs = version complète du site, au coffre
+      - name: Pronostics complets — rapatrier du coffre (paquet 378)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python3 scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés"
       - run: python3 scripts/arena_cards.py
       - name: Publier
         run: |
           git config user.name tennis-edge-bot
           git config user.email tennis-edge-bot@users.noreply.github.com
+          python3 scripts/pronostics_prives.py rendre .
           git add arena/arena.js arena/arena-ui.css arena/player_cards.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Arena : reprendre les cartes de l algorithme"
