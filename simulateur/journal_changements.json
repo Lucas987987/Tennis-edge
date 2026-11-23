@@ -2081,6 +2081,13 @@
    "paquet": 387,
    "quoi": "CORRECTIF CHAÎNE COURTE (paquet 387) : la vérification des paquets construisait le site à partir de la copie publique du dépôt, où les matchs à l'affiche n'ont pas de simulation (publication différée, paquet 378) ; les matchs commencés de cette copie étaient repris tels quels et le contrôle du site échouait (« simulation complète absente du catalogue »). Ces entrées verrouillées ne sont plus jamais reprises.",
    "garde_fou": "Aucun changement des % ni du site en production (la version complète, rapatriée du coffre, n'a pas d'entrée verrouillée). Test : tests/test_vitrine.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 388,
+   "quoi": "MATCHS TERMINÉS (paquet 388) : 1) le groupe « Matchs terminés » s'ouvrait vide dès que 30 matchs étaient à venir ; il montre maintenant tous les matchs terminés, les plus récents d'abord. 2) Résultat dès la fin du match : quand un match sort du direct, le serveur vérifie une fois s'il est fini et garde 36 h son score final et son vainqueur ; la page les lit à l'ouverture puis toutes les 30 secondes, et le match passe aussitôt dans « Matchs terminés » avec son score, même après un rechargement. Un match réservé Plus montre aussi son score final (sans aucun %).",
+   "garde_fou": "Une seule requête TennisApi par match terminé (6 au plus par rafraîchissement du direct, 3 essais au plus) ; la lecture des terminés n'interroge jamais TennisApi. Le bilan après match (prévu contre réel) reste celui de la chaîne. Tests : workers/algo/test_worker.mjs."
   }
  ]
 }
