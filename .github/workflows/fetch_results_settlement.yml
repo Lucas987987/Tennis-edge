@@ -84,7 +84,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           for f in resultats_oddspapi.json backtest_tennis.csv; do
-            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi   # 351 : jamais un fichier au coffre
+            if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi   # 351 : jamais un fichier au coffre
           done
           git diff --staged --quiet || git commit -m "Résultats rapides (settlement v5)"
           # COMMIT D'ABORD (ci-dessus), puis "merge" et non "rebase" : un
