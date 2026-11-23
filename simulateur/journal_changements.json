@@ -2093,8 +2093,15 @@
    "date": "2026-11-23",
    "statut": "site",
    "paquet": 389,
-   "quoi": "APERÇU PLUS ET BILAN SUR 30 JOURS (paquet 389) : 1) un visiteur sans accès Plus voit en entier un match terminé (pronostic, scénarios, direct, bilan), signalé « Aperçu Plus » dans la liste et ouvert depuis la section Plus. Règle fixe, qui ne regarde jamais le résultat : le match le plus relevé (somme des Elo) commencé il y a 3 à 24 h, hors match du jour, ATP et WTA d'abord. 2) Le bilan public a deux périodes : depuis le 21 octobre, ou les 30 derniers jours (le modèle d'aujourd'hui).",
-   "garde_fou": "L'aperçu est un match déjà commencé : aucun pronostic à venir n'est donné. Choix sans le résultat. Tests : tests/test_apercu_plus.py."
+   "quoi": "BILAN SUR 30 JOURS (paquet 389) : le bilan public a deux périodes, depuis le 21 octobre ou les 30 derniers jours (le modèle d'aujourd'hui) ; chiffres, courbe, circuits et derniers matchs suivent la période choisie.",
+   "garde_fou": "Même calcul que le bilan habituel, seule la date de départ change. Tests : tests/test_apercu_plus.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 390,
+   "quoi": "MATCH COMMENCÉ SANS ACCÈS PLUS (paquet 390, Lucas) : un match déjà commencé n'affiche que le % de l'algo d'avant match (déjà public dans le bilan) ; sets, scores, scénarios et statistiques restent réservés à l'accès Plus. L'aperçu d'un match complet, prévu au paquet 389, n'est pas mis en place.",
+   "garde_fou": "Le match du jour reste offert en entier ; un match à venir ne montre toujours aucun %. Tests : tests/test_apercu_plus.py, tests/test_pronostics_prives.py."
   }
  ]
 }
