@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0E0A24">
 <script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Game Set Algo — l'algo du tennis</title>
 <meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant : % de victoire, scénarios, projections et un bilan public, pertes comprises.">
 <meta property="og:title" content="Game Set Algo — l'algo du tennis">
@@ -861,6 +862,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   </section>
 
   <footer>
+    <p id="installer" hidden><button type="button" class="btn" id="b-installer" data-t="pwa_installer"></button></p>
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
@@ -1120,6 +1122,7 @@ const T = {
   cp_deco:'Se déconnecter', cp_fermer:'Fermer',
   verrou_titre:'Réservé à l’accès Plus', verrou_texte:"Le match du jour est offert. L'accès Plus ouvre le pronostic de tous les matchs : % de victoire, fiabilité, sets, scores, statistiques prévues, scénarios et direct.",
   verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.",
+  pwa_installer:"📲 Installer l'appli sur ce téléphone",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation",
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
@@ -1450,6 +1453,7 @@ const T = {
   cp_deco:'Log out', cp_fermer:'Close',
   verrou_titre:'Plus access only', verrou_texte:'The match of the day is free. Plus access unlocks the forecast for every match: win %, reliability, sets, scores, predicted stats, scenarios and live coverage.',
   verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.',
+  pwa_installer:'📲 Install the app on this phone',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
@@ -8401,6 +8405,21 @@ rendTextes();
 // Clé à la minute : deux visites rapprochées reprennent le fichier déjà reçu. Si site.json manque : donnees.json.
 const MODE_IMAGE = !!(Q.get('semaine') || Q.get('bilan') || Q.get('projections') || Q.get('carte') || Q.get('video'));
 if (!MODE_IMAGE) brancherCompte();
+// 23/11/2026 (paquet 391, Lucas) — APPLI : service worker (sw.js : la page réseau d'abord, seuls les fichiers à empreinte,
+// polices et icônes sont gardés ; données, direct et comptes jamais) et bouton « Installer » quand le navigateur le propose.
+if (!MODE_IMAGE && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+let INSTALL = null;
+window.addEventListener('beforeinstallprompt', ev => {
+  ev.preventDefault(); INSTALL = ev;
+  const z = document.getElementById('installer'); if (z) z.hidden = false;
+});
+window.addEventListener('appinstalled', () => { INSTALL = null; const z = document.getElementById('installer'); if (z) z.hidden = true; });
+document.getElementById('b-installer').addEventListener('click', () => {
+  if (!INSTALL) return; INSTALL.prompt();
+  INSTALL.userChoice.finally(() => { INSTALL = null; document.getElementById('installer').hidden = true; });
+});
 const CLE_DONNEES = Math.floor(Date.now() / 60000);
 const lireJson = f => fetch(f + '?v=' + CLE_DONNEES).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 (MODE_IMAGE ? lireJson('donnees.json') : lireJson('site.json').catch(() => lireJson('donnees.json'))).then(d=>{

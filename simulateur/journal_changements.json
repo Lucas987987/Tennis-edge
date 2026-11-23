@@ -2102,6 +2102,13 @@
    "paquet": 390,
    "quoi": "MATCH COMMENCÉ SANS ACCÈS PLUS (paquet 390, Lucas) : un match déjà commencé n'affiche que le % de l'algo d'avant match (déjà public dans le bilan) ; sets, scores, scénarios et statistiques restent réservés à l'accès Plus. L'aperçu d'un match complet, prévu au paquet 389, n'est pas mis en place.",
    "garde_fou": "Le match du jour reste offert en entier ; un match à venir ne montre toujours aucun %. Tests : tests/test_apercu_plus.py, tests/test_pronostics_prives.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 391,
+   "quoi": "SITE PLUS RAPIDE ET INSTALLABLE (paquet 391) : 1) à la publication, le grand script et la grande feuille de style de la page sortent dans des fichiers dont le nom suit leur contenu (gardés un an par le navigateur) : la page elle-même passe de 766 Ko à 12 Ko, et une visite qui revient ne retélécharge plus que la page et les données. 2) Le site s'installe comme une appli (icône sur l'écran d'accueil, ouverture plein écran) : manifeste, icônes, et un service worker prudent (la page passe toujours par le réseau d'abord ; seuls les fichiers à empreinte, les polices et les icônes sont gardés ; données, direct et comptes jamais). Bouton « Installer l'appli » en bas de page quand le téléphone le propose.",
+   "garde_fou": "Si le découpage échoue, la page est publiée d'un seul tenant comme avant. Arrêt d'urgence du service worker : publier un sw.js qui se désinscrit. Tests : tests/test_decouper_page.py, workers/algo/test_worker.mjs."
   }
  ]
 }
