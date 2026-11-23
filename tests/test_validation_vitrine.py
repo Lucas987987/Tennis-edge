@@ -220,7 +220,8 @@ class WorkflowVideoTelegram(unittest.TestCase):
         self.assertNotIn('|| echo "::warning::carte Telegram', self.yml)
         # 05/11/2026 : avec ou sans le format 4:5 en option (paquet 178), la vidéo doit exister avant l'envoi
         self.assertTrue('test -s "videos/simulation_${lang}${suffixe}.mp4"' in self.yml
-                        or 'test -s "videos/simulation_${lang}.mp4"' in self.yml)
+                        or 'test -s "videos/simulation_${lang}.mp4"' in self.yml
+                        or 'test -s "videos/simulation${court}_${lang}${suffixe}.mp4"' in self.yml)   # 363 : + la version courte
 
 
 if __name__ == '__main__':

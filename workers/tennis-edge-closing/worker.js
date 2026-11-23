@@ -268,7 +268,9 @@ export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes
   // 22/11/2026 (paquet 350) : études de la semaine (timeouts 90 et 120 min)
   'etude_ancrage.yml': 120, 'chercheur.yml': 150,
   // 22/11/2026 (paquet 353) : contrôle de la bascule privée (timeout 10 min)
-  'controle_prive.yml': 30 };
+  'controle_prive.yml': 30,
+  // 22/11/2026 (paquet 363) : contenus X (timeouts 100, 15, 100 et 15 min)
+  'video_simulation.yml': 110, 'bilan_match_du_jour.yml': 30, 'video_resume.yml': 110, 'bilan_semaine.yml': 30 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -572,6 +574,17 @@ async function run(env) {
   if ((env.CONTROLE_PRIVE_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Contrôle privé', evenement: 'controle_prive',
       workflowFile: 'controle_prive.yml', periodeMin: 1440 });
+  }
+  // 22/11/2026 (paquet 363) — CONTENUS X : la vidéo du match du jour, la carte bilan et le résumé de la veille (chaque
+  // matin), la carte de la semaine (le lundi) partent sur des crons GitHub qui sautent parfois dans ce dépôt. Le worker
+  // ne relance QUE si le dernier passage date de plus de 26 h (7 jours + 2 h pour la semaine) : un jour normal, le cron
+  // passe le premier et le worker ne fait rien. 0 requête d'API TennisApi. Désactivable : CONTENUS_X_ENABLED=0.
+  if ((env.CONTENUS_X_ENABLED || '1') !== '0') {
+    for (const [nom, wf, ev, per] of [['Vidéo du jour', 'video_simulation.yml', 'video_simulation', 1560],
+      ['Carte bilan', 'bilan_match_du_jour.yml', 'bilan_match_du_jour', 1560], ['Résumé de la veille', 'video_resume.yml', 'video_resume', 1560],
+      ['Carte de la semaine', 'bilan_semaine.yml', 'bilan_semaine', 10200]]) {
+      await planifierPeriodique({ owner, repo, token, ts, messages, nom, evenement: ev, workflowFile: wf, periodeMin: per });
+    }
   }
 
   return messages.join('\n');

@@ -51,6 +51,14 @@ on:
         type: choice
         options: ['0.85', '1', '0.67']
         default: '0.85'
+      duree:
+        description: "22/11/2026 (paquet 363) : version longue (~60–75 s), courte pour X (~30 s), ou les deux"
+        type: choice
+        options: ['les deux', 'longue', 'courte']
+        default: 'les deux'
+  # 22/11/2026 (paquet 363) : relancé aussi par le worker Cloudflare si le cron du matin saute
+  repository_dispatch:
+    types: [video_simulation]
   schedule:
     - cron: '5 7 * * *'
 
@@ -69,6 +77,7 @@ jobs:
       fail-fast: false
       matrix:
         lang: [fr, en]
+        duree: [longue, courte]      # 363 : la courte (~30 s, 3 moments forts) en plus de la longue
     steps:
       - uses: actions/checkout@v5
         with:
@@ -137,10 +146,12 @@ jobs:
           UID_DEMANDE: ${{ inputs.uid }}
 
       - name: Enregistrer (FR puis EN)
-        if: steps.mdj.outputs.ok == '1'
+        if: steps.mdj.outputs.ok == '1' && (inputs.duree == '' || inputs.duree == null || inputs.duree == 'les deux' || inputs.duree == matrix.duree)
         run: |
           lang="${{ matrix.lang }}"
-          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" --echelle "${{ inputs.echelle || '0.85' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} --sortie videos
+          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" --echelle "${{ inputs.echelle || '0.85' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} ${{ matrix.duree == 'courte' && '--court' || '' }} --sortie videos
+          # 363 : les cartes (stats, projections) une seule fois, avec la version longue
+          if [ "${{ matrix.duree }}" = "courte" ]; then ls -la videos; exit 0; fi
           # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
           python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
           # 21/11/2026 (paquet 325) : toutes les projections du match en une image
@@ -148,7 +159,7 @@ jobs:
           ls -la videos
 
       - name: Envoyer sur le Telegram privé
-        if: steps.mdj.outputs.ok == '1'
+        if: steps.mdj.outputs.ok == '1' && (inputs.duree == '' || inputs.duree == null || inputs.duree == 'les deux' || inputs.duree == matrix.duree)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -157,12 +168,13 @@ jobs:
         run: |
           if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : vidéos non envoyées.'; exit 1; fi
           suffixe=""; [ "${{ inputs.format || '9x16' }}" = "4x5" ] && suffixe="_4x5"
+          court=""; etiquette="Simulation"; [ "${{ matrix.duree }}" = "courte" ] && { court="_courte"; etiquette="Simulation courte pour X (~30 s)"; }
           for lang in ${{ matrix.lang }}; do
-            test -s "videos/simulation_${lang}${suffixe}.mp4"
+            test -s "videos/simulation${court}_${lang}${suffixe}.mp4"
             curl --fail-with-body -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
-              -F caption="🎬 Simulation (${lang}${suffixe}) — ${TITRE} · ${TOURNOI}" \
-              -F video=@"videos/simulation_${lang}${suffixe}.mp4" \
+              -F caption="🎬 ${etiquette} (${lang}${suffixe}) — ${TITRE} · ${TOURNOI}" \
+              -F video=@"videos/simulation${court}_${lang}${suffixe}.mp4" \
               "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo"
             if [ -f "videos/stats_${lang}.png" ]; then
               curl --fail-with-body -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \

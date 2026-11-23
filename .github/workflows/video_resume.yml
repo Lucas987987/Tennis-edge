@@ -22,6 +22,9 @@ on:
         description: "Match terminé (uid du site ; vide = le match du jour de la veille)"
         required: false
         default: ''
+  # 22/11/2026 (paquet 363) : relancé aussi par le worker Cloudflare si le cron saute
+  repository_dispatch:
+    types: [video_resume]
   schedule:
     - cron: '12 6 * * *'
 

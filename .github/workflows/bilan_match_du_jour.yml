@@ -13,6 +13,9 @@ on:
         description: "Match (uid, vide = match du jour, sinon celui de la veille)"
         required: false
         default: ''
+  # 22/11/2026 (paquet 363) : relancé aussi par le worker Cloudflare si le cron saute
+  repository_dispatch:
+    types: [bilan_match_du_jour]
   schedule:
     - cron: '37 5 * * *'
 

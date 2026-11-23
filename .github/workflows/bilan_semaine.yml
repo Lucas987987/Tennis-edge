@@ -7,6 +7,9 @@ name: Bilan — la semaine de l'algo
 
 on:
   workflow_dispatch:
+  # 22/11/2026 (paquet 363) : relancé aussi par le worker Cloudflare si le cron saute
+  repository_dispatch:
+    types: [bilan_semaine]
   schedule:
     - cron: '47 6 * * 1'
 
