@@ -2109,6 +2109,20 @@
    "paquet": 391,
    "quoi": "SITE PLUS RAPIDE ET INSTALLABLE (paquet 391) : 1) à la publication, le grand script et la grande feuille de style de la page sortent dans des fichiers dont le nom suit leur contenu (gardés un an par le navigateur) : la page elle-même passe de 766 Ko à 12 Ko, et une visite qui revient ne retélécharge plus que la page et les données. 2) Le site s'installe comme une appli (icône sur l'écran d'accueil, ouverture plein écran) : manifeste, icônes, et un service worker prudent (la page passe toujours par le réseau d'abord ; seuls les fichiers à empreinte, les polices et les icônes sont gardés ; données, direct et comptes jamais). Bouton « Installer l'appli » en bas de page quand le téléphone le propose.",
    "garde_fou": "Si le découpage échoue, la page est publiée d'un seul tenant comme avant. Arrêt d'urgence du service worker : publier un sw.js qui se désinscrit. Tests : tests/test_decouper_page.py, workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 392,
+   "quoi": "JOURNAUX GITHUB : les trois études privées lancées avec les pronostics écrivaient leurs chiffres détaillés dans le journal du run GitHub, qui est public. Dans GitHub, elles n'écrivent plus que le nombre de matchs étudiés ; le détail part seulement sur le Telegram privé.",
+   "garde_fou": "Hors de GitHub (sur un poste), le détail s'affiche comme avant. Tests : tests/test_journal_public.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 393,
+   "quoi": "AUDIT DES JOURNAUX GITHUB (paquet 393) : le dépôt est public, donc les journaux de ses runs et leurs artefacts aussi. 107 lancements de scripts d'étude et de collecte (dans 47 workflows) passent désormais par un lanceur discret : le journal ne montre que le nom du script, son code de sortie, le nombre de lignes écrites, les avertissements techniques et, en cas d'échec, la trace Python ; le journal complet part au coffre privé (lisible dans le Lab). Cinq artefacts téléchargeables (sorties d'études, audit des données de bookmakers, sauvegarde) sont remplacés par un rangement au coffre privé, un fichier n'est plus recopié dans le journal, et un rapport d'étude quitte le dépôt.",
+   "garde_fou": "Le code de sortie des scripts est inchangé (un échec reste rouge). Un test vérifie que chaque script listé dans scripts/discret_scripts.txt est toujours lancé par le lanceur. Tests : tests/test_discret.py."
   }
  ]
 }

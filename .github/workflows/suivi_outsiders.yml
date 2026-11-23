@@ -64,9 +64,15 @@ jobs:
         run: python scripts/coffre.py pull --groupe profils || true
 
       - name: Lancer le suivi
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -o pipefail
-          PYTHONPATH=scripts python scripts/etude_outsiders_alertes.py | tee suivi_outsiders.txt
+          PYTHONPATH=scripts python scripts/discret.py --copie suivi_outsiders.txt -- python scripts/etude_outsiders_alertes.py
 
       - name: Envoyer sur Telegram
         if: always()
@@ -102,11 +108,11 @@ jobs:
           print(urllib.request.urlopen(req, timeout=30).read()[:200])
           PY
 
-      - name: Garder la sortie complète
+      # 393 : la sortie complète va au coffre privé (un artefact de dépôt public est public)
+      - name: Garder la sortie complète (coffre privé)
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: suivi-outsiders
-          path: suivi_outsiders.txt
-          retention-days: 30
-          if-no-files-found: ignore
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/vers_coffre.py --nom suivi_outsiders suivi_outsiders.txt || true

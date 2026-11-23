@@ -79,6 +79,11 @@ jobs:
         env:
           ELO_SURFACE_W: ${{ github.event.inputs.surface_w }}
           ELO_MIN_MATCHES: ${{ github.event.inputs.min_matches }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           shopt -s nullglob
           files=(data/*.csv)
@@ -86,26 +91,29 @@ jobs:
             echo "::error::Aucun CSV téléchargé (vérifie le circuit / les années)."
             exit 1
           fi
-          python scripts/elo_mov.py "${files[@]}" | tee elo_mov_run.log
+          python scripts/discret.py --copie elo_mov_run.log -- python scripts/elo_mov.py "${files[@]}"
 
       - name: First-set conditional (favori perd le set 1)
         env:
           FS_MIN_N: "30"
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           shopt -s nullglob
           files=(data/*.csv)
           if [ ${#files[@]} -eq 0 ]; then
             echo "Aucun CSV — étape sautée."; exit 0
           fi
-          python scripts/first_set_conditional.py "${files[@]}" | tee first_set.log
+          python scripts/discret.py --copie first_set.log -- python scripts/first_set_conditional.py "${files[@]}"
 
-      - name: Publier le rapport
+      # 393 : rapport et sorties au coffre privé (un artefact de dépôt public est public)
+      - name: Publier le rapport (coffre privé)
         if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: elo-mov-report-${{ github.event.inputs.tour }}
-          path: |
-            elo_mov_report.json
-            elo_mov_run.log
-            first_set.log
-          if-no-files-found: warn
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/vers_coffre.py --nom elo_mov elo_mov_report.json elo_mov_run.log first_set.log || true

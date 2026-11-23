@@ -157,7 +157,11 @@ def main(argv):
     sortie = os.environ.get('SUIVI_DESACCORDS_SORTIE') or os.path.join(racine, 'simulateur', 'suivi_desaccords_pinnacle.json')
     with open(sortie, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
-    print(message(doc).replace('<b>', '').replace('</b>', '').replace('&lt;', '<'))
+    import telegram_envoi as TE_
+    if TE_.journal_public():       # 392 : journal GitHub public → seulement le nombre de matchs reliés
+        print(f"Désaccords (privé) : {len(rows)} matchs reliés.")
+    else:
+        print(message(doc).replace('<b>', '').replace('</b>', '').replace('&lt;', '<'))
     if '--telegram' in argv:
         import urllib.parse
         import urllib.request
