@@ -394,6 +394,7 @@ export function fraicheurLive(restant, resetS, reserve = 3000) {
 }
 const LIVE_R2 = 'live/en_cours.json';
 let LIVE_MEMOIRE = null;
+export const viderLiveMemoire = () => { LIVE_MEMOIRE = null; };   // tests
 
 function scoreSets(s) {
   s = s || {};
@@ -424,15 +425,61 @@ export function compacterLive(events) {
   }));
 }
 
-export async function live(req, env) {
-  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=2' };
-  const rep = o => new Response(JSON.stringify(o), { headers: h });
+// 23/11/2026 (paquet 388, Lucas : « trouver les résultats dès la fin du match ») — MATCHS TERMINÉS : un match qui
+// disparaît du flux en direct est vérifié une fois (/api/tennis/event/{id}, 1 requête) ; s'il est fini, son score final
+// et son vainqueur sont gardés 36 h et renvoyés avec le direct (« termines »). La page les affiche aussitôt, sans
+// attendre la résolution des résultats de la chaîne (toutes les 2 h). 6 vérifications au plus par rafraîchissement ;
+// les autres attendent le suivant (3 essais au plus par match).
+export const TERMINES_H = 36, TERMINES_MAX = 800, VERIFS_MAX = 6;
+export function finDeMatch(e) {
+  if (!e || !e.id) return null;
+  const st = e.status || {}, type = st.type || null;
+  if (type !== 'finished') return null;
+  const [x] = compacterLive([e]);
+  if (!x) return null;
+  return { ...x, gagnant: e.winnerCode === 1 ? 'home' : e.winnerCode === 2 ? 'away' : null, fin: Date.now() };
+}
+export async function suivreTermines(env, avant, apres, demander) {
+  const maintenant = Date.now(), ids = new Set((apres.matchs || []).map(x => x.id));
+  const doc = { termines: (avant && avant.termines) || [], a_verifier: (avant && avant.a_verifier) || [] };
+  doc.termines = doc.termines.filter(x => maintenant - (x.fin || 0) < TERMINES_H * 3600e3).slice(-TERMINES_MAX);
+  const connus = new Set(doc.termines.map(x => x.id));
+  const attente = new Map((doc.a_verifier || []).filter(x => !ids.has(x.id) && !connus.has(x.id)).map(x => [x.id, x]));
+  for (const x of (avant && avant.matchs) || []) if (!ids.has(x.id) && !connus.has(x.id) && !attente.has(x.id)) attente.set(x.id, { id: x.id, essais: 0 });
+  let n = 0;
+  for (const v of attente.values()) {
+    if (n >= VERIFS_MAX) break;
+    n++; v.essais = (v.essais || 0) + 1;
+    try {
+      const e = await demander(v.id);
+      const f = finDeMatch(e);
+      if (f) { doc.termines.push(f); attente.delete(v.id); }
+      else if (e && e.status && ['canceled', 'postponed', 'notstarted'].includes(e.status.type)) attente.delete(v.id);
+    } catch (err) { /* réessayé au rafraîchissement suivant */ }
+    if (attente.has(v.id) && v.essais >= 3) attente.delete(v.id);
+  }
+  doc.a_verifier = [...attente.values()];
+  return doc;
+}
+
+// /live : le direct seul (appelé toutes les 3 s) ; /live/termines : les matchs terminés seuls (la page les lit à
+// l'ouverture puis toutes les 30 s) — la liste des terminés ne pèse pas sur chaque rafraîchissement du direct.
+export async function live(req, env, vue = 'direct') {
+  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': `public, max-age=${vue === 'termines' ? 20 : 2}` };
+  const rep = o => new Response(JSON.stringify(vue === 'termines' ? { ok: o.ok, maj: o.maj, termines: o.termines || [] }
+    : { ...o, termines: undefined, a_verifier: undefined }), { headers: h });
   const frais = o => o && Date.now() - (o.maj || 0) < (o.ttl || LIVE_TTL_MS);
   if (frais(LIVE_MEMOIRE)) return rep(LIVE_MEMOIRE);
+  if (vue === 'termines') {                       // jamais de requête TennisApi : la liste tenue par le direct
+    let doc = LIVE_MEMOIRE;
+    if (env.COFFRE) { try { const obj = await env.COFFRE.get(LIVE_R2); if (obj) { const o2 = JSON.parse(await obj.text()); if (!doc || (o2.maj || 0) > (doc.maj || 0)) doc = o2; } } catch (e) { /* mémoire */ } }
+    return rep(doc || { ok: false, maj: Date.now(), termines: [] });
+  }
+  let avant = LIVE_MEMOIRE;
   if (env.COFFRE) {
     try {
       const obj = await env.COFFRE.get(LIVE_R2);
-      if (obj) { const o = JSON.parse(await obj.text()); if (frais(o)) { LIVE_MEMOIRE = o; return rep(o); } }
+      if (obj) { const o = JSON.parse(await obj.text()); if (frais(o)) { LIVE_MEMOIRE = o; return rep(o); } if (!avant || (o.maj || 0) > (avant.maj || 0)) avant = o; }
     } catch (e) { /* on interroge TennisApi */ }
   }
   let o;
@@ -449,10 +496,21 @@ export async function live(req, env) {
       const ttl = fraicheurLive(en('x-ratelimit-requests-remaining'), en('x-ratelimit-requests-reset'), reserveLive(env));
       o = r.ok ? { ok: true, maj: Date.now(), ttl, brut: ev.length, matchs: compacterLive(ev) }
                : { ok: false, maj: Date.now(), ttl: LIVE_TTL_MAX_MS, message: `TennisApi : HTTP ${r.status}`, matchs: [] };
+      if (o.ok) {
+        const demander = async (id) => {
+          const rr = await fetch(`https://${HOTE_TENNIS}/api/tennis/event/${id}`, {
+            headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
+          lireQuota(rr);
+          return rr.ok ? ((await rr.json()) || {}).event || null : null;
+        };
+        Object.assign(o, await suivreTermines(env, avant, o, demander));
+      }
     } catch (e) {
       o = { ok: false, maj: Date.now(), ttl: LIVE_TTL_MS, message: 'TennisApi injoignable.', matchs: [] };
     }
   }
+  if (!o.termines && avant) { o.termines = avant.termines || []; o.a_verifier = avant.a_verifier || []; }   // panne : rien de perdu
+  o.termines = o.termines || [];
   LIVE_MEMOIRE = o;
   if (env.COFFRE) { try { await env.COFFRE.put(LIVE_R2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
   return rep(o);
@@ -588,6 +646,7 @@ export default {
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
     if (url.pathname === '/live') return live(req, env);
+    if (url.pathname === '/live/termines') return live(req, env, 'termines');
     if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));
     if (url.pathname.startsWith('/compte/api/')) return apiCompte(req, env, url, await autorise(req, env));

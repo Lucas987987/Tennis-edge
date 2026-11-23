@@ -383,3 +383,57 @@ test('334 : pas de sortie du dossier privé', async () => {
     assert.ok([404, 400].includes(r.status), c + ' ' + r.status);
   }
 });
+
+// 23/11/2026 (paquet 388) — résultats dès la fin du match
+import { suivreTermines, finDeMatch } from './worker.js';
+test('388 : un match qui quitte le direct est vérifié une fois ; fini → score final et vainqueur gardés', async () => {
+  const fini = { ...EV, status: { type: 'finished', description: 'Ended' }, winnerCode: 1,
+    homeScore: { current: 2, period1: 6, period2: 6 }, awayScore: { current: 0, period1: 4, period2: 3 } };
+  const demandes = [];
+  const avant = { matchs: compacterLive([EV, { ...EV, id: 11 }]) };
+  const apres = { matchs: compacterLive([{ ...EV, id: 11 }]) };
+  const d = await suivreTermines({}, avant, apres, async (id) => { demandes.push(id); return fini; });
+  assert.deepEqual(demandes, [7]);
+  assert.equal(d.termines.length, 1);
+  assert.equal(d.termines[0].gagnant, 'home');
+  assert.deepEqual(d.termines[0].score_home.sets, [6, 6]);
+  // au rafraîchissement suivant : plus de requête pour ce match
+  const d2 = await suivreTermines({}, { ...apres, ...d }, apres, async (id) => { demandes.push(id); return fini; });
+  assert.deepEqual(demandes, [7]);
+  assert.equal(d2.termines.length, 1);
+  // pas encore « finished » (coupure) : réessayé, 3 fois au plus
+  let n = 0;
+  let e = { termines: [], a_verifier: [] };
+  for (let i = 0; i < 5; i++) e = await suivreTermines({}, i === 0 ? avant : { ...apres, ...e }, apres, async () => { n++; return { ...EV, status: { type: 'interrupted' } }; });
+  assert.equal(n, 3);
+  assert.equal(finDeMatch({ ...EV, status: { type: 'inprogress' } }), null);
+});
+
+test('388 : /live renvoie les matchs terminés (et les garde si TennisApi tombe)', async () => {
+  const stock = {};
+  const envL = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  let etape = 0;
+  globalThis.fetch = async (u) => {
+    if (String(u).endsWith('/events/live')) return new Response(JSON.stringify({ events: etape === 0 ? [EV] : [] }), { status: 200 });
+    if (String(u).endsWith('/event/7')) return new Response(JSON.stringify({ event: { ...EV, status: { type: 'finished' }, winnerCode: 2 } }), { status: 200 });
+    return new Response('x', { status: 404 });
+  };
+  const { viderLiveMemoire } = await import('./worker.js');
+  viderLiveMemoire();
+  await worker.fetch(req('/live'), envL);
+  etape = 1;
+  viderLiveMemoire();
+  stock['live/en_cours.json'] = JSON.stringify({ ...JSON.parse(stock['live/en_cours.json']), maj: 0 });
+  const o = await (await worker.fetch(req('/live'), envL)).json();
+  assert.equal(o.matchs.length, 0);
+  assert.equal(o.termines, undefined);                         // le direct ne transporte pas la liste
+  const t = await (await worker.fetch(req('/live/termines'), envL)).json();
+  assert.equal(t.termines.length, 1);
+  assert.equal(t.termines[0].gagnant, 'away');
+  // TennisApi en panne : les terminés restent
+  viderLiveMemoire();
+  stock['live/en_cours.json'] = JSON.stringify({ ...JSON.parse(stock['live/en_cours.json']), maj: 0 });
+  globalThis.fetch = async () => { throw new Error('panne'); };
+  const t2 = await (await worker.fetch(req('/live/termines'), envL)).json();
+  assert.equal(t2.termines.length, 1);
+});
