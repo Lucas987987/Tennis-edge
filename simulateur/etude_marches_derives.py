@@ -311,6 +311,10 @@ def main(argv):
             if TE.envoyer(message(doc), html=True, apercu=True, tok=tok, chat=chat):
                 print('Étude des marchés dérivés : envoyée sur le Telegram privé.')
     print(f"Sources : {doc['sources']}")
+    import telegram_envoi as TE_
+    if TE_.journal_public():       # 392 : journal GitHub public → aucun chiffre de la comparaison privée
+        print(f"{len(res)} marchés étudiés (détail sur le Telegram privé).")
+        return 0
     for nom, r in res.items():
         txt = f"{nom:<42} joués {r['matchs_joues']:>4}"
         if r.get('log_loss_algo') is not None:

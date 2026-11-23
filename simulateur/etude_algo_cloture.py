@@ -112,7 +112,8 @@ def main(argv):
     with open(os.environ.get('ALGO_CLOTURE_SORTIE') or SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     txt = message(doc)
-    print(txt)
+    import telegram_envoi as TE_
+    print(f"Étude privée : {len(rows)} matchs reliés (détail sur le Telegram privé)." if TE_.journal_public() else txt)   # 392
     if '--telegram' in argv:
         import urllib.parse
         import urllib.request
