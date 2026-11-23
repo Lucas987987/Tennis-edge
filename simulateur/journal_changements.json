@@ -2031,6 +2031,14 @@
    "prive": true,
    "quoi": "SECTIONS INTERNES DU SITE RÉSERVÉES À L'ADMINISTRATEUR (paquet 380, Lucas) : journal des changements, suivi de la fiabilité (note v2, Elo contre simulation), données de service et de retour (bilan selon la documentation) et calibration ne sont plus montrés aux visiteurs ni aux abonnés ; leurs données sortent des fichiers du site (site_admin.json, servi au seul compte « admin » ou avec la clé privée). Restent publics : bilan, statistiques annoncées, accès Plus.",
    "garde_fou": "Tests : tests/test_site_libre.py, workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 381,
+   "prive": true,
+   "quoi": "CODES D'ACCÈS PLUS À USAGE UNIQUE (paquet 381, Lucas) : créés depuis /compte/admin (formule ou nombre de jours d'accès, validité du code, nombre de codes, note) ; un compte connecté et confirmé les saisit dans « Mon compte ». Un code ne sert qu'une fois et ne marche plus après sa date de validité ; seule son empreinte est gardée ; 10 essais ratés par heure au plus.",
+   "garde_fou": "Tests : workers/algo/test_comptes.mjs."
   }
  ]
 }
