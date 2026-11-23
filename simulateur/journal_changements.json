@@ -1959,6 +1959,13 @@
    "prive": true,
    "quoi": "RUN HEBDOMADAIRE ROUGE (paquet 370) : la notification privée du ROI dépassait la limite de 4 096 caractères de Telegram (HTTP 400). L'étape plantait et « Publier » était sauté : la décision de la semaine sur les profils (« adopté : mieux 2 semaines de suite ») n'a pas été enregistrée. Le message est maintenant coupé en plusieurs envois entre deux lignes, un échec d'envoi ne fait qu'un avertissement, et l'étape ne bloque plus la publication.",
    "garde_fou": "Aucun changement de calcul. Tests : tests/test_roi_telegram_morceaux.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "en_service",
+   "paquet": 371,
+   "quoi": "MATCHS ÉCARTÉS ET JOUEURS RÉUNIS CONTRÔLÉS CHAQUE JOUR (paquet 371) : un rapport (simulateur/rapport_entrees.json) compte à chaque pronostic les matchs sans pronostic et leur raison, les joueurs sans aucun match au classement (et ceux dont un joueur connu porte le même nom de famille), et vérifie que chaque joueur réuni n'a plus qu'un classement. Deux causes corrigées : « Soon Woo Kwon » et « Soonwoo Kwon » étaient pris pour deux joueurs différents et le match était écarté (l'espace seul diffère : c'est le même joueur) ; quand un même match est listé deux fois avec deux écritures d'un joueur (« Aaron Funk – Tugra Duran » et « Aaron Funk – Cemil Tugra Duran », Ankara), les deux noms sont désormais reliés pour le classement suivant, sauf si leurs fiches (pays, naissance, taille) les contredisent.",
+   "garde_fou": "Lecture seule pour le rapport ; un lien vu en direct qui vise deux joueurs différents est marqué en conflit et n'est plus appliqué. Vérifié sur le classement reconstruit : 42 joueurs réunis, aucun n'a encore deux classements. Tests : tests/test_controle_entrees.py."
   }
  ]
 }

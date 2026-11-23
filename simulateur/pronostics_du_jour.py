@@ -1554,8 +1554,11 @@ def doublons_a_venir(venir, cle_c, nb_matchs, ecart_h=18, ecart_meme_joueur_h=3)
         ecarte = gardes[i] if remplacer else x
         if remplacer:
             gardes[i] = x
+        garde = gardes[i]
         rejets.append({'home': ecarte['home'], 'away': ecarte['away'], 'tournoi': ecarte.get('tournoi'),
-                       'raison': 'doublon_meme_match'})
+                       'raison': 'doublon_meme_match', 'garde': [garde['home'], garde['away']],
+                       'meme_classement': frozenset((cle_c(ecarte['home']), cle_c(ecarte['away']))) ==
+                       frozenset((cle_c(garde['home']), cle_c(garde['away'])))})
     return gardes, rejets
 
 
@@ -1769,10 +1772,17 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     out, rejets = [], []
     venir, doublons_venir = doublons_a_venir(venir, cle_c, {k: v.get('matchs', 0) for k, v in etat['joueurs'].items()})
     rejets += doublons_venir
+    try:                                                  # 23/11/2026 (paquet 371) : liens d'identité vus en direct
+        import identites as ID
+        if uids is None and doublons_venir:
+            ID.noter_observes(racine, doublons_venir, maintenant.date().isoformat())
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::alias observés non notés : {type(e_).__name__}")
     for x in venir:
         h, a = cle_c(x['home']), cle_c(x['away'])
         if not h or not a or h == a or h in ambigus or a in ambigus:
-            rejets.append({'home': x['home'], 'away': x['away'], 'raison': 'identite_ambigue'})
+            rejets.append({'home': x['home'], 'away': x['away'], 'tournoi': x.get('tournoi'), 'raison': 'identite_ambigue',
+                           'noms_ambigus': [n for n, k in ((x['home'], h), (x['away'], a)) if not k or k in ambigus]})
             continue
         c = circuit(x['tournoi'])
         if etat.get('depart_bas') and c in ('CH', 'ITF'):
