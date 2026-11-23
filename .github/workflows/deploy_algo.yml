@@ -84,3 +84,17 @@ jobs:
         run: |
           if [ -z "$BREVO_API_KEY" ]; then echo "::warning::Secret BREVO_CLE_SITE absent : aucun e-mail de compte ne part."; exit 0; fi
           printf '%s' "$BREVO_API_KEY" | npx --yes wrangler@4 secret put BREVO_API_KEY > /dev/null && echo "Clé Brevo posée."
+
+      # 23/11/2026 (paquet 382) : anti-robots des comptes (Cloudflare Turnstile). Secrets GitHub TURNSTILE_SITEKEY et
+      # TURNSTILE_SECRET (tableau de bord Cloudflare → Turnstile → widget « gamesetalgo.com ») ; absents : inactif.
+      - name: Clés Turnstile (si elles existent)
+        env:
+          TURNSTILE_SITEKEY: ${{ secrets.TURNSTILE_SITEKEY }}
+          TURNSTILE_SECRET: ${{ secrets.TURNSTILE_SECRET }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: workers/algo
+        run: |
+          if [ -z "$TURNSTILE_SITEKEY" ] || [ -z "$TURNSTILE_SECRET" ]; then echo "::warning::Turnstile non configuré, inscriptions sans anti-robots."; exit 0; fi
+          printf '%s' "$TURNSTILE_SITEKEY" | npx --yes wrangler@4 secret put TURNSTILE_SITEKEY > /dev/null
+          printf '%s' "$TURNSTILE_SECRET" | npx --yes wrangler@4 secret put TURNSTILE_SECRET > /dev/null && echo "Turnstile posé."
