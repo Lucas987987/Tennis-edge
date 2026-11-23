@@ -169,9 +169,28 @@ async function corps(req) {
   try { const t = await req.text(); return t.length > 4000 ? null : JSON.parse(t); } catch (e) { return null; }
 }
 const mdpValide = (m) => typeof m === 'string' && m.length >= 8 && m.length <= 200;
+
+// 23/11/2026 (paquet 382) — ANTI-ROBOTS : Cloudflare Turnstile sur l'inscription et le mot de passe oublié (les deux
+// envoient un e-mail : sans lui, un robot viderait les 300 envois Brevo du jour). Actif seulement si les secrets
+// TURNSTILE_SITEKEY et TURNSTILE_SECRET du worker existent ; sinon tout marche comme avant.
+export async function humain(req, env, jeton) {
+  if (!env.TURNSTILE_SECRET) return true;
+  if (!jeton || String(jeton).length > 4000) return false;
+  try {
+    const f = new FormData();
+    f.append('secret', env.TURNSTILE_SECRET);
+    f.append('response', String(jeton));
+    const ip = req.headers.get('CF-Connecting-IP');
+    if (ip) f.append('remoteip', ip);
+    const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: f });
+    const o = await r.json();
+    return !!(o && o.success);
+  } catch (e) { return false; }
+}
 const LANG = (b) => (b && b.lang === 'en' ? 'en' : 'fr');
 
 async function inscription(req, env, b) {
+  if (!(await humain(req, env, b.turnstile))) return rep({ ok: false, erreur: 'robot' }, 403);
   const email = normaliser(b.email);
   if (!email) return rep({ ok: false, erreur: 'email_invalide' }, 400);
   if (!mdpValide(b.mdp)) return rep({ ok: false, erreur: 'mdp_court' }, 400);
@@ -221,6 +240,7 @@ async function verifier(req, env, b) {
   return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
 }
 async function oubli(req, env, b) {
+  if (!(await humain(req, env, b.turnstile))) return rep({ ok: false, erreur: 'robot' }, 403);
   const email = normaliser(b.email);
   if (email) {
     const u = await lire(env, await idCompte(email));
@@ -242,13 +262,47 @@ async function reinit(req, env, b) {
   return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
 }
 
+// 23/11/2026 (paquet 382) — RGPD : changer de mot de passe, supprimer son compte (effacement immédiat), télécharger ses
+// données. Les deux premiers demandent le mot de passe actuel.
+async function verifierMdp(u, mdp) {
+  if (!u || typeof mdp !== 'string') return false;
+  return egal((await hacher(mdp, u.sel, u.iter)).hash, u.hash);
+}
+async function changerMdp(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!mdpValide(b.nouveau)) return rep({ ok: false, erreur: 'mdp_court' }, 400);
+  if (!(await verifierMdp(u, b.ancien))) return rep({ ok: false, erreur: 'mdp_faux' }, 403);
+  Object.assign(u, await hacher(b.nouveau, null, env.PBKDF2_TOURS));
+  u.v = (u.v || 0) + 1;                                          // les autres sessions sont fermées
+  await ecrire(env, u);
+  return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
+}
+async function supprimer(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!(await verifierMdp(u, b.mdp))) return rep({ ok: false, erreur: 'mdp_faux' }, 403);
+  await env.COFFRE.delete(chemin(u.id));
+  return rep({ ok: true }, 200, { 'Set-Cookie': `${COOKIE_COMPTE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
+}
+async function exporter(req, env) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang'];
+  const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
+  d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
+  return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
+}
+
 export async function apiCompte(req, env, url, cle = false) {
   const p = url.pathname.slice('/compte/api/'.length);
   if (!env.COFFRE || !env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep({ ok: false, erreur: 'ferme' }, 503);
   if (p === 'moi' && req.method === 'GET') {
     const u = await utilisateur(req, env);
-    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u) });
+    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u),
+      turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
+  if (p === 'export' && req.method === 'GET') return exporter(req, env);
   if (req.method !== 'POST') return rep({ ok: false, erreur: 'methode' }, 405);
   if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
   if (p === 'deconnexion') return rep({ ok: true }, 200, { 'Set-Cookie': `${COOKIE_COMPTE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
@@ -260,6 +314,8 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'oubli') return oubli(req, env, b);
   if (p === 'reinit') return reinit(req, env, b);
   if (p === 'code') return utiliserCode(req, env, b);
+  if (p === 'mdp') return changerMdp(req, env, b);
+  if (p === 'supprimer') return supprimer(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
 }
 
@@ -271,6 +327,7 @@ export async function apiCompte(req, env, url, cle = false) {
 // utilisé par une écriture conditionnelle (deux comptes en même temps : un seul gagne). 10 essais ratés par heure au plus.
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // sans 0/O ni 1/I : se dicte et se recopie sans erreur
 const MAX_ESSAIS_CODE = 10;
+const PURGE_J = 30;
 export function nouveauCode() {
   const r = crypto.getRandomValues(new Uint8Array(12));
   const c = [...r].map((x) => ALPHABET[x % ALPHABET.length]).join('');
@@ -342,6 +399,8 @@ export async function listeComptes(env) {
     const l = await env.COFFRE.list({ prefix: 'comptes/u/', cursor: curseur, limit: 1000 });
     for (const o of l.objects || []) {
       const u = await lire(env, o.key.slice('comptes/u/'.length, -5));
+      // 382 : un compte jamais confirmé est effacé après 30 jours (politique de confidentialité)
+      if (u && !u.verifie && Date.now() - Date.parse(u.cree || 0) > PURGE_J * 86400e3) { await env.COFFRE.delete(o.key); continue; }
       if (u) out.push(vueCompte(u));
     }
     curseur = l.truncated ? l.cursor : undefined;
