@@ -270,7 +270,9 @@ export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes
   // 22/11/2026 (paquet 353) : contrôle de la bascule privée (timeout 10 min)
   'controle_prive.yml': 30,
   // 22/11/2026 (paquet 363) : contenus X (timeouts 100, 15, 100 et 15 min)
-  'video_simulation.yml': 110, 'bilan_match_du_jour.yml': 30, 'video_resume.yml': 110, 'bilan_semaine.yml': 30 };
+  'video_simulation.yml': 110, 'bilan_match_du_jour.yml': 30, 'video_resume.yml': 110, 'bilan_semaine.yml': 30,
+  // 23/11/2026 (paquet 367) : apprentissage du lundi (timeout 200 min)
+  'pronostic.yml': 210 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -574,6 +576,14 @@ async function run(env) {
   if ((env.CONTROLE_PRIVE_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Contrôle privé', evenement: 'controle_prive',
       workflowFile: 'controle_prive.yml', periodeMin: 1440 });
+  }
+  // 23/11/2026 (paquet 367) — APPRENTISSAGE DU LUNDI (pronostic.yml : Elo, profils, réglages, candidates comme les
+  // profils hiérarchiques des joueurs peu documentés). S'il saute, rien n'est réappris de la semaine et une candidate
+  // en confirmation attend une semaine de plus. Relance si le dernier passage date de plus de 7 jours + 2 h.
+  // Désactivable : APPRENTISSAGE_ENABLED=0.
+  if ((env.APPRENTISSAGE_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Apprentissage du lundi', evenement: 'pronostic_hebdo',
+      workflowFile: 'pronostic.yml', periodeMin: 10200 });
   }
   // 22/11/2026 (paquet 363) — CONTENUS X : la vidéo du match du jour, la carte bilan et le résumé de la veille (chaque
   // matin), la carte de la semaine (le lundi) partent sur des crons GitHub qui sautent parfois dans ce dépôt. Le worker

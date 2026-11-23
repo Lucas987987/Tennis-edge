@@ -32,3 +32,9 @@ def test_relance_par_le_worker():
         assert f"'{wf}', '{ev}'" in w, wf
         assert f'types: [{ev}]' in open(os.path.join(WF, wf), encoding='utf-8').read(), wf
     assert re.search(r"CONTENUS_X_ENABLED", w)
+
+
+def test_apprentissage_du_lundi_relance():
+    w = open(os.path.join(RACINE, 'workers', 'tennis-edge-closing', 'worker.js'), encoding='utf-8').read()
+    assert "workflowFile: 'pronostic.yml', periodeMin: 10200" in w and "evenement: 'pronostic_hebdo'" in w
+    assert 'types: [pronostic_hebdo]' in open(os.path.join(WF, 'pronostic.yml'), encoding='utf-8').read()
