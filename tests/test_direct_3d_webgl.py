@@ -313,6 +313,9 @@ console.log(JSON.stringify(o));
         S = json.loads(subprocess.run(['node', '-e', r"""
 const src = require('fs').readFileSync(process.argv[1], 'utf-8');
 const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+// 23/11/2026 (paquet 366) : tirages fixés — avec Math.random, environ 1 run sur 25 tombait sur un échange qui
+// n'avait pas fini en 40 s simulées (aucun plan) et le paquet passait au rouge sans rien de cassé
+{ let g = 20261123; Math.random = () => ((g = (g * 1103515245 + 12345) % 2147483648) / 2147483648); }
 global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
 const m = { uid: 'u', home: 'Jannik Sinner', away: 'Carlos Alcaraz', surface: 'Hard' };
 const r = (p, q) => ({ inverse: false, x: { serveur: 'home', score_home: { sets: [6, 3], point: p }, score_away: { sets: [4, 2], point: q } } });
@@ -320,7 +323,7 @@ const o = { cas: [], gestes: {} };
 for (let k = 0; k < 12; k++) {
   G3D._reinit(); G3D._maj(m, r('30', '15'), false); G3D._maj(m, r('40', '15'), false);
   let plans = null, finT = null;
-  for (let t = 0; t < 40 && !plans; t += 0.05) { const e = G3D._etape(t, 0.05); if (!e.R && G3D._plans.length) plans = G3D._plans.map(p => ({ type: p.type, i: p.i, d: p.t1 - p.t0 })); }
+  for (let t = 0; t < 80 && !plans; t += 0.05) { const e = G3D._etape(t, 0.05); if (!e.R && G3D._plans.length) plans = G3D._plans.map(p => ({ type: p.type, i: p.i, d: p.t1 - p.t0 })); }
   o.cas.push({ plans, gestes: G3D._gestes.map(g => g && g.nom) });
 }
 for (const n of ['joie', 'poing', 'depit', 'rage']) o.gestes[n] = [0, 0.2, 0.4, 0.6, 0.8, 1].every(u => Object.values(G3D._poseGeste(n, u)).every(v => (Array.isArray(v) ? v : [v]).every(Number.isFinite)));
