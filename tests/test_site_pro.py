@@ -22,7 +22,7 @@ def test_decoupage_garde_l_essentiel_et_renvoie_le_reste_a_plus_tard():
            'bilan': {'n': 3}, 'journal_changements': [1], 'validation_fiabilite': {}, 'qualite_horodatages': {}, 'maj': 'h'}
     site, plus = site_leger.decouper(doc)
     assert site['matchs'] == [{'id': 1, 'p1': 'A'}] and site['maj'] == 'h' and site['_plus'] == 'site_plus.json'
-    assert set(plus) == {'bilan', 'journal_changements', 'validation_fiabilite'}
+    assert set(plus) == {'bilan'}         # 380 : journal et suivi de fiabilité → site_admin.json (administrateur)
     assert 'bilan' not in site and 'qualite_horodatages' not in site
     assert doc['matchs'][0]['distribution_scores'], 'le fichier complet ne doit pas être modifié'
 
