@@ -1043,7 +1043,7 @@ const T = {
   qualite_profils:'Profils joueurs', qualite_balles:'Médiane de balles de service effectives', qualite_500:'Profils avec au moins 500 balles effectives', qualite_source:q=>`Sources : ${q.source||'non documentées'}. Archive jusqu’au ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'non précisé'} ; profils exportés au ${q.jour?dateLong(q.jour):'non précisé'}.`,
   cv_titre:'Joueurs réellement pronostiqués', cv_sous:'Chaque joueur de chaque match jugé depuis le 21 octobre, compté une fois par match. Part sous 500 et sous 1 500 balles effectives.',
   cv_circuit:'Circuit', cv_med:'Médiane', cv_n:n=>`${fmt(n)} joueurs × matchs`, cv_m:n=>`${fmt(n)} matchs`,
-  cv_titre2:'Bilan selon la documentation', cv_sous2:'Classés selon le joueur le moins documenté du match. Confiance = probabilité moyenne donnée au favori : des vainqueurs trouvés nettement en dessous signalent une tranche trop sûre d’elle. Moins de 30 matchs : aucune conclusion.',
+  cv_titre2:'Bilan selon la documentation', cv_sous2_jour:'Classés selon le joueur le moins documenté du match, avec la documentation qu’il avait le jour du match (pas celle d’aujourd’hui). Confiance = probabilité moyenne donnée au favori : des vainqueurs trouvés nettement en dessous signalent une tranche trop sûre d’elle. Moins de 30 matchs : aucune conclusion.', cv_sous2:'Classés selon le joueur le moins documenté du match. Confiance = probabilité moyenne donnée au favori : des vainqueurs trouvés nettement en dessous signalent une tranche trop sûre d’elle. Moins de 30 matchs : aucune conclusion.',
   cv_moins_doc:'Moins documenté', cv_trouves:'Trouvés', cv_conf:'Confiance',
   cv_tranches:['moins de 500 balles','500 à 1 500','1 500 à 3 000','3 000 et plus'],
   qualite_anomalies:n=>n?`${fmt(n)} contrôle(s) de cohérence à examiner.`:'Aucune anomalie détectée dans les contrôles de cohérence des sommes agrégées.',
@@ -1339,7 +1339,7 @@ const T = {
   qualite_profils:'Player profiles', qualite_balles:'Median effective service points', qualite_500:'Profiles with at least 500 effective points', qualite_source:q=>`Sources: ${q.source||'not documented'}. Archive through ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'not specified'}; profiles exported on ${q.jour?dateLong(q.jour):'not specified'}.`,
   cv_titre:'Players we actually predict', cv_sous:'Every player of every judged match since 21 October, counted once per match. Share below 500 and below 1,500 effective points.',
   cv_circuit:'Tour', cv_med:'Median', cv_n:n=>`${fmt(n)} player-matches`, cv_m:n=>`${fmt(n)} matches`,
-  cv_titre2:'Record by data depth', cv_sous2:'Grouped by the less documented player of the match. Confidence = average probability given to the favourite: winners called well below it flag an overconfident band. Under 30 matches: no conclusion.',
+  cv_titre2:'Record by data depth', cv_sous2_jour:'Grouped by the less documented player of the match, with the data he had on match day (not today). Confidence = average probability given to the favourite: winners called well below it flag an overconfident band. Under 30 matches: no conclusion.', cv_sous2:'Grouped by the less documented player of the match. Confidence = average probability given to the favourite: winners called well below it flag an overconfident band. Under 30 matches: no conclusion.',
   cv_moins_doc:'Less documented', cv_trouves:'Called', cv_conf:'Confidence',
   cv_tranches:['under 500 points','500 to 1,500','1,500 to 3,000','3,000 and more'],
   qualite_anomalies:n=>n?`${fmt(n)} consistency check(s) require review.`:'No anomaly found in the consistency checks on aggregated totals.',
@@ -7563,7 +7563,7 @@ function rendCouverture(c){
     <td>${r.n?`<b>${pc(r.vainqueurs_pct)}</b>`:'—'}</td><td>${r.n?pc(r.confiance_pct):'—'}</td><td>${r.n?dec(r.brier,3):'—'}</td></tr>`).join('');
   return `<h3 class="cv-h">${esc(t('cv_titre'))}</h3><p class="cv-p">${esc(t('cv_sous'))}</p>
   <div class="cv-wrap"><table class="calib cv"><thead><tr><th>${esc(t('cv_circuit'))}</th><th>${esc(t('cv_med'))}</th><th>&lt; 500</th><th>&lt; 1 500</th></tr></thead><tbody>${circ}</tbody></table></div>
-  <h3 class="cv-h">${esc(t('cv_titre2'))}</h3><p class="cv-p">${esc(t('cv_sous2'))}</p>
+  <h3 class="cv-h">${esc(t('cv_titre2'))}</h3><p class="cv-p">${esc(t(c.mesure_tranches==='au_jour_du_match'?'cv_sous2_jour':'cv_sous2'))}</p>
   <div class="cv-wrap"><table class="calib cv"><thead><tr><th>${esc(t('cv_moins_doc'))}</th><th>${esc(t('cv_trouves'))}</th><th>${esc(t('cv_conf'))}</th><th>Brier</th></tr></thead><tbody>${tr}</tbody></table></div>`;
 }
 function tableCalib(c){

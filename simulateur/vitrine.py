@@ -618,8 +618,46 @@ def qualite_donnees(racine, resultats=None):
                 return None
             p, _ = _juge(m)
             return None if p is None else (p, 1 if reel['gagnant'] == 'home' else 0)
-        out['pronostiques'] = couverture_pronostiques(doc, matchs, juge)
+        au_jour = documentation_au_jour(racine, matchs)
+        out['pronostiques'] = couverture_pronostiques(doc, matchs, juge, au_jour)
+        if out['pronostiques'] is not None and au_jour is not None:
+            out['pronostiques']['source_tranches'] = dict(au_jour.sources)
     return out
+
+
+def documentation_au_jour(racine, matchs, archive=None):
+    """23/11/2026 (paquet 372) — documentation de chaque match AU JOUR DU MATCH : celle notée au pronostic (balles_min,
+    depuis le paquet 368), sinon recalculée avec le MÊME compteur que la production (points de service cumulés avant
+    le jour du match : archive Sackmann + feuilles). Sans archive Sackmann, None : le tableau garde l'ancienne mesure
+    (balles d'aujourd'hui) et le dit (mesure_tranches)."""
+    import collections as _co
+    import donnees as DN
+    archive = archive or os.environ.get('SACKMANN_DIR', '/tmp/sackmann')
+    a_recalculer = [m for m in matchs if not isinstance(m.get('balles_min'), (int, float))]
+    C, cache = None, {}
+    if a_recalculer:
+        if not DN.fichiers(archive, 2012):
+            print('::warning::documentation au jour du match : archive Sackmann absente, ancienne mesure gardée')
+            return None
+        import elo as E_
+        import etude_documentation as EDO
+        C = EDO.Compteur(EDO.evenements(archive, racine))
+        for m in sorted(a_recalculer, key=lambda m: str(m.get('debut'))):
+            n = C.au(str(m.get('debut'))[:10])
+            cache[m.get('uid')] = int(min(n.get(E_.cle(m['home']), 0), n.get(E_.cle(m['away']), 0)))
+    sources = _co.Counter()
+
+    def f(m):
+        b = m.get('balles_min')
+        if isinstance(b, (int, float)):
+            sources['note_au_pronostic'] += 1
+            return b
+        if m.get('uid') in cache:
+            sources['recalculee'] += 1
+            return cache[m.get('uid')]
+        return None
+    f.sources = sources
+    return f
 
 
 STATS_TEST = ('aces', 'doubles_fautes', 'premiere_pct', 'breaks', 'gagnes_1re_pct', 'gagnes_2e_pct', 'jeux', 'total_jeux')
