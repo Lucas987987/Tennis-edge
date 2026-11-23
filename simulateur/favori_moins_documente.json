@@ -1,0 +1,14 @@
+{
+ "pentes": {
+  "CH": {
+   "pente": 0.775,
+   "de": 500,
+   "a": 1500,
+   "tranche": "500 à 1 500",
+   "gain_jugement": 0.0019,
+   "matchs_juges": 1253
+  }
+ },
+ "source": "etude_favori_moins_documente.py (paquet 373), mise en service le 23/11/2026 (paquet 374)",
+ "regle": "part de l'Elo du % : décalage = poids de l'Elo × (pente − 1) × logit(p Elo), si le favori de l'Elo est le moins documenté des deux et que sa documentation est dans la tranche"
+}

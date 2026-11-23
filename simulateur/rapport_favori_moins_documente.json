@@ -1,0 +1,818 @@
+{
+ "genere_le": "2026-11-23T12:00:48+00:00",
+ "periodes": {
+  "apprentissage": "2018-01-01 → 2023-01-01",
+  "jugement": "2023-01-01 → 2026-06-01"
+ },
+ "matchs_rejoues": 115950,
+ "resultats_itf_hommes_dans_le_rejeu": 57230,
+ "regle": "pente a sur la probabilité du favori, apprise sur 2018–2022, jugée sur 2023 → fin de l'archive ; retenue si ≥ 1 000 matchs jugés, gain de log loss ≥ 0,001 et pente du même côté de 1 sur les deux périodes ; jamais mise en service par ce script",
+ "cases": [
+  {
+   "circuit": "ATP",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 4,
+    "annonce_pct": 70.3,
+    "gagne_pct": 50.0
+   },
+   "jugement": {
+    "n": 12,
+    "annonce_pct": 60.7,
+    "gagne_pct": 75.0
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 104,
+    "annonce_pct": 79.4,
+    "gagne_pct": 75.0
+   },
+   "jugement": {
+    "n": 88,
+    "annonce_pct": 78.5,
+    "gagne_pct": 73.9
+   },
+   "pente_apprise": 0.779,
+   "pente_jugement": 0.783,
+   "log_loss_sans": 0.53447,
+   "log_loss_avec": 0.5268,
+   "gain": 0.00767,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "1 500 à 3 000",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 108,
+    "annonce_pct": 79.0,
+    "gagne_pct": 74.1
+   },
+   "jugement": {
+    "n": 100,
+    "annonce_pct": 76.3,
+    "gagne_pct": 74.0
+   },
+   "pente_apprise": 0.763,
+   "pente_jugement": 0.816,
+   "log_loss_sans": 0.54079,
+   "log_loss_avec": 0.53643,
+   "gain": 0.00436,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "3 000 et plus",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 4486,
+    "annonce_pct": 65.1,
+    "gagne_pct": 67.3
+   },
+   "jugement": {
+    "n": 3605,
+    "annonce_pct": 65.3,
+    "gagne_pct": 66.3
+   },
+   "pente_apprise": 1.087,
+   "pente_jugement": 1.088,
+   "log_loss_sans": 0.60594,
+   "log_loss_avec": 0.60551,
+   "gain": 0.00044,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "3 000 et plus",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 6861,
+    "annonce_pct": 69.2,
+    "gagne_pct": 65.4
+   },
+   "jugement": {
+    "n": 5430,
+    "annonce_pct": 68.7,
+    "gagne_pct": 65.9
+   },
+   "pente_apprise": 0.84,
+   "pente_jugement": 0.865,
+   "log_loss_sans": 0.60848,
+   "log_loss_avec": 0.60698,
+   "gain": 0.0015,
+   "meme_sens": true,
+   "retenue": true
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "3 000 et plus",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 11347,
+    "annonce_pct": 67.6,
+    "gagne_pct": 66.1
+   },
+   "jugement": {
+    "n": 9035,
+    "annonce_pct": 67.4,
+    "gagne_pct": 66.1
+   },
+   "pente_apprise": 0.912,
+   "pente_jugement": 0.934,
+   "log_loss_sans": 0.60747,
+   "log_loss_avec": 0.60719,
+   "gain": 0.00028,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "500 à 1 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 2,
+    "annonce_pct": 60.8,
+    "gagne_pct": 100.0
+   },
+   "jugement": {
+    "n": 6,
+    "annonce_pct": 53.0,
+    "gagne_pct": 50.0
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "500 à 1 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 89,
+    "annonce_pct": 79.9,
+    "gagne_pct": 73.0
+   },
+   "jugement": {
+    "n": 50,
+    "annonce_pct": 80.5,
+    "gagne_pct": 82.0
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "500 à 1 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 91,
+    "annonce_pct": 79.5,
+    "gagne_pct": 73.6
+   },
+   "jugement": {
+    "n": 56,
+    "annonce_pct": 77.6,
+    "gagne_pct": 78.6
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "moins de 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 2,
+    "annonce_pct": 66.3,
+    "gagne_pct": 0.0
+   },
+   "jugement": {
+    "n": 0,
+    "annonce_pct": null,
+    "gagne_pct": null
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "moins de 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 53,
+    "annonce_pct": 80.5,
+    "gagne_pct": 96.2
+   },
+   "jugement": {
+    "n": 42,
+    "annonce_pct": 83.4,
+    "gagne_pct": 92.9
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "ATP",
+   "tranche": "moins de 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 55,
+    "annonce_pct": 80.0,
+    "gagne_pct": 92.7
+   },
+   "jugement": {
+    "n": 42,
+    "annonce_pct": 83.4,
+    "gagne_pct": 92.9
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 1476,
+    "annonce_pct": 61.5,
+    "gagne_pct": 60.9
+   },
+   "jugement": {
+    "n": 1514,
+    "annonce_pct": 62.0,
+    "gagne_pct": 58.9
+   },
+   "pente_apprise": 0.911,
+   "pente_jugement": 0.829,
+   "log_loss_sans": 0.66048,
+   "log_loss_avec": 0.65952,
+   "gain": 0.00096,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 3447,
+    "annonce_pct": 68.1,
+    "gagne_pct": 65.1
+   },
+   "jugement": {
+    "n": 3384,
+    "annonce_pct": 67.9,
+    "gagne_pct": 68.2
+   },
+   "pente_apprise": 0.829,
+   "pente_jugement": 0.955,
+   "log_loss_sans": 0.6038,
+   "log_loss_avec": 0.60493,
+   "gain": -0.00113,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "1 500 à 3 000",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 4923,
+    "annonce_pct": 66.1,
+    "gagne_pct": 63.8
+   },
+   "jugement": {
+    "n": 4898,
+    "annonce_pct": 66.1,
+    "gagne_pct": 65.3
+   },
+   "pente_apprise": 0.842,
+   "pente_jugement": 0.93,
+   "log_loss_sans": 0.62132,
+   "log_loss_avec": 0.62154,
+   "gain": -0.00022,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "3 000 et plus",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 9525,
+    "annonce_pct": 62.1,
+    "gagne_pct": 63.1
+   },
+   "jugement": {
+    "n": 9430,
+    "annonce_pct": 62.0,
+    "gagne_pct": 61.8
+   },
+   "pente_apprise": 1.028,
+   "pente_jugement": 0.977,
+   "log_loss_sans": 0.64905,
+   "log_loss_avec": 0.64913,
+   "gain": -8e-05,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "3 000 et plus",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 14088,
+    "annonce_pct": 65.0,
+    "gagne_pct": 62.8
+   },
+   "jugement": {
+    "n": 13075,
+    "annonce_pct": 64.8,
+    "gagne_pct": 64.5
+   },
+   "pente_apprise": 0.884,
+   "pente_jugement": 0.962,
+   "log_loss_sans": 0.6306,
+   "log_loss_avec": 0.63086,
+   "gain": -0.00026,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "3 000 et plus",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 23613,
+    "annonce_pct": 63.8,
+    "gagne_pct": 62.9
+   },
+   "jugement": {
+    "n": 22505,
+    "annonce_pct": 63.6,
+    "gagne_pct": 63.4
+   },
+   "pente_apprise": 0.929,
+   "pente_jugement": 0.967,
+   "log_loss_sans": 0.63833,
+   "log_loss_avec": 0.63835,
+   "gain": -2e-05,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "500 à 1 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 1082,
+    "annonce_pct": 61.5,
+    "gagne_pct": 58.8
+   },
+   "jugement": {
+    "n": 1253,
+    "annonce_pct": 62.3,
+    "gagne_pct": 56.9
+   },
+   "pente_apprise": 0.775,
+   "pente_jugement": 0.795,
+   "log_loss_sans": 0.66119,
+   "log_loss_avec": 0.6593,
+   "gain": 0.0019,
+   "meme_sens": true,
+   "retenue": true
+  },
+  {
+   "circuit": "CH",
+   "tranche": "500 à 1 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 3512,
+    "annonce_pct": 69.9,
+    "gagne_pct": 68.1
+   },
+   "jugement": {
+    "n": 3587,
+    "annonce_pct": 70.1,
+    "gagne_pct": 71.2
+   },
+   "pente_apprise": 0.896,
+   "pente_jugement": 1.016,
+   "log_loss_sans": 0.57378,
+   "log_loss_avec": 0.57504,
+   "gain": -0.00127,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "500 à 1 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 4594,
+    "annonce_pct": 67.9,
+    "gagne_pct": 65.9
+   },
+   "jugement": {
+    "n": 4840,
+    "annonce_pct": 68.0,
+    "gagne_pct": 67.5
+   },
+   "pente_apprise": 0.882,
+   "pente_jugement": 0.982,
+   "log_loss_sans": 0.59641,
+   "log_loss_avec": 0.59719,
+   "gain": -0.00078,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "moins de 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 961,
+    "annonce_pct": 58.9,
+    "gagne_pct": 42.4
+   },
+   "jugement": {
+    "n": 951,
+    "annonce_pct": 61.4,
+    "gagne_pct": 50.3
+   },
+   "pente_apprise": 0.045,
+   "pente_jugement": 0.623,
+   "log_loss_sans": 0.68004,
+   "log_loss_avec": 0.69039,
+   "gain": -0.01035,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "CH",
+   "tranche": "moins de 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 3983,
+    "annonce_pct": 68.4,
+    "gagne_pct": 78.5
+   },
+   "jugement": {
+    "n": 4482,
+    "annonce_pct": 72.3,
+    "gagne_pct": 78.9
+   },
+   "pente_apprise": 1.451,
+   "pente_jugement": 1.294,
+   "log_loss_sans": 0.50122,
+   "log_loss_avec": 0.49591,
+   "gain": 0.00531,
+   "meme_sens": true,
+   "retenue": true
+  },
+  {
+   "circuit": "CH",
+   "tranche": "moins de 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 4944,
+    "annonce_pct": 66.6,
+    "gagne_pct": 71.4
+   },
+   "jugement": {
+    "n": 5433,
+    "annonce_pct": 70.4,
+    "gagne_pct": 73.9
+   },
+   "pente_apprise": 1.301,
+   "pente_jugement": 1.227,
+   "log_loss_sans": 0.53252,
+   "log_loss_avec": 0.52897,
+   "gain": 0.00355,
+   "meme_sens": true,
+   "retenue": true
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 267,
+    "annonce_pct": 60.7,
+    "gagne_pct": 62.5
+   },
+   "jugement": {
+    "n": 142,
+    "annonce_pct": 62.6,
+    "gagne_pct": 69.0
+   },
+   "pente_apprise": 0.986,
+   "pente_jugement": 1.468,
+   "log_loss_sans": 0.60952,
+   "log_loss_avec": 0.61001,
+   "gain": -0.00049,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "1 500 à 3 000",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 750,
+    "annonce_pct": 70.0,
+    "gagne_pct": 69.6
+   },
+   "jugement": {
+    "n": 408,
+    "annonce_pct": 69.3,
+    "gagne_pct": 69.9
+   },
+   "pente_apprise": 1.093,
+   "pente_jugement": 1.098,
+   "log_loss_sans": 0.5623,
+   "log_loss_avec": 0.56156,
+   "gain": 0.00074,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "1 500 à 3 000",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 1017,
+    "annonce_pct": 67.6,
+    "gagne_pct": 67.7
+   },
+   "jugement": {
+    "n": 550,
+    "annonce_pct": 67.6,
+    "gagne_pct": 69.6
+   },
+   "pente_apprise": 1.08,
+   "pente_jugement": 1.153,
+   "log_loss_sans": 0.57449,
+   "log_loss_avec": 0.57331,
+   "gain": 0.00119,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "3 000 et plus",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 3149,
+    "annonce_pct": 63.3,
+    "gagne_pct": 64.7
+   },
+   "jugement": {
+    "n": 2989,
+    "annonce_pct": 63.8,
+    "gagne_pct": 64.8
+   },
+   "pente_apprise": 1.135,
+   "pente_jugement": 1.087,
+   "log_loss_sans": 0.62077,
+   "log_loss_avec": 0.62051,
+   "gain": 0.00026,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "3 000 et plus",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 5472,
+    "annonce_pct": 67.1,
+    "gagne_pct": 67.1
+   },
+   "jugement": {
+    "n": 4782,
+    "annonce_pct": 67.4,
+    "gagne_pct": 67.6
+   },
+   "pente_apprise": 1.03,
+   "pente_jugement": 1.055,
+   "log_loss_sans": 0.59377,
+   "log_loss_avec": 0.59361,
+   "gain": 0.00016,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "3 000 et plus",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 8621,
+    "annonce_pct": 65.7,
+    "gagne_pct": 66.2
+   },
+   "jugement": {
+    "n": 7771,
+    "annonce_pct": 66.0,
+    "gagne_pct": 66.6
+   },
+   "pente_apprise": 1.059,
+   "pente_jugement": 1.065,
+   "log_loss_sans": 0.60416,
+   "log_loss_avec": 0.6039,
+   "gain": 0.00025,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "gain inférieur à 0,001"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "500 à 1 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 117,
+    "annonce_pct": 60.1,
+    "gagne_pct": 65.0
+   },
+   "jugement": {
+    "n": 76,
+    "annonce_pct": 63.2,
+    "gagne_pct": 61.8
+   },
+   "pente_apprise": 1.161,
+   "pente_jugement": 0.861,
+   "log_loss_sans": 0.65073,
+   "log_loss_avec": 0.65419,
+   "gain": -0.00346,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "500 à 1 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 443,
+    "annonce_pct": 71.4,
+    "gagne_pct": 75.4
+   },
+   "jugement": {
+    "n": 224,
+    "annonce_pct": 73.1,
+    "gagne_pct": 80.4
+   },
+   "pente_apprise": 1.302,
+   "pente_jugement": 1.493,
+   "log_loss_sans": 0.46181,
+   "log_loss_avec": 0.44708,
+   "gain": 0.01473,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "500 à 1 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 560,
+    "annonce_pct": 69.1,
+    "gagne_pct": 73.2
+   },
+   "jugement": {
+    "n": 300,
+    "annonce_pct": 70.6,
+    "gagne_pct": 75.7
+   },
+   "pente_apprise": 1.289,
+   "pente_jugement": 1.367,
+   "log_loss_sans": 0.50967,
+   "log_loss_avec": 0.50091,
+   "gain": 0.00876,
+   "meme_sens": true,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "moins de 500",
+   "cote": "favori_moins_documente",
+   "apprentissage": {
+    "n": 42,
+    "annonce_pct": 61.0,
+    "gagne_pct": 57.1
+   },
+   "jugement": {
+    "n": 25,
+    "annonce_pct": 58.6,
+    "gagne_pct": 44.0
+   },
+   "retenue": false,
+   "raison": "trop peu de matchs"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "moins de 500",
+   "cote": "favori_plus_documente",
+   "apprentissage": {
+    "n": 289,
+    "annonce_pct": 77.8,
+    "gagne_pct": 75.4
+   },
+   "jugement": {
+    "n": 191,
+    "annonce_pct": 76.5,
+    "gagne_pct": 77.5
+   },
+   "pente_apprise": 0.943,
+   "pente_jugement": 1.253,
+   "log_loss_sans": 0.44724,
+   "log_loss_avec": 0.45071,
+   "gain": -0.00347,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  },
+  {
+   "circuit": "WTA",
+   "tranche": "moins de 500",
+   "cote": "tous",
+   "apprentissage": {
+    "n": 331,
+    "annonce_pct": 75.6,
+    "gagne_pct": 73.1
+   },
+   "jugement": {
+    "n": 216,
+    "annonce_pct": 74.4,
+    "gagne_pct": 73.6
+   },
+   "pente_apprise": 0.914,
+   "pente_jugement": 1.174,
+   "log_loss_sans": 0.4844,
+   "log_loss_avec": 0.48826,
+   "gain": -0.00386,
+   "meme_sens": false,
+   "retenue": false,
+   "raison": "moins de 1 000 matchs jugés"
+  }
+ ],
+ "retenues": [
+  {
+   "circuit": "ATP",
+   "tranche": "3 000 et plus",
+   "cote": "favori_plus_documente",
+   "pente_apprise": 0.84,
+   "gain": 0.0015
+  },
+  {
+   "circuit": "CH",
+   "tranche": "500 à 1 500",
+   "cote": "favori_moins_documente",
+   "pente_apprise": 0.775,
+   "gain": 0.0019
+  },
+  {
+   "circuit": "CH",
+   "tranche": "moins de 500",
+   "cote": "favori_plus_documente",
+   "pente_apprise": 1.451,
+   "gain": 0.00531
+  },
+  {
+   "circuit": "CH",
+   "tranche": "moins de 500",
+   "cote": "tous",
+   "pente_apprise": 1.301,
+   "gain": 0.00355
+  }
+ ]
+}
