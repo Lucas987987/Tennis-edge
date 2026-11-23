@@ -399,6 +399,7 @@ ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Proj
 STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
 ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
 SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
+FAVORI_MOINS_DOC = {}  # 23/11/2026 (paquet 374) : {circuit: {pente, de, a}} (simulateur/favori_moins_documente.json)
 QUALIFS_GC = {}       # 11/11/2026 (paquet 232) : {circuit: pente de l'Elo en qualifications de Grand Chelem} (simulateur/qualifs_grand_chelem.json)
 GRAND_CHELEM = {}     # 11/11/2026 (paquet 231) : {circuit: pente de l'Elo en Grand Chelem, tableau principal} (simulateur/grand_chelem.json)
 FORMAT_MATCH = {}     # 11/11/2026 (paquet 228) : {circuit: {sets gagnants: pente de l'Elo}} (simulateur/format_match.json)
@@ -1098,6 +1099,37 @@ def charger_qualifs_gc(racine):
         return {}
 
 
+def charger_favori_moins_doc(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'favori_moins_documente.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {c: v for c, v in (doc.get('pentes') or {}).items() if v and v.get('pente')}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def controle_favori_moins_doc(p_home, p_elo, c, h, a):
+    """23/11/2026 (paquet 374, etude_favori_moins_documente.py) — Challenger, tranche 500–1 500 points : quand le
+    favori de l'Elo est le MOINS documenté des deux, il gagne moins que l'annoncé (2023 → juin 2026 : 62,3 % annoncés,
+    56,9 % gagnés sur 1 253 matchs ; pente 0,775 apprise sur 2018–2022, gain 0,0019). Seule la PART DE L'ELO du % est
+    ramenée vers 50 %, comme pour le format et le Grand Chelem. None hors de cette case."""
+    v = FAVORI_MOINS_DOC.get(c)
+    if not v or p_home is None or p_elo is None or BALLES_CUMULEES is None or not h or not a:
+        return None
+    import elo as E_
+    bh, ba = BALLES_CUMULEES.get(E_.cle(h), 0), BALLES_CUMULEES.get(E_.cle(a), 0)
+    b_fav, b_aut = (bh, ba) if p_elo >= .5 else (ba, bh)
+    if not b_fav < b_aut or b_fav < (v.get('de') or 0) or (v.get('a') is not None and b_fav >= v['a']):
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    w = float((poids_de(c) or {}).get('elo', 1.0))
+    d = w * (float(v['pente']) - 1.0) * lg(p_elo)
+    if abs(d) < 1e-4:
+        return None
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': v['pente'],
+            'balles': [int(bh), int(ba)]}
+
+
 def controle_qualifs_gc(p_home, p_elo, c, tournoi, tour):
     """11/11/2026 (paquet 232, etude_qualifs_grand_chelem.py) — en qualifications de Grand Chelem chez les femmes, le
     favori gagne plus souvent que l'Elo ne l'annonce : 67,9 % réels pour 63,2 % annoncés sur 1 435 matchs jugés (2023 →
@@ -1115,7 +1147,7 @@ def controle_qualifs_gc(p_home, p_elo, c, tournoi, tour):
 
 
 def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
-                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None):
+                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None, fmd_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -1129,7 +1161,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'documentation_faible': (doc_ctl or {}).get('decalage'),
             'format_match': (fmt_ctl or {}).get('decalage'),
             'grand_chelem': (gc_ctl or {}).get('decalage'),
-            'qualifs_grand_chelem': (qgc_ctl or {}).get('decalage')}
+            'qualifs_grand_chelem': (qgc_ctl or {}).get('decalage'),
+            'favori_moins_documente': (fmd_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -1623,6 +1656,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
         fem_etat, elo_fem = None, None
     global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES, PARCOURS
     global FORMAT_MATCH, GRAND_CHELEM, QUALIFS_GC
+    global FAVORI_MOINS_DOC
+    FAVORI_MOINS_DOC = charger_favori_moins_doc(racine)     # 23/11/2026 (paquet 374) : favori le moins documenté (Challenger)
     QUALIFS_GC = charger_qualifs_gc(racine)                 # 11/11/2026 (paquet 232) : pente de l'Elo en qualifications de Grand Chelem
     GRAND_CHELEM = charger_grand_chelem(racine)             # 11/11/2026 (paquet 231) : pente de l'Elo en Grand Chelem
     FORMAT_MATCH = charger_format_match(racine)             # 11/11/2026 (paquet 228) : pente de l'Elo selon le format
@@ -1890,7 +1925,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                                        controle_documentation(p_base, c, h, a),
                                        controle_format(p_base, stats['p_home'], c, sg_fmt),
                                        controle_grand_chelem(p_base, stats['p_home'], c, x['tournoi'], tour_),
-                                       controle_qualifs_gc(p_base, stats['p_home'], c, x['tournoi'], tour_))
+                                       controle_qualifs_gc(p_base, stats['p_home'], c, x['tournoi'], tour_),
+                                       controle_favori_moins_doc(p_base, stats['p_home'], c, h, a))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 so_ = signaux_outsiders(c, p_base, h, a, x['tournoi'], x['debut'])      # paquet 274
                 if so_:
@@ -1962,7 +1998,7 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                     'entree': entree_du_match(h, a, x['debut']),
                     'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
                     'en_salle': salle_du_match(h, a, x['debut']),   # 12/11/2026 : pour les statistiques annoncées
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1992,7 +2028,9 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                         'grand_chelem', None if 'grand_chelem' in adoptes_ici else
                         controle_grand_chelem((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_)),
                         'qualifs_grand_chelem', None if 'qualifs_grand_chelem' in adoptes_ici else
-                        controle_qualifs_gc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_))})
+                        controle_qualifs_gc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_)),
+                        'favori_moins_documente', None if 'favori_moins_documente' in adoptes_ici else
+                        controle_favori_moins_doc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, h, a))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,

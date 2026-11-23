@@ -22,6 +22,10 @@ RÈGLE ÉCRITE LE 23/11/2026 AVANT D'EXÉCUTER L'ÉTUDE :
   • RETENUE seulement si, dans la case : au moins 1 000 matchs jugés, la log loss du jugement baisse d'au moins 0,001,
     ET la pente mesurée sur chacune des deux périodes est du même côté de 1 (même sens sur les deux périodes).
   • Une case retenue n'est PAS mise en service par ce script : elle est proposée à Lucas (paquet suivant).
+23/11/2026 (paquet 374) — DÉCISION DE LUCAS : mise en service directe des cases retenues « favori le moins
+documenté » (Challenger 500–1 500, pente 0,775), écrites dans simulateur/favori_moins_documente.json ; seule la PART DE
+L'ELO du % bouge (l'étude porte sur l'Elo) ; retrait par la règle cumulée des signaux (fantomes_circuits.py).
+Les cases « favori le plus documenté » et « tous » sous 500 points recouvrent la correction du 05/11 : non reprises.
 Usage : python simulateur/etude_favori_moins_documente.py /tmp/sackmann .
 Sortie : simulateur/rapport_favori_moins_documente.json
 """
@@ -42,6 +46,21 @@ TRANCHES = ((0, 500, 'moins de 500'), (500, 1500, '500 à 1 500'), (1500, 3000, 
             (3000, float('inf'), '3 000 et plus'))
 CIRCUITS = ('ATP', 'WTA', 'CH')
 SORTIE = os.path.join(ICI, 'rapport_favori_moins_documente.json')
+CONFIG = os.path.join(ICI, 'favori_moins_documente.json')
+BORNES = {lib: (a, z) for a, z, lib in TRANCHES}
+
+
+def config(cases):
+    """{'pentes': {circuit: {pente, de, a}}} — cases retenues « favori le moins documenté » seulement."""
+    out = {}
+    for x in cases:
+        if x.get('retenue') and x['cote'] == 'favori_moins_documente' and x['circuit'] not in out:
+            de, a = BORNES[x['tranche']]
+            out[x['circuit']] = {'pente': x['pente_apprise'], 'de': de, 'a': a if a != float('inf') else None,
+                                 'tranche': x['tranche'], 'gain_jugement': x['gain'], 'matchs_juges': x['jugement']['n']}
+    return {'pentes': out, 'source': 'etude_favori_moins_documente.py (paquet 373), mise en service le 23/11/2026 (paquet 374)',
+            'regle': "part de l'Elo du % : décalage = poids de l'Elo × (pente − 1) × logit(p Elo), si le favori de l'Elo "
+                     "est le moins documenté des deux et que sa documentation est dans la tranche"}
 
 
 def tranche(b):
@@ -130,6 +149,8 @@ def main(argv):
                         for x in cases if x.get('retenue')]}
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
+    with open(CONFIG, 'w', encoding='utf-8') as f:
+        json.dump(config(cases), f, ensure_ascii=False, indent=1)
     print(f"Favori moins documenté : {len(rows)} matchs rejoués, {len(cases)} cases, {len(doc['retenues'])} retenue(s)")
     return 0
 
