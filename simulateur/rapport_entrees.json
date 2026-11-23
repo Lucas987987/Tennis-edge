@@ -1,0 +1,78 @@
+{
+ "genere_le": "2026-11-23T13:55:45Z",
+ "pronostics_du": "2026-11-23T13:17:51Z",
+ "statut": "ok",
+ "matchs_pronostiques": 101,
+ "rejets_par_raison": {
+  "doublon_meme_match": 1
+ },
+ "rejets": [
+  {
+   "home": "Kyle Overmyer",
+   "away": "Juan Fuentes Vasquez",
+   "tournoi": "ATP Challenger San Salvador",
+   "raison": "doublon_meme_match",
+   "garde": [
+    "Kyle Overmyer",
+    "Juan Carlos Fuentes Vasquez"
+   ],
+   "meme_classement": true
+  }
+ ],
+ "surfaces_inconnues": [],
+ "fusions": {
+  "n": 36,
+  "deux_classements": [],
+  "cible_sans_classement": []
+ },
+ "alias_observes": {
+  "n": 1,
+  "conflits": []
+ },
+ "sans_historique": {
+  "n": 2,
+  "suspects": [
+   {
+    "nom": "Connor Huertas Del Pino",
+    "tournoi": "ATP Challenger Florianopolis",
+    "meme_nom_de_famille": [
+     "Andreina Pino",
+     "Arklon Huertas Del Pino",
+     "Conner Huertas Del Pino",
+     "Mateo Del Pino",
+     "Sebastian Pino"
+    ]
+   }
+  ],
+  "liste": [
+   {
+    "nom": "Connor Huertas Del Pino",
+    "tournoi": "ATP Challenger Florianopolis",
+    "meme_nom_de_famille": [
+     "Andreina Pino",
+     "Arklon Huertas Del Pino",
+     "Conner Huertas Del Pino",
+     "Mateo Del Pino",
+     "Sebastian Pino"
+    ]
+   },
+   {
+    "nom": "Enzo Costanzo Prediger",
+    "tournoi": "ATP Challenger Florianopolis",
+    "meme_nom_de_famille": []
+   }
+  ]
+ },
+ "regle": "lecture seule ; alerte si un joueur réuni garde deux classements ou si un doublon écarté avait deux classements différents (lien alors appris en direct)",
+ "historique": [
+  {
+   "jour": "2026-11-23",
+   "matchs": 101,
+   "rejets": {
+    "doublon_meme_match": 1
+   },
+   "sans_historique": 2,
+   "deux_classements": 0
+  }
+ ]
+}
