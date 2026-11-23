@@ -497,6 +497,11 @@ def main(argv):
     alias = E.unifier(connus, base_noms)
     # 28/10/2026 : les noms venus SEULEMENT des résultats ITF sont reliés par la règle stricte (audit : fusions à tort)
     alias.update(lier_itf(M, connus, itf_rows, base_noms))
+    # 23/11/2026 (paquet 369) : même joueur sous deux prénoms (« Melios » / « Menelaos » Efstathiou) — même pays, même
+    # date de naissance, jamais dans le même tournoi (simulateur/identites.py)
+    import identites as ID
+    alias, liens_identite = ID.appliquer(alias, dossier, racine)
+    print(f"Identités : {len(liens_identite)} joueurs écrits de deux façons réunis", flush=True)
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     noms_c = dict(connus)
     for x in nous:
@@ -689,6 +694,7 @@ def main(argv):
            'depart_itf_hommes': depart_itf,
            'stabilite': stab,
            'joueurs_relies_nom_different': len(alias),
+           'joueurs_reunis_par_identite': len(liens_identite),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
            'resultats_tennis_data_ajoutes': W['td'],
            'A_atp_wta_2024_2026': dict(W['rapA'], periode=f"{DEBUT_A} → {FIN_A}"),
