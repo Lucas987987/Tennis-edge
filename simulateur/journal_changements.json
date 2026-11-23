@@ -1966,6 +1966,13 @@
    "paquet": 371,
    "quoi": "MATCHS ÉCARTÉS ET JOUEURS RÉUNIS CONTRÔLÉS CHAQUE JOUR (paquet 371) : un rapport (simulateur/rapport_entrees.json) compte à chaque pronostic les matchs sans pronostic et leur raison, les joueurs sans aucun match au classement (et ceux dont un joueur connu porte le même nom de famille), et vérifie que chaque joueur réuni n'a plus qu'un classement. Deux causes corrigées : « Soon Woo Kwon » et « Soonwoo Kwon » étaient pris pour deux joueurs différents et le match était écarté (l'espace seul diffère : c'est le même joueur) ; quand un même match est listé deux fois avec deux écritures d'un joueur (« Aaron Funk – Tugra Duran » et « Aaron Funk – Cemil Tugra Duran », Ankara), les deux noms sont désormais reliés pour le classement suivant, sauf si leurs fiches (pays, naissance, taille) les contredisent.",
    "garde_fou": "Lecture seule pour le rapport ; un lien vu en direct qui vise deux joueurs différents est marqué en conflit et n'est plus appliqué. Vérifié sur le classement reconstruit : 42 joueurs réunis, aucun n'a encore deux classements. Tests : tests/test_controle_entrees.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 372,
+   "quoi": "BILAN SELON LA DOCUMENTATION, AU JOUR DU MATCH (paquet 372) : le tableau du site classait chaque match avec la documentation des joueurs d'aujourd'hui ; un joueur peu vu en octobre et beaucoup vu depuis tombait dans une tranche « documentée ». Chaque match est maintenant classé avec la documentation qu'avait l'algo le jour du match : celle notée au pronostic quand elle existe, sinon recalculée avec le même compteur que l'algo (points de service cumulés avant le jour du match). Sur les 1 549 matchs jugés : moins de 500 points, 185 matchs, favoris annoncés 77,1 %, gagnants 76,2 % ; 500 à 1 500, 154 matchs, 68,2 % annoncés pour 61,0 % gagnés ; 1 500 à 3 000, 206 matchs, 64,8 % pour 63,6 % ; 3 000 et plus, 1 004 matchs, 63,7 % pour 65,2 %.",
+   "garde_fou": "Affichage seulement : le % ne change pas. L'écart de la tranche 500 à 1 500 reste suivi ; l'étude du paquet 368 ne l'a pas confirmé sur la période de jugement (non adopté). Sans l'archive, le tableau garde l'ancienne mesure et le dit. Tests : tests/test_documentation_au_jour.py."
   }
  ]
 }

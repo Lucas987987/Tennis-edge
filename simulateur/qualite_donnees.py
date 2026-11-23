@@ -122,8 +122,11 @@ def actifs(doc, racine, jours=ACTIFS_J, jour=None):
             'au_moins_500': sum(x >= 500 for x in L), 'pct_au_moins_500': round(100 * sum(x >= 500 for x in L) / len(L), 1)}
 
 
-def couverture_pronostiques(doc, matchs, juge):
-    """matchs : [{circuit, home, away, …}] jugés ; juge(m) -> (p_home, y) ou None (y = 1 si home gagne)."""
+def couverture_pronostiques(doc, matchs, juge, au_jour=None):
+    """matchs : [{circuit, home, away, …}] jugés ; juge(m) -> (p_home, y) ou None (y = 1 si home gagne).
+    au_jour(m) -> points de service du joueur le moins documenté AU JOUR DU MATCH, ou None (23/11/2026, paquet 372) :
+    s'il est donné, le bilan par tranche classe chaque match selon la documentation qu'avait l'algo ce jour-là, pas
+    celle d'aujourd'hui (un joueur peu vu en octobre et très vu depuis tombait dans une tranche « documentée »)."""
     import elo as E
     pos = {c: i for i, c in enumerate((doc or {}).get('champs') or [])}
     if 'svpt' not in pos or not matchs:
@@ -151,6 +154,10 @@ def couverture_pronostiques(doc, matchs, juge):
         if j is None:
             continue
         lo = min(bh, ba)
+        if au_jour is not None:
+            lo = au_jour(m)
+            if lo is None:
+                continue
         for a, z, lib in TRANCHES:
             if a <= lo < z:
                 tr[lib].append(j)
@@ -171,6 +178,7 @@ def couverture_pronostiques(doc, matchs, juge):
                          'brier': round(sum((p - y) ** 2 for p, y in X) / n, 4) if n else None,
                          'conclusion_possible': n >= 30})
     return {'circuits': circuits, 'tranches': tranches,
+            'mesure_tranches': 'au_jour_du_match' if au_jour is not None else 'aujourd_hui',
             'lecture': ("Balles effectives du joueur le moins documenté du match. « Confiance » = probabilité moyenne "
                         "donnée au favori : si les vainqueurs trouvés restent nettement en dessous, la tranche est "
                         "trop sûre d'elle. Moins de 30 matchs : aucune conclusion.")}
