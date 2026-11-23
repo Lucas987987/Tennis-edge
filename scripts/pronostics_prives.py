@@ -80,10 +80,11 @@ def public_fiches(doc, maintenant):
     return {u: v for u, v in (doc or {}).items() if isinstance(v, dict) and commence(v.get('debut'), maintenant)}
 
 
-def public_donnees(doc):
+def public_donnees(doc, maintenant=None):
     sys.path.insert(0, ICI)
     import site_leger as SL
-    return SL.libre(doc)
+    t = dt.datetime.fromisoformat(str(maintenant or _maintenant())[:16]).replace(tzinfo=dt.timezone.utc)
+    return SL.libre(doc, t)
 
 
 def _lire_gz_lignes(p):
@@ -104,7 +105,7 @@ def rendre_public(racine, maintenant=None):
     if os.path.exists(p):
         with open(p, encoding='utf-8') as f:
             doc = json.load(f)
-        pub = public_donnees(doc)
+        pub = public_donnees(doc, maintenant)
         with open(p, 'w', encoding='utf-8') as f:
             json.dump(pub, f, ensure_ascii=False, separators=(',', ':'))
         bilan[DONNEES] = (sum(1 for m in pub.get('matchs') or [] if not m.get('verrou')), len(doc.get('matchs') or []))

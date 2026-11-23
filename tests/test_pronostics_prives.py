@@ -55,6 +55,7 @@ def test_version_publique_ne_garde_que_les_matchs_commences(tmp_path):
     par = {m['uid']: m for m in d['matchs']}
     assert par['u3']['p_home'] == .66                 # le match du jour, offert
     assert par['u2'].get('verrou') and 'p_home' not in par['u2']
+    assert par['u1'].get('verrou') and 'sets' not in par['u1']        # 390 : commencé → au plus le % de l'algo
     assert d['pronostics_du'] == 'x'                  # fraîcheur lue par les contrôles de la chaîne
 
 

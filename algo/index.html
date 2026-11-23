@@ -852,7 +852,6 @@ body.carte #video{display:block;width:1080px;height:1350px}
       <ul id="plus-list"></ul>
       <span class="badge soon" data-t="plus_bientot"></span>
       <p style="margin:12px 0 0"><button type="button" class="btn go" id="plus-compte" data-t="verrou_cta_compte"></button></p>
-      <div id="apercu-plus" hidden style="margin-top:14px"></div>
       <div class="fondateurs" id="fondateurs" hidden>
         <h3 style="margin:16px 0 6px" data-t="fd_titre"></h3>
         <p style="margin:0" data-t="fd_texte"></p>
@@ -1091,9 +1090,7 @@ const T = {
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
   plus_items:['Le pronostic de tous les matchs : % de victoire et note de fiabilité','Sets, scores probables, statistiques prévues et scénarios du match','Le direct de chaque match et la simulation rejouable','À la semaine, au mois, au trimestre ou à l’année'],
   plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
-  ap_badge:'Aperçu Plus', ap_btn:'Voir un match Plus en entier',
-  ap_txt:(h,a)=>`${h} – ${a}, terminé : le pronostic, les scénarios, le direct et le bilan, exactement comme un abonné les voit. Le match est choisi chaque jour par une règle fixe (le plus relevé des dernières 24 h), sans regarder le résultat.`,
-  ap_bandeau:"Aperçu de l'accès Plus : ce match est terminé. Voici tout ce qu'un abonné voyait avant et pendant le match, et le bilan après coup.",
+  verrou_commence:"Le match a commencé : le % de l'algo d'avant match est affiché. Le détail (sets, scores, scénarios, statistiques) reste réservé à l'accès Plus.",
   fd_titre:'Offre fondateurs',
   fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Le paiement n'est pas encore ouvert : réserve ta place, on te prévient par e-mail à l'ouverture. Réserver est gratuit et n'engage à rien.",
   fd_reserver:'Réserver ma place', fd_compte:'Créer un compte pour réserver', fd_cx:'Se connecter',
@@ -1423,9 +1420,7 @@ const T = {
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
   plus_items:['The forecast for every match: win % and reliability score','Sets, likely scores, predicted stats and match scenarios','Live coverage of every match and the replayable simulation','Weekly, monthly, quarterly or yearly'],
   plus_bientot:'Payment coming soon · create your account now.',
-  ap_badge:'Plus preview', ap_btn:'See a full Plus match',
-  ap_txt:(h,a)=>`${h} – ${a}, finished: the forecast, scenarios, live view and review, exactly as a subscriber sees them. The match is picked every day by a fixed rule (the highest-rated of the last 24 h), without looking at the result.`,
-  ap_bandeau:'Plus access preview: this match is over. Here is everything a subscriber saw before and during the match, and the review afterwards.',
+  verrou_commence:"The match has started: the algo's pre-match % is shown. The details (sets, scores, scenarios, stats) stay reserved for Plus access.",
   fd_titre:'Founders offer',
   fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as the subscription stays active. Payment isn't open yet: reserve your spot and we'll email you when it opens. Reserving is free and commits you to nothing.",
   fd_reserver:'Reserve my spot', fd_compte:'Create an account to reserve', fd_cx:'Log in',
@@ -3599,7 +3594,7 @@ function rendMdj(){
   const f = m.feuille_prevue;
   const lignes = f ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem'],['jeux_service_gagnes_pct','jsg']]
      .filter(([k])=>f[0]&&f[0][k]!=null).map(([k,lib])=>`<tr><th>${esc(t(lib))}</th><td>${dec(f[0][k],1)}</td><td>${dec(f[1][k],1)}</td></tr>`).join('') : '';
-  zone.innerHTML = (estApercu(m.uid) ? `<p class="panel" style="margin:0 0 12px;padding:12px 16px;border-color:var(--ball)">⭐ ${esc(t('ap_bandeau'))}</p>` : '') + `<div class="mdj">
+  zone.innerHTML = `<div class="mdj">
     <div>${m.simulation ? `<div class="borne"><div class="ecran-jeu" id="borne"></div></div>
       <div class="commandes"><button type="button" class="btn" id="b-accel" disabled>⏩ ${esc(t('accel'))}</button><button type="button" class="btn" id="b-fin" disabled>⏭ ${esc(t('fin'))}</button></div>
       <p class="aide">${esc(t('jouer_aide', nSim))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
@@ -7398,8 +7393,8 @@ function ligneVerrou(m){
   return `<li class="${selection?'selectionne':''}"><a class="match-open" href="#match=${encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}">
       <span class="time">${quand(m.debut)}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}</span>
-      <span class="pl a"><span>${esc(m.home)}</span><b>🔒</b></span>
-      <span class="pl b"><span>${esc(m.away)}</span><b></b></span>
+      <span class="pl a"><span>${esc(m.home)}</span><b>${m.p_home != null ? pc0(m.p_home) : '🔒'}</b></span>
+      <span class="pl b"><span>${esc(m.away)}</span><b>${m.p_home != null ? pc0(1 - m.p_home) : ''}</b></span>
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span class="verrou-b">🔒 Plus</span><span class="ouvrir">${esc(t('verrou_titre'))}</span></span>
     </span></a></li>`;
@@ -7409,18 +7404,8 @@ function panneauVerrou(m){
     : `<div class="actions"><button type="button" class="btn go" data-compte="inscription">${esc(t('verrou_cta_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('verrou_cta_cx'))}</button></div>`;
   return `<div class="panel verrou-p"><span class="verrou-b">🔒 ${esc(t('verrou_titre'))}</span>
     <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
-    <p style="margin:12px 0 0">${esc(t('verrou_texte'))}</p>${actions}</div>`;
+    ${m.p_home != null ? `<p class="vs" style="margin:10px 0 0"><span style="color:var(--p1)">${pc0(m.p_home)}</span> – <span style="color:var(--p2)">${pc0(1 - m.p_home)}</span></p><p style="margin:8px 0 0">${esc(t('verrou_commence'))}</p>` : `<p style="margin:12px 0 0">${esc(t('verrou_texte'))}</p>`}${actions}</div>`;
 }
-// 23/11/2026 (paquet 389, Lucas) — APERÇU PLUS : pour un visiteur sans accès Plus, un match terminé complet
-// (vitrine.choisir_apercu : règle fixe, sans regarder le résultat), signalé dans la liste et ouvert depuis la section Plus.
-function estApercu(uid){ return !!(D && D.acces === 'libre' && D.apercu_plus && D.apercu_plus.uid === uid); }
-function rendApercuPlus(){
-  const z = document.getElementById('apercu-plus'); if (!z) return;
-  const m = D && D.acces === 'libre' && D.apercu_plus && D.matchs.find(x => x.uid === D.apercu_plus.uid && x.simulation);
-  z.hidden = !m; if (!m) { z.innerHTML = ''; return; }
-  z.innerHTML = `<p style="margin:0 0 8px">${esc(t('ap_txt', m.home, m.away))}</p><button type="button" class="btn" data-apercu="${esc(m.uid)}">⭐ ${esc(t('ap_btn'))}</button>`;
-}
-document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-apercu]'); if (b) ouvrirMatch(b.dataset.apercu); });
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
   const tous = matchsFiltres();
@@ -7448,7 +7433,7 @@ function rendListe(){
   const ligneMatch = m=>{ if (m.verrou) return ligneVerrou(m); const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${quand(m.debut)}</span><span>
-      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${estApercu(m.uid) ? `<span class="badge">${esc(t('ap_badge'))}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
@@ -7843,7 +7828,7 @@ function chargerPlus(){                                              // paquet 3
 }
 function rendTout(){
   rendTextes(); if (!D) return;
-  rendMdj(); rendListe(); rendApercuPlus(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
+  rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
