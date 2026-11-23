@@ -1,0 +1,131 @@
+// Paquet 377 — comptes des abonnés : inscription, e-mail de confirmation, connexion, accès Plus, données réservées.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import worker from './worker.js';
+import { hacher, normaliser, abonne } from './comptes.js';
+
+const CLE = 'k'.repeat(40);
+function r2() {
+  const m = new Map();
+  return {
+    m,
+    get: async (k) => (m.has(k) ? { body: m.get(k), size: m.get(k).length, text: async () => m.get(k) } : null),
+    put: async (k, v) => { m.set(k, String(v)); },
+    list: async ({ prefix }) => ({ objects: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })), truncated: false }),
+  };
+}
+function monde() {
+  const C = r2();
+  C.m.set('site/algo/site.json', '{"plein":true}');
+  C.m.set('site/algo/donnees.json', '{"plein":true,"tout":1}');
+  C.m.set('site/algo/site_libre.json', '{"libre":true}');
+  const mails = [];
+  globalThis.fetch = async (u, o) => {
+    if (String(u).startsWith('https://api.brevo.com/')) { mails.push(JSON.parse(o.body)); return new Response('{}', { status: 201 }); }
+    return new Response('x', { status: 404 });
+  };
+  return { env: { CLE_PRIVEE: CLE, COFFRE: C, BREVO_API_KEY: 'b' }, mails, C };
+}
+const SITE = 'https://gamesetalgo.com', DEV = 'https://algo.tennis-edge.workers.dev';
+const post = (chemin, corps, h = {}, base = SITE) => new Request(base + chemin, { method: 'POST',
+  headers: { 'Content-Type': 'application/json', Origin: base, ...h }, body: JSON.stringify(corps) });
+const get = (chemin, h = {}, base = SITE) => new Request(base + chemin, { headers: h });
+const cookie = (r) => (r.headers.get('Set-Cookie') || '').split(';')[0];
+const lienDe = (mail, cle) => new URL(mail.htmlContent.match(/href="([^"]+)"/)[1].replace(/&amp;/g, '&')).searchParams.get(cle);
+
+test('inscription → e-mail de confirmation → connexion → données libres, puis accès Plus donné à la main', async () => {
+  const { env, mails } = monde();
+  let r = await worker.fetch(post('/compte/api/inscription', { email: 'Ana@Exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(r.status, 200);
+  assert.equal(mails.length, 1);
+  assert.equal(mails[0].to[0].email, 'ana@exemple.fr');
+  assert.equal(mails[0].sender.email, 'noreply@gamesetalgo.com');
+  // pas encore confirmé
+  r = await worker.fetch(post('/compte/api/connexion', { email: 'ana@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(r.status, 403);
+  const jeton = lienDe(mails[0], 'verifier');
+  r = await worker.fetch(post('/compte/api/verifier', { jeton }), env);
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('Set-Cookie'), /HttpOnly; Secure; SameSite=Lax/);
+  // le lien ne sert qu'une fois
+  assert.equal((await worker.fetch(post('/compte/api/verifier', { jeton }), env)).status, 400);
+  r = await worker.fetch(post('/compte/api/connexion', { email: 'ana@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(r.status, 200);
+  const c = cookie(r);
+  const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.compte.email, 'ana@exemple.fr');
+  assert.equal(moi.compte.abonne, false);
+  // sans accès Plus : version libre, jamais le fichier complet
+  for (const f of ['/site.json', '/donnees.json']) {
+    const x = await worker.fetch(get(f, { Cookie: c }), env);
+    assert.equal(await x.text(), '{"libre":true}', f);
+    assert.equal(x.headers.get('Cache-Control'), 'private, no-store');
+  }
+  assert.equal(await (await worker.fetch(get('/site.json'), env)).text(), '{"libre":true}');
+  // l'administration : pas sur gamesetalgo.com, et seulement avec la clé
+  assert.equal((await worker.fetch(get('/compte/admin'), env)).status, 404);
+  assert.equal((await worker.fetch(get('/compte/admin', {}, DEV), env)).status, 303);
+  r = await worker.fetch(post('/compte/admin/api/acces', { email: 'ana@exemple.fr', formule: 'mois' }, { 'X-Cle': CLE }, DEV), env);
+  assert.equal(r.status, 200);
+  const acc = (await r.json()).compte;
+  assert.equal(acc.abonne, true);
+  assert.ok(Date.parse(acc.jusqu_au) - Date.now() > 30 * 86400e3);
+  assert.equal(await (await worker.fetch(get('/site.json', { Cookie: c }), env)).text(), '{"plein":true}');
+  assert.equal(await (await worker.fetch(get('/donnees.json', { Cookie: c }), env)).text(), '{"plein":true,"tout":1}');
+  const liste = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(liste.comptes.length, 1);
+  assert.ok(!JSON.stringify(liste).includes('hash'));
+  // retrait
+  await worker.fetch(post('/compte/admin/api/acces', { email: 'ana@exemple.fr', formule: 'retirer' }, { 'X-Cle': CLE }, DEV), env);
+  assert.equal(await (await worker.fetch(get('/site.json', { Cookie: c }), env)).text(), '{"libre":true}');
+});
+
+test('mot de passe oublié : lien d’une heure, à usage unique, ferme les anciennes sessions', async () => {
+  const { env, mails, C } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'bob@exemple.fr', mdp: 'ancienmdp1' }), env);
+  let r = await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env);
+  const ancien = cookie(r);
+  // l'envoi suivant attend 2 minutes : on recule l'horloge du compte
+  for (const [k, v] of C.m) if (k.startsWith('comptes/u/')) C.m.set(k, JSON.stringify({ ...JSON.parse(v), dernier_mail: 0 }));
+  await worker.fetch(post('/compte/api/oubli', { email: 'bob@exemple.fr' }), env);
+  assert.equal(mails.length, 2);
+  const jeton = lienDe(mails[1], 'reinit');
+  assert.equal((await worker.fetch(post('/compte/api/reinit', { jeton, mdp: 'court' }), env)).status, 400);
+  r = await worker.fetch(post('/compte/api/reinit', { jeton, mdp: 'nouveaumdp1' }), env);
+  assert.equal(r.status, 200);
+  assert.equal((await worker.fetch(post('/compte/api/reinit', { jeton, mdp: 'encoreautre1' }), env)).status, 400);
+  assert.equal((await (await worker.fetch(get('/compte/api/moi', { Cookie: ancien }), env)).json()).compte, null);
+  assert.equal((await worker.fetch(post('/compte/api/connexion', { email: 'bob@exemple.fr', mdp: 'ancienmdp1' }), env)).status, 401);
+  assert.equal((await worker.fetch(post('/compte/api/connexion', { email: 'bob@exemple.fr', mdp: 'nouveaumdp1' }), env)).status, 200);
+});
+
+test('protections : mauvaise origine, adresse déjà inscrite (même réponse), blocage après 10 échecs, cookie falsifié', async () => {
+  const { env, mails } = monde();
+  assert.equal((await worker.fetch(post('/compte/api/inscription', { email: 'x@exemple.fr', mdp: 'motdepasse1' },
+    { Origin: 'https://pirate.example' }), env)).status, 403);
+  const a = await (await worker.fetch(post('/compte/api/inscription', { email: 'c@exemple.fr', mdp: 'motdepasse1' }), env)).json();
+  const b = await (await worker.fetch(post('/compte/api/inscription', { email: 'c@exemple.fr', mdp: 'autre12345' }), env)).json();
+  assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort());
+  assert.equal(mails.length, 1);                                   // pas de second e-mail avant 2 minutes
+  await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env);
+  for (let i = 0; i < 10; i++) await worker.fetch(post('/compte/api/connexion', { email: 'c@exemple.fr', mdp: 'faux' + i }), env);
+  assert.equal((await worker.fetch(post('/compte/api/connexion', { email: 'c@exemple.fr', mdp: 'motdepasse1' }), env)).status, 429);
+  const faux = 'gsa_compte=' + 'a'.repeat(64) + '.9999999999999.0.' + 'Z'.repeat(43);
+  assert.equal((await (await worker.fetch(get('/compte/api/moi', { Cookie: faux }), env)).json()).compte, null);
+  assert.equal(await (await worker.fetch(get('/site.json', { Cookie: faux }), env)).text(), '{"libre":true}');
+  assert.equal((await worker.fetch(post('/compte/api/inscription', { email: 'pas-un-email', mdp: 'motdepasse1' }), env)).status, 400);
+});
+
+test('sans Brevo : le compte est créé, l’e-mail est signalé non envoyé ; outils', async () => {
+  const { env } = monde();
+  delete env.BREVO_API_KEY;
+  const o = await (await worker.fetch(post('/compte/api/inscription', { email: 'd@exemple.fr', mdp: 'motdepasse1' }), env)).json();
+  assert.equal(o.envoye, false);
+  assert.equal(o.raison, 'mail_non_configure');
+  assert.equal(normaliser('  A@B.CO '), 'a@b.co');
+  assert.equal(normaliser('a@b'), null);
+  const h1 = await hacher('x'.repeat(10)), h2 = await hacher('x'.repeat(10), h1.sel);
+  assert.equal(h1.hash, h2.hash);
+  assert.equal(abonne({ acces: { formule: 'illimite' } }), true);
+  assert.equal(abonne({ acces: { formule: 'mois', jusqu_au: '2000-01-01T00:00:00Z' } }), false);
+});

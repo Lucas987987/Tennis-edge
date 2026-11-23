@@ -228,6 +228,22 @@ svg.curve{width:100%;height:auto;display:block}
 .plus ul{margin:10px 0 0;padding-left:1.1em}
 .plus li{margin:4px 0}
 .plus .soon{display:inline-block;margin-top:12px}
+/* 23/11/2026 (paquet 377) — comptes et accès Plus */
+.compte-b{border:1px solid var(--line2);background:rgba(var(--wv),.06);border-radius:999px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
+.compte-b.plus{border-color:var(--ball)}
+.compte-fond{position:fixed;inset:0;background:rgba(5,3,18,.72);display:grid;place-items:center;z-index:9000;padding:16px}
+.compte-fond[hidden]{display:none}
+.compte-boite{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line2);border-radius:16px;width:min(400px,100%);padding:18px;max-height:92vh;overflow:auto}
+.compte-boite h3{margin:0 0 10px;font-family:var(--disp)}
+.compte-boite label{display:block;font-size:.85rem;color:var(--dim);margin:10px 0 4px}
+.compte-boite input{width:100%;box-sizing:border-box;font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line2);background:var(--bg);color:var(--ink)}
+.compte-boite .btn{width:100%;margin-top:14px}
+.compte-boite .lien{background:none;border:0;color:var(--p1);cursor:pointer;padding:6px 0;font:inherit;font-size:.88rem;text-decoration:underline;display:block}
+.compte-boite .msg{margin:10px 0 0;font-size:.9rem}.compte-boite .msg.ko{color:var(--ko)}.compte-boite .msg.ok{color:var(--ok)}
+.compte-boite .ferme{float:right;background:none;border:0;color:var(--dim);font-size:1.3rem;cursor:pointer;line-height:1}
+.verrou-b{display:inline-block;padding:3px 9px;border-radius:999px;border:1px solid var(--ball);font-size:.78rem;font-weight:700;color:var(--ink)}
+.verrou-p{padding:18px;text-align:center}.verrou-p .vs{font-family:var(--disp);font-size:1.15rem;margin:6px 0}
+.verrou-p .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
 footer{color:var(--dim);font-size:.86rem;padding:22px 0 44px;border-top:1px solid var(--line);margin-top:44px}
 footer p{max-width:72ch}
 /* paquet 328 : textes légaux */
@@ -728,6 +744,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   <header class="top">
     <p class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></p>
     <div class="reglages">
+      <button type="button" class="compte-b" id="b-compte" hidden></button>
       <a class="arena-nav" href="https://lucas987987.github.io/Tennis-edge/arena/" title="Jouer gratuitement à l'Arena">🏟️ Arena</a>
       <button type="button" class="ico" id="b-son" aria-pressed="false"></button>
       <div class="seg" role="group" aria-label="Langue / Language">
@@ -827,6 +844,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
       <p style="margin:0" data-t="plus_texte"></p>
       <ul id="plus-list"></ul>
       <span class="badge soon" data-t="plus_bientot"></span>
+      <p style="margin:12px 0 0"><button type="button" class="btn go" id="plus-compte" data-t="verrou_cta_compte"></button></p>
     </div>
   </section>
 
@@ -1056,9 +1074,24 @@ const T = {
   annonce:'Annoncé', reel:'Réel', matchs:'Matchs', tranche:'Tranche',
   calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Plus — préversion', plus_texte:"Les fonctions détaillées sont temporairement ouvertes pour préparer la future offre Plus. Tu peux déjà tester :",
-  plus_items:['La feuille complète de chaque match : sets, scores probables, aces, breaks','La simulation rejouable pour chaque match','Plus tard : les alertes quand un nouveau match est pronostiqué'],
-  plus_bientot:'Accès libre pendant la préversion · aucun paiement.',
+  plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
+  plus_items:['Le pronostic de tous les matchs : % de victoire et note de fiabilité','Sets, scores probables, statistiques prévues et scénarios du match','Le direct de chaque match et la simulation rejouable','À la semaine, au mois, au trimestre ou à l’année'],
+  plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
+  cp_btn:'Se connecter', cp_btn_moi:'Mon compte', cp_t_cx:'Connexion', cp_t_ins:'Créer un compte', cp_t_oubli:'Mot de passe oublié',
+  cp_t_reinit:'Nouveau mot de passe', cp_t_moi:'Mon compte', cp_email:'Adresse e-mail', cp_mdp:'Mot de passe (8 caractères minimum)',
+  cp_mdp_cx:'Mot de passe', cp_go_cx:'Se connecter', cp_go_ins:'Créer mon compte', cp_go_oubli:'Recevoir un lien', cp_go_reinit:'Enregistrer',
+  cp_vers_ins:'Pas encore de compte ? Créer un compte', cp_vers_cx:'Déjà un compte ? Se connecter', cp_vers_oubli:'Mot de passe oublié ?',
+  cp_ins_ok:'Compte créé. Un e-mail de confirmation vient de partir : clique sur le lien pour activer ton compte (pense aux courriers indésirables).',
+  cp_ins_sans_mail:"Compte créé, mais l'e-mail de confirmation n'a pas pu partir. Réessaie de créer le compte dans quelques minutes.",
+  cp_oubli_ok:'Si un compte existe avec cette adresse, un lien vient de partir (valable 1 heure).',
+  cp_err:{identifiants:'E-mail ou mot de passe incorrect.', non_verifie:"Confirme d'abord ton adresse : clique sur le lien reçu par e-mail.",
+    bloque:'Trop d’essais : réessaie dans 15 minutes.', email_invalide:'Adresse e-mail invalide.', mdp_court:'8 caractères minimum.',
+    lien_invalide:'Ce lien a expiré ou a déjà servi.', ferme:'Les comptes ne sont pas encore ouverts.', defaut:'Une erreur est survenue, réessaie.'},
+  cp_bienvenue:'Adresse confirmée : tu es connecté.', cp_reinit_ok:'Mot de passe enregistré : tu es connecté.',
+  cp_moi_plus:d=>`Accès Plus actif${d?` jusqu’au ${dateLong(d)}`:''}.`, cp_moi_libre:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs (paiement bientôt disponible).",
+  cp_deco:'Se déconnecter', cp_fermer:'Fermer',
+  verrou_titre:'Réservé à l’accès Plus', verrou_texte:"Le match du jour est offert. L'accès Plus ouvre le pronostic de tous les matchs : % de victoire, fiabilité, sets, scores, statistiques prévues, scénarios et direct.",
+  verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation",
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
@@ -1355,9 +1388,24 @@ const T = {
   annonce:'Forecast', reel:'Actual', matchs:'Matches', tranche:'Range',
   calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Plus — preview', plus_texte:'Detailed features are temporarily open while the future Plus offer is being prepared. You can already test:',
-  plus_items:['The full breakdown of every match: sets, likely scores, aces, breaks','A replayable simulation for every match','Later: alerts when a new match is predicted'],
-  plus_bientot:'Free access during the preview · no payment.',
+  plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
+  plus_items:['The forecast for every match: win % and reliability score','Sets, likely scores, predicted stats and match scenarios','Live coverage of every match and the replayable simulation','Weekly, monthly, quarterly or yearly'],
+  plus_bientot:'Payment coming soon · create your account now.',
+  cp_btn:'Log in', cp_btn_moi:'My account', cp_t_cx:'Log in', cp_t_ins:'Create an account', cp_t_oubli:'Forgot password',
+  cp_t_reinit:'New password', cp_t_moi:'My account', cp_email:'Email address', cp_mdp:'Password (at least 8 characters)',
+  cp_mdp_cx:'Password', cp_go_cx:'Log in', cp_go_ins:'Create my account', cp_go_oubli:'Send me a link', cp_go_reinit:'Save',
+  cp_vers_ins:'No account yet? Create one', cp_vers_cx:'Already have an account? Log in', cp_vers_oubli:'Forgot your password?',
+  cp_ins_ok:'Account created. A confirmation email is on its way: click the link to activate your account (check your spam folder).',
+  cp_ins_sans_mail:'Account created, but the confirmation email could not be sent. Try creating the account again in a few minutes.',
+  cp_oubli_ok:'If an account exists with this address, a link is on its way (valid for 1 hour).',
+  cp_err:{identifiants:'Wrong email or password.', non_verifie:'Confirm your address first: click the link we emailed you.',
+    bloque:'Too many attempts: try again in 15 minutes.', email_invalide:'Invalid email address.', mdp_court:'At least 8 characters.',
+    lien_invalide:'This link has expired or was already used.', ferme:'Accounts are not open yet.', defaut:'Something went wrong, please try again.'},
+  cp_bienvenue:'Address confirmed: you are logged in.', cp_reinit_ok:'Password saved: you are logged in.',
+  cp_moi_plus:d=>`Plus access active${d?` until ${dateLong(d)}`:''}.`, cp_moi_libre:'Free access: the match of the day is on us. Plus access unlocks every match (payment coming soon).',
+  cp_deco:'Log out', cp_fermer:'Close',
+  verrou_titre:'Plus access only', verrou_texte:'The match of the day is free. Plus access unlocks the forecast for every match: win %, reliability, sets, scores, predicted stats, scenarios and live coverage.',
+  verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
@@ -3115,6 +3163,7 @@ function rendTextes(){
   document.querySelectorAll('.circuits button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.circuit===circuit)));
   document.getElementById('retour-mdj').textContent = t('retour_mdj');
   document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
+  if (typeof majBoutonCompte === 'function') majBoutonCompte();
   boutonSon();
 }
 // 05/11/2026 — type de match (vitrine.type_de_match) : fiable / standard / fragile
@@ -3481,7 +3530,7 @@ function rendMdj(){
   if (borne) { borne.stop(); borne = null; }
   const idJour = D.match_du_jour && D.match_du_jour.uid;
   const demande = matchDemande();
-  let id = demande || selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
+  let id = demande || selectionId || idJour, m = D.matchs.find(x=>x.uid===id && (x.simulation || x.verrou));
   // Ne jamais présenter le match du jour comme si c'était le match demandé : une donnée
   // absente ou un lien obsolète doit être visible, et non masqué par un repli silencieux.
   if (!m && !demande && idJour){ id = idJour; selectionId = idJour; m = D.matchs.find(x=>x.uid===id && x.simulation); }
@@ -3490,6 +3539,7 @@ function rendMdj(){
   document.getElementById('mdj-sous').textContent = t(estJour ? 'mdj_sous' : 'sim_sous');
   document.getElementById('retour-mdj').hidden = estJour || !idJour;
   if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t(demande ? 'sim_indisponible' : 'mdj_vide'))}</div>`; return; }
+  if (m.verrou){ zone.innerHTML = panneauVerrou(m); return; }      // 377 : réservé à l'accès Plus
   const p = m.p_home;
   const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0));
   const sets = m.sets ? Object.entries(m.sets) : [];
@@ -3622,7 +3672,7 @@ function majBoutonTiroirs(){
 }
 function matchsFiltres(){
   const q = recherche.trim().toLocaleLowerCase(loc());
-  return D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false &&
+  return D.matchs.filter(m=>(m.verrou || (m.simulation && m.simulation_disponible !== false)) &&
     (circuit==='TOUS' || (circuit==='LIVE' ? !!LIVE.par_uid[m.uid] : m.circuit===circuit)) &&
     (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
 }
@@ -7239,7 +7289,7 @@ function majLive(){
   document.querySelectorAll('[data-live]').forEach(el=>{
     const uid = el.getAttribute('data-live'), m = parUid[uid];
     const r = LIVE.par_uid[uid] || LIVE.vus[uid];
-    el.innerHTML = m && r ? texteLive(m, r, !LIVE.par_uid[uid]) : '';
+    el.innerHTML = m && r && !m.verrou ? texteLive(m, r, !LIVE.par_uid[uid]) : '';
   });
   rendStatsLive(); rendMatchLive(); statsFiche(); chargerPoints();
 }
@@ -7269,6 +7319,25 @@ function demarrerLive(){
   LIVE.minuterie = setInterval(chargerLive, 3000);
   document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) chargerLive(); });
 }
+// 23/11/2026 (paquet 377) — match réservé à l'accès Plus : l'affiche seulement, aucun pourcentage
+function ligneVerrou(m){
+  const selection = m.uid === selectionId;
+  return `<li class="${selection?'selectionne':''}"><a class="match-open" href="#match=${encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}">
+      <span class="time">${quand(m.debut)}</span><span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}</span>
+      <span class="pl a"><span>${esc(m.home)}</span><b>🔒</b></span>
+      <span class="pl b"><span>${esc(m.away)}</span><b></b></span>
+      <span class="live-l" data-live="${esc(m.uid)}"></span>
+      <span class="meta"><span class="verrou-b">🔒 Plus</span><span class="ouvrir">${esc(t('verrou_titre'))}</span></span>
+    </span></a></li>`;
+}
+function panneauVerrou(m){
+  const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t('verrou_libre'))}</p>`
+    : `<div class="actions"><button type="button" class="btn go" data-compte="inscription">${esc(t('verrou_cta_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('verrou_cta_cx'))}</button></div>`;
+  return `<div class="panel verrou-p"><span class="verrou-b">🔒 ${esc(t('verrou_titre'))}</span>
+    <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
+    <p style="margin:12px 0 0">${esc(t('verrou_texte'))}</p>${actions}</div>`;
+}
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
   const tous = matchsFiltres();
@@ -7284,14 +7353,14 @@ function rendListe(){
   const visibles = enCours.slice(0,nListe);
   const visiblesFinis = termines.slice(0,Math.max(0,nListe-visibles.length));
   const etaitOuvert = !!document.querySelector('#list .finished-group details[open]');   // replié par défaut ; reste ouvert seulement si le visiteur l'a ouvert
-  const total = D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length;
+  const total = D.matchs.filter(m=>m.verrou || (m.simulation && m.simulation_disponible !== false)).length;
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
     ul.innerHTML = `<li class="empty" style="display:block">${esc(circuit==='LIVE' ? (L==='fr'?'Aucun match en direct actuellement.':'No live matches at the moment.') : t('liste_vide'))}</li>`;
     document.getElementById('liste-more').hidden = true;
     return;
   }
-  const ligneMatch = m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
+  const ligneMatch = m=>{ if (m.verrou) return ligneVerrou(m); const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${quand(m.debut)}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
@@ -8082,11 +8151,87 @@ function modeSemaine(){
   }).catch(()=>{ window.__vide = true; window.__fini = true; });
 }
 
+// 23/11/2026 (paquet 377) — COMPTES : inscription, connexion, mot de passe oublié (API /compte/api/… du worker).
+// Sur GitHub Pages (pas de worker) le bouton reste caché.
+let COMPTE = null;
+function apiCompte(chemin, corps){
+  const o = corps === undefined ? { cache:'no-store' } : { method:'POST', cache:'no-store', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(Object.assign({ lang:L }, corps)) };
+  return fetch('/compte/api/' + chemin, o).then(r => r.json().catch(() => ({ ok:false, erreur:'defaut' }))).catch(() => ({ ok:false, erreur:'defaut' }));
+}
+function erreurCompte(e){ const E = t('cp_err'); return (E && E[e]) || (E && E.defaut) || ''; }
+function majBoutonCompte(){
+  const b = document.getElementById('b-compte'); if (!b) return;
+  b.textContent = COMPTE ? (COMPTE.abonne ? '★ ' : '') + t('cp_btn_moi') : t('cp_btn');
+  b.classList.toggle('plus', !!(COMPTE && COMPTE.abonne));
+}
+function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
+function ouvrirCompte(vue, msg, ok, jeton){
+  const boite = document.getElementById('compte-boite'), fond = document.getElementById('compte-fond');
+  const champ = (id, lib, type, ac) => `<label for="${id}">${esc(lib)}</label><input id="${id}" type="${type}" autocomplete="${ac}" ${type==='email'?'inputmode="email"':''} required>`;
+  const m = msg ? `<p class="msg ${ok?'ok':'ko'}" role="status">${esc(msg)}</p>` : '';
+  const tete = k => `<button type="button" class="ferme" data-cp="fermer" aria-label="${esc(t('cp_fermer'))}">×</button><h3 id="compte-h">${esc(t(k))}</h3>`;
+  let h = '';
+  if (vue === 'moi' && COMPTE) {
+    h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>${m}
+      <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>`;
+  } else if (vue === 'inscription') {
+    h = tete('cp_t_ins') + `<form data-form="inscription">${champ('cp-e', t('cp_email'), 'email', 'email')}${champ('cp-m', t('cp_mdp'), 'password', 'new-password')}
+      <button type="submit" class="btn go">${esc(t('cp_go_ins'))}</button></form>${m}<button type="button" class="lien" data-cp="connexion">${esc(t('cp_vers_cx'))}</button>`;
+  } else if (vue === 'oubli') {
+    h = tete('cp_t_oubli') + `<form data-form="oubli">${champ('cp-e', t('cp_email'), 'email', 'email')}<button type="submit" class="btn go">${esc(t('cp_go_oubli'))}</button></form>${m}
+      <button type="button" class="lien" data-cp="connexion">${esc(t('cp_vers_cx'))}</button>`;
+  } else if (vue === 'reinit') {
+    h = tete('cp_t_reinit') + `<form data-form="reinit" data-jeton="${esc(jeton||'')}">${champ('cp-m', t('cp_mdp'), 'password', 'new-password')}<button type="submit" class="btn go">${esc(t('cp_go_reinit'))}</button></form>${m}`;
+  } else if (vue === 'message') {
+    h = tete(COMPTE ? 'cp_t_moi' : 'cp_t_cx') + m + `<button type="button" class="btn" data-cp="fermer">${esc(t('cp_fermer'))}</button>`;
+  } else {
+    h = tete('cp_t_cx') + `<form data-form="connexion">${champ('cp-e', t('cp_email'), 'email', 'email')}${champ('cp-m', t('cp_mdp_cx'), 'password', 'current-password')}
+      <button type="submit" class="btn go">${esc(t('cp_go_cx'))}</button></form>${m}<button type="button" class="lien" data-cp="oubli">${esc(t('cp_vers_oubli'))}</button>
+      <button type="button" class="lien" data-cp="inscription">${esc(t('cp_vers_ins'))}</button>`;
+  }
+  boite.innerHTML = h; fond.hidden = false;
+  const f = boite.querySelector('input'); if (f) f.focus();
+}
+function envoyerCompte(form){
+  const v = form.dataset.form, e = (form.querySelector('#cp-e')||{}).value, mdp = (form.querySelector('#cp-m')||{}).value;
+  const bouton = form.querySelector('button[type=submit]'); if (bouton) bouton.disabled = true;
+  const corps = v === 'reinit' ? { jeton: form.dataset.jeton, mdp } : v === 'oubli' ? { email: e } : { email: e, mdp };
+  apiCompte(v, corps).then(o => {
+    if (bouton) bouton.disabled = false;
+    if (v === 'inscription') return o.ok ? ouvrirCompte('message', t(o.envoye === false ? 'cp_ins_sans_mail' : 'cp_ins_ok'), o.envoye !== false) : ouvrirCompte('inscription', erreurCompte(o.erreur));
+    if (v === 'oubli') return ouvrirCompte('message', t('cp_oubli_ok'), true);
+    if (!o.ok) return ouvrirCompte(v, erreurCompte(o.erreur), false, form.dataset.jeton);
+    location.replace(location.pathname + (v === 'reinit' ? '?bienvenue=reinit' : '?bienvenue=1'));    // recharge : données de l'accès
+  });
+}
+function brancherCompte(){
+  const b = document.getElementById('b-compte');
+  document.addEventListener('click', ev => {
+    const x = ev.target.closest('[data-cp],[data-compte],#b-compte,#plus-compte'); if (!x) { if (ev.target.id === 'compte-fond') fermerCompte(); return; }
+    if (x.id === 'b-compte') return ouvrirCompte(COMPTE ? 'moi' : 'connexion');
+    if (x.id === 'plus-compte') return ouvrirCompte(COMPTE ? 'moi' : 'inscription');
+    const k = x.dataset.compte || x.dataset.cp;
+    if (k === 'fermer') return fermerCompte();
+    if (k === 'deco') return apiCompte('deconnexion', {}).then(() => location.replace(location.pathname));
+    ouvrirCompte(k);
+  });
+  document.addEventListener('submit', ev => { const f = ev.target.closest('form[data-form]'); if (!f) return; ev.preventDefault(); envoyerCompte(f); });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
+  apiCompte('moi').then(o => {
+    if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
+    COMPTE = o.compte || null; b.hidden = false; majBoutonCompte();
+    if (D) { rendMdj(); rendListe(); }
+    if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
+    else if (Q.get('reinit')) ouvrirCompte('reinit', '', false, Q.get('reinit'));
+    else if (Q.get('bienvenue')) { ouvrirCompte('message', t(Q.get('bienvenue') === 'reinit' ? 'cp_reinit_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
+  });
+}
 rendTextes();
 // 21/11/2026 (paquet 328, Lucas : « vitesse ») — le visiteur reçoit site.json (sans ce que la page ne lit jamais), puis
 // site_plus.json (bilan détaillé, étalonnage, journal) juste après l'affichage ; vidéos et cartes gardent donnees.json.
 // Clé à la minute : deux visites rapprochées reprennent le fichier déjà reçu. Si site.json manque : donnees.json.
 const MODE_IMAGE = !!(Q.get('semaine') || Q.get('bilan') || Q.get('projections') || Q.get('carte') || Q.get('video'));
+if (!MODE_IMAGE) brancherCompte();
 const CLE_DONNEES = Math.floor(Date.now() / 60000);
 const lireJson = f => fetch(f + '?v=' + CLE_DONNEES).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 (MODE_IMAGE ? lireJson('donnees.json') : lireJson('site.json').catch(() => lireJson('donnees.json'))).then(d=>{
@@ -8096,5 +8241,6 @@ const lireJson = f => fetch(f + '?v=' + CLE_DONNEES).then(r => { if (!r.ok) thro
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
+<div class="compte-fond" id="compte-fond" hidden><div class="compte-boite" id="compte-boite" role="dialog" aria-modal="true" aria-labelledby="compte-h"></div></div>
 </body>
 </html>

@@ -28,3 +28,11 @@ LIVE_STATS_PLAFOND = "6000"
 # 13/11/2026 (paquet 256) : requêtes TennisApi jamais utilisées par les scores en direct (/live), gardées pour la
 # collecte habituelle et la réserve des feuilles de match. La fraîcheur du direct (3 à 60 s) s'adapte au reste.
 LIVE_RESERVE = "3000"
+
+# 23/11/2026 (paquet 377) : comptes des abonnés. Les liens des e-mails mènent toujours au site public ; l'expéditeur
+# doit être une adresse de gamesetalgo.com authentifiée dans Brevo (Expéditeurs, domaines et IP dédiées).
+SITE_URL = "https://gamesetalgo.com"
+MAIL_EXPEDITEUR = "Game Set Algo <noreply@gamesetalgo.com>"
+# Tours PBKDF2 des mots de passe (100 000 au plus sur Cloudflare). À baisser seulement si l'inscription renvoie
+# « erreur 1102 » (limite de calcul de l'offre gratuite des Workers).
+PBKDF2_TOURS = "100000"

@@ -175,8 +175,9 @@ class ValidationVitrine(unittest.TestCase):
         chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
         with open(chemin, encoding='utf-8') as f:
             html = f.read()
-        self.assertIn("D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false &&", html)
-        self.assertIn("D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length", html)
+        # 23/11/2026 (paquet 377) : un match réservé (« verrou ») est listé à l'affiche, sans simulation
+        self.assertIn("D.matchs.filter(m=>(m.verrou || (m.simulation && m.simulation_disponible !== false)) &&", html)
+        self.assertIn("D.matchs.filter(m=>m.verrou || (m.simulation && m.simulation_disponible !== false)).length", html)
         self.assertNotIn("t('compte_matchs',tous.length,D.matchs.length)", html)
 
     def test_lien_incomplet_ne_retombe_pas_silencieusement_sur_match_du_jour(self):

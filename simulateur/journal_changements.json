@@ -2002,6 +2002,20 @@
    "prive": true,
    "quoi": "Rapports Telegram privés (chercheur, algo contre clôture, marchés dérivés, pistes après match, désaccords, ROI, récapitulatifs des canaux, santé de la chaîne, audit) coupés sous 4 096 caractères ; un envoi raté n'est plus qu'un avertissement (simulateur/telegram_envoi.py).",
    "garde_fou": "Aucun calcul modifié. Tests : tests/test_telegram_envoi.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "en_service",
+   "paquet": 376,
+   "quoi": "PROGRAMME DES MATCHS MIEUX RETROUVÉ (paquet 376) : le tour, le statut d'entrée (invité, qualifié…), le court en salle et le classement du jour viennent du programme TennisApi. Deux causes de matchs non retrouvés : le programme date un match du soir en Asie ou en Amérique d'un autre jour que son début en UTC, et un joueur relié sous un autre nom n'était pas cherché sous son nom de classement. Sur les 110 matchs du site présents au programme, 97 étaient retrouvés, 110 maintenant. Le contrôle quotidien compte aussi les matchs sans programme. Vérifié au passage : les pronostics sans résultat sont des matchs jamais joués avec ces joueurs, des abandons ou forfaits (écartés exprès), ou le même match déjà jugé sous un autre jour.",
+   "garde_fou": "Recherche à la veille ou au lendemain seulement, le jour exact d'abord. Tests : tests/test_controle_entrees.py, tests/test_fiabilite_tour.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 377,
+   "quoi": "COMPTES ET ACCÈS PLUS (paquet 377) : création de compte avec e-mail et mot de passe (e-mail de confirmation, mot de passe oublié), bouton « Se connecter » en haut du site. Le site reste ouvert à tous et le match du jour reste offert chaque jour ; le pronostic des autres matchs (%, fiabilité, sets, scores, statistiques prévues, scénarios, direct) est réservé à l'accès Plus, un seul accès, à la semaine, au mois, au trimestre ou à l'année. Le paiement arrive plus tard.",
+   "garde_fou": "Les données réservées ne quittent le serveur que pour un compte Plus : les autres visiteurs reçoivent une version sans aucun pourcentage des matchs réservés. Mots de passe chiffrés (PBKDF2), liens d'e-mail signés et à usage unique, blocage après 10 essais. Tests : workers/algo/test_comptes.mjs, tests/test_site_libre.py."
   }
  ]
 }
