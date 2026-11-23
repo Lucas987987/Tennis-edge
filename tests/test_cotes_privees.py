@@ -103,7 +103,7 @@ def test_capture_et_ecrivains():
     assert 'cotes_privees.py push' in c and 'cotes_privees.py retirer' in c
     assert c.index('cotes_privees.py retirer') < c.index("git add -A -- ':!parts/pm_ticks_*'")
     f = _wf('fetch_clv')
-    assert 'cotes_privees.py push' in f and '! git check-ignore -q "$f" && git add -- "$f"' in f
+    assert 'cotes_privees.py push' in f and '! git check-ignore -q --no-index -- "$f" && git add -- "$f"' in f
     assert 'cotes_privees.py push' in _wf('closing_migration')
 
 

@@ -82,7 +82,7 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -f calibration_buckets_report.json ] && ! git check-ignore -q -- calibration_buckets_report.json; then git add -- calibration_buckets_report.json; fi   # 352
+          if [ -f calibration_buckets_report.json ] && ! git check-ignore -q --no-index -- calibration_buckets_report.json; then git add -- calibration_buckets_report.json; fi   # 352
           git diff --staged --quiet || git commit -m "📊 Calibration par tranche de cote $(date -u +%Y-%m-%dT%H:%MZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
           # Ce workflow tourne toutes les 5-10 min : deux exécutions se

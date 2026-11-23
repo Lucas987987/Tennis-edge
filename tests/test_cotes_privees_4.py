@@ -74,7 +74,7 @@ def test_redacteurs_envoient_et_retirent():
     assert 'cotes_privees.py site' in s
     assert s.index('push --groupe direct') < s.index('- name: Commit (robuste')
     for w in ('polymarket_studies', 'fetch_book_curves', 'value_journal', 'book_lag', 'calibration_buckets'):
-        assert '! git check-ignore -q --' in _wf(w), w
+        assert '! git check-ignore -q --no-index --' in _wf(w), w
 
 
 def test_pulls():
@@ -107,3 +107,14 @@ def test_pull_entiers_restreint():
             assert CP.pull_entiers(r2, 'prive', groupes=()) == 0
         finally:
             os.chdir(ici)
+
+
+def test_garde_git_add_ignore_aussi_les_fichiers_suivis():
+    # 364 : un fichier SUIVI sous un dossier exclu (closing_lines/MIGRATION.json) : « git check-ignore » sans --no-index
+    # répond « non ignoré », puis « git add » échoue (« paths are ignored ») et le run de fetch_clv tombait en rouge
+    import glob
+    for f in glob.glob(os.path.join(WF, '*.yml')):
+        s = open(f, encoding='utf-8').read()
+        for l in s.splitlines():
+            if 'git check-ignore -q' in l:
+                assert '--no-index' in l, (os.path.basename(f), l.strip())
