@@ -205,6 +205,68 @@ def resoudre(alias):
     return out
 
 
+CHEMIN_OBSERVES = os.path.join('simulateur', 'alias_observes.json')
+
+
+def charger_observes(racine):
+    try:
+        with open(os.path.join(racine, CHEMIN_OBSERVES), encoding='utf-8') as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def noter_observes(racine, rejets, quand):
+    """23/11/2026 (paquet 371) — un même match listé deux fois (même tournoi, même heure, même adversaire) avec deux
+    écritures d'un joueur : les deux noms sont le même joueur (un joueur ne joue pas deux simples à la même heure).
+    « Aaron Funk – Tugra Duran » et « Aaron Funk – Cemil Tugra Duran » (Ankara, 22/11). Le nom le moins documenté
+    pointe vers l'autre ; le lien sert au classement suivant (appliquer). Renvoie le nombre de liens nouveaux."""
+    d = charger_observes(racine)
+    nouveaux, change = 0, False
+    for r in rejets or ():
+        if r.get('raison') != 'doublon_meme_match' or r.get('meme_classement') or not r.get('garde'):
+            continue
+        ec, ga = [r['home'], r['away']], list(r['garde'])
+        communs = {E.cle(n) for n in ec} & {E.cle(n) for n in ga}
+        a = [n for n in ec if E.cle(n) not in communs]
+        b = [n for n in ga if E.cle(n) not in communs]
+        if len(a) != 1 or len(b) != 1 or E.cle(a[0]) == E.cle(b[0]):
+            continue
+        k = E.cle(a[0])
+        x = d.get(k)
+        if x is None:
+            d[k] = {'nom': a[0], 'vers': b[0], 'tournoi': r.get('tournoi'), 'premier': quand, 'dernier': quand, 'vu': 1}
+            nouveaux += 1
+            change = True
+        elif E.cle(x.get('vers')) == E.cle(b[0]):
+            x['dernier'], x['vu'] = quand, int(x.get('vu') or 0) + 1
+            change = True
+        elif not x.get('conflit'):
+            x['conflit'] = True          # deux cibles différentes : le lien n'est plus appliqué
+            change = True
+    if not change:
+        return 0
+    os.makedirs(os.path.join(racine, 'simulateur'), exist_ok=True)
+    with open(os.path.join(racine, CHEMIN_OBSERVES), 'w', encoding='utf-8') as f:
+        json.dump(d, f, ensure_ascii=False, indent=1, sort_keys=True)
+    return nouveaux
+
+
+def contredit(F, k1, k2):
+    """Vrai si les fiches disent deux joueurs différents (pays, naissance ou taille incompatibles)."""
+    a, b = F.f.get(k1), F.f.get(k2)
+    if not a or not b:
+        return False
+    ra, rb = _resume(a), _resume(b)
+    if ra['pays'] and rb['pays'] and ra['pays'] != rb['pays']:
+        return True
+    if ra['naissance'] is not None and rb['naissance'] is not None and \
+            abs(ra['naissance'] - rb['naissance']) > ECART_NAISSANCE_J:
+        return True
+    return ra['taille'] is not None and rb['taille'] is not None and abs(ra['taille'] - rb['taille']) > ECART_TAILLE_CM
+
+
 def appliquer(alias, dossier, racine):
     """Ajoute à `alias` (E.unifier, lier_itf) les liens d'identité ; renvoie (alias résolu, détail)."""
     F = Fiches()
@@ -215,6 +277,15 @@ def appliquer(alias, dossier, racine):
         print(f"::warning::identités non vérifiées : {type(e_).__name__}")
         return dict(alias), []
     lid, detail = liens(F)
+    # liens vus en direct (même match listé deux fois), sauf si les fiches les contredisent
+    for k, x in charger_observes(racine).items():
+        if x.get('conflit') or k in lid:
+            continue
+        v = E.cle(x.get('vers'))
+        v = alias.get(v, lid.get(v, v))
+        if v and v != k and not contredit(F, k, v):
+            lid[k] = v
+            detail.append({'alias': x.get('nom'), 'garde': x.get('vers'), 'source': 'vu_en_direct'})
     tout = dict(alias)
     for k, v in lid.items():
         tout.setdefault(k, v)
