@@ -369,6 +369,7 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .film .f3-n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
 .film .f3-s{min-width:4.6cqw;text-align:center;color:#ABA3D6}.film .f3-s.g{color:#F4F1FF}.film .f3-s.c{color:#F4F1FF}
 .film .f3-p{min-width:9cqw;text-align:center;background:#D4FF3A;color:#0E0A24;border-radius:1cqw;padding:0 1cqw;font-family:var(--disp)}
+.film .f3-algo{position:absolute;left:4cqw;top:13.2cqw;max-width:92cqw;box-sizing:border-box;padding:.9cqw 2.4cqw;border-radius:99cqw;background:rgba(7,6,26,.78);border:1px solid rgba(212,255,58,.45);font-weight:700;font-size:3cqw;color:#D4FF3A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}  /* 363 : lisible sans le son */
 .film .f3-cap{position:absolute;left:0;right:0;top:calc(var(--haut) + var(--vue) * .62);text-align:center;pointer-events:none}
 .film .f3-cap-t{display:inline-block;font-family:var(--disp);font-size:9cqw;color:var(--c);text-shadow:0 0 4cqw var(--c),0 .6cqw 0 rgba(0,0,0,.6);letter-spacing:.02em;padding:0 3cqw}
 .film .f3-cap-s{font-weight:800;font-size:5cqw;text-transform:uppercase;letter-spacing:.06em;text-shadow:0 .4cqw 1.6cqw rgba(0,0,0,.8)}
@@ -642,7 +643,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .am-h2h .gw{font-weight:600}
 .live-stats .prevu{display:block;white-space:nowrap;font-size:.72rem;color:var(--dim);font-weight:400}.live-stats .hors{color:var(--ko);font-weight:700}
 .live-stats table.sheet td,.live-stats table.sheet th{padding:7px 10px;vertical-align:top}.live-stats .styles-note{margin:8px 10px 10px}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
-.res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
+.res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.xr-barre{margin:8px 0 4px}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
 .jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(var(--wv),.07);color:var(--dim)}.jc-st.en_service{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.etude,.jc-st.essai{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.site,.jc-st.outil,.jc-st.collecte,.jc-st.abandon,.jc-st.retrait,.jc-st.retire{background:rgba(var(--wv),.07);color:var(--dim)}.jc li>span:last-child{min-width:0;overflow-wrap:anywhere}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
 /* 06/11/2026 (paquet 213) — ÉCRAN LARGE, UNE SEULE COLONNE D'INFORMATIONS : la simulation et l'en-tête du match
    côte à côte en haut, puis TOUT le reste de la fiche sur toute la largeur (la colonne de gauche n'est plus vide).
@@ -976,6 +977,7 @@ const T = {
   sv_peu:'Trop peu de matchs pour conclure.', sv_surface:(s,v)=>`Sur ${s} : ${v.charAt(0).toLowerCase()+v.slice(1)}.`,
   sv_sans:'Pas assez de matchs documentés contre ce style.', sv_calcul:'Détail du calcul',
   sv_reel:'réel', sv_attendu:'attendu',
+  f3_algo:(n,v)=>`Avant le match, l'algo : ${n} ${v}`,
   ry_titre:'Durée et rythme', ry_duree:(m,a,b)=>`Durée prévue : ${hm(m)} (${hm(a)} – ${hm(b)} dans 8 cas sur 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s par point`,
   ry_pts:'Points par match', ry_jeux:'Jeux par match', ry_min:'Durée moyenne de ses matchs', ry_rythme:'Rythme (temps par point)',
   ry_ech:'Frappes par échange (moyenne)', ry_long:'Échanges de 7 frappes ou plus', ry_ech_m:n=>`${n} match${n>1?'s':''} relevé${n>1?'s':''}`, ry_ech_note:'Longueur des échanges : Match Charting Project, 12 derniers mois (joueurs relevés seulement).',
@@ -1271,6 +1273,7 @@ const T = {
   sv_peu:'Too few matches to draw a conclusion.', sv_surface:(s,v)=>`On ${s}: ${v.charAt(0).toLowerCase()+v.slice(1)}.`,
   sv_sans:'Not enough documented matches against this style.', sv_calcul:'How it is calculated',
   sv_reel:'actual', sv_attendu:'expected',
+  f3_algo:(n,v)=>`Before the match, the algorithm: ${n} ${v}`,
   ry_titre:'Length and pace', ry_duree:(m,a,b)=>`Expected length: ${hm(m)} (${hm(a)} – ${hm(b)} 8 times out of 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s per point`,
   ry_pts:'Points per match', ry_jeux:'Games per match', ry_min:'Average match length', ry_rythme:'Pace (time per point)',
   ry_ech:'Shots per rally (average)', ry_long:'Rallies of 7+ shots', ry_ech_m:n=>`${n} charted match${n>1?'es':''}`, ry_ech_note:'Rally length: Match Charting Project, last 12 months (charted players only).',
@@ -7332,8 +7335,77 @@ function rendApresMatch(b){
     <table class="sheet am-t"><tbody>${lig.join('')}</tbody></table>
     ${lgs ? `<h4>${esc(t('am_lignes'))}</h4><table class="sheet am-t"><thead><tr><th></th><th>${esc(t('am_prevu'))}</th><th>${esc(t('am_arrive'))}</th></tr></thead><tbody>${lgs}</tbody></table>` : ''}
     ${fe ? `<h4>${esc(t('am_feuille'))}</h4><table class="sheet am-t"><thead><tr><th></th><th class="c1">${esc(N[0])}</th><th class="c2">${esc(N[1])}</th></tr></thead><tbody>${fe}</tbody></table>` : ''}
-    <p class="aide">${esc(t('am_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p></details>`;
+    <p class="aide">${esc(t('am_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p>
+    ${b.uid ? `<p class="xr-barre"><button type="button" class="btn" data-xres="${esc(b.uid)}">${esc(L==='fr' ? 'Image pour X (résultat)' : 'Image for X (result)')}</button></p>` : ''}</details>`;
 }
+// 22/11/2026 (paquet 363, Lucas : « Image X du résultat ») — CARTE RÉSULTAT d'un match terminé, en image sombre pour X :
+// le % d'avant match (figé, publié), le vrai vainqueur et le score, puis ce qui était juste ou faux (durée, sets, score
+// le plus probable) et 4 lignes de l'algo avec leur %. Aucune cote, aucune adresse. Un match ne prouve rien : c'est
+// écrit en bas de l'image.
+function carteResultat(b, tournoi){
+  const fr = L==='fr', P = b.prevu || {}, R_ = b.reel || {}, E = b.ecarts || {}, N = [court(b.home), court(b.away)];
+  const w = R_.gagnant === 'home' ? 0 : 1, ph = Number(P.p_home), pw = w ? 1 - ph : ph, ok = !!E.vainqueur_juste;
+  const chk = v => v == null ? '' : `<b class="xr-${v ? 'ok' : 'ko'}">${v ? '✓' : '✗'}</b>`;
+  const du = P.duree, F_ = [];
+  F_.push([fr ? 'Vainqueur' : 'Winner', fr ? `${N[w]} : ${pc0(pw)} avant le match` : `${N[w]}: ${pc0(pw)} before the match`, ok]);
+  if (E.sets_proba != null && R_.sets) F_.push([fr ? 'Sets' : 'Sets', fr ? `${R_.sets} : ${pc0(E.sets_proba)} annoncé` : `${R_.sets}: ${pc0(E.sets_proba)} forecast`, null]);
+  if (du && R_.minutes) F_.push([fr ? 'Durée' : 'Length', fr ? `prévue ${hm(du.minutes_p10)} – ${hm(du.minutes_p90)}, réelle ${hm(R_.minutes)}` : `forecast ${hm(du.minutes_p10)} – ${hm(du.minutes_p90)}, actual ${hm(R_.minutes)}`, !!E.duree_dans_fourchette]);
+  if (R_.score) F_.push([fr ? 'Score exact' : 'Exact score', E.score_rang ? (fr ? `${E.score_rang}e plus probable sur des centaines` : `#${E.score_rang} most likely out of hundreds`) : (fr ? 'hors des scores prévus' : 'outside the forecast scores'), E.score_dans_top3 ? true : null]);   // un score exact raté n'est pas une faute
+  const L2 = E.lignes || {}, choix = ['total_plus_20.5','total_plus_22.5','tie_break','set_decisif','handicap_favori_2.5','set1_home'];
+  const lgs = choix.filter(k => L2[k]).slice(0, 4).map(k => { const [p, v] = L2[k];
+    const lib = k.startsWith('total_plus_') ? t('mk_total', parseFloat(k.slice(11))) : k.startsWith('handicap_favori_') ? t('am_handicap', parseFloat(k.slice(16))) :
+      k === 'tie_break' ? t('mk_tb') : k === 'set_decisif' ? t('mk_decisif') : t('mk_set1', N[0]);
+    return `<div class="xr-lg"><span>${esc(lib)}</span><i><u style="width:${(100 * p).toFixed(1)}%"></u></i><b>${pc0(p)}</b><em class="${v ? 'oui' : 'non'}">${esc(v ? (fr ? 'arrivé' : 'happened') : (fr ? 'non' : 'no'))}</em></div>`; }).join('');
+  const d = new Date(b.debut);
+  return `<div class="xt-tete"><p class="xt-ctx">${esc([tournoi, SURF[L][b.surface] || b.surface || ''].filter(Boolean).join(' · '))}<span>${esc(d.toLocaleDateString(loc(), {day:'2-digit', month:'2-digit'}))}</span></p>
+      <p class="xt-noms"><b class="${w ? 'b' : 'a'}">${esc(N[w])}</b> <span>${esc(fr ? 'bat' : 'beats')}</span> <b class="${w ? 'a' : 'b'}">${esc(N[1 - w])}</b></p>
+      <p class="xt-titre">${esc(fr ? 'Résultat' : 'Result')}${R_.score ? ` · ${esc(R_.score)}` : ''}</p></div>
+    <div class="xr-bloc"><div class="xr-h">${esc(fr ? 'Le % de l’algo, publié avant le match' : 'The algorithm’s %, published before the match')}</div>
+      <div class="xr-split"><span class="a" style="width:${(100 * ph).toFixed(1)}%"></span><span class="b" style="width:${(100 - 100 * ph).toFixed(1)}%"></span></div>
+      <div class="xr-pcts"><span class="a${w === 0 ? ' w' : ''}">${esc(N[0])} ${pc0(ph)}</span><span class="b${w === 1 ? ' w' : ''}">${esc(N[1])} ${pc0(1 - ph)}</span></div>
+      <div class="xr-verdict ${ok ? 'ok' : 'ko'}">${ok ? '✓' : '✗'} ${esc(ok ? (fr ? 'Vainqueur trouvé' : 'Winner called') : (fr ? 'Vainqueur raté' : 'Winner missed'))}${Math.max(ph, 1 - ph) < .58 ? `<small>${esc(fr ? 'match annoncé serré' : 'forecast as a close match')}</small>` : ''}</div></div>
+    <div class="xr-bloc">${F_.map(([k, v, c]) => `<div class="xr-f"><span>${esc(k)}</span><span>${esc(v)}</span>${chk(c)}</div>`).join('')}</div>
+    ${lgs ? `<div class="xr-bloc"><div class="xr-h">${esc(fr ? 'Lignes de l’algo (une ligne à 30 % qui n’arrive pas n’est pas une erreur)' : 'Algorithm lines (a 30% line that does not happen is not a mistake)')}</div>${lgs}</div>` : ''}
+    <p class="xr-pied">${esc(fr ? 'Un match ne prouve rien : tous les pronostics restent publiés, les bons comme les ratés.' : 'One match proves nothing: every forecast stays published, right or wrong.')}</p>`;
+}
+const XR_CSS = `.xt-img .xr-bloc{border:1px solid rgba(255,255,255,.12);border-radius:16px;background:linear-gradient(180deg,#1B1342,#160F38);padding:14px 16px;margin:0 0 12px}
+.xt-img .xr-h{color:#ABA3D6;font-size:.82rem;margin:0 0 8px}.xt-img .xr-split{display:flex;gap:3px;height:14px;border-radius:7px;overflow:hidden}.xt-img .xr-split .a{background:#2EE6FF}.xt-img .xr-split .b{background:#FF4FAE}
+.xt-img .xr-pcts{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--cond);font-weight:700;font-size:1.3rem}.xt-img .xr-pcts .a{color:#2EE6FF}.xt-img .xr-pcts .b{color:#FF4FAE}.xt-img .xr-pcts span:not(.w){opacity:.55}
+.xt-img .xr-verdict{margin-top:10px;font-family:var(--cond);font-weight:700;font-size:1.5rem}.xt-img .xr-verdict.ok{color:#45F0A0}.xt-img .xr-verdict.ko{color:#FF6B86}.xt-img .xr-verdict small{display:block;font-family:Barlow,sans-serif;font-weight:400;font-size:.85rem;color:#ABA3D6}
+.xt-img .xr-f{display:grid;grid-template-columns:92px 1fr 22px;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,.08);font-size:.92rem}.xt-img .xr-f:first-child{border-top:0}.xt-img .xr-f span:first-child{color:#ABA3D6}
+.xt-img .xr-ok{color:#45F0A0}.xt-img .xr-ko{color:#FF6B86}
+.xt-img .xr-lg{display:grid;grid-template-columns:1fr 90px 40px 56px;gap:8px;align-items:center;padding:4px 0;font-size:.86rem}.xt-img .xr-lg i{height:8px;border-radius:4px;background:rgba(255,255,255,.08);display:block;overflow:hidden}.xt-img .xr-lg u{display:block;height:100%;background:#D4FF3A;text-decoration:none}
+.xt-img .xr-lg b{text-align:right;font-variant-numeric:tabular-nums}.xt-img .xr-lg em{font-style:normal;font-size:.78rem;text-align:right}.xt-img .xr-lg em.oui{color:#45F0A0}.xt-img .xr-lg em.non{color:#ABA3D6}
+.xt-img .xr-pied{color:#ABA3D6;font-size:.8rem;margin:4px 4px 0}`;
+async function imageResultat(uid){
+  const b = (D.apres_match || {})[uid]; if (!b || !b.reel) return;
+  const r = ((D.bilan || {}).derniers || []).find(x => x.uid === uid) || (D.matchs || []).find(x => x.uid === uid) || {};
+  const css = await cssPourImage();
+  const hote = document.createElement('div');
+  hote.setAttribute('aria-hidden', 'true');
+  hote.style.cssText = 'position:fixed;left:-20000px;top:0;width:540px;pointer-events:none';
+  hote.innerHTML = `<style>${XT_CSS}\n${XR_CSS}</style><div class="xt-img">${carteResultat(b, r.tournoi || '')}</div>`;
+  document.body.appendChild(hote);
+  try {
+    const W = 540, H = Math.ceil(hote.querySelector('.xt-img').getBoundingClientRect().height);
+    const xhtml = new XMLSerializer().serializeToString(hote.querySelector('.xt-img')).replace(/gamesetalgo\.[a-z]+/gi, '');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><style><![CDATA[${css}\n${XT_CSS}\n${XR_CSS}]]></style>`
+      + `<foreignObject x="0" y="0" width="${W}" height="${H}">${xhtml}</foreignObject></svg>`;
+    const im = new Image(); im.decoding = 'sync';
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await im.decode();
+    const c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2;
+    const g = c.getContext('2d'); g.scale(2, 2); g.drawImage(im, 0, 0);
+    const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('png');
+    await partagerPng(blob, `resultat-${uid}.png`);
+  } finally { hote.remove(); }
+}
+document.addEventListener('click', e => {
+  const bt = e.target.closest && e.target.closest('[data-xres]'); if (!bt) return;
+  e.preventDefault(); bt.disabled = true;
+  imageResultat(bt.dataset.xres).catch(() => {}).finally(() => { bt.disabled = false; });
+});
 // 29/10/2026 — JOURNAL DES CHANGEMENTS + modèle fantôme (Elo en place contre Elo d'avant, mêmes matchs réels)
 // 29/10/2026 — statistiques annoncées contre ce qui s'est passé (apres_match.fiabilite_stat / fiabilite_ligne)
 let circFs = 'TOUS';
@@ -7634,7 +7706,8 @@ window.addEventListener('hashchange',()=>{
 
 /* ───────────── mode vidéo (?video=1) : la borne seule, plein écran ─────────────
    La bande-son est faite après coup (scripts/sons.py) : chaque événement est noté ici avec son heure. */
-let RESUME = null;                                                            // paquet 308 : le vrai déroulé (résumé)
+let RESUME = null;
+const COURT = Q.get('court') === '1';   // 22/11/2026 (paquet 363) : vidéo courte pour X (~30 s), rythme du résumé                                                            // paquet 308 : le vrai déroulé (résumé)
 function modeVideo(){
   document.body.classList.add('video');
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
@@ -7712,7 +7785,7 @@ async function filmDuJour(V, m, son){
   const p = m.p_home, M = Moteur(calibre(m.simulation, p)), sc = m.simulation.scenario, noms = [court(m.home), court(m.away)];
   const nSim = Math.max(1, Math.round(Number(m.simulation.n) || Number(D.simulations) || 0));
   const drap = [0,1].map(i => drapeau((m.pays||[])[i]) || '');
-  const F = momentsForts(M, sc.points, sc.premier_serveur || 0, Number(Q.get('moments') || (RESUME ? 4 : 5)));   // résumé : 30–45 s
+  const F = momentsForts(M, sc.points, sc.premier_serveur || 0, Number(Q.get('moments') || (RESUME ? 4 : COURT ? 3 : 5)));   // résumé : 30–45 s
   if (RESUME && JSON.stringify(F.final.histo) !== JSON.stringify(RESUME.sets)){                // règles du match non suivies : pas de résumé faux
     V.innerHTML = '<p style="padding:10vw;color:#fff">—</p>'; window.__fini = true; return; }
   const w = F.final.vainqueur, fav = p >= .5 ? 0 : 1;
@@ -7740,6 +7813,7 @@ async function filmDuJour(V, m, son){
   { const g = rng([...String(m.uid || '')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 277)); Math.random = g; }   // mêmes échanges en FR et en EN
   V.innerHTML = `<div class="film"><div class="f3-hote"></div>
     <div class="f3-haut"><span class="f3-tn">${esc(m.tournoi || '')}</span><span class="f3-sim">${RESUME ? `<b>${esc(t('r_haut'))}</b>` : `${esc(t('a_sim'))} <b>${esc(t('a_fois', nSim))}</b>`}</span></div>
+    <div class="f3-algo">${esc(t('f3_algo', noms[p >= .5 ? 0 : 1], pc0(Math.max(p, 1 - p))))}</div>
     <div class="f3-cap" hidden><div class="f3-cap-t"></div><div class="f3-cap-s"></div></div>
     <div class="f3-bug" hidden></div>
     <div class="f3-bas"><div class="f3-lg"></div>
@@ -7808,10 +7882,10 @@ async function filmDuJour(V, m, son){
     G3D.film.camera('portrait', 2.2, i);
     const c = $('.f3-pres'); c.innerHTML = `<div class="f3-pres-n" style="--c:${coul(i)}">${drap[i]} ${esc(noms[i])}</div><div class="f3-pres-p"><b>${pc0(i ? 1 - p : p)}</b> ${esc(t('f3_proba'))}</div>`;
     c.hidden = false; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); son('volet', 0);
-    await z(RESUME ? 1200 : 2100); c.hidden = true;
+    await z(RESUME || COURT ? 1200 : 2100); c.hidden = true;
   }
   G3D.film.camera('orbite', 2.8); $('.f3-vs').hidden = false; son('vs', 200);
-  await z(RESUME ? 1600 : 2600);
+  await z(RESUME || COURT ? 1600 : 2600);
   $('.f3-vs').classList.add('part'); volet(); await z(400); $('.f3-vs').classList.add('fini');
   G3D.film.camera(null); $('.f3-bug').hidden = false;
   // 2) les moments forts
@@ -7826,8 +7900,8 @@ async function filmDuJour(V, m, son){
     if (x.e) son(x.e.k === 3 ? 'balle_match' : 'annonce', 150);
     son('voix', 450, { texte: arbitre.score(x.avant) });
     // résumé (30–45 s) : sans ralenti, échanges plus courts, plan large sauf sur la balle de match
-    G3D.film.point(m, rDe(x.avant), x.h, { coupe: true, grand: RESUME ? dernier : x.note >= 50 || dernier, rejouer: dernier && !RESUME,
-      fin_match: dernier, prep: RESUME ? 1.2 : 1.9, minL: x.quoi === 'echange' ? (RESUME ? 5 : 6) : 0, maxL: x.quoi === 'echange' ? (RESUME ? 8 : 10) : RESUME ? 3 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
+    G3D.film.point(m, rDe(x.avant), x.h, { coupe: true, grand: RESUME || COURT ? dernier : x.note >= 50 || dernier, rejouer: dernier && !RESUME && !COURT,
+      fin_match: dernier, prep: RESUME || COURT ? 1.2 : 1.9, minL: x.quoi === 'echange' ? (RESUME || COURT ? 5 : 6) : 0, maxL: x.quoi === 'echange' ? (RESUME || COURT ? 8 : 10) : RESUME || COURT ? 3 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
     await attendre(e => e.R, 4000);
     await attendre(e => !e.R, 30000);
     // le résultat du point
@@ -7849,7 +7923,7 @@ async function filmDuJour(V, m, son){
   G3D.film.score(m, rDe(F.final), true); bug(F.final, true);
   G3D.film.camera('heros', 4.2, w); son('ovation', 0);
   legende(t('a_fin'), t('a_gagne', noms[w]), coul(w), 0);
-  await z(RESUME ? 2200 : 3000);
+  await z(RESUME || COURT ? 2200 : 3000);
   const fp = (m.scores_probables || []).find(x => x[0] === sc.score);
   // paquet 312 : à la fin du résumé, les vraies stats du match (feuille TennisApi) — descriptif, le % ne change pas
   const statsReelles = S => { const L_ = t('r_st'), v = (k, i) => k === 'prem' ? `${S[k][i]}${L === 'fr' ? '\u202f%' : '%'}` : k === 'bb' ? `${S[k][i][0]}/${S[k][i][1]}` : String(S[k][i]);
@@ -7862,7 +7936,7 @@ async function filmDuJour(V, m, son){
     ${RESUME && RESUME.stats ? statsReelles(RESUME.stats) : ''}
     ${LG.length ? `<div class="f3-fin-lg">${lignesFaites(F.final, true).map((c, i) => `<div class="${c}"><span>${c === 'oui' ? '✓' : '✗'} ${esc(LG[i].lib)}</span><b>${pc0(LG[i].p)}</b></div>`).join('')}</div>` : ''}
     <div class="f3-fin-pied">${esc(RESUME ? t('r_pied') : t('a_pied', nSim))}</div>`;
-  $('.f3-cap').hidden = true; fin.hidden = false; son('fin', 0); son('musique_fin', 300, { duree: 5.2 });
+  $('.f3-cap').hidden = true; $('.f3-algo').hidden = true; fin.hidden = false; son('fin', 0); son('musique_fin', 300, { duree: 5.2 });
   G3D.film.camera('stade', 5);
   await z(RESUME ? (RESUME.stats ? 5200 : 3600) : 4800);                              // résumé : le temps de lire les vraies stats
   window.__fini = true;
