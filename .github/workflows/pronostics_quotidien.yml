@@ -77,6 +77,8 @@ jobs:
             /feuilles/
             /algo/
             /scripts/cotes_privees.py
+            /scripts/pronostics_prives.py
+            /scripts/site_leger.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -95,6 +97,10 @@ jobs:
       # 04/11/2026 : matchs à venir et cotes de clôture les plus frais (relayés par R2 en mode ETAT_CHAUD=on)
       - name: État chaud — rapatrier de R2
         run: python scripts/etat_chaud.py pull closing_lines.json matches_oddspapi.json || true
+      # 23/11/2026 (paquet 378) : pronostics complets (site, journal, fiches) au coffre ; le dépôt public n'a que les matchs
+      # commencés (scripts/pronostics_prives.py). Ce workflow est le seul rédacteur.
+      - name: Pronostics complets — rapatrier du coffre (paquet 378)
+        run: python scripts/pronostics_prives.py pull . || echo "::warning::pronostics complets non rapatriés, rien ne sera renvoyé au coffre"
       # 21/11/2026 (paquet 321) : liste de secours des matchs à venir (TennisApi, ATP/WTA/Challenger, aucune cote),
       # ajoutée aux matchs absents de matches_oddspapi.json ; ≈ 16 requêtes ; jamais bloquant
       - name: Matchs à venir — liste de secours TennisApi
@@ -192,6 +198,10 @@ jobs:
           # 04/11/2026 : scripts/coffre.py et r2_io.py ajoutés au checkout — absents, l'envoi échouait en silence (|| true)
           python scripts/coffre.py push --groupe pronostics || true
           python scripts/coffre.py retirer --groupe pronostics || true
+          # 23/11/2026 (paquet 378) : version complète au coffre, puis copie publique (matchs commencés seulement) pour git.
+          # Si l'envoi au coffre échoue, rien n'est publié dans git (la copie publique écraserait la seule version complète).
+          python scripts/pronostics_prives.py push . || { echo "::error::pronostics complets non envoyés au coffre : rien n'est publié"; exit 1; }
+          python scripts/pronostics_prives.py public .
           git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      Tennis_Edge_Lab/live/elo_service_retour.json \

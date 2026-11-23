@@ -133,6 +133,7 @@ jobs:
             scripts/publier_r2.py
             scripts/r2_io.py
             scripts/coffre.py
+            scripts/pronostics_prives.py
             set_results.json
             moves_detail_hist.csv
             moves_detail.csv
@@ -256,6 +257,13 @@ jobs:
           else
             echo "base=https://${GITHUB_REPOSITORY_OWNER}.github.io/${{ github.event.repository.name }}/Tennis_Edge_Lab/live" >> "$GITHUB_OUTPUT"
           fi
+      # 23/11/2026 (paquet 378) : le dépôt public n'a plus que les matchs commencés ; la version complète est au coffre
+      - name: Pronostics complets — rapatrier du coffre (paquet 378)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés, copie publique seulement"
       - name: Construire _site
         env:
           LAB_PRECEDENT: ${{ steps.precedent.outputs.base }}
