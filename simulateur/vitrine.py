@@ -113,6 +113,31 @@ def choisir_match_du_jour(matchs, etat, maintenant, precedent=None):
             'elo': [round(elo_de(etat, cles(m)[0])), round(elo_de(etat, cles(m)[1]))]}
 
 
+APERCU_H = (3, 24)
+
+
+def choisir_apercu(lignes, etat, alias, maintenant, exclus=(), precedent=None):
+    """23/11/2026 (paquet 389, Lucas) — APERÇU PLUS : un match TERMINÉ montré en entier aux visiteurs sans accès Plus,
+    pour qu'ils voient ce que reçoit un abonné. Règle fixe, qui ne regarde jamais le résultat : parmi les matchs commencés
+    il y a 3 à 24 h (hors match du jour et match du jour de la veille), le plus relevé (somme des Elo), ATP et WTA d'abord
+    (sinon Challenger). Gardé tant qu'il reste dans la fenêtre. Son pronostic est déjà public (match commencé)."""
+    k = lambda n: alias.get(E_cle(n), E_cle(n)) if n else None  # noqa: E731
+    cands = [l for l in lignes if l.get('simulation') and l.get('circuit') in CIRCUITS and l.get('uid') not in exclus
+             and maintenant - dt.timedelta(hours=APERCU_H[1]) < _utc(l['debut']) <= maintenant - dt.timedelta(hours=APERCU_H[0])]
+    if not cands:
+        return None
+    if precedent and any(l['uid'] == precedent.get('uid') for l in cands):
+        return precedent
+    pool = [l for l in cands if l['circuit'] in ('ATP', 'WTA')] or cands
+    m = max(pool, key=lambda l: (elo_de(etat, k(l.get('home'))) + elo_de(etat, k(l.get('away'))), l['uid']))
+    return {'uid': m['uid'], 'jour': jour_paris(m['debut'])}
+
+
+def E_cle(n):
+    import elo as E
+    return E.cle(n)
+
+
 def _feuille_prevue(v):
     f = ((v.get('match_simule') or {}).get('feuille')) or []
     out = []
@@ -1058,13 +1083,22 @@ def construire(racine, maintenant=None):
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
+    try:
+        apercu = choisir_apercu(lignes, etat, alias, maintenant, {(mdj or {}).get('uid'), (veille or {}).get('uid')},
+                                ancien_doc.get('apercu_plus'))
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::aperçu Plus non choisi : {type(e).__name__}: {e}')
+        apercu = None
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
+            'apercu_plus': apercu,
             'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
             'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
+            # 23/11/2026 (paquet 389, Lucas) : le même bilan sur les 30 derniers jours (le modèle d'aujourd'hui)
+            'bilan_30j': bilan(resultats, max(DEBUT_BILAN, (maintenant - dt.timedelta(days=29)).astimezone(_paris()).date().isoformat())),
             'controle_scenarios': controle_scenarios(racine),
             'journal_changements': journal_changements(racine, analyse_am),
             'bilan_lignes': bilan_lignes(racine, resultats),
