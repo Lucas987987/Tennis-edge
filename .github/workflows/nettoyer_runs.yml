@@ -1,0 +1,56 @@
+name: Nettoyer les anciens runs sensibles
+
+# 23/11/2026 — paquet 394 (Lucas : « un workflow qui supprimerait directement les runs passés des workflows les plus
+# sensibles »). Le dépôt est public : journaux et artefacts des runs aussi. Supprime, pour chaque workflow de la liste
+# de scripts/nettoyer_runs.py, les runs TERMINÉS de plus de 2 jours (journal et artefacts effacés, définitivement).
+# Les runs en cours ne sont jamais touchés. 800 suppressions au plus par passage : un gros arriéré se vide en quelques
+# heures. Lancement à la main : « simuler » compte sans rien supprimer ; « tous » prend tous les workflows du dépôt.
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'supprimer ou simuler (compter seulement)'
+        type: choice
+        options: [supprimer, simuler]
+        default: simuler
+      garder_jours:
+        description: 'Garder les runs des N derniers jours'
+        default: '2'
+      perimetre:
+        description: 'sensibles (liste du script) ou tous les workflows'
+        type: choice
+        options: [sensibles, tous]
+        default: sensibles
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: nettoyer-runs
+  cancel-in-progress: false
+
+jobs:
+  nettoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts/nettoyer_runs.py
+          sparse-checkout-cone-mode: false
+      - name: Supprimer les anciens runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODE: ${{ github.event.inputs.mode || 'supprimer' }}
+          GARDER: ${{ github.event.inputs.garder_jours || '2' }}
+          PERIMETRE: ${{ github.event.inputs.perimetre || 'sensibles' }}
+        run: |
+          set -euo pipefail
+          opts="--garder-jours $GARDER"
+          if [ "$MODE" = "simuler" ]; then opts="$opts --simuler"; fi
+          if [ "$PERIMETRE" = "tous" ]; then opts="$opts --tous"; fi
+          python3 scripts/nettoyer_runs.py $opts
