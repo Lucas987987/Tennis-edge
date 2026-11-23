@@ -13,6 +13,11 @@ Ce que fait le script (API GitHub, jeton du workflow, droit « actions: write »
   • au plus MAX_SUPPRESSIONS par passage (limite de 1 000 requêtes par heure du jeton) : un gros arriéré se vide en
     quelques passages horaires ;
   • mode « simuler » : compte sans rien supprimer.
+AUCUNE PERTE D'ARTEFACT (paquet 395) : pour les workflows qui déposaient des artefacts (AVEC_ARTEFACTS), chaque artefact
+encore disponible est d'abord copié au coffre R2 privé (prive/site/Tennis_Edge_Lab/journaux/artefacts/<workflow>/<run>-
+<nom>.zip, lisible dans le Lab). Si la copie échoue (coffre absent, téléchargement raté), le run N'EST PAS supprimé : il
+sera repris au passage suivant. Les fichiers de données du projet (dépôt, coffre) ne sont jamais touchés : seuls les
+journaux et artefacts des runs disparaissent.
 Journal : seulement des nombres de runs par workflow.
 Usage : python scripts/nettoyer_runs.py [--simuler] [--garder-jours N] [--max N] [--tous]
 """
@@ -26,6 +31,8 @@ import urllib.request
 API = 'https://api.github.com'
 GARDER_JOURS = 2
 MAX_SUPPRESSIONS = 800
+# workflows qui ont déposé des artefacts (sauvegarde_depot : sa copie est déjà au coffre, sauvegardes/depot/)
+AVEC_ARTEFACTS = ('lab_quotidien.yml', 'suivi_outsiders.yml', 'elo_mov.yml', 'sonde_marches_v2.yml')
 SENSIBLES = [
  "a_ou_b.yml",
  "book_index.yml",
@@ -110,13 +117,60 @@ def anciens_runs(depot, workflow, avant, jeton, ouvrir=urllib.request.urlopen, l
     return ids[:limite]
 
 
+class SansRedirection(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None
+
+
+def telecharger_artefact(url, jeton):
+    """Archive zip d'un artefact : l'API répond par une redirection vers un stockage qui refuse le jeton GitHub."""
+    req = urllib.request.Request(url, headers={'Authorization': f'Bearer {jeton}', 'User-Agent': 'tennis-edge-nettoyage'})
+    try:
+        with urllib.request.build_opener(SansRedirection).open(req, timeout=60) as r:
+            return r.read()
+    except urllib.error.HTTPError as e:
+        if e.code in (301, 302, 303, 307, 308) and e.headers.get('Location'):
+            with urllib.request.urlopen(urllib.request.Request(e.headers['Location'], headers={'User-Agent': 'tennis-edge'}),
+                                        timeout=300) as r:
+                return r.read()
+        raise
+
+
+def coffre():
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import r2_io
+        return r2_io.client(quiet=True)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def sauver_artefacts(depot, wf, run_id, jeton, ouvrir=urllib.request.urlopen, telecharger=telecharger_artefact, c=None):
+    """Copie au coffre chaque artefact encore disponible du run. Vrai si le run peut être supprimé sans rien perdre."""
+    code, doc = appel('GET', f'/repos/{depot}/actions/runs/{run_id}/artifacts?per_page=100', jeton, ouvrir)
+    if code != 200:
+        return False
+    vivants = [a for a in (doc or {}).get('artifacts') or [] if not a.get('expired')]
+    if not vivants:
+        return True
+    if c is None:
+        return False
+    for a in vivants:
+        try:
+            c.put(f"prive/site/Tennis_Edge_Lab/journaux/artefacts/{wf[:-4]}/{run_id}-{a['name']}.zip",
+                  telecharger(a['archive_download_url'], jeton))
+        except Exception:  # noqa: BLE001
+            return False
+    return True
+
+
 def tous_les_workflows(depot, jeton, ouvrir=urllib.request.urlopen):
     code, doc = appel('GET', f'/repos/{depot}/actions/workflows?per_page=100', jeton, ouvrir)
     return [os.path.basename(w['path']) for w in (doc or {}).get('workflows') or []] if code == 200 else []
 
 
 def nettoyer(depot, jeton, garder_jours=GARDER_JOURS, maxi=MAX_SUPPRESSIONS, simuler=False, workflows=None,
-             ouvrir=urllib.request.urlopen, maintenant=None):
+             ouvrir=urllib.request.urlopen, maintenant=None, telecharger=telecharger_artefact, c=None, gardes=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     avant = (maintenant - dt.timedelta(days=garder_jours)).date().isoformat()
     bilan, reste = {}, maxi
@@ -128,6 +182,10 @@ def nettoyer(depot, jeton, garder_jours=GARDER_JOURS, maxi=MAX_SUPPRESSIONS, sim
         for i in ids:
             if simuler:
                 ok += 1
+                continue
+            if wf in AVEC_ARTEFACTS and not sauver_artefacts(depot, wf, i, jeton, ouvrir, telecharger, c):
+                if gardes is not None:
+                    gardes[wf] = gardes.get(wf, 0) + 1      # artefact pas copié : run gardé, repris plus tard
                 continue
             code, _ = appel('DELETE', f'/repos/{depot}/actions/runs/{i}', jeton, ouvrir)
             ok += code == 204
@@ -146,12 +204,15 @@ def main(argv):
     garder = int(argv[argv.index('--garder-jours') + 1]) if '--garder-jours' in argv else GARDER_JOURS
     maxi = int(argv[argv.index('--max') + 1]) if '--max' in argv else MAX_SUPPRESSIONS
     wfs = tous_les_workflows(depot, jeton) if '--tous' in argv else None
-    bilan, plafond = nettoyer(depot, jeton, garder, maxi, simuler, wfs)
+    gardes = {}
+    bilan, plafond = nettoyer(depot, jeton, garder, maxi, simuler, wfs, c=None if simuler else coffre(), gardes=gardes)
     total = sum(bilan.values())
     print(f"{'À supprimer (simulation)' if simuler else 'Supprimés'} : {total} run(s) de plus de {garder} jour(s), "
           f"{len(bilan)} workflow(s)" + (" — plafond atteint, la suite au prochain passage" if plafond else ""))
     for wf, n in sorted(bilan.items(), key=lambda x: -x[1]):
         print(f"  {wf} : {n}")
+    for wf, n in gardes.items():
+        print(f"  {wf} : {n} run(s) gardé(s), artefacts pas encore copiés au coffre")
     return 0
 
 
