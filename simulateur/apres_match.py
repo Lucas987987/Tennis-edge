@@ -34,6 +34,7 @@ import math
 import os
 
 ICI = os.path.dirname(os.path.abspath(__file__))
+FMD_SUIVIS = ('favori_moins_doc_sous_500', 'favori_moins_doc_1500_3000')   # 23/11/2026 (paquet 375) : suivis en direct
 DOSSIER_FICHES = os.path.join('simulateur', 'journal_pronostics', 'fiches')
 DOSSIER_BILANS = os.path.join('simulateur', 'journal_pronostics', 'apres_match')
 SORTIE_ANALYSE = os.path.join('simulateur', 'analyse_apres_match.json')
@@ -357,6 +358,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if fmd.get('p_home') is not None and isinstance(p, (int, float)):
         # 23/11/2026 (paquet 374) : pronostic affiché contre le même avec le favori le moins documenté ramené vers 50 %
         E['fantome_favori_moins_documente'] = {'ll_elo': lp_(p), 'll_reference': lp_(fmd['p_home'])}
+    for sg_ in FMD_SUIVIS:                      # 23/11/2026 (paquet 375) : cases suivies en direct, % inchangé
+        f_ = ct.get(sg_) or {}
+        if f_.get('p_home') is not None and isinstance(p, (int, float)):
+            E['fantome_' + sg_] = {'ll_elo': lp_(p), 'll_reference': lp_(f_['p_home'])}
     srv = ct.get('serveuses_wta') or {}
     if srv.get('p_home') is not None and isinstance(p, (int, float)):
         # 01/11/2026 : pronostic affiché contre le même corrigé du duel serveuse / non-serveuse en WTA
@@ -632,7 +637,7 @@ def analyser(B):
                       'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age',
                       'fantome_favori_outsider', 'fantome_favori_sous_estime', 'fantome_tiebreak',
                       'fantome_documentation_faible', 'fantome_format_match', 'fantome_grand_chelem',
-                      'fantome_qualifs_grand_chelem', 'fantome_favori_moins_documente'):
+                      'fantome_qualifs_grand_chelem', 'fantome_favori_moins_documente') + tuple('fantome_' + k for k in FMD_SUIVIS):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
@@ -687,12 +692,9 @@ def main(argv):
         import urllib.request
         tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
         if tok and chat:
-            try:
-                data = urllib.parse.urlencode({'chat_id': chat, 'text': txt, 'parse_mode': 'HTML'}).encode()
-                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+            import telegram_envoi as TE    # 23/11/2026 (paquet 375) : coupé sous 4 096 caractères, jamais bloquant
+            if TE.envoyer(txt, html=True, apercu=True, tok=tok, chat=chat):
                 print('Pistes après match : envoyées sur le Telegram privé.')
-            except Exception as e:  # noqa: BLE001
-                print(f'::warning::Telegram impossible ({type(e).__name__})')
         return 0
     print(txt)
     return 0

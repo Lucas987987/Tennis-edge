@@ -53,7 +53,8 @@ sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
            'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible', 'format_match',
-           'grand_chelem', 'qualifs_grand_chelem', 'favori_moins_documente')
+           'grand_chelem', 'qualifs_grand_chelem', 'favori_moins_documente',
+           'favori_moins_doc_sous_500', 'favori_moins_doc_1500_3000')     # 23/11/2026 (paquet 375) : suivis, jamais directs
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
