@@ -150,7 +150,9 @@ def reserve_mesuree(prec, quota_debut, now, plancher=CAPTURE_PAR_JOUR):
     except (KeyError, TypeError, ValueError):
         return plancher, None
     jours = (now - t0).total_seconds() / 86400
-    if quota_debut is None or jours < 0.25 or quota_debut > fin:     # renouvellement entre-temps
+    # 23/11/2026 (paquet 364) : un run qui n'a reçu aucune réponse de quota écrit remaining = None ; le suivant
+    # plantait ici (TypeError int > None). Sans mesure : le plancher, comme au premier run.
+    if quota_debut is None or fin is None or jours < 0.25 or quota_debut > fin:     # renouvellement entre-temps
         return plancher, None
     par_jour = (fin - quota_debut) / jours
     return max(plancher, int(1.3 * par_jour)), round(par_jour)
@@ -418,7 +420,9 @@ def main():
             'book_ne_cote_pas': absents, 'paires_en_attente': max(0, restant), 'arret': arret,
             'quota': {k: ov.QUOTA.get(k) for k in ('limit', 'remaining', 'reset_s')},
             'capture_reservee_par_jour': reserve, 'conso_mesuree_par_jour': conso_mesuree,
-            'quota_fin': {'remaining': ov.QUOTA.get('remaining'), 'a': datetime.datetime.utcnow().isoformat(timespec='seconds')},
+            # 364 : sans réponse de quota dans ce run, on garde la dernière mesure connue plutôt que None
+            'quota_fin': ({'remaining': ov.QUOTA.get('remaining'), 'a': datetime.datetime.utcnow().isoformat(timespec='seconds')}
+                          if ov.QUOTA.get('remaining') is not None else (precedent or {}).get('quota_fin')),
             'appris_ne_cote_jamais': appris,
             'plus_ancien_en_attente': (todo[demandes][3].isoformat() if restant > 0 else None)}
     with open(COUVERTURE, 'w', encoding='utf-8') as fc:
