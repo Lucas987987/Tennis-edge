@@ -1,0 +1,243 @@
+// Ventes Game Set Algo : entonnoir, virements reçus et factures, rappels de fin d'accès (23/11/2026, paquet 386,
+// Lucas : « 4-1-2 »).
+//
+// 1. ENTONNOIR (privé, /compte/admin) : visiteurs → comptes → confirmés → fondateurs → Plus payé. Un visiteur = un
+//    chargement de /site.json sur gamesetalgo.com (le navigateur l'appelle à chaque ouverture de la page ; les robots
+//    qui ne lancent pas le JavaScript ne comptent pas). Sans cookie : une empreinte du jour (HMAC de l'adresse IP et du
+//    navigateur avec une clé qui change chaque jour) sert à compter les visiteurs uniques de la journée ; le lendemain,
+//    la liste d'empreintes est effacée et seuls les totaux restent. Compte approché (deux visites à la même milliseconde
+//    peuvent n'en faire qu'une).
+// 2. VIREMENT REÇU (/compte/admin) : l'accès est donné (marqué « payé »), une facture numérotée sans trou
+//    (F2026-0001, F2026-0002…) est créée et envoyée par e-mail. Identité du vendeur : secret FACTURE_VENDEUR du worker
+//    (JSON : nom, adresse, siret, mention_tva) ; absent → aucune facture possible (refus). Les factures restent 10 ans
+//    (obligation comptable), même si le compte est supprimé.
+// 3. RAPPEL (tous les jours à 7 h 17 UTC) : un accès PAYÉ qui finit dans 3 jours ou moins reçoit un e-mail, une seule
+//    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
+import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
+  referenceVirement, idCompte, normaliser, ESC, abonne, base } from './comptes.js';
+
+const PAYANTES = { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' };
+const RAPPEL_J = 3;
+const jourUtc = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
+const eur = (x) => Number(x).toFixed(2).replace('.', ',') + ' €';
+const hex = (u8) => [...u8].map((x) => x.toString(16).padStart(2, '0')).join('');
+
+// --------------------------------------------------------------------------------------------- 1. entonnoir
+async function empreinteJour(env, req, jour) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(env.CLE_PRIVEE) + '|visites|' + jour),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const ip = req.headers.get('CF-Connecting-IP') || '', ua = req.headers.get('User-Agent') || '';
+  return hex(new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(ip + '|' + ua)))).slice(0, 12);
+}
+export const ROBOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|curl|wget|python/i;
+export async function compterVisite(req, env) {
+  if (!env.COFFRE || !env.CLE_PRIVEE || ROBOT.test(req.headers.get('User-Agent') || '')) return;
+  const jour = jourUtc(), cle = `stats/visites/${jour}.json`, h = await empreinteJour(env, req, jour);
+  for (let essai = 0; essai < 3; essai++) {
+    const o = await env.COFFRE.get(cle);
+    let x = { jour, vues: 0, u: [] };
+    try { if (o) x = JSON.parse(await o.text()); } catch (e) { /* repart de zéro */ }
+    x.vues = (x.vues || 0) + 1;
+    if (Array.isArray(x.u) && !x.u.includes(h) && x.u.length < 50000) x.u.push(h);
+    x.uniques = Array.isArray(x.u) ? x.u.length : x.uniques;
+    const r = await env.COFFRE.put(cle, JSON.stringify(x), o ? { onlyIf: { etagMatches: o.etag } } : {});
+    if (r) return;
+  }
+}
+// Le lendemain : on ne garde que les totaux (les empreintes du jour sont effacées).
+export async function compacterVisites(env) {
+  const l = await env.COFFRE.list({ prefix: 'stats/visites/' });
+  for (const o of l.objects || []) {
+    const jour = o.key.slice('stats/visites/'.length, -5);
+    if (jour >= jourUtc()) continue;
+    const b = await env.COFFRE.get(o.key);
+    try {
+      const x = JSON.parse(await b.text());
+      if (Array.isArray(x.u)) await env.COFFRE.put(o.key, JSON.stringify({ jour, vues: x.vues || 0, uniques: x.u.length }));
+    } catch (e) { /* objet illisible : laissé */ }
+  }
+}
+export async function entonnoir(env, maintenant = Date.now()) {
+  const comptes = await listeComptes(env);
+  const fenetre = (j) => {
+    const depuis = jourUtc(maintenant - (j - 1) * 86400e3);
+    const dans = (d) => !!d && String(d).slice(0, 10) >= depuis;
+    return { depuis, comptes: comptes.filter((c) => dans(c.cree)).length,
+      confirmes: comptes.filter((c) => dans(c.cree) && c.verifie).length,
+      fondateurs: comptes.filter((c) => dans(c.fondateur)).length };
+  };
+  const visites = {};
+  const l = await env.COFFRE.list({ prefix: 'stats/visites/' });
+  for (const o of l.objects || []) {
+    const b = await env.COFFRE.get(o.key);
+    try { const x = JSON.parse(await b.text()); visites[x.jour] = { vues: x.vues || 0, uniques: x.uniques ?? (x.u || []).length }; } catch (e) { /* ignoré */ }
+  }
+  const out = {};
+  for (const j of [1, 7, 30]) {
+    const f = fenetre(j);
+    const v = Object.entries(visites).filter(([d]) => d >= f.depuis);
+    out[j] = { ...f, visiteurs: v.reduce((a, [, x]) => a + x.uniques, 0), vues: v.reduce((a, [, x]) => a + x.vues, 0) };
+  }
+  return { fenetres: out, total: { comptes: comptes.length, confirmes: comptes.filter((c) => c.verifie).length,
+    fondateurs: comptes.filter((c) => c.fondateur).length, plus_payes: comptes.filter((c) => c.abonne && c.paye).length,
+    plus_tous: comptes.filter((c) => c.abonne && !c.admin).length },
+  jours: Object.entries(visites).sort().slice(-30).map(([jour, x]) => ({ jour, ...x })) };
+}
+
+// --------------------------------------------------------------------------------------------- 2. virements et factures
+function vendeur(env) {
+  try {
+    const v = JSON.parse(env.FACTURE_VENDEUR || 'null');
+    return v && v.nom && v.adresse && v.siret ? { nom: String(v.nom), adresse: String(v.adresse), siret: String(v.siret),
+      mention_tva: String(v.mention_tva || 'TVA non applicable, art. 293 B du CGI') } : null;
+  } catch (e) { return null; }
+}
+async function numeroSuivant(env, annee) {
+  const cle = `factures/compteur-${annee}.json`;
+  for (let essai = 0; essai < 5; essai++) {
+    const o = await env.COFFRE.get(cle);
+    let n = 0;
+    try { if (o) n = Number(JSON.parse(await o.text()).n) || 0; } catch (e) { n = 0; }
+    const r = await env.COFFRE.put(cle, JSON.stringify({ n: n + 1 }), o ? { onlyIf: { etagMatches: o.etag } } : {});
+    if (r) return `F${annee}-${String(n + 1).padStart(4, '0')}`;
+  }
+  return null;
+}
+export async function trouverCompte(env, q) {
+  const e = normaliser(q);
+  if (e) return lire(env, await idCompte(e));
+  const ref = String(q || '').trim().toUpperCase();
+  if (!/^GSA-[0-9A-F]{6}$/.test(ref)) return null;
+  const l = await env.COFFRE.list({ prefix: 'comptes/u/' + ref.slice(4).toLowerCase() });
+  const o = (l.objects || [])[0];
+  return o ? lire(env, o.key.slice('comptes/u/'.length, -5)) : null;
+}
+export async function virementRecu(env, b, req) {
+  const v = vendeur(env);
+  if (!v) return { ok: false, erreur: 'vendeur_absent' };
+  if (!(b.formule in PAYANTES)) return { ok: false, erreur: 'formule' };
+  const montant = Math.round(Number(String(b.montant || '').replace(',', '.')) * 100) / 100;
+  if (!(montant > 0 && montant < 10000)) return { ok: false, erreur: 'montant' };
+  const u = await trouverCompte(env, b.compte);
+  if (!u) return { ok: false, erreur: 'inconnu' };
+  const paye_le = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : jourUtc();
+  const num = await numeroSuivant(env, new Date().getUTCFullYear());
+  if (!num) return { ok: false, erreur: 'numero' };
+  const r = await donnerAcces(env, u.email, b.formule, null, 'virement ' + num);
+  if (!r.ok) return r;
+  const u2 = await lire(env, u.id);
+  const fondateur = !!b.fondateur;
+  const f = { numero: num, emise_le: new Date().toISOString(), vendeur: v, client: { email: u2.email, reference: referenceVirement(u2) },
+    designation: `Accès Plus Game Set Algo, ${PAYANTES[b.formule]}${fondateur ? ' (tarif fondateur)' : ''}`,
+    periode: { du: jourUtc(), au: String(u2.acces.jusqu_au || '').slice(0, 10) }, quantite: 1, prix_unitaire: montant, total: montant,
+    paiement: { moyen: 'virement bancaire', le: paye_le } };
+  await env.COFFRE.put(`factures/${num}.json`, JSON.stringify(f), { httpMetadata: { contentType: 'application/json' } });
+  u2.acces = { ...u2.acces, paye: true, montant, formule_payee: b.formule, fondateur_tarif: fondateur };
+  u2.factures = [...(u2.factures || []), num];
+  u2.rappel_fin = null;
+  await ecrire(env, u2);
+  const lienF = `${base(req, env)}/compte/api/facture?n=${num}`;
+  const m = await envoyerMail(env, u2.email, { sujet: `Ta facture ${num} · Game Set Algo`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:16px;color:#14102e"><p>Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${ESC(dateFr(f.periode.au))}.</p>${htmlFacture(f, true)}<p style="color:#666;font-size:13px">Elle reste disponible dans « Mon compte » : ${ESC(lienF)}</p></div>`,
+    texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(f.periode.au)}.\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
+  await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`);
+  return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au };
+}
+const dateFr = (d) => String(d || '').slice(0, 10).split('-').reverse().join('/');
+export function htmlFacture(f, mail = false) {
+  const v = f.vendeur, l = (t) => ESC(t).replace(/\n/g, '<br>');
+  const td = 'style="padding:8px;border-bottom:1px solid #ddd"';
+  return `<div style="font-family:Arial,sans-serif;color:#14102e;${mail ? '' : 'max-width:720px;margin:24px auto;padding:24px'}">
+<h2 style="margin:0 0 4px">Facture ${ESC(f.numero)}</h2><p style="margin:0;color:#555">Émise le ${ESC(dateFr(f.emise_le))}</p>
+<table style="width:100%;margin:18px 0;border-collapse:collapse"><tr><td style="vertical-align:top;width:50%"><b>Vendeur</b><br>${l(v.nom)}<br>${l(v.adresse)}<br>SIRET ${ESC(v.siret)}</td>
+<td style="vertical-align:top"><b>Client</b><br>${ESC(f.client.email)}<br><span style="color:#555">Réf. ${ESC(f.client.reference)}</span></td></tr></table>
+<table style="width:100%;border-collapse:collapse"><tr style="background:#f1eefc"><th ${td} align="left">Désignation</th><th ${td}>Qté</th><th ${td} align="right">Prix unitaire</th><th ${td} align="right">Total</th></tr>
+<tr><td ${td}>${ESC(f.designation)}<br><small style="color:#555">du ${ESC(dateFr(f.periode.du))} au ${ESC(dateFr(f.periode.au))}</small></td><td ${td} align="center">${f.quantite}</td><td ${td} align="right">${eur(f.prix_unitaire)}</td><td ${td} align="right">${eur(f.total)}</td></tr>
+<tr><td colspan="3" ${td} align="right"><b>Total à payer</b></td><td ${td} align="right"><b>${eur(f.total)}</b></td></tr></table>
+<p style="margin:14px 0 0">${ESC(v.mention_tva)}</p><p style="margin:6px 0 0">Payée par ${ESC(f.paiement.moyen)} le ${ESC(dateFr(f.paiement.le))}.</p></div>`;
+}
+async function lireFacture(env, n) {
+  if (!/^F\d{4}-\d{4,6}$/.test(String(n || ''))) return null;
+  const o = await env.COFFRE.get(`factures/${n}.json`);
+  try { return o ? JSON.parse(await o.text()) : null; } catch (e) { return null; }
+}
+export function pageFacture(f) {
+  return new Response(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Facture ${ESC(f.numero)}</title><style>@media print{button{display:none}}body{background:#fff;margin:0}</style></head><body>
+${htmlFacture(f)}<p style="text-align:center"><button onclick="print()" style="font:16px Arial;padding:10px 16px">Imprimer / enregistrer en PDF</button></p></body></html>`,
+  { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex',
+    'X-Frame-Options': 'DENY', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; frame-ancestors 'none'" } });
+}
+// Le client voit ses factures (cookie) ; l'administration voit toutes.
+export async function factureClient(req, env, url) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  const n = url.searchParams.get('n');
+  if (!(u.factures || []).includes(n)) return rep({ ok: false, erreur: 'inconnu' }, 404);
+  const f = await lireFacture(env, n);
+  return f ? pageFacture(f) : rep({ ok: false, erreur: 'inconnu' }, 404);
+}
+export async function listeFactures(env) {
+  const out = [];
+  const l = await env.COFFRE.list({ prefix: 'factures/F' });
+  for (const o of l.objects || []) {
+    const f = await lireFacture(env, o.key.slice('factures/'.length, -5));
+    if (f) out.push({ numero: f.numero, emise_le: f.emise_le, email: f.client.email, total: f.total, designation: f.designation });
+  }
+  return out.sort((a, b) => b.numero.localeCompare(a.numero));
+}
+export async function adminVentes(req, env, url) {
+  const p = url.pathname;
+  if (p === '/compte/admin/api/entonnoir' && req.method === 'GET') return rep({ ok: true, ...(await entonnoir(env)) });
+  if (p === '/compte/admin/api/factures' && req.method === 'GET') return rep({ ok: true, vendeur: !!vendeur(env), factures: await listeFactures(env) });
+  if (p === '/compte/admin/facture' && req.method === 'GET') {
+    const f = await lireFacture(env, url.searchParams.get('n'));
+    return f ? pageFacture(f) : rep({ ok: false, erreur: 'inconnu' }, 404);
+  }
+  if (p === '/compte/admin/api/virement' && req.method === 'POST') {
+    if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
+    const b = await corps(req);
+    if (!b) return rep({ ok: false, erreur: 'requete' }, 400);
+    const r = await virementRecu(env, b, req);
+    return rep(r, r.ok ? 200 : 400);
+  }
+  return null;
+}
+
+// --------------------------------------------------------------------------------------------- 3. rappels de fin d'accès
+function coordonnees(env) {
+  try { const v = JSON.parse(env.VIREMENT || 'null'); return v && v.iban ? v : null; } catch (e) { return null; }
+}
+export function messageRappel(u, env, url) {
+  const fin = dateFr(u.acces.jusqu_au), ref = referenceVirement(u), c = coordonnees(env);
+  const banque = c ? `Pour le prolonger, fais un virement${u.acces.montant ? ' de ' + eur(u.acces.montant) : ''} à :\nTitulaire : ${c.titulaire || ''}\nIBAN : ${c.iban}${c.bic ? '\nBIC : ' + c.bic : ''}\nLibellé (important) : ${ref}`
+    : `Pour le prolonger, réponds à ce message ou écris-nous : ta référence de virement est ${ref}.`;
+  const lignes = banque.split('\n');
+  return { sujet: `Ton accès Plus se termine le ${fin}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e"><h2 style="margin:0 0 12px">Ton accès Plus se termine le ${ESC(fin)}</h2>
+<p>Merci d'avoir soutenu Game Set Algo. Le virement ne se renouvelle pas tout seul.</p><p>${lignes.map(ESC).join('<br>')}</p>
+<p>L'accès est prolongé dès réception (un virement instantané arrive en quelques secondes).</p><p style="color:#666;font-size:13px">Game Set Algo · ${ESC(url)}</p></div>`,
+    texte: `Ton accès Plus se termine le ${fin}.\n${banque}\n\n${url}` };
+}
+export async function rappels(env, maintenant = Date.now()) {
+  let n = 0, curseur;
+  do {
+    const l = await env.COFFRE.list({ prefix: 'comptes/u/', cursor: curseur, limit: 1000 });
+    for (const o of l.objects || []) {
+      const u = await lire(env, o.key.slice('comptes/u/'.length, -5));
+      const a = (u && u.acces) || {};
+      if (!a.paye || !a.jusqu_au || u.rappel_fin === a.jusqu_au || !abonne(u, maintenant)) continue;
+      if (Date.parse(a.jusqu_au) - maintenant > RAPPEL_J * 86400e3) continue;
+      const m = await envoyerMail(env, u.email, messageRappel(u, env, String(env.SITE_URL || 'https://gamesetalgo.com')));
+      if (m.ok) { u.rappel_fin = a.jusqu_au; await ecrire(env, u); n++; }
+    }
+    curseur = l.truncated ? l.cursor : undefined;
+  } while (curseur);
+  if (n) await alerte(env, `${n} rappel(s) de fin d'accès envoyé(s)`);
+  return n;
+}
+export async function quotidien(env) {
+  if (!env.COFFRE) return;
+  try { await compacterVisites(env); } catch (e) { /* le lendemain */ }
+  try { await rappels(env); } catch (e) { /* le lendemain */ }
+}

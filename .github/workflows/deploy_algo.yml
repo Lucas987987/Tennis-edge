@@ -85,6 +85,34 @@ jobs:
           if [ -z "$BREVO_API_KEY" ]; then echo "::warning::Secret BREVO_CLE_SITE absent : aucun e-mail de compte ne part."; exit 0; fi
           printf '%s' "$BREVO_API_KEY" | npx --yes wrangler@4 secret put BREVO_API_KEY > /dev/null && echo "Clé Brevo posée."
 
+      # 23/11/2026 (paquet 385) : alertes des comptes (nouveau compte, adresse confirmée, place fondateur, code utilisé)
+      # sur le Telegram privé, avec les secrets GitHub TELEGRAM_TOKEN et TELEGRAM_CHAT_ID déjà utilisés par les rapports.
+      - name: Telegram des alertes de comptes (s'il existe)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: workers/algo
+        run: |
+          if [ -z "$TELEGRAM_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then echo "::warning::Telegram absent, pas d'alerte de compte."; exit 0; fi
+          printf '%s' "$TELEGRAM_TOKEN" | npx --yes wrangler@4 secret put TELEGRAM_TOKEN > /dev/null
+          printf '%s' "$TELEGRAM_CHAT_ID" | npx --yes wrangler@4 secret put TELEGRAM_CHAT_ID > /dev/null && echo "Alertes Telegram posées."
+
+      # 23/11/2026 (paquet 386) : factures et rappels de fin d'accès. Secrets GitHub (facultatifs, jamais dans le dépôt) :
+      # FACTURE_VENDEUR = {"nom":"…","adresse":"…","siret":"…","mention_tva":"TVA non applicable, art. 293 B du CGI"}
+      # VIREMENT = {"titulaire":"…","iban":"FR76…","bic":"…"} (coordonnées données dans l'e-mail de rappel).
+      - name: Vendeur des factures et coordonnées de virement (s'ils existent)
+        env:
+          FACTURE_VENDEUR: ${{ secrets.FACTURE_VENDEUR }}
+          VIREMENT: ${{ secrets.VIREMENT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: workers/algo
+        run: |
+          if [ -n "$FACTURE_VENDEUR" ]; then printf '%s' "$FACTURE_VENDEUR" | npx --yes wrangler@4 secret put FACTURE_VENDEUR > /dev/null && echo "Vendeur des factures posé."; else echo "::warning::FACTURE_VENDEUR absent, aucune facture possible."; fi
+          if [ -n "$VIREMENT" ]; then printf '%s' "$VIREMENT" | npx --yes wrangler@4 secret put VIREMENT > /dev/null && echo "Coordonnées de virement posées."; fi
+
       # 23/11/2026 (paquet 382) : anti-robots des comptes (Cloudflare Turnstile). Secrets GitHub TURNSTILE_SITEKEY et
       # TURNSTILE_SECRET (tableau de bord Cloudflare → Turnstile → widget « gamesetalgo.com ») ; absents : inactif.
       - name: Clés Turnstile (si elles existent)

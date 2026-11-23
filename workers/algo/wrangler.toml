@@ -15,6 +15,11 @@ routes = [
   { pattern = "www.gamesetalgo.com", custom_domain = true },
 ]
 
+# 23/11/2026 (paquet 386) : chaque jour à 7 h 17 UTC, rappels de fin d'accès payé par virement et totaux des visites
+# de la veille (workers/algo/ventes.js). Une seule tâche planifiée pour ce worker.
+[triggers]
+crons = ["17 7 * * *"]
+
 # Coffre privé : le même bucket R2 que les partitions (scripts/r2_io.py, DEFAULT_BUCKET), préfixe prive/.
 [[r2_buckets]]
 binding = "COFFRE"

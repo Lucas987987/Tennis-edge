@@ -259,3 +259,137 @@ test('382 : un compte jamais confirmé est effacé après 30 jours (à l’ouver
   assert.deepEqual(l.comptes.map((c) => c.email), ['recent@exemple.fr']);
   assert.ok(![...C.m.values()].some((x) => x.includes('vieux@')));
 });
+
+test('384 : liste d’attente fondateurs (compte confirmé), e-mail une fois, annulation, référence de virement', async () => {
+  const { env, mails } = monde();
+  assert.equal((await worker.fetch(post('/compte/api/fondateur', { reserver: true }), env)).status, 401);
+  // compte pas encore confirmé : la session n'existe qu'après confirmation, on vérifie le refus côté données
+  await worker.fetch(post('/compte/api/inscription', { email: 'g@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  let o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env)).json();
+  assert.equal(o.ok, true);
+  assert.match(o.compte.fondateur, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(o.compte.reference, /^GSA-[0-9A-F]{6}$/);
+  assert.equal(mails.length, 2);
+  assert.match(mails[1].subject, /fondateur/);
+  const date = o.compte.fondateur;
+  o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env)).json();
+  assert.equal(o.compte.fondateur, date);                      // réserver deux fois garde la première date
+  o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: false }, { Cookie: c }), env)).json();
+  assert.equal(o.compte.fondateur, null);
+  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
+  assert.equal(mails.length, 2);                                // pas de second e-mail de confirmation
+  const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.ok(moi.compte.fondateur);
+  const l = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(l.comptes[0].reference, moi.compte.reference);
+  const ex = await (await worker.fetch(get('/compte/api/export', { Cookie: c }), env)).json();
+  assert.ok(ex.fondateur);
+});
+
+test('384 : le script de la page d’administration est du JavaScript valide', async () => {
+  const { pageAdmin } = await import('./comptes.js');
+  const s = pageAdmin().split('<script>')[1].split('</script>')[0];
+  assert.doesNotThrow(() => new Function(s));
+});
+
+test('385 : alerte Telegram à la création, à la confirmation et à la place fondateur, adresse masquée', async () => {
+  const { env, mails } = monde();
+  const tg = [], brevo = globalThis.fetch;
+  globalThis.fetch = async (u, o) => {
+    if (String(u).startsWith('https://api.telegram.org/')) { tg.push(JSON.parse(o.body)); return new Response('{}'); }
+    return brevo(u, o);
+  };
+  env.TELEGRAM_TOKEN = 't'; env.TELEGRAM_CHAT_ID = '42';
+  await worker.fetch(post('/compte/api/inscription', { email: 'lucie.martin@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(tg.length, 1);
+  assert.match(tg[0].text, /nouveau compte : lu\*\*\*@exemple\.fr/);
+  assert.ok(!tg[0].text.includes('lucie.martin'));
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  assert.match(tg[1].text, /adresse confirmée/);
+  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
+  assert.match(tg[2].text, /place fondateur réservée/);
+  // Telegram en panne : le compte se crée quand même
+  globalThis.fetch = async (u, o) => { if (String(u).includes('telegram')) throw new Error('panne'); return brevo(u, o); };
+  const r = await worker.fetch(post('/compte/api/inscription', { email: 'x@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(r.status, 200);
+});
+
+test('386 : virement reçu → accès payé, facture numérotée sans trou, e-mail, page du client, rappel avant la fin', async () => {
+  const { env, mails, C } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'h@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  const ref = (await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json()).compte.reference;
+  const vir = (b) => worker.fetch(post('/compte/admin/api/virement', b, { 'X-Cle': CLE }, DEV), env).then((r) => r.json());
+  // sans vendeur : refus
+  assert.equal((await vir({ compte: ref, formule: 'mois', montant: '9,99' })).erreur, 'vendeur_absent');
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court\n75000 Paris', siret: '123 456 789 00012' });
+  assert.equal((await vir({ compte: ref, formule: 'mois', montant: '0' })).erreur, 'montant');
+  let o = await vir({ compte: ref, formule: 'mois', montant: '9,99', fondateur: true });
+  assert.equal(o.ok, true);
+  assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0001`);
+  o = await vir({ compte: 'h@exemple.fr', formule: 'mois', montant: '9,99' });   // par e-mail, prolonge l'accès
+  assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0002`);
+  const moi = (await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json()).compte;
+  assert.equal(moi.paye, true);
+  assert.equal(moi.factures.length, 2);
+  assert.ok(Date.parse(moi.jusqu_au) > Date.now() + 60 * 86400e3);
+  assert.match(mails.at(-1).subject, /facture F\d{4}-0002/);
+  assert.match(mails.at(-1).htmlContent, /TVA non applicable, art\. 293 B du CGI/);
+  assert.match(mails.at(-1).htmlContent, /SIRET 123 456 789 00012/);
+  // le client voit sa facture, pas celle d'un autre ; l'administration voit tout
+  let r = await worker.fetch(get('/compte/api/facture?n=' + moi.factures[0], { Cookie: c }), env);
+  assert.equal(r.status, 200);
+  assert.match(await r.text(), /Accès Plus Game Set Algo, 1 mois \(tarif fondateur\)/);
+  assert.equal((await worker.fetch(get('/compte/api/facture?n=F1999-0001', { Cookie: c }), env)).status, 404);
+  assert.equal((await worker.fetch(get('/compte/api/facture?n=' + moi.factures[0]), env)).status, 401);
+  const l = await (await worker.fetch(get('/compte/admin/api/factures', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(l.factures.length, 2);
+  // suppression du compte : les factures restent
+  await worker.fetch(post('/compte/api/supprimer', { mdp: 'motdepasse1' }, { Cookie: c }), env);
+  assert.ok(C.m.has(`factures/${moi.factures[0]}.json`));
+});
+
+test('386 : rappel de fin d’accès payé, une seule fois par échéance, avec la référence de virement', async () => {
+  const { env, mails, C } = monde();
+  const V = await import('./ventes.js');
+  await worker.fetch(post('/compte/api/inscription', { email: 'i@exemple.fr', mdp: 'motdepasse1' }), env);
+  await worker.fetch(post('/compte/api/inscription', { email: 'j@exemple.fr', mdp: 'motdepasse1' }), env);
+  const fin = new Date(Date.now() + 2 * 86400e3).toISOString();
+  for (const [k, x] of C.m) if (k.startsWith('comptes/u/')) {
+    const u = JSON.parse(x);
+    u.acces = { formule: 'mois', jusqu_au: fin, paye: u.email === 'i@exemple.fr', montant: 9.99 };
+    C.m.set(k, JSON.stringify(u));
+  }
+  env.VIREMENT = JSON.stringify({ titulaire: 'Lucas Test', iban: 'FR76 0000 0000 0000', bic: 'TESTFRPP' });
+  const avant = mails.length;
+  assert.equal(await V.rappels(env), 1);                         // seulement l'accès payé
+  assert.equal(mails.length, avant + 1);
+  assert.match(mails.at(-1).textContent, /Libellé \(important\) : GSA-[0-9A-F]{6}/);
+  assert.match(mails.at(-1).textContent, /9,99 €/);
+  assert.equal(await V.rappels(env), 0);                         // pas deux fois pour la même échéance
+});
+
+test('386 : entonnoir — visites sans cookie comptées une fois par jour, robots ignorés, empreintes effacées le lendemain', async () => {
+  const { env, C } = monde();
+  const V = await import('./ventes.js');
+  const att = [];
+  const ctx = { waitUntil: (p) => att.push(p) };
+  const vue = (ip, ua = 'Mozilla/5.0') => worker.fetch(new Request(SITE + '/site.json', { headers: { 'CF-Connecting-IP': ip, 'User-Agent': ua } }), env, ctx);
+  await vue('1.1.1.1'); await Promise.all(att);
+  await vue('1.1.1.1'); await Promise.all(att);
+  await vue('2.2.2.2'); await Promise.all(att);
+  await vue('3.3.3.3', 'Googlebot/2.1'); await Promise.all(att);
+  await worker.fetch(new Request(DEV + '/site.json', { headers: { 'CF-Connecting-IP': '4.4.4.4' } }), env, ctx); await Promise.all(att);
+  const jour = new Date().toISOString().slice(0, 10);
+  const x = JSON.parse(C.m.get(`stats/visites/${jour}.json`));
+  assert.equal(x.vues, 3);
+  assert.equal(x.uniques, 2);
+  assert.ok(!JSON.stringify(x).includes('1.1.1.1'));
+  const e = await (await worker.fetch(get('/compte/admin/api/entonnoir', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(e.fenetres[7].visiteurs, 2);
+  C.m.set('stats/visites/2026-01-01.json', JSON.stringify({ jour: '2026-01-01', vues: 5, u: ['a', 'b'] }));
+  await V.compacterVisites(env);
+  assert.deepEqual(JSON.parse(C.m.get('stats/visites/2026-01-01.json')), { jour: '2026-01-01', vues: 5, uniques: 2 });
+  assert.ok(Array.isArray(JSON.parse(C.m.get(`stats/visites/${jour}.json`)).u));   // aujourd'hui : gardées jusqu'à demain
+});
