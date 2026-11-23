@@ -2130,6 +2130,13 @@
    "paquet": 394,
    "quoi": "NETTOYAGE DES ANCIENS RUNS (paquet 394) : un workflow supprime chaque heure les runs terminés de plus de 2 jours des workflows sensibles (51, liste dans scripts/nettoyer_runs.py) : leur journal et leurs artefacts, publics puisque le dépôt l'est, sont effacés. 800 suppressions au plus par passage ; à la main : « simuler » pour compter, « tous » pour tous les workflows.",
    "garde_fou": "Jamais un run en cours ; les 2 derniers jours restent pour lire un run rouge. Tests : tests/test_nettoyer_runs.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 395,
+   "quoi": "NETTOYAGE SANS PERTE (paquet 395) : avant de supprimer un ancien run d'un workflow qui déposait des fichiers téléchargeables (audit quotidien du Lab, suivi des outsiders, études elo_mov et sonde v2), chaque fichier encore disponible est copié au coffre privé. Si la copie échoue, le run est gardé et repris au passage suivant.",
+   "garde_fou": "Les données du projet (dépôt, coffre) ne sont jamais touchées ; seuls les journaux des runs disparaissent. Tests : tests/test_nettoyer_runs.py."
   }
  ]
 }
