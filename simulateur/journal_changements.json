@@ -1951,6 +1951,14 @@
    "paquet": 369,
    "quoi": "UN JOUEUR ÉCRIT DE DEUX FAÇONS = UN SEUL CLASSEMENT (paquet 369) : « Gianluca Cadenasso – Melios Efstathiou » et « Gianluca Cadenasso – Menelaos Efstathiou » apparaissaient deux fois sur le site avec deux % différents. C'est le même joueur (Chypre, né le 02/03/1999) : Melios est le diminutif de Menelaos, et il avait deux classements (15 matchs d'un côté, 127 de l'autre). Correction de données : deux noms sont réunis s'ils ont le même nom de famille, le même pays, des dates de naissance à 45 jours au plus, des tailles compatibles, des prénoms compatibles (orthographe proche, initiale, ou diminutif vérifié à la main) et s'ils n'ont jamais joué le même tournoi (les jumelles Pliskova restent deux joueuses). 41 joueurs réunis. Les matchs à venir sont aussi dédoublonnés avant le pronostic : même paire une fois les noms reliés, ou même tournoi, même heure, même joueur et adversaire au même nom de famille (on garde le plus documenté).",
    "garde_fou": "Aucun réglage ni mesure de réussite dans la règle (écrite avant de regarder la liste). Contrôle : réussite et log loss quasi inchangées (nos matchs : log loss 0,6205 → 0,6199). Tests : tests/test_identites.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 370,
+   "prive": true,
+   "quoi": "RUN HEBDOMADAIRE ROUGE (paquet 370) : la notification privée du ROI dépassait la limite de 4 096 caractères de Telegram (HTTP 400). L'étape plantait et « Publier » était sauté : la décision de la semaine sur les profils (« adopté : mieux 2 semaines de suite ») n'a pas été enregistrée. Le message est maintenant coupé en plusieurs envois entre deux lignes, un échec d'envoi ne fait qu'un avertissement, et l'étape ne bloque plus la publication.",
+   "garde_fou": "Aucun changement de calcul. Tests : tests/test_roi_telegram_morceaux.py."
   }
  ]
 }
