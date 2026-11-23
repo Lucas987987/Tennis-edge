@@ -66,3 +66,10 @@ def envoyer(texte, html=False, timeout=20, apercu=False, tok=None, chat=None):
         except Exception as e_:  # noqa: BLE001
             print(f"::warning::Telegram : message {i + 1} non envoyé ({getattr(e_, 'code', type(e_).__name__)})")
     return n
+
+
+def journal_public():
+    """23/11/2026 (paquet 392) : vrai dans GitHub Actions, dont les journaux sont PUBLICS (dépôt public) : les études
+    privées (comparaisons aux cotes, CLV) n'y écrivent alors que des nombres de matchs ; le détail part sur Telegram."""
+    import os
+    return os.environ.get('GITHUB_ACTIONS') == 'true'
