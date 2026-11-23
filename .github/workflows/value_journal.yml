@@ -73,7 +73,7 @@ jobs:
           # ORDRE CORRIGÉ (même problème que money_flow.yml) : commit d'abord,
           # synchro ensuite -- pas l'inverse.
           for f in value_candidates.jsonl value_clv_report.json; do
-            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi   # 352 : jamais un fichier au coffre
+            if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi   # 352 : jamais un fichier au coffre
           done
           git diff --staged --quiet || git commit -m "value journal $(date -u +%FT%TZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.

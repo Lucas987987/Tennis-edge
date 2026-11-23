@@ -1913,6 +1913,22 @@
    "prive": true,
    "quoi": "CORRECTIF fetch_book_curves (paquet 364) : le run du 23/11 a planté (TypeError int > None) parce que le run précédent n'avait reçu aucune réponse de quota et avait écrit remaining = None. Sans mesure, la réserve retombe sur le plancher ; et un run sans réponse de quota garde la dernière mesure connue au lieu d'écrire None.",
    "garde_fou": "Même réserve qu'avant quand le quota est connu. Test ajouté dans tests/test_fetch_book_curves_budget.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 365,
+   "prive": true,
+   "quoi": "DEUX CORRECTIFS (paquet 365). 1) Chercheur du lundi : le checkout partiel n'avait pas Tennis_Edge_Lab/books.py, que charge nos_resultats.py → FileNotFoundError au démarrage ; ajouté (import vérifié sur une copie du checkout partiel). 2) fetch_clv en mode « prive » : closing_lines/MIGRATION.json est encore suivi par git mais sous un dossier exclu ; « git check-ignore » répond alors « non ignoré » et « git add » échoue (« paths are ignored »). Toutes les gardes des workflows utilisent maintenant « git check-ignore --no-index », qui lit les motifs sans regarder l'index.",
+   "garde_fou": "Hors mode « prive », rien d'exclu : même comportement. Test : aucune garde sans --no-index (tests/test_cotes_privees_4.py)."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 366,
+   "prive": true,
+   "quoi": "TEST INSTABLE RENDU FIXE (paquet 366) : tests/test_direct_3d_webgl.py::test_gestes_et_realisation tirait ses échanges au hasard ; environ 1 run sur 25, un échange ne finissait pas en 40 s simulées et le paquet 365 est passé au rouge sans rien de cassé (le moteur 3D est identique). Tirages fixés et 80 s de marge.",
+   "garde_fou": "Le test vérifie toujours la même chose (gros plan sur le vainqueur, gestes, ralenti court). 10 runs sur 10 verts."
   }
  ]
 }

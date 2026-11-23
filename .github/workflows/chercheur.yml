@@ -39,6 +39,7 @@ jobs:
             /scripts/resultats_itf.py
             /feuilles/
             /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /Tennis_Edge_Lab/books.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
