@@ -253,6 +253,50 @@ def noter_observes(racine, rejets, quand):
     return nouveaux
 
 
+def liens_identifiant(racine):
+    """23/11/2026 (paquet 396) — MÊME IDENTIFIANT TennisApi = même joueur. « Zach Viiala » (27 matchs ITF) et
+    « Zachary Viiala » (le nom du Challenger de Champaign) ont le même identifiant TennisApi (387395) mais avaient deux
+    classements : il a été annoncé battu à 99 % le 16/11 avec un seul match documenté. Les feuilles de match et les
+    résultats ITF (hommes et femmes) donnent l'identifiant TennisApi de chaque joueur ; deux écritures sous le même
+    identifiant sont reliées, le nom le plus vu garde la clé. Correction de données : aucun réglage.
+    Renvoie ({clé alias: clé gardée}, détail)."""
+    import glob
+    import gzip
+    vus = collections.defaultdict(collections.Counter)
+    fichiers = (glob.glob(os.path.join(racine, 'feuilles', '*.jsonl.gz'))
+                + glob.glob(os.path.join(racine, 'resultats_itf', '*.jsonl.gz'))
+                + glob.glob(os.path.join(racine, 'resultats_itf_femmes', '*.jsonl.gz')))
+    for f in fichiers:
+        try:
+            with gzip.open(f, 'rt', encoding='utf-8') as fh:
+                for l in fh:
+                    try:
+                        r = json.loads(l)
+                    except ValueError:
+                        continue
+                    for c in ('home', 'away'):
+                        j = r.get(c)
+                        if isinstance(j, dict) and j.get('id') and j.get('nom'):
+                            vus[j['id']][j['nom']] += 1
+        except (OSError, EOFError):
+            continue
+    lid, detail = {}, []
+    for i, noms in vus.items():
+        cles = collections.Counter()
+        for n, v in noms.items():
+            cles[E.cle(n)] += v
+        if len(cles) < 2:
+            continue
+        garde = max(cles, key=lambda k: (cles[k], k))
+        nom_garde = max((n for n in noms if E.cle(n) == garde), key=lambda n: noms[n])
+        for k in cles:
+            if k != garde:
+                lid[k] = garde
+                detail.append({'alias': max((n for n in noms if E.cle(n) == k), key=lambda n: noms[n]), 'garde': nom_garde,
+                               'source': 'meme_identifiant_tennisapi', 'matchs': [cles[k], cles[garde]]})
+    return lid, detail
+
+
 def contredit(F, k1, k2):
     """Vrai si les fiches disent deux joueurs différents (pays, naissance ou taille incompatibles)."""
     a, b = F.f.get(k1), F.f.get(k2)
@@ -286,6 +330,16 @@ def appliquer(alias, dossier, racine):
         if v and v != k and not contredit(F, k, v):
             lid[k] = v
             detail.append({'alias': x.get('nom'), 'garde': x.get('vers'), 'source': 'vu_en_direct'})
+    # 396 : même identifiant TennisApi (feuilles et résultats ITF) : preuve directe, appliquée en dernier
+    try:
+        lii, det_i = liens_identifiant(racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::liens par identifiant non calculés : {type(e_).__name__}")
+        lii, det_i = {}, []
+    for k, v in lii.items():
+        if k not in lid:
+            lid[k] = lid.get(v, v)
+            detail.append(next(d for d in det_i if E.cle(d['alias']) == k))
     tout = dict(alias)
     for k, v in lid.items():
         tout.setdefault(k, v)
