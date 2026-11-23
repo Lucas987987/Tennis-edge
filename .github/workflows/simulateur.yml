@@ -36,6 +36,8 @@ jobs:
             simulateur
             Tennis_Edge_Lab/books.py
             historique
+            scripts/discret.py
+            scripts/r2_io.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -50,7 +52,13 @@ jobs:
           find . -name '*_matches_*.csv' | sort | tail -40
           du -sh /tmp/sackmann
       - name: Test (réglage 2023, jugement 2024 → janvier 2026)
-        run: python simulateur/backtest.py /tmp/sackmann historique/tennis_data.csv.gz
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python simulateur/backtest.py /tmp/sackmann historique/tennis_data.csv.gz
       - name: Publier le rapport
         run: |
           set -euo pipefail

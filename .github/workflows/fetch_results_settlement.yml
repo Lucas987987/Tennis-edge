@@ -49,6 +49,11 @@ jobs:
           RETRY_FALSE: ${{ github.event.inputs.retry_false || '0' }}
           # FINISHED_AFTER_H: '4'        # marge avant de considérer un match fini
           # MAX_SETTLEMENT_CALLS: '60'   # plafond d'appels par run
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 20 appels par run
         # au lieu de 60 jusqu'au 21/10 (quota renouvelé le 20/10), retour AUTOMATIQUE ensuite.
         run: |
@@ -56,7 +61,7 @@ jobs:
             export MAX_SETTLEMENT_CALLS=20
             echo "💰 économie quota jusqu'au 21/10 (quota renouvelé le 20/10) : $MAX_SETTLEMENT_CALLS appels max"
           fi
-          python scripts/fetch_results_settlement.py
+          python scripts/discret.py -- python scripts/fetch_results_settlement.py
       # 22/11/2026 (paquet 351) : resultats_oddspapi.json envoyé au coffre ; en mode ETAT_CHAUD=prive, sorti du dépôt
       - name: Cotes privées — envoyer (résultats du règlement, paquet 351)
         env:
