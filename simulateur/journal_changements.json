@@ -1973,6 +1973,13 @@
    "paquet": 372,
    "quoi": "BILAN SELON LA DOCUMENTATION, AU JOUR DU MATCH (paquet 372) : le tableau du site classait chaque match avec la documentation des joueurs d'aujourd'hui ; un joueur peu vu en octobre et beaucoup vu depuis tombait dans une tranche « documentée ». Chaque match est maintenant classé avec la documentation qu'avait l'algo le jour du match : celle notée au pronostic quand elle existe, sinon recalculée avec le même compteur que l'algo (points de service cumulés avant le jour du match). Sur les 1 549 matchs jugés : moins de 500 points, 185 matchs, favoris annoncés 77,1 %, gagnants 76,2 % ; 500 à 1 500, 154 matchs, 68,2 % annoncés pour 61,0 % gagnés ; 1 500 à 3 000, 206 matchs, 64,8 % pour 63,6 % ; 3 000 et plus, 1 004 matchs, 63,7 % pour 65,2 %.",
    "garde_fou": "Affichage seulement : le % ne change pas. L'écart de la tranche 500 à 1 500 reste suivi ; l'étude du paquet 368 ne l'a pas confirmé sur la période de jugement (non adopté). Sans l'archive, le tableau garde l'ancienne mesure et le dit. Tests : tests/test_documentation_au_jour.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "etude",
+   "paquet": 373,
+   "quoi": "CHALLENGER, TRANCHE 500 À 1 500 : LE FAVORI MOINS DOCUMENTÉ (paquet 373). En direct, la tranche annonce 68,2 % et gagne 61,0 % (154 matchs) ; l'écart vient surtout des matchs où le favori est le joueur le moins documenté des deux (26 matchs : 61,3 % annoncés, 42,3 % gagnés). Rejeu du classement de production sur l'archive, documentation comptée au jour du match, règle écrite avant (apprendre 2018–2022, juger 2023 → juin 2026, au moins 1 000 matchs jugés, gain ≥ 0,001, même sens sur les deux périodes). Challenger, tranche 500 à 1 500, favori le moins documenté : 1 082 matchs appris (61,5 % annoncés, 58,8 % gagnés), 1 253 jugés (62,3 % annoncés, 56,9 % gagnés) ; pente 0,78 puis 0,80 ; gain 0,0019 : RETENUE. Quand le favori est le plus documenté, rien à corriger (70,1 % annoncés, 71,2 % gagnés).",
+   "garde_fou": "Étude seulement : rien n'est mis en service sans l'accord de Lucas. Sous 500 points, quand le favori est le moins documenté, l'archive va dans l'autre sens que la correction en place (61,4 % annoncés, 50,3 % gagnés), mais sur 951 matchs jugés seulement : sous le seuil de 1 000, rien n'est conclu. Tests : tests/test_favori_moins_documente.py."
   }
  ]
 }
