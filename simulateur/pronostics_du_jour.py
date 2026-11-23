@@ -538,9 +538,17 @@ FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.p
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
 
 
-def charger_programme(racine, jours=4):
-    """Programme des derniers jours (feuilles/programme/AAAA-MM-JJ.json) : le tour de chaque match à venir."""
+PROGRAMME_CLE = None  # 23/11/2026 (paquet 376) : clé d'un nom dans le programme (alias du classement)
+
+
+def charger_programme(racine, jours=4, cle=None):
+    """Programme des derniers jours (feuilles/programme/AAAA-MM-JJ.json) : le tour de chaque match à venir.
+    cle(nom) -> clé du joueur ; 23/11/2026 (paquet 376) : l'alias du classement, comme les clés h, a des pronostics
+    (avant, un joueur relié sous un autre nom n'était jamais retrouvé dans le programme)."""
     import glob
+    global PROGRAMME_CLE
+    cle = cle or E.cle
+    PROGRAMME_CLE = cle
     out = {}
     for p in sorted(glob.glob(os.path.join(racine, 'feuilles', 'programme', '20*.json')))[-jours:]:
         try:
@@ -550,7 +558,7 @@ def charger_programme(racine, jours=4):
             continue
         for r in (doc.get('matchs') or {}).values():
             if r.get('home') and r.get('away'):
-                out[(str(r.get('jour')), *sorted((E.cle(r['home']), E.cle(r['away']))))] = r     # 30/10 : la fiche entière
+                out[(str(r.get('jour')), *sorted((cle(r['home']), cle(r['away']))))] = r     # 30/10 : la fiche entière
     return out
 
 
@@ -574,13 +582,26 @@ def charger_salles(racine):
     return out
 
 
+def _au_programme(h, a, debut):
+    """La fiche du programme pour cette paire : le jour du début (UTC), sinon la veille ou le lendemain (23/11/2026,
+    paquet 376 : le programme date un match du soir en Asie ou en Amérique d'un autre jour que son début en UTC —
+    11 matchs sur 110 du site n'étaient pas retrouvés : ni tour, ni statut d'entrée, ni salle)."""
+    d0 = debut.date() if isinstance(debut, dt.datetime) else debut
+    P_ = PROGRAMME or {}
+    for k in (0, -1, 1):
+        r = P_.get(((d0 + dt.timedelta(days=k)).isoformat(), *sorted((h, a))))
+        if r is not None:
+            return r
+    return None
+
+
 def salle_du_match(h, a, debut):
     """12/11/2026 (paquet 238) — True si le match se joue en salle, False en plein air, None si on ne le sait pas (match
     absent du programme, ou tournoi dont aucune feuille n'est encore arrivée). Sert aux statistiques annoncées ; ne
     change pas le % de victoire."""
     import re
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
-    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    r = _au_programme(h, a, debut)
     if not isinstance(r, dict) or not r.get('tournoi'):
         return None
     return SALLES.get(re.sub(r',\s*(Qualifying|Qualification|Qualifiers?)\s*$', '', str(r['tournoi']).strip(), flags=re.I))
@@ -589,7 +610,7 @@ def salle_du_match(h, a, debut):
 def tour_du_match(h, a, debut):
     """Nom du tour (« Round of 32 »…) d'un match à venir, ou None ; h, a : clés des joueurs."""
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
-    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    r = _au_programme(h, a, debut)
     return r.get('tour') if isinstance(r, dict) else r
 
 
@@ -597,21 +618,21 @@ def entree_du_match(h, a, debut):
     """30/10/2026 — [statut de h, statut de a] (« WC », « Q », « LL », numéro de tête de série…, ou None), lu dans le
     programme (détail TennisApi) ; None si le match n'y est pas ou n'a pas encore été lu."""
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
-    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    r = _au_programme(h, a, debut)
     if not isinstance(r, dict) or not r.get('tetes'):
         return None
     t = r['tetes']
-    return t if E.cle(r['home']) == h else [t[1], t[0]]
+    return t if (PROGRAMME_CLE or E.cle)(r['home']) == h else [t[1], t[0]]
 
 
 def rangs_actuels_du_match(h, a, debut):
     """30/10/2026 — [rang actuel de h, de a] lus dans le détail TennisApi (programme), ou None."""
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
-    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    r = _au_programme(h, a, debut)
     if not isinstance(r, dict) or not r.get('rangs_actuels'):
         return None
     t = r['rangs_actuels']
-    return t if E.cle(r['home']) == h else [t[1], t[0]]
+    return t if (PROGRAMME_CLE or E.cle)(r['home']) == h else [t[1], t[0]]
 
 
 # 30/10/2026 — FANTÔME « STATUT D'ENTRÉE ». Écarts mesurés à l'Elo, confirmés sur 2017–2022 (période non regardée) :
@@ -1775,7 +1796,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::longueur des échanges non chargée : {type(e_).__name__}: {e_}")
         ECHANGES = None
-    PROGRAMME = charger_programme(racine)
+    _alg = dict(etat.get('alias') or {})                    # 23/11/2026 (paquet 376) : mêmes clés que h, a
+    PROGRAMME = charger_programme(racine, cle=lambda n: _alg.get(E.cle(n), E.cle(n)) if n else None)
     SALLES.clear()                                          # 12/11/2026 (paquet 238) : tournois en salle (feuilles)
     SALLES.update(charger_salles(racine))
     try:
