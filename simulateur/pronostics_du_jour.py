@@ -1511,6 +1511,54 @@ def matchs_a_venir(racine, maintenant, avec_couverture=False):
     return (out, couverture) if avec_couverture else out
 
 
+def doublons_a_venir(venir, cle_c, nb_matchs, ecart_h=18, ecart_meme_joueur_h=3):
+    """23/11/2026 (paquet 369) — un match affiché deux fois (« Cadenasso – Melios Efstathiou » et « Cadenasso –
+    Menelaos Efstathiou », Hersonissos 4) : les deux sources écrivent un même joueur de deux façons.
+    1. même paire une fois les noms reliés (alias du classement) à moins de ecart_h heures → on garde le premier
+       (liste principale avant la liste de secours) ;
+    2. même tournoi, débuts à moins de ecart_meme_joueur_h heures, un joueur commun et l'adversaire au même nom de
+       famille → un joueur ne joue pas deux simples à la même heure : on garde l'adversaire le plus documenté
+       (le plus de matchs au classement).
+    Renvoie (matchs gardés, rejets)."""
+    gardes, rejets = [], []
+    for x in venir:
+        h, a = cle_c(x['home']), cle_c(x['away'])
+        p = frozenset((h, a))
+        double = None
+        for i, y in enumerate(gardes):
+            if abs((x['debut'] - y['debut']).total_seconds()) >= ecart_h * 3600:
+                continue
+            hy, ay = cle_c(y['home']), cle_c(y['away'])
+            if frozenset((hy, ay)) == p:
+                double = (i, False)
+                break
+            if (x.get('tournoi') or '') != (y.get('tournoi') or '') or \
+                    abs((x['debut'] - y['debut']).total_seconds()) >= ecart_meme_joueur_h * 3600:
+                continue
+            commun = {h, a} & {hy, ay}
+            if len(commun) != 1:
+                continue
+            c = next(iter(commun))
+            ox = a if h == c else h
+            oy = ay if hy == c else hy
+            nx = x['away'] if h == c else x['home']
+            ny = y['away'] if hy == c else y['home']
+            fx, fy = E.mots(nx), E.mots(ny)
+            if fx and fy and fx[-1] == fy[-1]:
+                double = (i, nb_matchs.get(ox, 0) > nb_matchs.get(oy, 0))
+                break
+        if double is None:
+            gardes.append(x)
+            continue
+        i, remplacer = double
+        ecarte = gardes[i] if remplacer else x
+        if remplacer:
+            gardes[i] = x
+        rejets.append({'home': ecarte['home'], 'away': ecarte['away'], 'tournoi': ecarte.get('tournoi'),
+                       'raison': 'doublon_meme_match'})
+    return gardes, rejets
+
+
 def _paire(h, a):
     return frozenset((NR.slug(h), NR.slug(a)))
 
@@ -1719,6 +1767,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     noms = [v.get('nom', k) for k, v in etat['joueurs'].items()] + [n for x in venir for n in (x['home'], x['away'])]
     ambigus = {c['cle'] for c in E.collisions_identite(noms)}
     out, rejets = [], []
+    venir, doublons_venir = doublons_a_venir(venir, cle_c, {k: v.get('matchs', 0) for k, v in etat['joueurs'].items()})
+    rejets += doublons_venir
     for x in venir:
         h, a = cle_c(x['home']), cle_c(x['away'])
         if not h or not a or h == a or h in ambigus or a in ambigus:
