@@ -71,7 +71,7 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          if [ -f book_lag_report.json ] && ! git check-ignore -q -- book_lag_report.json; then git add -- book_lag_report.json; fi   # 352
+          if [ -f book_lag_report.json ] && ! git check-ignore -q --no-index -- book_lag_report.json; then git add -- book_lag_report.json; fi   # 352
           git diff --cached --quiet || git commit -m "book lag $(date -u +%FT%TZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
           # Ce workflow tourne toutes les 5-10 min : deux exécutions se

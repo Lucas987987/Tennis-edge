@@ -193,7 +193,7 @@ jobs:
           # n'atteindrait jamais ses 30 observations out-of-sample.
           git add -- polymarket_studies_report.md polymarket_studies_status.json
           # 352 : au coffre (exclu de git sur ce runner en mode « prive ») : jamais ajouté dans ce cas
-          if [ -f kalshi_lead_obs.jsonl ] && ! git check-ignore -q -- kalshi_lead_obs.jsonl; then git add -- kalshi_lead_obs.jsonl; fi
+          if [ -f kalshi_lead_obs.jsonl ] && ! git check-ignore -q --no-index -- kalshi_lead_obs.jsonl; then git add -- kalshi_lead_obs.jsonl; fi
           git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
           git commit -m "Études Polymarket/Kalshi ($(date -u +%F))"
           attente=2

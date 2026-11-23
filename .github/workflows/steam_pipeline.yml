@@ -481,7 +481,7 @@ jobs:
             # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
             # le fichier ne survivait jamais à la fin du runner.
             # 351 : un fichier au coffre (exclu de git sur ce runner en mode « prive ») n'est jamais ajouté
-            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi
+            if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi
           done
           echo "état git APRÈS add (diff --cached) :"
           git diff --cached --stat || true
