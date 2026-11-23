@@ -1086,7 +1086,10 @@ const T = {
   cp_oubli_ok:'Si un compte existe avec cette adresse, un lien vient de partir (valable 1 heure).',
   cp_err:{identifiants:'E-mail ou mot de passe incorrect.', non_verifie:"Confirme d'abord ton adresse : clique sur le lien reçu par e-mail.",
     bloque:'Trop d’essais : réessaie dans 15 minutes.', email_invalide:'Adresse e-mail invalide.', mdp_court:'8 caractères minimum.',
-    lien_invalide:'Ce lien a expiré ou a déjà servi.', ferme:'Les comptes ne sont pas encore ouverts.', defaut:'Une erreur est survenue, réessaie.'},
+    lien_invalide:'Ce lien a expiré ou a déjà servi.', ferme:'Les comptes ne sont pas encore ouverts.', defaut:'Une erreur est survenue, réessaie.',
+    code_invalide:'Code inconnu : vérifie ce que tu as saisi.', code_utilise:'Ce code a déjà été utilisé.', code_expire:'Ce code a expiré.',
+    connexion:'Connecte-toi d’abord.'},
+  cp_code:'Tu as un code d’accès Plus ?', cp_go_code:'Activer le code', cp_code_ok:'Code activé : ton accès Plus est ouvert.', verrou_code:'J’ai un code',
   cp_bienvenue:'Adresse confirmée : tu es connecté.', cp_reinit_ok:'Mot de passe enregistré : tu es connecté.',
   cp_moi_plus:d=>`Accès Plus actif${d?` jusqu’au ${dateLong(d)}`:''}.`, cp_moi_libre:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs (paiement bientôt disponible).",
   cp_deco:'Se déconnecter', cp_fermer:'Fermer',
@@ -1400,7 +1403,10 @@ const T = {
   cp_oubli_ok:'If an account exists with this address, a link is on its way (valid for 1 hour).',
   cp_err:{identifiants:'Wrong email or password.', non_verifie:'Confirm your address first: click the link we emailed you.',
     bloque:'Too many attempts: try again in 15 minutes.', email_invalide:'Invalid email address.', mdp_court:'At least 8 characters.',
-    lien_invalide:'This link has expired or was already used.', ferme:'Accounts are not open yet.', defaut:'Something went wrong, please try again.'},
+    lien_invalide:'This link has expired or was already used.', ferme:'Accounts are not open yet.', defaut:'Something went wrong, please try again.',
+    code_invalide:'Unknown code: check what you typed.', code_utilise:'This code has already been used.', code_expire:'This code has expired.',
+    connexion:'Log in first.'},
+  cp_code:'Got a Plus access code?', cp_go_code:'Activate the code', cp_code_ok:'Code activated: your Plus access is open.', verrou_code:'I have a code',
   cp_bienvenue:'Address confirmed: you are logged in.', cp_reinit_ok:'Password saved: you are logged in.',
   cp_moi_plus:d=>`Plus access active${d?` until ${dateLong(d)}`:''}.`, cp_moi_libre:'Free access: the match of the day is on us. Plus access unlocks every match (payment coming soon).',
   cp_deco:'Log out', cp_fermer:'Close',
@@ -7332,7 +7338,7 @@ function ligneVerrou(m){
     </span></a></li>`;
 }
 function panneauVerrou(m){
-  const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t('verrou_libre'))}</p>`
+  const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t('verrou_libre'))}</p><div class="actions"><button type="button" class="btn" data-compte="moi">${esc(t('verrou_code'))}</button></div>`
     : `<div class="actions"><button type="button" class="btn go" data-compte="inscription">${esc(t('verrou_cta_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('verrou_cta_cx'))}</button></div>`;
   return `<div class="panel verrou-p"><span class="verrou-b">🔒 ${esc(t('verrou_titre'))}</span>
     <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
@@ -8171,7 +8177,9 @@ function ouvrirCompte(vue, msg, ok, jeton){
   const tete = k => `<button type="button" class="ferme" data-cp="fermer" aria-label="${esc(t('cp_fermer'))}">×</button><h3 id="compte-h">${esc(t(k))}</h3>`;
   let h = '';
   if (vue === 'moi' && COMPTE) {
-    h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>${m}
+    h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>
+      <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
+      <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
       <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>`;
   } else if (vue === 'inscription') {
     h = tete('cp_t_ins') + `<form data-form="inscription">${champ('cp-e', t('cp_email'), 'email', 'email')}${champ('cp-m', t('cp_mdp'), 'password', 'new-password')}
@@ -8193,6 +8201,14 @@ function ouvrirCompte(vue, msg, ok, jeton){
 }
 function envoyerCompte(form){
   const v = form.dataset.form, e = (form.querySelector('#cp-e')||{}).value, mdp = (form.querySelector('#cp-m')||{}).value;
+  if (v === 'code') {                                        // 381 : code d'accès à usage unique
+    const b = form.querySelector('button[type=submit]'); if (b) b.disabled = true;
+    return apiCompte('code', { code: (form.querySelector('#cp-c')||{}).value }).then(o => {
+      if (b) b.disabled = false;
+      if (o.ok) return location.replace(location.pathname + '?bienvenue=code');
+      ouvrirCompte('moi', erreurCompte(o.erreur), false);
+    });
+  }
   const bouton = form.querySelector('button[type=submit]'); if (bouton) bouton.disabled = true;
   const corps = v === 'reinit' ? { jeton: form.dataset.jeton, mdp } : v === 'oubli' ? { email: e } : { email: e, mdp };
   apiCompte(v, corps).then(o => {
@@ -8235,7 +8251,7 @@ function brancherCompte(){
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
     else if (Q.get('reinit')) ouvrirCompte('reinit', '', false, Q.get('reinit'));
-    else if (Q.get('bienvenue')) { ouvrirCompte('message', t(Q.get('bienvenue') === 'reinit' ? 'cp_reinit_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
+    else if (Q.get('bienvenue')) { const bv = Q.get('bienvenue'); ouvrirCompte('message', t(bv === 'reinit' ? 'cp_reinit_ok' : bv === 'code' ? 'cp_code_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
   });
 }
 rendTextes();
