@@ -53,7 +53,7 @@ sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
            'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible', 'format_match',
-           'grand_chelem', 'qualifs_grand_chelem')
+           'grand_chelem', 'qualifs_grand_chelem', 'favori_moins_documente')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -73,6 +73,7 @@ CUMUL_MIN_MATCHS, CUMUL_ERREURS_TYPES = 300, 2.0
 FORMAT = os.path.join('simulateur', 'format_match.json')
 GRAND_CHELEM = os.path.join('simulateur', 'grand_chelem.json')
 QUALIFS_GC = os.path.join('simulateur', 'qualifs_grand_chelem.json')
+FAVORI_MOINS_DOC = os.path.join('simulateur', 'favori_moins_documente.json')   # 23/11/2026 (paquet 374, décision de Lucas)
 SERVEUSES = os.path.join('simulateur', 'serveuses_wta.json')
 SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
 
@@ -159,6 +160,13 @@ def _directs(racine):
             for c, v in (json.load(f).get('pentes') or {}).items():
                 if v:
                     out.add(('qualifs_grand_chelem', c))
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:                                                    # 23/11/2026 (paquet 374) : favori le moins documenté (Lucas)
+        with open(os.path.join(racine, FAVORI_MOINS_DOC), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('pentes') or {}).items():
+                if v:
+                    out.add(('favori_moins_documente', c))
     except (OSError, ValueError, AttributeError):
         pass
     return out
