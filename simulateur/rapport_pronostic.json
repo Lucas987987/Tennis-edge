@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-23T14:12:30+00:00",
+ "genere_le": "2026-11-23T17:11:08+00:00",
  "objectif": "deviner le vainqueur et le score (pas battre Pinnacle)",
  "elo": "FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage",
  "variantes": {
@@ -312,7 +312,7 @@
     "ajoutes": 0,
     "non_reconnus": 300,
     "doublons_ecartes": 1550,
-    "feuilles_ajoutees": 8315,
+    "feuilles_ajoutees": 8321,
     "feuilles_doublons": 2975,
     "noms_relie": 3389,
     "noms_ambigu": 299,
@@ -377,7 +377,7 @@
     "ajoutes": 0,
     "non_reconnus": 300,
     "doublons_ecartes": 1550,
-    "feuilles_ajoutees": 48300,
+    "feuilles_ajoutees": 48306,
     "feuilles_doublons": 2975,
     "noms_relie": 3389,
     "noms_ambigu": 299,
@@ -417,7 +417,7 @@
    "ajoutes": 0,
    "non_reconnus": 300,
    "doublons_ecartes": 1550,
-   "feuilles_ajoutees": 8315,
+   "feuilles_ajoutees": 8321,
    "feuilles_doublons": 2975,
    "noms_relie": 3389,
    "noms_ambigu": 299,
@@ -488,7 +488,7 @@
   "ajoutes": 0,
   "non_reconnus": 300,
   "doublons_ecartes": 1550,
-  "feuilles_ajoutees": 48300,
+  "feuilles_ajoutees": 48306,
   "feuilles_doublons": 2975,
   "noms_relie": 3389,
   "noms_ambigu": 299,
@@ -664,13 +664,13 @@
     "brier": 0.2157
    },
    "stats_plus_marche": {
-    "n": 2976,
+    "n": 2977,
     "reussite_pct": 66.3,
     "ic95_pct": [
      64.6,
      68.0
     ],
-    "log_loss": 0.6007,
+    "log_loss": 0.6008,
     "brier": 0.2083
    }
   },
@@ -686,13 +686,13 @@
     "brier": 0.2158
    },
    "stats_plus_marche": {
-    "n": 2947,
+    "n": 2948,
     "reussite_pct": 66.1,
     "ic95_pct": [
      64.4,
      67.8
     ],
-    "log_loss": 0.6033,
+    "log_loss": 0.6034,
     "brier": 0.2093
    }
   },
@@ -730,14 +730,14 @@
     "brier": 0.2145
    },
    "stats_plus_marche": {
-    "n": 997,
-    "reussite_pct": 67.4,
+    "n": 998,
+    "reussite_pct": 67.3,
     "ic95_pct": [
-     64.5,
-     70.3
+     64.4,
+     70.2
     ],
-    "log_loss": 0.5926,
-    "brier": 0.2048
+    "log_loss": 0.5928,
+    "brier": 0.205
    }
   },
   "WTA": {
@@ -805,9 +805,9 @@
   "calibration_marche": [
    {
     "tranche": "50–60 %",
-    "n": 928,
+    "n": 929,
     "prevu": 55.3,
-    "reel": 53.6
+    "reel": 53.5
    },
    {
     "tranche": "60–70 %",
@@ -1049,15 +1049,15 @@
   },
   "scores_en_sets": {
    "stats_seules": {
-    "n": 2696,
-    "log_score": 1.2674,
+    "n": 2697,
+    "log_score": 1.2676,
     "score_le_plus_probable_juste_pct": 43.9,
     "trois_sets_prevu_pct": 37.8,
     "trois_sets_reel_pct": 36.4
    },
    "stats_plus_marche": {
-    "n": 2696,
-    "log_score": 1.2454,
+    "n": 2697,
+    "log_score": 1.2455,
     "score_le_plus_probable_juste_pct": 44.7,
     "trois_sets_prevu_pct": 36.8,
     "trois_sets_reel_pct": 36.4
@@ -1065,79 +1065,5 @@
   },
   "periode": "2026-06-07 → 2026-11-23"
  },
- "scores_exacts_atp_wta": {
-  "stats_seules": {
-   "meilleur_des_3": {
-    "n": 8432,
-    "proba_moyenne_du_vrai_score_pct": 0.84,
-    "log_score": 5.721,
-    "score_n1_juste_pct": 2.8,
-    "dans_le_top3_pct": 7.3,
-    "dans_le_top10_pct": 20.7
-   },
-   "evenements_meilleur_des_3": {
-    "au moins un tie-break": {
-     "prevu_pct": 31.4,
-     "reel_pct": 30.6
-    },
-    "au moins un set à 6-0 ou 6-1": {
-     "prevu_pct": 26.8,
-     "reel_pct": 28.8
-    },
-    "match en 3 sets": {
-     "prevu_pct": 37.4,
-     "reel_pct": 35.5
-    },
-    "plus de 22,5 jeux": {
-     "prevu_pct": 44.5,
-     "reel_pct": 42.8
-    }
-   },
-   "meilleur_des_5": {
-    "n": 843,
-    "proba_moyenne_du_vrai_score_pct": 0.11,
-    "log_score": 9.301,
-    "score_n1_juste_pct": 0.6,
-    "dans_le_top3_pct": 3.1,
-    "dans_le_top10_pct": 6.2
-   }
-  },
-  "stats_plus_marche": {
-   "meilleur_des_3": {
-    "n": 8432,
-    "proba_moyenne_du_vrai_score_pct": 0.88,
-    "log_score": 5.7,
-    "score_n1_juste_pct": 2.8,
-    "dans_le_top3_pct": 7.7,
-    "dans_le_top10_pct": 21.2
-   },
-   "evenements_meilleur_des_3": {
-    "au moins un tie-break": {
-     "prevu_pct": 31.0,
-     "reel_pct": 30.6
-    },
-    "au moins un set à 6-0 ou 6-1": {
-     "prevu_pct": 27.5,
-     "reel_pct": 28.8
-    },
-    "match en 3 sets": {
-     "prevu_pct": 36.7,
-     "reel_pct": 35.5
-    },
-    "plus de 22,5 jeux": {
-     "prevu_pct": 43.7,
-     "reel_pct": 42.8
-    }
-   },
-   "meilleur_des_5": {
-    "n": 843,
-    "proba_moyenne_du_vrai_score_pct": 0.12,
-    "log_score": 9.273,
-    "score_n1_juste_pct": 0.7,
-    "dans_le_top3_pct": 2.8,
-    "dans_le_top10_pct": 6.4
-   }
-  }
- },
- "duree_s": 644
+ "duree_s": 171
 }
