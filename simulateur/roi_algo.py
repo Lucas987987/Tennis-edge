@@ -264,6 +264,9 @@ def message(r):
     return '\n'.join(L)
 
 
+LIMITE_TELEGRAM = 4000          # Telegram refuse au-delà de 4 096 caractères
+
+
 def envoyer(texte):
     import urllib.parse
     import urllib.request
@@ -271,9 +274,36 @@ def envoyer(texte):
     if not tok or not chat:
         print('Telegram non configuré.')
         return
-    data = urllib.parse.urlencode({'chat_id': chat, 'text': texte, 'parse_mode': 'HTML',
-                                   'disable_web_page_preview': 'true'}).encode()
-    urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+    # 23/11/2026 (paquet 370) : le message a dépassé 4 096 caractères (limite Telegram → HTTP 400, run rouge) :
+    # envoi en plusieurs messages coupés entre deux lignes ; un échec d'envoi n'arrête plus le run.
+    for i, morceau in enumerate(morceaux(texte)):
+        data = urllib.parse.urlencode({'chat_id': chat, 'text': morceau, 'parse_mode': 'HTML',
+                                       'disable_web_page_preview': 'true'}).encode()
+        try:
+            urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+        except Exception as e_:  # noqa: BLE001
+            print(f"::warning::Telegram : message {i + 1} non envoyé ({getattr(e_, 'code', type(e_).__name__)})")
+
+
+def morceaux(texte, limite=LIMITE_TELEGRAM):
+    """Coupe entre deux lignes, chaque morceau ≤ limite caractères (une ligne trop longue est coupée net).
+    Les balises <b> du message ne couvrent jamais plus d'une ligne : une coupe entre lignes les garde fermées."""
+    out, cur = [], ''
+    for ligne in texte.split('\n'):
+        while len(ligne) > limite:
+            if cur:
+                out.append(cur)
+                cur = ''
+            out.append(ligne[:limite])
+            ligne = ligne[limite:]
+        cand = ligne if not cur else cur + '\n' + ligne
+        if len(cand) > limite:
+            out.append(cur)
+            cand = ligne
+        cur = cand
+    if cur.strip():
+        out.append(cur)
+    return out
 
 
 def main(argv):
