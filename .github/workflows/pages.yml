@@ -380,7 +380,7 @@ jobs:
           cp -R _site/arena _pages/
           # 23/11/2026 (paquet 377) : les données complètes sont réservées à l'accès Plus (servies par le worker, depuis R2,
           # aux seuls abonnés) : jamais sur GitHub Pages, qui ne garde que la version libre.
-          rm -f _pages/algo/site.json _pages/algo/donnees.json
+          rm -f _pages/algo/site.json _pages/algo/donnees.json _pages/algo/site_admin.json   # 380 : sections internes
           echo "Pages : $(find _pages -type f | wc -l) fichiers publics (le Lab et le tableau sont servis par Cloudflare)."
       - name: Avertir si R2 a échoué (Pages garde tout, comme avant)
         if: steps.r2.outcome != 'success'
