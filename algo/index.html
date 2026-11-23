@@ -812,25 +812,25 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <div class="panel qualite" id="fiab-stats"></div>
   </section>
 
-  <section aria-labelledby="journal-h">
+  <section aria-labelledby="journal-h" class="interne" hidden>
     <h2 id="journal-h" data-t="jc_titre"></h2>
     <p class="sub" data-t="jc_sous"></p>
     <div class="panel" id="journal"></div>
   </section>
 
-  <section aria-labelledby="suivi-h">
+  <section aria-labelledby="suivi-h" class="interne" hidden>
     <h2 id="suivi-h" data-t="suivi_titre"></h2>
     <p class="sub" id="suivi-sous"></p>
     <div class="panel suivi" id="suivi-fiabilite"></div>
   </section>
 
-  <section aria-labelledby="qualite-h">
+  <section aria-labelledby="qualite-h" class="interne" hidden>
     <h2 id="qualite-h" data-t="qualite_titre"></h2>
     <p class="sub" data-t="qualite_sous"></p>
     <div class="panel qualite" id="qualite-donnees"></div>
   </section>
 
-  <section aria-labelledby="calib-h">
+  <section aria-labelledby="calib-h" class="interne" hidden>
     <h2 id="calib-h" data-t="calib_titre"></h2>
     <p class="sub" data-t="calib_sous"></p>
     <div class="panel" id="calib"></div>
@@ -7649,7 +7649,7 @@ function tableCalib(c){
   ${c.map(r=>`<tr><td>${Math.round(r.de*100)}–${Math.round(r.a*100)}${L==='fr'?' %':'%'}</td><td>${pc(r.prevu)}</td><td><b>${pc(r.reel)}</b></td><td>${fmt(r.n)}</td></tr>`).join('')}</tbody></table>`;
 }
 function rendCalib(){
-  const B=D.bilan||{}, c=B.calibration||[], el=document.getElementById('calib');
+  const B=D.bilan||{}, c=D.bilan_calibration||B.calibration||[], el=document.getElementById('calib');
   el.innerHTML = c.length >= 4 ? tableCalib(c) : `<div class="empty">${esc(t('calib_attente', (B.global||{}).n||0))}</div>`;
   const r=D.rejoue, er=document.getElementById('calib-rejoue'), sr=document.getElementById('rejoue-sous');
   if (r && r.global){ sr.textContent=t('rejoue_sous', r); er.innerHTML=tableCalib(r.calibration||[]); } else { sr.textContent=''; er.innerHTML=''; er.hidden=true; }
@@ -7731,7 +7731,6 @@ function chargerPlus(){                                              // paquet 3
   if (!D || !D._plus) return;
   lireJson(D._plus).then(p => {
     Object.assign(D, p); delete D._plus;
-    const j = document.getElementById('journal'); if (j && j.closest('section')) j.closest('section').hidden = false;
     rendBilan(); rendJournal(); rendSuivi(); rendCalib();
   }).catch(() => {});
 }
@@ -8204,6 +8203,18 @@ function envoyerCompte(form){
     location.replace(location.pathname + (v === 'reinit' ? '?bienvenue=reinit' : '?bienvenue=1'));    // recharge : données de l'accès
   });
 }
+// 23/11/2026 (paquet 380) — sections internes (journal, suivi de fiabilité, données, calibration) : seulement pour
+// l'administrateur (compte « admin » ou clé privée) ; les données viennent de /site_admin.json, refusé aux autres.
+let INTERNE = null;
+function chargerInterne(){
+  fetch('/site_admin.json?v=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(x => {
+    if (!x) return; INTERNE = x;
+    const go = () => { if (!D) return setTimeout(go, 300); Object.assign(D, INTERNE);
+      document.querySelectorAll('section.interne').forEach(s => { s.hidden = false; });
+      rendJournal(); rendSuivi(); rendQualite(); rendCalib(); };
+    go();
+  }).catch(() => {});
+}
 function brancherCompte(){
   const b = document.getElementById('b-compte');
   document.addEventListener('click', ev => {
@@ -8221,6 +8232,7 @@ function brancherCompte(){
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
     COMPTE = o.compte || null; b.hidden = false; majBoutonCompte();
     if (D) { rendMdj(); rendListe(); }
+    if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
     else if (Q.get('reinit')) ouvrirCompte('reinit', '', false, Q.get('reinit'));
     else if (Q.get('bienvenue')) { ouvrirCompte('message', t(Q.get('bienvenue') === 'reinit' ? 'cp_reinit_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
