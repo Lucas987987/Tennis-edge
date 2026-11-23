@@ -259,6 +259,8 @@ def main(argv):
     ap.add_argument('--sans-voix', action='store_true', help="vidéo 3D sans la voix de l'arbitre")
     ap.add_argument('--resume', action='store_true',
                     help="résumé 3D d'un match terminé (lit algo/resume_match.json, écrit par scripts/resume_match.py)")
+    ap.add_argument('--court', action='store_true',
+                    help="22/11/2026 (paquet 363) : version courte pour X (~30 s : 3 moments forts, rythme du résumé)")
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
     if a.resume:                       # 20/11/2026 (paquet 308) : le vrai déroulé, en 3D seulement
@@ -317,13 +319,13 @@ def main(argv):
         return 0
     q = (f"video=1&lang={a.lang}&vitesse={a.vitesse}" + (f"&seed={a.seed}" if str(a.seed).strip() else '')
          + (f"&uid={a.uid}" if a.uid else '')
-         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else '') + ('&resume=1' if a.resume else '')
+         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else '') + ('&resume=1' if a.resume else '') + ('&court=1' if getattr(a, 'court', False) else '')
          + (f"&echelle={a.echelle:g}" if a.echelle > 0 else ''))
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)
     taille = FORMATS[a.format]
-    nom = f"{'resume' if a.resume else 'simulation'}_{a.lang}{'' if a.format == '9x16' else '_' + a.format}.mp4"
+    nom = f"{'resume' if a.resume else 'simulation'}{'_courte' if getattr(a, 'court', False) else ''}_{a.lang}{'' if a.format == '9x16' else '_' + a.format}.mp4"
     mp4 = os.path.join(a.sortie, nom)
     if a.capture == 'images':
         try:
