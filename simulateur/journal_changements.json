@@ -1987,6 +1987,21 @@
    "paquet": 374,
    "quoi": "CHALLENGER, FAVORI LE MOINS DOCUMENTÉ : EN SERVICE (paquet 374, décision de Lucas). Quand le favori est le moins documenté des deux et qu'il a entre 500 et 1 500 points de service, la part de l'Elo de son % est ramenée vers 50 % (pente 0,775 apprise sur 2018–2022 ; jugée sur 1 253 matchs de 2023 → juin 2026 : 62,3 % annoncés, 56,9 % gagnés, gain 0,0019). Exemple : un favori à 62 % passe vers 60 %. Les autres matchs ne changent pas.",
    "garde_fou": "Suivi avec / sans à chaque match ; retrait par la règle cumulée des signaux (au moins 300 matchs concernés et gain négatif de plus de 2 erreurs types). Sous 500 points, la piste inverse (favori moins documenté, 951 matchs jugés) reste hors service : sous 1 000 matchs, et la pente apprise y faisait perdre sur la période de jugement. Tests : tests/test_favori_moins_documente_service.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "en_service",
+   "paquet": 375,
+   "quoi": "DOCUMENTATION COMPTÉE PAR JOUEUR, PAS PAR ÉCRITURE DU NOM (paquet 375) : l'archive et les feuilles n'écrivent pas toujours un joueur de la même façon (« Santiago Fa Rodriguez Taverna » / « Santiago Rodriguez Taverna »). Ses points de service étaient comptés en deux morceaux : 1 513 au lieu de 15 580, et James Kent Trotter à 0 au lieu de plus de 3 000. 46 matchs sur 1 561 avaient une documentation fausse, dont 43 dans la mauvaise tranche ; certains recevaient à tort la correction des matchs peu documentés. Les écritures sont maintenant réunies avec les mêmes liens que le classement. Bilan selon la documentation recalculé : moins de 500 points, 167 matchs, 78,7 % annoncés, 79,0 % gagnés ; 500 à 1 500, 149 matchs, 67,7 % pour 61,1 % ; 1 500 à 3 000, 191 matchs, 64,7 % pour 62,3 % ; 3 000 et plus, 1 042 matchs, 63,8 % pour 65,2 %. Aussi : deux cases « favori le moins documenté » du Challenger (moins de 500 et 1 500 à 3 000 points) sont suivies en direct sans changer le %.",
+   "garde_fou": "Correction de données (mêmes liens d'identité que le classement). Cases suivies : adoptées seulement par la règle cumulée (gain de plus de 2 erreurs types sur au moins 300 matchs concernés). Tests : tests/test_telegram_envoi.py, tests/test_favori_moins_documente_service.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 375,
+   "prive": true,
+   "quoi": "Rapports Telegram privés (chercheur, algo contre clôture, marchés dérivés, pistes après match, désaccords, ROI, récapitulatifs des canaux, santé de la chaîne, audit) coupés sous 4 096 caractères ; un envoi raté n'est plus qu'un avertissement (simulateur/telegram_envoi.py).",
+   "garde_fou": "Aucun calcul modifié. Tests : tests/test_telegram_envoi.py."
   }
  ]
 }

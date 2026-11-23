@@ -56,6 +56,25 @@ class TestFavoriMoinsDocumente(unittest.TestCase):
         self.assertEqual((d['pentes']['CH']['de'], d['pentes']['CH']['a']), (500, 1500))
         self.assertGreaterEqual(d['pentes']['CH']['matchs_juges'], 1000)
 
+    def test_suivi_sans_toucher_au_pourcentage(self):
+        PJ.FMD_SUIVI = {'favori_moins_doc_sous_500': {'CH': {'pente': 0.391, 'de': 0, 'a': 500}}}
+        try:
+            PJ.BALLES_CUMULEES[E.cle('Tout Neuf')] = 200
+            S = PJ.controles_fmd_suivi(0.7, 0.72, 'CH', 'Tout Neuf', 'Tres Vu')
+            self.assertIn('favori_moins_doc_sous_500', S)
+            self.assertEqual(PJ.controles_fmd_suivi(0.7, 0.72, 'CH', 'Peu Vu', 'Tres Vu'), {})   # 900 : autre case
+            # pas adopté : aucun décalage appliqué, contrôle écrit pour le fantôme
+            self.assertEqual(PJ.signaux_du_match('CH', 0.7, None, None, None, None, fmd_suivi=S), {})
+            ct = PJ._avec_fmd_suivi({}, S, ())
+            self.assertIn('favori_moins_doc_sous_500', ct)
+            self.assertNotIn('favori_moins_doc_sous_500', PJ._avec_fmd_suivi({}, S, ('favori_moins_doc_sous_500',)))
+            PJ.SIGNAUX_CIRCUIT = {'favori_moins_doc_sous_500': ['CH']}        # adopté plus tard par la règle cumulée
+            self.assertIn('favori_moins_doc_sous_500', PJ.signaux_du_match('CH', 0.7, None, None, None, None, fmd_suivi=S))
+            self.assertNotIn(('favori_moins_doc_sous_500', 'CH'), FC.directs(RACINE))
+            self.assertIn('favori_moins_doc_sous_500', FC.SIGNAUX)
+        finally:
+            PJ.FMD_SUIVI = {}
+
     def test_fantome_apres_match(self):
         self.assertIn('fantome_favori_moins_documente', open(os.path.join(RACINE, 'simulateur', 'apres_match.py'),
                                                              encoding='utf-8').read())

@@ -9,6 +9,30 @@
    "matchs_juges": 1253
   }
  },
+ "suivi": {
+  "favori_moins_doc_1500_3000": {
+   "CH": {
+    "pente": 0.867,
+    "de": 1500,
+    "a": 3000,
+    "tranche": "1 500 à 3 000",
+    "pente_2018_2022": 0.911,
+    "pente_2023_2026": 0.829,
+    "matchs_archive": 2990
+   }
+  },
+  "favori_moins_doc_sous_500": {
+   "CH": {
+    "pente": 0.391,
+    "de": 0,
+    "a": 500,
+    "tranche": "moins de 500",
+    "pente_2018_2022": 0.045,
+    "pente_2023_2026": 0.623,
+    "matchs_archive": 1912
+   }
+  }
+ },
  "source": "etude_favori_moins_documente.py (paquet 373), mise en service le 23/11/2026 (paquet 374)",
  "regle": "part de l'Elo du % : décalage = poids de l'Elo × (pente − 1) × logit(p Elo), si le favori de l'Elo est le moins documenté des deux et que sa documentation est dans la tranche"
 }
