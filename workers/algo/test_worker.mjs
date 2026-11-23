@@ -437,3 +437,19 @@ test('388 : /live renvoie les matchs terminés (et les garde si TennisApi tombe)
   const t2 = await (await worker.fetch(req('/live/termines'), envL)).json();
   assert.equal(t2.termines.length, 1);
 });
+
+// 23/11/2026 (paquet 391) — appli installable et fichiers à empreinte
+test('391 : fichiers à empreinte gardés un an, service worker jamais en cache, manifeste', async () => {
+  const stock = { 'site/algo/app-0123456789ab.js': 'var x=1;', 'site/algo/sw.js': '//sw', 'site/algo/manifest.webmanifest': '{}' };
+  const envP = { COFFRE: { get: async (k) => (k in stock ? { body: stock[k], size: stock[k].length, text: async () => stock[k] } : null) } };
+  let r = await worker.fetch(req('/app-0123456789ab.js'), envP);
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('Cache-Control'), /max-age=31536000, immutable/);
+  assert.match(r.headers.get('Content-Type'), /javascript/);
+  r = await worker.fetch(req('/sw.js'), envP);
+  assert.equal(r.headers.get('Cache-Control'), 'no-cache');
+  r = await worker.fetch(req('/manifest.webmanifest'), envP);
+  assert.match(r.headers.get('Content-Type'), /manifest\+json/);
+  assert.equal((await worker.fetch(req('/app-zz.js'), envP)).status, 404);
+  assert.equal((await worker.fetch(req('/app-0123456789ab.js.map'), envP)).status, 404);
+});

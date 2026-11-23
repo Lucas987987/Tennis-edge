@@ -36,9 +36,16 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   // 22/11/2026 (paquet 329) : la page « Comment ça marche »
   '/methode.html': 'methode.html', '/comment-ca-marche': 'methode.html',
   // 22/11/2026 (paquet 330) : la page « Qui sommes-nous »
-  '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html' };
+  '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html',
+  // 23/11/2026 (paquet 391) : le site s'installe comme une appli (manifeste, service worker, icônes)
+  '/manifest.webmanifest': 'manifest.webmanifest', '/sw.js': 'sw.js', '/icone-192.png': 'icone-192.png',
+  '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
-const TYPES = { json: 'application/json; charset=utf-8', html: 'text/html; charset=utf-8', png: 'image/png', woff2: 'font/woff2' };
+// 391 : le script et la feuille de style de la page, sortis à la publication (scripts/decouper_page.py) ; leur nom
+// contient l'empreinte de leur contenu : gardés un an par le navigateur
+export const EMPREINTES = /^\/(app-[0-9a-f]{12}\.js|style-[0-9a-f]{12}\.css)$/;
+const TYPES = { json: 'application/json; charset=utf-8', html: 'text/html; charset=utf-8', png: 'image/png', woff2: 'font/woff2',
+  js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', webmanifest: 'application/manifest+json' };
 // DOIT correspondre à scripts/coffre.py (SERVIS)
 export const PRIVES = new Set(['h18_signal_log.jsonl', 'h18_signal_state.json', 'h19_signal_log.jsonl',
   'h19_signal_state.json', 'h20_signal_log.jsonl', 'h20_signal_state.json', 'h20.json', 'pronostics.json',
@@ -122,16 +129,17 @@ async function reserve(req, chemin, env) {
 
 export async function publique(req, chemin, env) {
   if (chemin in RESERVES) return reserve(req, chemin, env);
-  const f = PUBLICS[chemin] || (POLICES.test(chemin) ? chemin.slice(1) : null);
+  const f = PUBLICS[chemin] || (POLICES.test(chemin) || EMPREINTES.test(chemin) ? chemin.slice(1) : null);
   if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
-  const ext = f.split('.').pop(), fixe = ext === 'woff2' || ext === 'png';
+  const ext = f.split('.').pop(), fixe = ext === 'woff2' || ext === 'png', immuable = EMPREINTES.test(chemin);
   const type = TYPES[ext] || 'text/html; charset=utf-8';
-  const h = { ...SECURITE, 'Content-Type': type, 'Cache-Control': fixe ? 'public, max-age=604800' : 'public, max-age=60' };
+  const h = { ...SECURITE, 'Content-Type': type,
+    'Cache-Control': immuable ? 'public, max-age=31536000, immutable' : f === 'sw.js' ? 'no-cache' : fixe ? 'public, max-age=604800' : 'public, max-age=60' };
   if (type.startsWith('text/html')) h['Content-Security-Policy'] = CSP;
   // 334 : R2 d'abord (site/algo/, publié par pages.yml), GitHub Pages en secours
   const o = await depuisR2(env, 'site/algo/' + f);
   if (o) return new Response(req.method === 'HEAD' ? null : o.body, { headers: h });
-  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: fixe ? 86400 : 60, cacheEverything: true } });
+  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: immuable ? 31536000 : fixe ? 86400 : 60, cacheEverything: true } });
   if (!r.ok) return new Response('Indisponible, réessayer dans un instant.', { status: r.status === 404 ? 404 : 502, headers: SECURITE });
   return new Response(r.body, { headers: h });
 }

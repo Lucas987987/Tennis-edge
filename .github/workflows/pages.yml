@@ -130,6 +130,7 @@ jobs:
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
             scripts/site_leger.py
+            scripts/decouper_page.py
             scripts/publier_r2.py
             scripts/r2_io.py
             scripts/coffre.py
@@ -295,6 +296,10 @@ jobs:
           # (bilan, journal, fiabilité, chargés ensuite) ; donnees.json reste publié (images et vidéos, secours de la page).
           if [ -f algo/donnees.json ]; then python3 scripts/site_leger.py algo/donnees.json _site/algo || echo "⚠️ site léger non construit : la page lira donnees.json"; fi
           cp algo/editeur.json algo/partage.png algo/methode.html algo/apropos.html _site/algo/
+          # 23/11/2026 (paquet 391) : appli installable (manifeste, service worker, icônes) et page découpée (script et
+          # style dans des fichiers à empreinte, gardés un an par le navigateur). Échec : la page reste d'un seul tenant.
+          cp algo/manifest.webmanifest algo/sw.js algo/icone-192.png algo/icone-512.png algo/icone-maskable-512.png algo/apple-touch-icon.png _site/algo/
+          python3 scripts/decouper_page.py _site/algo || { echo "::warning::page non découpée, publiée d'un seul tenant"; cp algo/index.html _site/algo/index.html; }
           if ls algo/polices/*.woff2 >/dev/null 2>&1; then
             mkdir -p _site/algo/polices && cp algo/polices/*.woff2 algo/polices/OFL.txt _site/algo/polices/
           else
