@@ -1088,7 +1088,12 @@ const T = {
     bloque:'Trop d’essais : réessaie dans 15 minutes.', email_invalide:'Adresse e-mail invalide.', mdp_court:'8 caractères minimum.',
     lien_invalide:'Ce lien a expiré ou a déjà servi.', ferme:'Les comptes ne sont pas encore ouverts.', defaut:'Une erreur est survenue, réessaie.',
     code_invalide:'Code inconnu : vérifie ce que tu as saisi.', code_utilise:'Ce code a déjà été utilisé.', code_expire:'Ce code a expiré.',
-    connexion:'Connecte-toi d’abord.'},
+    connexion:'Connecte-toi d’abord.', mdp_faux:'Mot de passe actuel incorrect.', robot:'Vérification anti-robots non passée : réessaie.'},
+  cp_t_mdp:'Changer de mot de passe', cp_mdp_ancien:'Mot de passe actuel', cp_mdp_nouveau:'Nouveau mot de passe (8 caractères minimum)',
+  cp_go_mdp:'Enregistrer', cp_mdp_ok:'Mot de passe changé. Tes autres appareils sont déconnectés.', cp_l_mdp:'Changer de mot de passe',
+  cp_l_export:'Télécharger mes données', cp_l_suppr:'Supprimer mon compte', cp_t_suppr:'Supprimer mon compte',
+  cp_suppr_txt:'Ton compte et tout ce qui s’y rattache (e-mail, accès Plus, historique) sont effacés tout de suite et pour de bon.',
+  cp_go_suppr:'Supprimer définitivement', cp_suppr_ok:'Ton compte a été supprimé.',
   cp_code:'Tu as un code d’accès Plus ?', cp_go_code:'Activer le code', cp_code_ok:'Code activé : ton accès Plus est ouvert.', verrou_code:'J’ai un code',
   cp_bienvenue:'Adresse confirmée : tu es connecté.', cp_reinit_ok:'Mot de passe enregistré : tu es connecté.',
   cp_moi_plus:d=>`Accès Plus actif${d?` jusqu’au ${dateLong(d)}`:''}.`, cp_moi_libre:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs (paiement bientôt disponible).",
@@ -1405,7 +1410,12 @@ const T = {
     bloque:'Too many attempts: try again in 15 minutes.', email_invalide:'Invalid email address.', mdp_court:'At least 8 characters.',
     lien_invalide:'This link has expired or was already used.', ferme:'Accounts are not open yet.', defaut:'Something went wrong, please try again.',
     code_invalide:'Unknown code: check what you typed.', code_utilise:'This code has already been used.', code_expire:'This code has expired.',
-    connexion:'Log in first.'},
+    connexion:'Log in first.', mdp_faux:'Current password is incorrect.', robot:'Anti-bot check failed: please try again.'},
+  cp_t_mdp:'Change password', cp_mdp_ancien:'Current password', cp_mdp_nouveau:'New password (at least 8 characters)',
+  cp_go_mdp:'Save', cp_mdp_ok:'Password changed. Your other devices have been logged out.', cp_l_mdp:'Change password',
+  cp_l_export:'Download my data', cp_l_suppr:'Delete my account', cp_t_suppr:'Delete my account',
+  cp_suppr_txt:'Your account and everything linked to it (email, Plus access, history) are erased immediately and for good.',
+  cp_go_suppr:'Delete permanently', cp_suppr_ok:'Your account has been deleted.',
   cp_code:'Got a Plus access code?', cp_go_code:'Activate the code', cp_code_ok:'Code activated: your Plus access is open.', verrou_code:'I have a code',
   cp_bienvenue:'Address confirmed: you are logged in.', cp_reinit_ok:'Password saved: you are logged in.',
   cp_moi_plus:d=>`Plus access active${d?` until ${dateLong(d)}`:''}.`, cp_moi_libre:'Free access: the match of the day is on us. Plus access unlocks every match (payment coming soon).',
@@ -7684,7 +7694,7 @@ let EDITEUR = null;
 function lireEditeur(){ return EDITEUR ? Promise.resolve(EDITEUR) : lireJson('editeur.json').then(e => (EDITEUR = e || {})).catch(() => (EDITEUR = {})); }
 function texteLegal(page, e){
   const fr = L === 'fr', x = s => esc(String(s || '')), contact = e.email ? `<a href="mailto:${x(e.email)}">${x(e.email)}</a>` : (fr ? 'par message au compte X « Game Set Algo »' : 'by message to the "Game Set Algo" X account');
-  const maj = `<p class="maj">${fr ? 'Mis à jour le 21 novembre 2026.' : 'Updated 21 November 2026.'}</p>`;
+  const maj = `<p class="maj">${fr ? 'Mis à jour le 23 novembre 2026.' : 'Updated 23 November 2026.'}</p>`;
   const pro = !!(e.nom && e.adresse);
   const editeur = pro ? `<p>${x(e.nom)}${e.statut ? ' — ' + x(e.statut) : ''}<br>${x(e.adresse)}${e.siret ? '<br>SIRET : ' + x(e.siret) : ''}${e.ape ? '<br>' + (fr ? 'Code APE : ' : 'APE code: ') + x(e.ape) : ''}${e.tva_franchise ? '<br>' + (fr ? 'TVA non applicable, article 293 B du Code général des impôts.' : 'VAT not applicable (French tax code, art. 293 B).') : (e.tva ? '<br>' + (fr ? 'TVA intracommunautaire : ' : 'VAT number: ') + x(e.tva) : '')}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`
     : `<p>${fr ? "Site édité à titre non professionnel par un particulier. Conformément à l'article 6-III-2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, ses coordonnées ont été communiquées à l'hébergeur." : 'Published on a non-professional basis by a private individual, whose details have been provided to the host (French law no. 2004-575, art. 6-III-2).'}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`;
@@ -7700,24 +7710,34 @@ function texteLegal(page, e){
     <h3>Responsible gambling</h3><p>Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France: 09 74 75 13 13.</p>
     <h3>Intellectual property</h3><p>© Game Set Algo unless stated otherwise. 3D characters: Quaternius (CC0); motion data: Mixamo (Adobe), embedded; fonts: SIL Open Font License.</p>${maj}`;
   if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
-    <p>En résumé : pas de compte, pas de cookie publicitaire, pas de mesure d'audience, aucun traceur d'un autre site.</p>
+    <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, pas de mesure d'audience, aucun traceur publicitaire.</p>
+    <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
+    <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord.</p>
+    <h3>Cookie de connexion</h3><p>Un seul cookie, « gsa_compte », vous garde connecté (90 jours au plus) : il est strictement nécessaire au service que vous demandez et ne sert à rien d'autre ; il est supprimé à la déconnexion.</p>
+    <h3>Anti-robots</h3><p>L'inscription et le mot de passe oublié sont protégés par Cloudflare Turnstile, qui vérifie que la demande vient d'une personne à partir de signaux techniques du navigateur, sans cookie publicitaire.</p>
     <h3>Ce qui reste sur votre appareil</h3><p>Vos réglages (langue, thème clair ou sombre, son, qualité de la 3D) sont gardés dans le stockage local de votre navigateur. Ils ne nous sont jamais envoyés ; vous pouvez les effacer en vidant les données du site dans votre navigateur.</p>
-    <h3>Journaux techniques</h3><p>Comme pour tout site, l'hébergeur (GitHub) et Cloudflare, qui achemine et protège le site, traitent techniquement votre adresse IP pour afficher les pages et bloquer les abus (intérêt légitime, durée fixée par leurs politiques). Ces sociétés sont établies aux États-Unis ; les transferts sont encadrés par les garanties prévues par le RGPD.</p>
+    <h3>Journaux techniques</h3><p>Comme pour tout site, Cloudflare, qui héberge, achemine et protège le site, et GitHub, qui en garde une copie de secours, traitent techniquement votre adresse IP pour afficher les pages et bloquer les abus (intérêt légitime, durée fixée par leurs politiques). Ces sociétés sont établies aux États-Unis ; les transferts sont encadrés par les garanties prévues par le RGPD.</p>
     <h3>Polices et contenus</h3><p>Les polices de caractères et les modèles 3D sont servis par le site lui-même : aucune requête n'est faite à Google ou à un autre tiers pendant votre visite. Les scores en direct passent par notre serveur, pas par votre navigateur.</p>
-    <h3>Vos droits</h3><p>Vous pouvez demander l'accès, la rectification ou l'effacement de données vous concernant, ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
-    : `<h2>Privacy</h2><p>No account, no advertising cookie, no analytics, no third-party tracker.</p>
+    <h3>Vos droits</h3><p>Vous pouvez accéder à vos données, les rectifier, les effacer ou les emporter (« Mon compte » → « Télécharger mes données »), ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
+    : `<h2>Privacy</h2><p>An optional account, a single cookie (to keep you logged in), no advertising cookie, no analytics, no advertising tracker.</p>
+    <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, and the state of your Plus access (plan, dates, code used). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
+    <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent.</p>
+    <h3>Login cookie</h3><p>A single cookie, "gsa_compte", keeps you logged in (90 days at most). It is strictly necessary and removed when you log out.</p>
+    <h3>Anti-bot</h3><p>Sign-up and password reset are protected by Cloudflare Turnstile, which checks technical browser signals, with no advertising cookie.</p>
     <h3>Stored on your device</h3><p>Your settings (language, theme, sound, 3D quality) stay in your browser's local storage and are never sent to us.</p>
-    <h3>Technical logs</h3><p>Our host (GitHub) and Cloudflare process your IP address to serve and protect the site (legitimate interest). Transfers to the USA are covered by GDPR safeguards.</p>
+    <h3>Technical logs</h3><p>Cloudflare (hosting) and GitHub (backup copy) process your IP address to serve and protect the site (legitimate interest). Transfers to the USA are covered by GDPR safeguards.</p>
     <h3>Fonts and content</h3><p>Fonts and 3D models are served by the site itself: no request to Google or any other third party.</p>
-    <h3>Your rights</h3><p>Access, rectification, erasure, objection: ${contact}. You may also contact the CNIL (cnil.fr).</p>${maj}`;
+    <h3>Your rights</h3><p>Access, rectification, erasure, portability ("My account" → "Download my data"), objection: ${contact}. You may also contact the CNIL (cnil.fr).</p>${maj}`;
   return fr ? `<h2>Conditions d'utilisation</h2>
-    <h3>Objet</h3><p>Le site donne accès gratuitement à des analyses statistiques de tennis : probabilités de victoire, scénarios, projections, simulations en vidéo et bilan public.</p>
+    <h3>Objet</h3><p>Le site donne accès gratuitement à des analyses statistiques de tennis (le match du jour, le bilan public) ; l'analyse complète de tous les matchs (probabilités de victoire, scénarios, projections, direct) est réservée à l'accès Plus, lié à un compte.</p>
+    <h3>Compte</h3><p>Le compte est personnel : une personne, un compte. Vous gardez votre mot de passe secret et ne partagez ni votre compte ni votre accès. Un compte utilisé pour partager l'accès, pour récupérer les données du site de façon automatisée ou pour nuire au service peut être suspendu. Vous pouvez supprimer votre compte à tout moment depuis « Mon compte ».</p>
+    <h3>Accès Plus et codes</h3><p>Tant que le paiement n'est pas ouvert, l'accès Plus est accordé par l'éditeur, notamment par un code d'accès. Un code est personnel, ne sert qu'une fois et ne fonctionne plus après sa date de validité ; il ouvre l'accès pour la durée indiquée lors de sa remise.</p>
     <h3>Pas de conseil de pari</h3><p>Les informations publiées sont des estimations statistiques, sans garantie de résultat. Elles ne constituent ni un conseil de pari ni une incitation à jouer. Vous restez seul responsable de l'usage que vous en faites.</p>
     <h3>Disponibilité</h3><p>Le site est fourni tel quel ; il peut être interrompu, modifié ou comporter des erreurs, notamment dans les données sportives reçues de tiers.</p>
     <h3>Propriété</h3><p>Les contenus du site ne peuvent pas être reproduits ou revendus sans autorisation. Partager un lien ou une image publiée sur nos comptes est bienvenu.</p>
     <h3>Offre payante</h3><p>Aucune offre payante n'est ouverte aujourd'hui. Avant toute ouverture, des conditions générales de vente seront publiées ici (prix, durée, résiliation, droit de rétractation).</p>
     <h3>Droit applicable</h3><p>Ces conditions relèvent du droit français.</p>${maj}`
-    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses. These are estimates without any guaranteed outcome; they are not betting advice. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. French law applies.</p>${maj}`;
+    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses (match of the day, public record); the full analysis of every match is reserved for Plus access, linked to an account. These are estimates without any guaranteed outcome; they are not betting advice. Accounts are personal (one person, one account); sharing access, automated scraping or abuse may lead to suspension; you can delete your account at any time. Until payment opens, Plus access is granted by the publisher, notably through single-use access codes valid until their expiry date. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. French law applies.</p>${maj}`;
 }
 function ouvrirLegal(){
   const page = (location.hash || '').slice(1), box = document.getElementById('legal');
@@ -8180,12 +8200,22 @@ function ouvrirCompte(vue, msg, ok, jeton){
     h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>
       <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
       <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
-      <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>`;
+      <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>
+      <button type="button" class="lien" data-cp="mdp">${esc(t('cp_l_mdp'))}</button>
+      <a class="lien" href="/compte/api/export" download>${esc(t('cp_l_export'))}</a>
+      <button type="button" class="lien" data-cp="supprimer" style="color:var(--ko)">${esc(t('cp_l_suppr'))}</button>`;
+  } else if (vue === 'mdp' && COMPTE) {
+    h = tete('cp_t_mdp') + `<form data-form="mdp"><label for="cp-a">${esc(t('cp_mdp_ancien'))}</label><input id="cp-a" type="password" autocomplete="current-password" required>
+      <label for="cp-m">${esc(t('cp_mdp_nouveau'))}</label><input id="cp-m" type="password" autocomplete="new-password" required>
+      <button type="submit" class="btn go">${esc(t('cp_go_mdp'))}</button></form>${m}<button type="button" class="lien" data-cp="moi">${esc(t('cp_t_moi'))}</button>`;
+  } else if (vue === 'supprimer' && COMPTE) {
+    h = tete('cp_t_suppr') + `<p>${esc(t('cp_suppr_txt'))}</p><form data-form="supprimer"><label for="cp-a">${esc(t('cp_mdp_ancien'))}</label><input id="cp-a" type="password" autocomplete="current-password" required>
+      <button type="submit" class="btn" style="border-color:var(--ko);color:var(--ko)">${esc(t('cp_go_suppr'))}</button></form>${m}<button type="button" class="lien" data-cp="moi">${esc(t('cp_t_moi'))}</button>`;
   } else if (vue === 'inscription') {
     h = tete('cp_t_ins') + `<form data-form="inscription">${champ('cp-e', t('cp_email'), 'email', 'email')}${champ('cp-m', t('cp_mdp'), 'password', 'new-password')}
-      <button type="submit" class="btn go">${esc(t('cp_go_ins'))}</button></form>${m}<button type="button" class="lien" data-cp="connexion">${esc(t('cp_vers_cx'))}</button>`;
+      <div class="cp-ts" style="margin-top:12px"></div><button type="submit" class="btn go">${esc(t('cp_go_ins'))}</button></form>${m}<button type="button" class="lien" data-cp="connexion">${esc(t('cp_vers_cx'))}</button>`;
   } else if (vue === 'oubli') {
-    h = tete('cp_t_oubli') + `<form data-form="oubli">${champ('cp-e', t('cp_email'), 'email', 'email')}<button type="submit" class="btn go">${esc(t('cp_go_oubli'))}</button></form>${m}
+    h = tete('cp_t_oubli') + `<form data-form="oubli">${champ('cp-e', t('cp_email'), 'email', 'email')}<div class="cp-ts" style="margin-top:12px"></div><button type="submit" class="btn go">${esc(t('cp_go_oubli'))}</button></form>${m}
       <button type="button" class="lien" data-cp="connexion">${esc(t('cp_vers_cx'))}</button>`;
   } else if (vue === 'reinit') {
     h = tete('cp_t_reinit') + `<form data-form="reinit" data-jeton="${esc(jeton||'')}">${champ('cp-m', t('cp_mdp'), 'password', 'new-password')}<button type="submit" class="btn go">${esc(t('cp_go_reinit'))}</button></form>${m}`;
@@ -8198,6 +8228,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
   }
   boite.innerHTML = h; fond.hidden = false;
   const f = boite.querySelector('input'); if (f) f.focus();
+  const zt = boite.querySelector('.cp-ts'); if (zt) montrerTurnstile(zt);
 }
 function envoyerCompte(form){
   const v = form.dataset.form, e = (form.querySelector('#cp-e')||{}).value, mdp = (form.querySelector('#cp-m')||{}).value;
@@ -8210,7 +8241,17 @@ function envoyerCompte(form){
     });
   }
   const bouton = form.querySelector('button[type=submit]'); if (bouton) bouton.disabled = true;
-  const corps = v === 'reinit' ? { jeton: form.dataset.jeton, mdp } : v === 'oubli' ? { email: e } : { email: e, mdp };
+  if (v === 'mdp' || v === 'supprimer') {                     // 382 : mot de passe, suppression du compte
+    const bo = form.querySelector('button[type=submit]'); if (bo) bo.disabled = true;
+    const ancien = (form.querySelector('#cp-a')||{}).value;
+    return apiCompte(v, v === 'mdp' ? { ancien, nouveau: mdp } : { mdp: ancien }).then(o => {
+      if (bo) bo.disabled = false;
+      if (!o.ok) return ouvrirCompte(v, erreurCompte(o.erreur));
+      if (v === 'supprimer') { COMPTE = null; majBoutonCompte(); return ouvrirCompte('message', t('cp_suppr_ok'), true); }
+      COMPTE = o.compte || COMPTE; ouvrirCompte('moi', t('cp_mdp_ok'), true);
+    });
+  }
+  const corps = v === 'reinit' ? { jeton: form.dataset.jeton, mdp } : v === 'oubli' ? { email: e, turnstile: jetonTurnstile() } : { email: e, mdp, turnstile: jetonTurnstile() };
   apiCompte(v, corps).then(o => {
     if (bouton) bouton.disabled = false;
     if (v === 'inscription') return o.ok ? ouvrirCompte('message', t(o.envoye === false ? 'cp_ins_sans_mail' : 'cp_ins_ok'), o.envoye !== false) : ouvrirCompte('inscription', erreurCompte(o.erreur));
@@ -8219,6 +8260,18 @@ function envoyerCompte(form){
     location.replace(location.pathname + (v === 'reinit' ? '?bienvenue=reinit' : '?bienvenue=1'));    // recharge : données de l'accès
   });
 }
+// 23/11/2026 (paquet 382) — anti-robots Cloudflare Turnstile sur l'inscription et le mot de passe oublié, seulement si le
+// serveur donne une clé de site (sinon rien n'est chargé). Le script vient de challenges.cloudflare.com (autorisé par la CSP).
+let TS_CLE = null, TS_ID = null, TS_PRET = null;
+function montrerTurnstile(zone){
+  TS_ID = null; if (!TS_CLE) return;
+  TS_PRET = TS_PRET || new Promise((ok, ko) => { const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+  TS_PRET.then(() => { if (!zone.isConnected || !window.turnstile) return;
+    TS_ID = window.turnstile.render(zone, { sitekey: TS_CLE, language: L, theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark' }); })
+    .catch(() => {});
+}
+function jetonTurnstile(){ try { return TS_ID != null && window.turnstile ? window.turnstile.getResponse(TS_ID) : undefined; } catch(e) { return undefined; } }
 // 23/11/2026 (paquet 380) — sections internes (journal, suivi de fiabilité, données, calibration) : seulement pour
 // l'administrateur (compte « admin » ou clé privée) ; les données viennent de /site_admin.json, refusé aux autres.
 let INTERNE = null;
@@ -8240,13 +8293,14 @@ function brancherCompte(){
     const k = x.dataset.compte || x.dataset.cp;
     if (k === 'fermer') return fermerCompte();
     if (k === 'deco') return apiCompte('deconnexion', {}).then(() => location.replace(location.pathname));
+    if (k === 'supprimer' && COMPTE === null) return;
     ouvrirCompte(k);
   });
   document.addEventListener('submit', ev => { const f = ev.target.closest('form[data-form]'); if (!f) return; ev.preventDefault(); envoyerCompte(f); });
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
-    COMPTE = o.compte || null; b.hidden = false; majBoutonCompte();
+    COMPTE = o.compte || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte();
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));

@@ -49,8 +49,10 @@ const SECURITE = {
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
-  + "font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+// 382 : Cloudflare Turnstile (anti-robots des comptes) — son script et son cadre, rien d'autre
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; "
+  + "font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; "
+  + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 // 334 : lecture dans R2 (bucket du coffre) ; null si absent, vide ou en erreur (le secours GitHub Pages prend le relais)
 async function depuisR2(env, cle, min = 1) {
