@@ -2046,6 +2046,41 @@
    "paquet": 382,
    "quoi": "COMPTES : CONFIDENTIALITÉ ET ANTI-ROBOTS (paquet 382) : depuis « Mon compte », changer de mot de passe (les autres appareils sont déconnectés), télécharger ses données, supprimer son compte (effacé tout de suite). Un compte jamais confirmé est effacé après 30 jours. L'inscription et le mot de passe oublié sont protégés contre les robots (Cloudflare Turnstile). Politique de confidentialité et conditions d'utilisation mises à jour (compte, e-mails, cookie de connexion, accès Plus et codes).",
    "garde_fou": "Suppression et changement de mot de passe demandent le mot de passe actuel. Tests : workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "etude",
+   "paquet": 383,
+   "quoi": "PISTE SUIVIE : DÉSACCORDS ENTRE MODÈLES EN CHALLENGER (paquet 383) : quand la version « stats » et la simulation ne désignent pas le même vainqueur, on suit chaque semaine si le % affiché aurait mieux fait de suivre la version « stats ». Règle écrite avant tout match jugé : seuls les matchs à partir du 24/11/2026 comptent ; décision à 1 000 désaccords Challenger (gain de log loss ≥ 0,001, ≥ 2 erreurs types, même signe sur les deux moitiés) ; ATP et WTA suivis à titre d'information.",
+   "garde_fou": "Le % ne change pas. Les 213 désaccords qui ont fait naître la piste ne comptent pas. Rapport sans nom de joueur : simulateur/rapport_desaccord_modeles.json. Tests : tests/test_suivi_desaccord_modeles.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 384,
+   "quoi": "LISTE D'ATTENTE FONDATEURS (paquet 384) : dans la section Plus, un compte confirmé réserve gratuitement sa place (ou l'annule). Les 100 premières places donneront l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Aucun compteur affiché. Un e-mail confirme la réservation (une seule fois). Chaque compte a une référence de virement (GSA-XXXXXX) visible dans l'administration, qui liste aussi les réservations dans l'ordre et copie leurs e-mails. Conditions d'utilisation et politique de confidentialité complétées. Corrigé : le script de la page d'administration des comptes ne se lançait pas (retours à la ligne mal échappés), la liste et la création de codes sont de nouveau utilisables.",
+   "garde_fou": "Réservation seulement pour un compte confirmé ; l'ordre n'est visible que dans /compte/admin. Tests : workers/algo/test_comptes.mjs (dont un test qui vérifie que le script d'administration est du JavaScript valide)."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 385,
+   "quoi": "ALERTES DE COMPTES (paquet 385) : une notification privée part sur Telegram à chaque nouveau compte, adresse confirmée, place fondateur réservée ou annulée, et code d'accès utilisé. L'adresse e-mail y est masquée (deux premiers caractères et domaine) ; l'adresse complète reste dans l'administration. Politique de confidentialité complétée.",
+   "garde_fou": "Une panne de Telegram ne bloque jamais l'inscription (3 secondes au plus). Sans les secrets Telegram : aucune alerte. Tests : workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 386,
+   "quoi": "VENTES PAR VIREMENT (paquet 386) : 1) entonnoir privé dans l'administration (visiteurs, comptes, confirmés, fondateurs, Plus payés, sur 24 h, 7 et 30 jours) ; les visiteurs sont comptés par le serveur, sans cookie ni traceur, avec une empreinte du jour effacée le lendemain. 2) « Virement reçu » : donne l'accès, crée une facture numérotée sans trou (F2026-0001…) et l'envoie par e-mail ; le client la retrouve dans « Mon compte ». 3) Rappel par e-mail 3 jours avant la fin d'un accès payé, avec la référence de virement. Politique de confidentialité complétée (mesure d'audience, factures gardées 10 ans).",
+   "garde_fou": "Sans le secret FACTURE_VENDEUR (nom, adresse, SIRET) aucune facture ne peut être émise. Un client ne voit que ses factures. Tests : workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "decision",
+   "paquet": 387,
+   "quoi": "CORRECTIF CHAÎNE COURTE (paquet 387) : la vérification des paquets construisait le site à partir de la copie publique du dépôt, où les matchs à l'affiche n'ont pas de simulation (publication différée, paquet 378) ; les matchs commencés de cette copie étaient repris tels quels et le contrôle du site échouait (« simulation complète absente du catalogue »). Ces entrées verrouillées ne sont plus jamais reprises.",
+   "garde_fou": "Aucun changement des % ni du site en production (la version complète, rapatriée du coffre, n'a pas d'entrée verrouillée). Test : tests/test_vitrine.py."
   }
  ]
 }

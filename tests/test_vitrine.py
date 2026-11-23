@@ -167,3 +167,13 @@ class TestGarderCommences(unittest.TestCase):
         self.assertEqual([l['uid'] for l in L], ['fritz_alcaraz', 'ruud_borges'])
         self.assertEqual(L[1]['p_home'], 0.61)          # la version nouvelle d'un match l'emporte
         self.assertTrue(L[0].get('commence_garde')) ; self.assertNotIn('commence_garde', L[1])
+
+    def test_copie_publique_verrouillee_jamais_gardee(self):
+        """Paquet 387 : chaîne courte rouge le 23/11/2026 — la copie git (verrou, sans simulation) servait d'ancienne version."""
+        import datetime as dt_
+        import vitrine as V
+        now = dt_.datetime(2026, 11, 23, 19, 0, tzinfo=dt_.timezone.utc)
+        ancien = {'matchs': [{'uid': 'complet', 'debut': '2026-11-23T12:00', 'simulation': {'n': 20000}},
+                             {'uid': 'affiche', 'debut': '2026-11-23T13:00', 'verrou': True}]}
+        L = V.garder_commences([], ancien, now)
+        self.assertEqual([l['uid'] for l in L], ['complet'])
