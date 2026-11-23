@@ -93,14 +93,15 @@ jobs:
         run: python scripts/restore_curves.py || true
 
       - name: Construire l'indice
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
         run: |
           python scripts/curves_parts.py rebuild || true
-          python scripts/book_index.py
+          python scripts/discret.py -- python scripts/book_index.py
           # Calibration + Brier par opérateur (réécrit le 25/08/2026 après la
           # corruption du fichier d'origine). Non bloquant : une étude qui
           # rate ne doit pas empêcher la publication du baromètre — mais
           # l'échec reste VISIBLE dans les logs, jamais avalé sans trace.
-          python scripts/calibration_books.py || echo "⚠️ calibration_books en échec (non bloquant)"
+          python scripts/discret.py -- python scripts/calibration_books.py || echo "⚠️ calibration_books en échec (non bloquant)"
 
       - name: Commit
         if: always()

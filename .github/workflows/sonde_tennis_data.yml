@@ -26,6 +26,8 @@ jobs:
             scripts/coffre.py
             scripts/r2_io.py
             players_profile.json
+            scripts/discret.py
+            simulateur/telegram_envoi.py
           sparse-checkout-cone-mode: false
 
       - uses: actions/setup-python@v6
@@ -36,9 +38,15 @@ jobs:
         run: pip install --quiet openpyxl
 
       - name: Sonder
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -o pipefail
-          python scripts/sonde_tennis_data.py | tee sonde.txt
+          python scripts/discret.py --copie sonde.txt -- python scripts/sonde_tennis_data.py
 
       # 22/11/2026 (paquet 348) : fiches joueurs au coffre privé — rapatriées (lecture seule)
       - name: Coffre privé — rapatrier les fiches joueurs

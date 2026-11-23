@@ -43,6 +43,7 @@ jobs:
             scripts
             scripts/coffre.py
             scripts/r2_io.py
+            simulateur/telegram_envoi.py
 
       - uses: actions/setup-python@v6
         with:
@@ -71,15 +72,15 @@ jobs:
             echo '::error::Renseigner « ids » (V6.6) ou « explorateur » (bloc JSON).'
             exit 1
           fi
-          python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py verify --root .
           python Tennis_Edge_Lab/explorer_gel.py verify --root .
           if [[ -n "${IDS// /}" ]]; then
-            python Tennis_Edge_Lab/selection_v66.py freeze --root . --ids "$IDS"
+            python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py freeze --root . --ids "$IDS"
           fi
           if [[ -n "${SPEC// /}" ]]; then
             python Tennis_Edge_Lab/explorer_gel.py freeze --root . --spec "$SPEC"
           fi
-          python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py verify --root .
           python Tennis_Edge_Lab/explorer_gel.py verify --root .
           # 338 : versions git remises (fichiers encore suivis, lus seulement) avant le contrôle des fichiers modifiés
           python scripts/coffre.py rendre --groupe lab_sorties || true
@@ -87,6 +88,11 @@ jobs:
       - name: Publier le registre (ajout seul, jamais de force push)
         env:
           IDS: ${{ inputs.ids }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -108,7 +114,7 @@ jobs:
               echo '::error::Conflit avec main : gel non publié, aucun registre écrasé.'
               exit 1
             fi
-            python Tennis_Edge_Lab/selection_v66.py verify --root .
+            python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py verify --root .
             python Tennis_Edge_Lab/explorer_gel.py verify --root .
             if git push origin HEAD:main; then
               echo '✅ Gel publié. Suivi à partir du jour UTC suivant.'

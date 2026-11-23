@@ -6,7 +6,7 @@ name: Etudes Mouvement (set1 + anatomie)
 #   - move_anatomy.py  : 6 angles (forme, timing, match court/abandon,
 #                        fakeout, crossover, volatilite/calibration).
 # Lecture seule (clv_history.jsonl + resultats_oddspapi.json), AUCUNE API.
-# Resultats visibles dans le log du run ET commites dans etudes_move_report.txt.
+# Resultats : journal complet et etudes_move_report.txt au coffre prive (paquet 393 : le journal GitHub est public).
 #
 # CORRIGE (16/08/2026) : book_asymmetry.py, margin_dynamics.py et
 # capture_quality.py referencent toujours BOOK_FILE=book_curves.jsonl (nom
@@ -57,84 +57,143 @@ jobs:
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "=== RAPPORT ETUDES MOUVEMENT — $(date -u +%FT%TZ) ===" > etudes_move_report.txt
           echo "" >> etudes_move_report.txt
-          python scripts/move_vs_set1.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/move_vs_set1.py
       - name: Anatomie des mouvements (6 angles)
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/move_anatomy.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/move_anatomy.py
       - name: Points de reference (snapshots, marge, micro-move)
         env:
           CLOSING: closing_lines.json
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/reference_points.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/reference_points.py
       - name: Asymetrie books mous (steam vs drift)
         env:
           CLV_FILE: clv_history.jsonl
           BOOK_FILE: book_curves.jsonl
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/book_asymmetry.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/book_asymmetry.py
       - name: Continuation post-alerte (T-35)
         env:
           ALERTS_LOG: odds_alerts_log.jsonl
           CLV_FILE: clv_history.jsonl
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/alert_continuation.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/alert_continuation.py
       - name: Momentum BO3 (set1/set2)
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/bo3_momentum.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/bo3_momentum.py
       - name: Efficacite de la ligne d'ouverture
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/opening_efficiency.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/opening_efficiency.py
       - name: Moves nocturnes vs diurnes
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/night_moves.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/night_moves.py
       - name: Recurrence joueur (steam qui suit)
         env:
           CLV_FILE: clv_history.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/player_steam.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/player_steam.py
       - name: Dynamique des marges (par book)
         env:
           CLOSING: closing_lines.json
           CLV_FILE: clv_history.jsonl
           BOOK_FILE: book_curves.jsonl
           RESULTS: resultats_oddspapi.json
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/margin_dynamics.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/margin_dynamics.py
       - name: Audit capture + triangulation closings
         env:
           CLOSING: closing_lines.json
           CLV_FILE: clv_history.jsonl
           BOOK_FILE: book_curves.jsonl
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "" >> etudes_move_report.txt
-          python scripts/capture_quality.py | tee -a etudes_move_report.txt
+          python scripts/discret.py --ajout etudes_move_report.txt -- python scripts/capture_quality.py
       - name: Commit du rapport
+        env:   # 393 : le rapport (cotes, bookmakers) va au coffre privé, plus dans le dépôt public
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
           # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
@@ -150,7 +209,8 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          [ -f etudes_move_report.txt ] && git add -- etudes_move_report.txt
+          python scripts/vers_coffre.py --nom etudes_move etudes_move_report.txt || true
+          git rm -q --cached --ignore-unmatch -- etudes_move_report.txt || true   # 393 : sort du dépôt public
           git diff --cached --quiet || git commit -m "etudes mouvement $(date -u +%FT%TZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
           # Ce workflow tourne toutes les 5-10 min : deux exécutions se

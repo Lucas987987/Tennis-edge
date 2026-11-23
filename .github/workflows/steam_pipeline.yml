@@ -93,6 +93,9 @@ jobs:
             /parts/live_*
             /parts/hist_*
             /parts/ARCHIVE_INDEX.json
+            scripts/discret.py
+            scripts/r2_io.py
+            simulateur/telegram_envoi.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -165,11 +168,17 @@ jobs:
       - name: Résultats match + set (API oddspapi)
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 20 au lieu de 80
         # jusqu'au 21/10 (quota renouvelé le 20/10), retour AUTOMATIQUE ensuite.
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ "$(date -u +%Y%m%d)" -lt 20261021 ]; then
             export RESULTS_MAX_PER_RUN=20
           fi
-          python scripts/fetch_set_results.py || true
+          python scripts/discret.py -- python scripts/fetch_set_results.py || true
 
       # AJOUTÉ LE 20/11/2026 (paquet 305, qualité des données) : l'API ne règle pas une partie des Challenger et des
       # qualifications ; les positions restaient ouvertes des semaines. Le résultat manquant est lu dans la feuille
@@ -181,11 +190,29 @@ jobs:
       # En BACKFILL=1 : retirer les CURVES=*_live ci-dessous pour rejouer l'historique
       #   (valeurs par défaut book_curves.jsonl / set*_curves.jsonl).
       - name: Journal — match
-        run: CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/discret.py -- python scripts/paper_journal.py || true
       - name: Journal — set 1
-        run: CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/discret.py -- python scripts/paper_journal.py || true
       - name: Journal — set 2
-        run: CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/discret.py -- python scripts/paper_journal.py || true
 
       # DÉPLACÉ ICI LE 06/09/2026, depuis l'APRÈS-validation.
       #
@@ -225,9 +252,15 @@ jobs:
         run: python scripts/restore_curves.py
 
       - name: Audit des moves (détail par move + agrégats par ampleur)
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/move_audit.py || true
-          CURVES=book_curves.jsonl OUT=moves_detail_hist.csv python scripts/move_audit.py || true
+          python scripts/discret.py -- python scripts/move_audit.py || true
+          CURVES=book_curves.jsonl OUT=moves_detail_hist.csv python scripts/discret.py -- python scripts/move_audit.py || true
 
       # DÉCISION DU 16/10/2026 : verdicts des hypothèses gelées sur les
       # ALERTES EN DIRECT. suivi_direct.py AJOUTE résultat, clôture Pinnacle,
@@ -239,7 +272,13 @@ jobs:
         run: python scripts/suivi_direct.py . || true
 
       - name: Tableau de validation forward (CLV/ROI + IC95)
-        run: python scripts/validation_report.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/validation_report.py || true
 
       # AJOUTÉ LE 25/09/2026 — mesure SÉPARÉMENT les deux populations H13.
       #
@@ -258,13 +297,25 @@ jobs:
       # Ce script les affiche côte à côte pour que la confusion ne puisse
       # plus se reproduire.
       - name: H13 — populations séparées (envoyé vs reconstruit)
-        run: python scripts/h13_populations.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/h13_populations.py || true
 
       - name: Pont CLV -> P&L (le postulat central, mesuré en continu)
         # AJOUTÉ LE 27/08/2026 (audit v2 §I) : pnl_vs_clv_study.py teste la
         # prémisse qui justifie le CLV comme juge de tout ce dispositif --
         # jusqu'ici jamais exécuté qu'à la main.
-        run: python scripts/pnl_vs_clv_study.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/pnl_vs_clv_study.py || true
 
       - name: CLV vs book médian, hors ligne sur l'historique (répond au §E)
         # AJOUTÉ LE 28/08/2026 (audit v5 §AC), APRÈS les correctifs §AB
@@ -281,7 +332,13 @@ jobs:
         # aujourd'hui : un correctif écrit, commenté, jamais exécuté --
         # voir §AE de l'audit pour la liste complète et pipeline_status.py
         # plus bas, qui ferme maintenant ce trou pour de bon.
-        run: python scripts/clv_vs_median_offline.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python scripts/clv_vs_median_offline.py || true
 
       - name: Qualité de la mesure de clôture (Q3 triangulation)
         # AJOUTÉ LE 27/08/2026 (audit v2 §L) : capture_quality.py contient
@@ -295,6 +352,12 @@ jobs:
         # rapport de juin non lu deux mois et demi. Écrit maintenant dans
         # q3_status.json (committé, lu par pipeline_status.py juste après,
         # visible dans pipeline_status.md sur GitHub).
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           # AJOUTÉ LE 29/08/2026 (audit v10 §AV) : plusieurs affectations
           # plus bas (pct_ecarts, alerte, le json.dump) n'avaient pas de
@@ -303,7 +366,7 @@ jobs:
           # avant le commit plus bas. `set +e` protège tout le bloc d'un
           # coup, plus sûr qu'un `|| true` oublié sur une ligne future.
           set +e
-          python scripts/capture_quality.py | tee /tmp/capture_quality.txt || true
+          python scripts/discret.py --copie /tmp/capture_quality.txt -- python scripts/capture_quality.py || true
           n_ecarts=$(grep -oP '\d+(?= ecarts > 3%)' /tmp/capture_quality.txt | head -1)
           n_ecarts=${n_ecarts:-0}
           # CORRIGÉ LE 28/08/2026 (audit v6 §AI) : seuil ABSOLU (200) choisi
@@ -349,10 +412,16 @@ jobs:
           if [ "$(date -u +%d)" = "01" ]; then PERIOD=month python scripts/barometre.py || true; fi
 
       - name: Récap hebdo canal public (dimanche)
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ "$(date -u +%u)" = "7" ]; then python scripts/canal_recap.py || true; fi
           # CLV réalisé des écarts publiés = le track record du canal
-          python scripts/canal_clv.py || true
+          python scripts/discret.py -- python scripts/canal_clv.py || true
 
       # REPO_URL retirée (16/08/2026) : elle ajoutait un lien GitHub en clair
       # dans les messages publics du canal. canal_suivi.py et
@@ -380,17 +449,35 @@ jobs:
       # d'attendre deux mois — sa seconde moitié ne réplique déjà pas la
       # significativité, et le ROI encore moins (+15,5 % puis -2,1 %).
       - name: Suivi piste books précoces (canal privé)
-        run: CURVES=book_curves.jsonl python scripts/early_band_track.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: CURVES=book_curves.jsonl python scripts/discret.py -- python scripts/early_band_track.py || true
 
       - name: CLV des signaux H13
-        run: CURVES=book_curves.jsonl python scripts/h13_clv.py || true
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: CURVES=book_curves.jsonl python scripts/discret.py -- python scripts/h13_clv.py || true
 
       # Même script, autre journal : la zone 2,50-3,20 observée depuis le
       # 11/09. h13_clv.py est paramétré par LOG/OUT, donc rien à dupliquer.
       - name: CLV de la zone 2,50-3,20
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           CURVES=book_curves.jsonl LOG=zone_signal_log.jsonl \
-            OUT=zone_clv_detail.csv python scripts/h13_clv.py || true
+            OUT=zone_clv_detail.csv python scripts/discret.py -- python scripts/h13_clv.py || true
 
       - name: Suivi quotidien H13 (canal privé)
         run: python scripts/h13_recap.py || true
@@ -399,8 +486,14 @@ jobs:
         run: python scripts/canal_suivi.py || true
 
       - name: Bilan hebdo du CLV réalisé (dimanche)
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ "$(date -u +%u)" = "7" ]; then python scripts/canal_clv_recap.py || true; fi
+          if [ "$(date -u +%u)" = "7" ]; then python scripts/discret.py -- python scripts/canal_clv_recap.py || true; fi
 
       # Écrit l'état de CHAQUE livrable dans un fichier commité : l'état du
       # pipeline devient lisible depuis GitHub, sans ouvrir un seul log.

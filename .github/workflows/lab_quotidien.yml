@@ -107,6 +107,9 @@ jobs:
             games_markets.json
             simulateur/rapport_ecart_pinnacle.json
             simulateur/rapport_ecart_cloture.json
+            scripts/discret.py
+            simulateur/telegram_envoi.py
+            scripts/vers_coffre.py
 
       - uses: actions/setup-python@v6
         with:
@@ -163,10 +166,22 @@ jobs:
           python Tennis_Edge_Lab/historical_archive.py
 
       - name: Scan V5/V6 - CLV Pinnacle, books jouables, cote de moins de 30 min
-        run: python Tennis_Edge_Lab/bookmakers_sets_v5.py .
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python Tennis_Edge_Lab/bookmakers_sets_v5.py .
 
       - name: Stabilité sur 16 ans (tennis-data, clôture Pinnacle)
-        run: python Tennis_Edge_Lab/history_stability.py .
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/discret.py -- python Tennis_Edge_Lab/history_stability.py .
 
       - name: Restaurer le cache V6.3.1 (facultatif et vérifié)
         uses: actions/cache/restore@v4
@@ -194,17 +209,28 @@ jobs:
       - name: Propositions V6.6 (au plus 10 par semaine, jamais gelées ici)
         env:
           FORCE: ${{ inputs.force_propositions }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -e
           if [ "${FORCE}" = "true" ]; then
-            python Tennis_Edge_Lab/selection_v66.py propose --root . --force
+            python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py propose --root . --force
           else
-            python Tennis_Edge_Lab/selection_v66.py propose --root .
+            python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py propose --root .
           fi
-          python Tennis_Edge_Lab/selection_v66.py verify --root .
-          python Tennis_Edge_Lab/selection_v66.py evaluate --root .
+          python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py evaluate --root .
 
       - name: Explorateur (jeux de données et suivi des gels Explorateur)
+        env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -e
           python Tennis_Edge_Lab/explorer_build.py .
@@ -213,7 +239,7 @@ jobs:
           python Tennis_Edge_Lab/explorer_gel.py verify --root .
           python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
           # H20 (gelée le 21/10) : un pari par joueur, premier horizon, CLV Pinnacle.
-          python Tennis_Edge_Lab/h20.py .
+          python scripts/discret.py -- python Tennis_Edge_Lab/h20.py .
           python Tennis_Edge_Lab/profils.py .
 
       - name: Réconciliation détections (suivi officiel) ↔ alertes envoyées ↔ Worker D1
@@ -231,15 +257,13 @@ jobs:
           PY
           python Tennis_Edge_Lab/reconciliation.py . --worker Tennis_Edge_Lab/live/worker_hypotheses_capture.json
 
-      - name: Archiver l'audit exhaustif (90 jours, hors dépôt)
-        uses: actions/upload-artifact@v4
-        with:
-          name: tennis-edge-audit-v66-${{ github.run_id }}
-          retention-days: 90
-          if-no-files-found: warn
-          path: |
-            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/*.jsonl.gz
-            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/manifest.json
+      # 393 : audit exhaustif au coffre privé (un artefact de dépôt public est public)
+      - name: Archiver l'audit exhaustif (coffre privé)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/vers_coffre.py --nom audit_v66 'Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/*.jsonl.gz' Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/manifest.json || true
 
       - name: Publier si un contenu a changé (jamais de force push)
         env:
@@ -314,7 +338,7 @@ jobs:
             fi
             python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
             python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
-            python Tennis_Edge_Lab/selection_v66.py verify --root .
+            python scripts/discret.py -- python Tennis_Edge_Lab/selection_v66.py verify --root .
             python Tennis_Edge_Lab/explorer_gel.py verify --root .
             if git push origin HEAD:main; then
               echo '✅ Rapports quotidiens publiés.'
