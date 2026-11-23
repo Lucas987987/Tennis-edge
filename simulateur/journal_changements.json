@@ -2016,6 +2016,13 @@
    "paquet": 377,
    "quoi": "COMPTES ET ACCÈS PLUS (paquet 377) : création de compte avec e-mail et mot de passe (e-mail de confirmation, mot de passe oublié), bouton « Se connecter » en haut du site. Le site reste ouvert à tous et le match du jour reste offert chaque jour ; le pronostic des autres matchs (%, fiabilité, sets, scores, statistiques prévues, scénarios, direct) est réservé à l'accès Plus, un seul accès, à la semaine, au mois, au trimestre ou à l'année. Le paiement arrive plus tard.",
    "garde_fou": "Les données réservées ne quittent le serveur que pour un compte Plus : les autres visiteurs reçoivent une version sans aucun pourcentage des matchs réservés. Mots de passe chiffrés (PBKDF2), liens d'e-mail signés et à usage unique, blocage après 10 essais. Tests : workers/algo/test_comptes.mjs, tests/test_site_libre.py."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "outil",
+   "paquet": 378,
+   "quoi": "PRONOSTICS À VENIR RÉSERVÉS PARTOUT (paquet 378) : en plus du site, les fichiers publics du projet ne contiennent plus que les matchs déjà commencés. La version complète (site, journal des pronostics, fiches figées) est gardée à part ; un pronostic devient public quand le match commence, comme dans les bilans. Rien ne change dans le calcul ni dans les bilans.",
+   "garde_fou": "Une copie publique n'écrase jamais la version complète (envoi seulement après l'avoir relue dans le même passage ; sinon rien n'est publié). Tests : tests/test_pronostics_prives.py."
   }
  ]
 }

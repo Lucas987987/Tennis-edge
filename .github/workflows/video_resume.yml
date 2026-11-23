@@ -53,6 +53,9 @@ jobs:
             /feuilles/
             /feuilles_points/
             /scripts/video_simulation.py
+            /scripts/pronostics_prives.py
+            /scripts/r2_io.py
+            /scripts/site_leger.py
             /scripts/installer_video.sh
             /scripts/sons.py
             /scripts/sons_stade.py
@@ -65,6 +68,13 @@ jobs:
         with:
           python-version: '3.11'
 
+      # 23/11/2026 (paquet 378) : le dépôt public n'a plus que les matchs commencés ; la version complète est au coffre
+      - name: Pronostics complets — rapatrier du coffre (paquet 378)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés, copie publique seulement"
       - name: Le vrai déroulé du match
         id: r
         env:

@@ -31,9 +31,19 @@ jobs:
             /feuilles/
             /Tennis_Edge_Lab/live/pronostics_resultats.json
             /algo/donnees.json
+            /scripts/pronostics_prives.py
+            /scripts/r2_io.py
+            /scripts/site_leger.py
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      # 23/11/2026 (paquet 378) : le dépôt public n'a plus que les matchs commencés ; la version complète est au coffre
+      - name: Pronostics complets — rapatrier du coffre (paquet 378)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés, copie publique seulement"
       - name: Contrôle (détail sur le Telegram privé)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -43,6 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          python scripts/pronostics_prives.py rendre .      # 378 : la version complète ne part jamais dans git
           git add -- simulateur/rapport_qualite_donnees.json
           if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
           git commit -m "Qualité des données : rapport du jour (paquet 272)"
