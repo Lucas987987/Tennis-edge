@@ -15,7 +15,7 @@ NOW = dt.datetime(2026, 11, 23, 22, 0, tzinfo=dt.timezone.utc)
 
 class Faux:
     def __init__(self, runs):
-        self.runs, self.supprimes, self.appels = runs, [], []
+        self.runs, self.supprimes, self.appels, self.artefacts = runs, [], [], {}
 
     def __call__(self, req, timeout=30):
         self.appels.append((req.get_method(), req.full_url))
@@ -23,6 +23,10 @@ class Faux:
         if req.get_method() == 'DELETE':
             self.supprimes.append(int(url.rsplit('/', 1)[1]))
             return Rep(204, b'')
+        if '/artifacts' in url:
+            rid = int(url.split('/runs/')[1].split('/')[0])
+            arts = self.artefacts.get(rid, [])
+            return Rep(200, json.dumps({'artifacts': arts}).encode())
         wf = url.split('/workflows/')[1].split('/')[0]
         assert 'status=completed' in url and 'created=%3C2026-11-21' in url
         page = int(url.split('page=')[-1])
@@ -68,3 +72,36 @@ def test_liste_des_workflows_sensibles():
         assert wf in NR.SENSIBLES
     for wf in NR.SENSIBLES:
         assert os.path.exists(os.path.join(RACINE, '.github', 'workflows', wf)), wf
+
+
+class Coffre:
+    def __init__(self):
+        self.m = {}
+
+    def put(self, k, v):
+        self.m[k] = v
+
+
+def test_artefacts_copies_au_coffre_avant_suppression():
+    F = Faux({'lab_quotidien.yml': runs(3)})
+    F.artefacts = {1: [{'name': 'audit', 'archive_download_url': 'u1', 'expired': False}],
+                   2: [{'name': 'vieux', 'archive_download_url': 'u2', 'expired': True}]}
+    C = Coffre()
+    bilan, _ = NR.nettoyer('x/y', 't', 2, 800, False, ['lab_quotidien.yml'], F, NOW, telecharger=lambda u, j: b'zip-' + u.encode(), c=C)
+    assert bilan == {'lab_quotidien.yml': 3} and sorted(F.supprimes) == [1, 2, 3]
+    assert C.m == {'prive/site/Tennis_Edge_Lab/journaux/artefacts/lab_quotidien/1-audit.zip': b'zip-u1'}
+
+
+def test_sans_coffre_ou_si_la_copie_rate_le_run_est_garde():
+    F = Faux({'lab_quotidien.yml': runs(2)})
+    F.artefacts = {1: [{'name': 'audit', 'archive_download_url': 'u1', 'expired': False}]}
+    gardes = {}
+    NR.nettoyer('x/y', 't', 2, 800, False, ['lab_quotidien.yml'], F, NOW, c=None, gardes=gardes)
+    assert F.supprimes == [2] and gardes == {'lab_quotidien.yml': 1}
+
+    def rate(u, j):
+        raise OSError('réseau')
+    F = Faux({'lab_quotidien.yml': runs(1)})
+    F.artefacts = {1: [{'name': 'audit', 'archive_download_url': 'u1', 'expired': False}]}
+    NR.nettoyer('x/y', 't', 2, 800, False, ['lab_quotidien.yml'], F, NOW, telecharger=rate, c=Coffre())
+    assert F.supprimes == []
