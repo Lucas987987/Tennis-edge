@@ -1,0 +1,62 @@
+{
+ "genere_le": "2026-11-23T09:15:51+00:00",
+ "paquet": 368,
+ "tranche_balles": [
+  500,
+  1500
+ ],
+ "regle": "a appris avant le 29/09 (≥ 100), jugé à partir du 29/09 (≥ 100) ; adopté directement si −0,001 de log loss, a < 1 et pente du jugement < 1",
+ "circuits": {
+  "ATP": {
+   "appris": 43,
+   "juges": 5,
+   "adopte": false,
+   "raison": "trop peu de matchs dans la tranche"
+  },
+  "WTA": {
+   "appris": 18,
+   "juges": 42,
+   "adopte": false,
+   "raison": "trop peu de matchs dans la tranche"
+  },
+  "CH": {
+   "appris": 376,
+   "juges": 237,
+   "pente": 1.0,
+   "pente_jugement": 0.962,
+   "log_loss_sans": 0.58994,
+   "log_loss_avec": 0.58995,
+   "gain": -0.0,
+   "favori_annonce_pct": 68.7,
+   "favori_gagnant_pct": 67.5,
+   "adopte": false,
+   "raison": "gain sous 0,001"
+  }
+ },
+ "controle_direct": {
+  "CH": {
+   "matchs": 146,
+   "favori_annonce_pct": 67.7,
+   "favori_gagnant_pct": 60.3,
+   "pente_direct": 0.836,
+   "log_loss_sans": 0.61869,
+   "log_loss_avec": 0.61869
+  },
+  "WTA": {
+   "matchs": 7,
+   "favori_annonce_pct": 73.9,
+   "favori_gagnant_pct": 57.1,
+   "pente_direct": null,
+   "log_loss_sans": 0.61747,
+   "log_loss_avec": null
+  },
+  "ATP": {
+   "matchs": 2,
+   "favori_annonce_pct": 79.3,
+   "favori_gagnant_pct": 100.0,
+   "pente_direct": null,
+   "log_loss_sans": 0.23328,
+   "log_loss_avec": null
+  }
+ }
+}
