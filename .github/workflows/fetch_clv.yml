@@ -100,7 +100,7 @@ jobs:
           # closing_lines/ : archives mensuelles (closing_store, 16/10/2026).
           for f in closing_lines.json clv_history.jsonl clv_history/clv_history_*.jsonl closing_lines/closing_lines_*.jsonl closing_lines/MIGRATION.json; do
             # 346 : en mode prive, les fichiers de cotes sont exclus de git sur ce runner — jamais ajoutés
-            [ -f "$f" ] && ! git check-ignore -q "$f" && git add -- "$f"
+            [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f" && git add -- "$f"
           done
           # 04/11/2026 : en mode ETAT_CHAUD=on, closing_lines.json voyage par R2 ; la photo git vient de la capture
           python scripts/etat_chaud.py garde --lecteur closing_lines.json || true

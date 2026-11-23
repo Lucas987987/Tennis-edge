@@ -104,5 +104,8 @@ class ReserveMesuree(unittest.TestCase):
         prec = {'quota_fin': {'remaining': 800, 'a': '2026-10-19T02:00:00'}}
         self.assertEqual(fb.reserve_mesuree(prec, 49000, dt.datetime(2026, 10, 20, 2), plancher=600), (600, None))
         self.assertEqual(fb.reserve_mesuree({}, 49000, NOW, plancher=600), (600, None))
+        # 364 : run précédent sans réponse de quota (remaining = None) : plancher, pas de plantage
+        self.assertEqual(fb.reserve_mesuree({'quota_fin': {'remaining': None, 'a': '2026-11-22T02:00:00'}}, 49000,
+                                            dt.datetime(2026, 11, 23, 4), plancher=600), (600, None))
         low = {'quota_fin': {'remaining': 40000, 'a': '2026-10-22T02:00:00'}}
         self.assertEqual(fb.reserve_mesuree(low, 39900, dt.datetime(2026, 10, 23, 2), plancher=600)[0], 600)

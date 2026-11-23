@@ -104,11 +104,11 @@ def test_redacteurs():
     s = _wf('steam_pipeline')
     assert 'cotes_privees.py push --groupe mouvements' in s and 'cotes_privees.py retirer --groupe mouvements' in s
     assert s.index('push --groupe mouvements') < s.index('- name: Commit résultats + journaux')
-    assert 'if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi' in s
+    assert 'if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi' in s
     s = _wf('fetch_results_settlement')
     assert s.index('cotes_privees.py pull') < s.index('python scripts/fetch_results_settlement.py')
     assert s.index('push --groupe resultats_reglement') < s.index('- name: Commit')
-    assert '! git check-ignore -q -- "$f"' in s
+    assert '! git check-ignore -q --no-index -- "$f"' in s
     for n in LECTEURS:
         assert 'push --force' not in _wf(n)
 
