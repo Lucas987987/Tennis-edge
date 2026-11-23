@@ -207,6 +207,8 @@ jobs:
       # seulement, rien n'est commité.
       - name: ROI de l'algo (Telegram, canal privé)
         if: always()
+        # 23/11/2026 (paquet 370) : une notification privée ne doit jamais empêcher « Publier » (adoption des profils perdue)
+        continue-on-error: true
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
