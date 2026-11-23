@@ -792,6 +792,10 @@ body.carte #video{display:block;width:1080px;height:1350px}
   <section aria-labelledby="bilan-h">
     <h2 id="bilan-h" data-t="bilan_titre"></h2>
     <p class="sub" id="bilan-sous"></p>
+    <div class="seg bilan-per" role="group" aria-label="Période" style="width:max-content;margin:0 0 8px" hidden>
+      <button type="button" data-bp="tout" aria-pressed="true"></button>
+      <button type="button" data-bp="30" aria-pressed="false" data-t="bp_30"></button>
+    </div>
     <div class="seg bilan-circ" role="group" aria-label="Circuit" style="width:max-content;margin:0 0 12px">
       <button type="button" data-bc="TOUS" aria-pressed="true" data-t="tous_circuits"></button>
       <button type="button" data-bc="ATP" aria-pressed="false">ATP</button>
@@ -848,6 +852,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
       <ul id="plus-list"></ul>
       <span class="badge soon" data-t="plus_bientot"></span>
       <p style="margin:12px 0 0"><button type="button" class="btn go" id="plus-compte" data-t="verrou_cta_compte"></button></p>
+      <div id="apercu-plus" hidden style="margin-top:14px"></div>
       <div class="fondateurs" id="fondateurs" hidden>
         <h3 style="margin:16px 0 6px" data-t="fd_titre"></h3>
         <p style="margin:0" data-t="fd_texte"></p>
@@ -1056,6 +1061,7 @@ const T = {
   voir_simulation:'Voir la simulation →', simulation_affichee:'Simulation affichée', voir_matchs:n=>`Afficher ${n} matchs de plus`,
   detail_plus:'Détail complet : offre Plus', detail_ici:'Détail complet ci-dessus',
   bilan_titre:'Tableau des scores',
+  bp_tout:d=>`Depuis le ${dateLong(d)}`, bp_30:'30 derniers jours',
   bilan_sous:d=>`Tous les matchs ATP, WTA et Challenger pronostiqués depuis le ${dateLong(d)}, sans aucun tri. Jugés sur le dernier pronostic affiché avant le match. Abandons et forfaits exclus.`,
   matchs_juges:'Matchs jugés', vainqueurs:'Vainqueurs trouvés', brier:'Score de Brier', brier_aide:'0,25 = pile ou face ; plus bas = mieux',
   par_circuit:'Par circuit', courbe_aria:'Taux de vainqueurs trouvés, cumulé jour après jour',
@@ -1085,6 +1091,9 @@ const T = {
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
   plus_items:['Le pronostic de tous les matchs : % de victoire et note de fiabilité','Sets, scores probables, statistiques prévues et scénarios du match','Le direct de chaque match et la simulation rejouable','À la semaine, au mois, au trimestre ou à l’année'],
   plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
+  ap_badge:'Aperçu Plus', ap_btn:'Voir un match Plus en entier',
+  ap_txt:(h,a)=>`${h} – ${a}, terminé : le pronostic, les scénarios, le direct et le bilan, exactement comme un abonné les voit. Le match est choisi chaque jour par une règle fixe (le plus relevé des dernières 24 h), sans regarder le résultat.`,
+  ap_bandeau:"Aperçu de l'accès Plus : ce match est terminé. Voici tout ce qu'un abonné voyait avant et pendant le match, et le bilan après coup.",
   fd_titre:'Offre fondateurs',
   fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Le paiement n'est pas encore ouvert : réserve ta place, on te prévient par e-mail à l'ouverture. Réserver est gratuit et n'engage à rien.",
   fd_reserver:'Réserver ma place', fd_compte:'Créer un compte pour réserver', fd_cx:'Se connecter',
@@ -1384,6 +1393,7 @@ const T = {
   voir_simulation:'View simulation →', simulation_affichee:'Simulation displayed', voir_matchs:n=>`Show ${n} more matches`,
   detail_plus:'Full breakdown: Plus', detail_ici:'Full breakdown above',
   bilan_titre:'Scoreboard',
+  bp_tout:d=>`Since ${dateLong(d)}`, bp_30:'Last 30 days',
   bilan_sous:d=>`Every ATP, WTA and Challenger match predicted since ${dateLong(d)}, with nothing filtered out. Judged on the last prediction shown before the match. Retirements and walkovers excluded.`,
   matchs_juges:'Matches judged', vainqueurs:'Winners called', brier:'Brier score', brier_aide:'0.25 = coin flip; lower is better',
   par_circuit:'By tour', courbe_aria:'Share of winners called, cumulative day by day',
@@ -1413,6 +1423,9 @@ const T = {
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
   plus_items:['The forecast for every match: win % and reliability score','Sets, likely scores, predicted stats and match scenarios','Live coverage of every match and the replayable simulation','Weekly, monthly, quarterly or yearly'],
   plus_bientot:'Payment coming soon · create your account now.',
+  ap_badge:'Plus preview', ap_btn:'See a full Plus match',
+  ap_txt:(h,a)=>`${h} – ${a}, finished: the forecast, scenarios, live view and review, exactly as a subscriber sees them. The match is picked every day by a fixed rule (the highest-rated of the last 24 h), without looking at the result.`,
+  ap_bandeau:'Plus access preview: this match is over. Here is everything a subscriber saw before and during the match, and the review afterwards.',
   fd_titre:'Founders offer',
   fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as the subscription stays active. Payment isn't open yet: reserve your spot and we'll email you when it opens. Reserving is free and commits you to nothing.",
   fd_reserver:'Reserve my spot', fd_compte:'Create an account to reserve', fd_cx:'Log in',
@@ -3586,7 +3599,7 @@ function rendMdj(){
   const f = m.feuille_prevue;
   const lignes = f ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem'],['jeux_service_gagnes_pct','jsg']]
      .filter(([k])=>f[0]&&f[0][k]!=null).map(([k,lib])=>`<tr><th>${esc(t(lib))}</th><td>${dec(f[0][k],1)}</td><td>${dec(f[1][k],1)}</td></tr>`).join('') : '';
-  zone.innerHTML = `<div class="mdj">
+  zone.innerHTML = (estApercu(m.uid) ? `<p class="panel" style="margin:0 0 12px;padding:12px 16px;border-color:var(--ball)">⭐ ${esc(t('ap_bandeau'))}</p>` : '') + `<div class="mdj">
     <div>${m.simulation ? `<div class="borne"><div class="ecran-jeu" id="borne"></div></div>
       <div class="commandes"><button type="button" class="btn" id="b-accel" disabled>⏩ ${esc(t('accel'))}</button><button type="button" class="btn" id="b-fin" disabled>⏭ ${esc(t('fin'))}</button></div>
       <p class="aide">${esc(t('jouer_aide', nSim))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
@@ -7398,6 +7411,16 @@ function panneauVerrou(m){
     <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
     <p style="margin:12px 0 0">${esc(t('verrou_texte'))}</p>${actions}</div>`;
 }
+// 23/11/2026 (paquet 389, Lucas) — APERÇU PLUS : pour un visiteur sans accès Plus, un match terminé complet
+// (vitrine.choisir_apercu : règle fixe, sans regarder le résultat), signalé dans la liste et ouvert depuis la section Plus.
+function estApercu(uid){ return !!(D && D.acces === 'libre' && D.apercu_plus && D.apercu_plus.uid === uid); }
+function rendApercuPlus(){
+  const z = document.getElementById('apercu-plus'); if (!z) return;
+  const m = D && D.acces === 'libre' && D.apercu_plus && D.matchs.find(x => x.uid === D.apercu_plus.uid && x.simulation);
+  z.hidden = !m; if (!m) { z.innerHTML = ''; return; }
+  z.innerHTML = `<p style="margin:0 0 8px">${esc(t('ap_txt', m.home, m.away))}</p><button type="button" class="btn" data-apercu="${esc(m.uid)}">⭐ ${esc(t('ap_btn'))}</button>`;
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-apercu]'); if (b) ouvrirMatch(b.dataset.apercu); });
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
   const tous = matchsFiltres();
@@ -7425,7 +7448,7 @@ function rendListe(){
   const ligneMatch = m=>{ if (m.verrou) return ligneVerrou(m); const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${quand(m.debut)}</span><span>
-      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${estApercu(m.uid) ? `<span class="badge">${esc(t('ap_badge'))}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
@@ -7620,8 +7643,13 @@ function rendJournal(){
   const ouvert = !!el.querySelector('details.jc-pli[open]');
   el.innerHTML = `<details class="jc-pli"${ouvert?' open':''}><summary>${esc(L==='fr' ? `Voir le journal (${J.changements.length} changements)` : `Show the log (${J.changements.length} changes)`)}</summary>${fan}<ul class="jc">${li}</ul><p class="aide" style="padding:0 16px 14px">${esc(J.regle||'')}</p></details>`;
 }
+// 23/11/2026 (paquet 389, Lucas) — période du bilan : depuis le début, ou les 30 derniers jours (le modèle d'aujourd'hui)
+let perBilan = 'tout';
 function rendBilan(){
-  const B = D.bilan || {}, C = circBilan==='TOUS' ? null : (B.par_circuit||{})[circBilan], g = circBilan==='TOUS' ? B.global : C;
+  const bp = document.querySelector('.bilan-per');
+  if (bp) { bp.hidden = !D.bilan_30j; bp.querySelector('[data-bp="tout"]').textContent = t('bp_tout', (D.bilan || {}).depuis || '2026-10-21');
+    bp.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.bp === perBilan))); }
+  const B = (perBilan === '30' && D.bilan_30j) || D.bilan || {}, C = circBilan==='TOUS' ? null : (B.par_circuit||{})[circBilan], g = circBilan==='TOUS' ? B.global : C;
   document.querySelectorAll('.bilan-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.bc===circBilan)));
   document.getElementById('bilan-sous').textContent = t('bilan_sous', B.depuis || '2026-10-21');
   const facts = document.getElementById('bilan-facts');
@@ -7815,7 +7843,7 @@ function chargerPlus(){                                              // paquet 3
 }
 function rendTout(){
   rendTextes(); if (!D) return;
-  rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
+  rendMdj(); rendListe(); rendApercuPlus(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
@@ -7851,6 +7879,7 @@ document.querySelectorAll('.fs-circ button').forEach(b=>b.addEventListener('clic
 document.querySelectorAll('.bilan-circ button').forEach(b=>b.addEventListener('click',()=>{
   circBilan=b.dataset.bc; nRes=12; rendBilan();
 }));
+document.querySelectorAll('.bilan-per button').forEach(b=>b.addEventListener('click',()=>{ perBilan=b.dataset.bp; nRes=12; rendBilan(); }));
 document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('click',()=>{
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
