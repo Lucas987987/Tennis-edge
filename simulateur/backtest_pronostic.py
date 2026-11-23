@@ -710,7 +710,8 @@ def main(argv):
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
                    'variante': retenue, 'options': W['options'], 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
                    'departs_par_niveau': departs_places if depart_itf.get('en_place') else {},
-                   'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
+                   'surfaces_tournois': table_surf, 'alias': alias, 'identites': liens_identite,
+                   'joueurs': elo.exporter(W['noms'])},
                   f, ensure_ascii=False, separators=(',', ':'))
     # 29/10/2026 — MODÈLE FANTÔME : l'Elo d'avant l'ITF, calculé à chaque passage, jamais affiché comme pronostic ;
     # pronostics_du_jour.py en tire une probabilité de contrôle par match, comparée à l'Elo en place après le match.
