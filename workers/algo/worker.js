@@ -24,7 +24,7 @@
 //    /compte/admin (workers.dev + clé privée : donner un accès Plus à la main). Données réservées : /site.json et
 //    /donnees.json ne sont servis complets qu'à un abonné (ou avec la clé privée) ; les autres reçoivent
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
-import { apiCompte, adminComptes, utilisateur, abonne } from './comptes.js';
+import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -89,15 +89,24 @@ export async function prive(req, env, nom) {
 }
 
 // 377 : fichiers réservés à l'accès Plus ; sans accès, la version libre (jamais le fichier complet, même en secours)
-export const RESERVES = Object.freeze({ '/site.json': 'site.json', '/donnees.json': 'donnees.json' });
+export const RESERVES = Object.freeze({ '/site.json': 'site.json', '/donnees.json': 'donnees.json', '/site_admin.json': 'site_admin.json' });
 export async function accesPlus(req, env) {
   if (await autorise(req, env)) return true;
   const u = await utilisateur(req, env);
   return !!u && abonne(u);
 }
+// 380 : administrateur = clé privée (Lab, workers.dev) ou compte « admin » : seul à voir les sections internes
+export async function accesAdmin(req, env) {
+  if (await autorise(req, env)) return true;
+  return estAdmin(await utilisateur(req, env));
+}
 async function reserve(req, chemin, env) {
-  const plus = await accesPlus(req, env);
-  const f = plus ? RESERVES[chemin] : 'site_libre.json';
+  const admin = chemin !== '/site.json' && await accesAdmin(req, env);
+  const plus = admin || await accesPlus(req, env);
+  // /donnees.json complet (avec les sections internes) : administrateur seulement ; un abonné reçoit site.json
+  const f = chemin === '/site_admin.json' ? (admin ? 'site_admin.json' : null)
+    : !plus ? 'site_libre.json' : (chemin === '/donnees.json' && !admin ? 'site.json' : RESERVES[chemin]);
+  if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
   const h = { ...SECURITE, 'Content-Type': TYPES.json, 'Cache-Control': 'private, no-store', Vary: 'Cookie', 'X-Acces': plus ? 'plus' : 'libre' };
   const o = await depuisR2(env, 'site/algo/' + f);
   if (o) return new Response(req.method === 'HEAD' ? null : o.body, { headers: h });
@@ -573,7 +582,7 @@ export default {
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));
-    if (url.pathname.startsWith('/compte/api/')) return apiCompte(req, env, url);
+    if (url.pathname.startsWith('/compte/api/')) return apiCompte(req, env, url, await autorise(req, env));
     if (url.pathname === '/compte/admin' || url.pathname.startsWith('/compte/admin/')) {
       // 377 : jamais sur gamesetalgo.com ; clé privée exigée (cookie du Lab ou en-tête X-Cle)
       if (MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });

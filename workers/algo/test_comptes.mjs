@@ -19,6 +19,7 @@ function monde() {
   C.m.set('site/algo/site.json', '{"plein":true}');
   C.m.set('site/algo/donnees.json', '{"plein":true,"tout":1}');
   C.m.set('site/algo/site_libre.json', '{"libre":true}');
+  C.m.set('site/algo/site_admin.json', '{"interne":true}');
   const mails = [];
   globalThis.fetch = async (u, o) => {
     if (String(u).startsWith('https://api.brevo.com/')) { mails.push(JSON.parse(o.body)); return new Response('{}', { status: 201 }); }
@@ -71,7 +72,8 @@ test('inscription → e-mail de confirmation → connexion → données libres, 
   assert.equal(acc.abonne, true);
   assert.ok(Date.parse(acc.jusqu_au) - Date.now() > 30 * 86400e3);
   assert.equal(await (await worker.fetch(get('/site.json', { Cookie: c }), env)).text(), '{"plein":true}');
-  assert.equal(await (await worker.fetch(get('/donnees.json', { Cookie: c }), env)).text(), '{"plein":true,"tout":1}');
+  // 380 : un abonné reçoit site.json pour /donnees.json (les sections internes restent à l'administrateur)
+  assert.equal(await (await worker.fetch(get('/donnees.json', { Cookie: c }), env)).text(), '{"plein":true}');
   const liste = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
   assert.equal(liste.comptes.length, 1);
   assert.ok(!JSON.stringify(liste).includes('hash'));
@@ -128,4 +130,27 @@ test('sans Brevo : le compte est créé, l’e-mail est signalé non envoyé ; o
   assert.equal(h1.hash, h2.hash);
   assert.equal(abonne({ acces: { formule: 'illimite' } }), true);
   assert.equal(abonne({ acces: { formule: 'mois', jusqu_au: '2000-01-01T00:00:00Z' } }), false);
+});
+
+
+test('380 : sections internes réservées à l’administrateur ; un abonné reçoit site.json pour /donnees.json', async () => {
+  const { env, mails } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'e@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  assert.equal((await worker.fetch(get('/site_admin.json', { Cookie: c }), env)).status, 404);
+  assert.equal((await worker.fetch(get('/site_admin.json'), env)).status, 404);
+  await worker.fetch(post('/compte/admin/api/acces', { email: 'e@exemple.fr', formule: 'mois' }, { 'X-Cle': CLE }, DEV), env);
+  assert.equal((await worker.fetch(get('/site_admin.json', { Cookie: c }), env)).status, 404);
+  assert.equal(await (await worker.fetch(get('/donnees.json', { Cookie: c }), env)).text(), '{"plein":true}');   // site.json
+  let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.admin, false);
+  await worker.fetch(post('/compte/admin/api/acces', { email: 'e@exemple.fr', formule: 'admin' }, { 'X-Cle': CLE }, DEV), env);
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.admin, true);
+  assert.equal(moi.compte.abonne, true);
+  assert.equal(await (await worker.fetch(get('/site_admin.json', { Cookie: c }), env)).text(), '{"interne":true}');
+  assert.equal(await (await worker.fetch(get('/donnees.json', { Cookie: c }), env)).text(), '{"plein":true,"tout":1}');
+  // la clé privée (Lab) suffit aussi
+  assert.equal((await worker.fetch(get('/site_admin.json', { 'X-Cle': CLE }, DEV), env)).status, 200);
+  assert.equal((await (await worker.fetch(get('/compte/api/moi', { 'X-Cle': CLE }, DEV), env)).json()).admin, true);
 });
