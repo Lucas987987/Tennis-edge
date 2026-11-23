@@ -1,21 +1,21 @@
 {
- "genere_le": "2026-11-23T16:32:01+00:00",
+ "genere_le": "2026-11-22T17:41:28+00:00",
  "regle": "décalage affiché par circuit et statistique, appris jusqu'au 22/11/2026, jugé seulement à partir du 23/11/2026 : ≥ 1 000 cas, biais divisé au moins par deux, écart moyen qui ne monte pas, bon sens, Holm sur 6 cases ; rapport seulement",
- "cas": 5734,
+ "cas": 5344,
  "cases": {
   "ATP|service": {
-   "n_app": 416,
+   "n_app": 414,
    "n_jug": 0,
-   "biais_app_pts": 0.938,
-   "decalage_pts": 0.756,
+   "biais_app_pts": 0.989,
+   "decalage_pts": 0.796,
    "retenu": false,
    "raison": "pas encore jugeable : 0 cas jugés sur 1000 (rien n'est conclu)"
   },
   "ATP|jeux_service": {
-   "n_app": 288,
+   "n_app": 286,
    "n_jug": 0,
-   "biais_app_pts": 1.133,
-   "decalage_pts": 0.841,
+   "biais_app_pts": 1.227,
+   "decalage_pts": 0.909,
    "retenu": false,
    "raison": "pas encore jugeable : 0 cas jugés sur 1000 (rien n'est conclu)"
   },
@@ -36,28 +36,20 @@
    "raison": "pas encore jugeable : 0 cas jugés sur 1000 (rien n'est conclu)"
   },
   "CH|service": {
-   "n_app": 2350,
-   "n_jug": 64,
-   "biais_app_pts": 0.993,
-   "decalage_pts": 0.952,
-   "biais_jug_sans": -0.05,
-   "biais_jug_avec": -1.003,
-   "ecart_jug_sans": 7.297,
-   "ecart_jug_avec": 7.401,
+   "n_app": 2220,
+   "n_jug": 0,
+   "biais_app_pts": 1.084,
+   "decalage_pts": 1.038,
    "retenu": false,
-   "raison": "pas encore jugeable : 64 cas jugés sur 1000 (rien n'est conclu)"
+   "raison": "pas encore jugeable : 0 cas jugés sur 1000 (rien n'est conclu)"
   },
   "CH|jeux_service": {
-   "n_app": 1954,
-   "n_jug": 64,
-   "biais_app_pts": 2.153,
-   "decalage_pts": 2.048,
-   "biais_jug_sans": -0.881,
-   "biais_jug_avec": -2.929,
-   "ecart_jug_sans": 14.747,
-   "ecart_jug_avec": 14.693,
+   "n_app": 1826,
+   "n_jug": 0,
+   "biais_app_pts": 2.347,
+   "decalage_pts": 2.225,
    "retenu": false,
-   "raison": "pas encore jugeable : 64 cas jugés sur 1000 (rien n'est conclu)"
+   "raison": "pas encore jugeable : 0 cas jugés sur 1000 (rien n'est conclu)"
   }
  }
 }
