@@ -1,10 +1,10 @@
 {
- "genere_le": "2026-11-23T13:55:45Z",
- "pronostics_du": "2026-11-23T13:17:51Z",
+ "genere_le": "2026-11-23T15:41:38Z",
+ "pronostics_du": "2026-11-23T15:10:47Z",
  "statut": "ok",
  "matchs_pronostiques": 101,
  "rejets_par_raison": {
-  "doublon_meme_match": 1
+  "doublon_meme_match": 2
  },
  "rejets": [
   {
@@ -15,6 +15,17 @@
    "garde": [
     "Kyle Overmyer",
     "Juan Carlos Fuentes Vasquez"
+   ],
+   "meme_classement": true
+  },
+  {
+   "home": "Kenta Miyoshi",
+   "away": "Jannik Maute",
+   "tournoi": "ATP Challenger Ankara",
+   "raison": "doublon_meme_match",
+   "garde": [
+    "Kenta (2004) Miyoshi",
+    "Jannik Maute"
    ],
    "meme_classement": true
   }
@@ -63,16 +74,142 @@
    }
   ]
  },
+ "sans_programme": {
+  "n": 68,
+  "exemples": [
+   {
+    "debut": "2026-11-23T23:30",
+    "tournoi": "ATP Challenger Playford City",
+    "home": "Alafia Ayeni",
+    "away": "Alex Bolt"
+   },
+   {
+    "debut": "2026-11-24T00:30",
+    "tournoi": "ATP Challenger San Salvador",
+    "home": "Cesar Cruz",
+    "away": "Joaquin Guilleme"
+   },
+   {
+    "debut": "2026-11-24T01:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Constantin Bittoun Kouzmine",
+    "away": "Liam Broady"
+   },
+   {
+    "debut": "2026-11-24T01:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Takuya Kumasaka",
+    "away": "David Jorda Sanchis"
+   },
+   {
+    "debut": "2026-11-24T01:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Kokoro Isomura",
+    "away": "Hikaru Shiraishi"
+   },
+   {
+    "debut": "2026-11-24T01:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Naoya Honda",
+    "away": "S D Prajwal Dev"
+   },
+   {
+    "debut": "2026-11-24T02:10",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Yun Seong Chung",
+    "away": "Finn Bass"
+   },
+   {
+    "debut": "2026-11-24T02:20",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Yosuke Watanuki",
+    "away": "Kaichi Uchida"
+   },
+   {
+    "debut": "2026-11-24T02:20",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Koki Matsuda",
+    "away": "Hayato Matsuoka"
+   },
+   {
+    "debut": "2026-11-24T03:40",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Constantin Bittoun Kouzmine",
+    "away": "Yusuke Takahashi"
+   },
+   {
+    "debut": "2026-11-24T03:40",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Yuta Shimizu",
+    "away": "Taisei Ichikawa"
+   },
+   {
+    "debut": "2026-11-24T03:40",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Jie Cui",
+    "away": "Benjamin Hassan"
+   },
+   {
+    "debut": "2026-11-24T05:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Rio Noguchi",
+    "away": "Maximus Jones"
+   },
+   {
+    "debut": "2026-11-24T05:00",
+    "tournoi": "ATP Challenger Yokohama",
+    "home": "Niels McDonald",
+    "away": "Luca Staeheli"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Gabriel Ghetu",
+    "away": "Ioannis Kountourakis"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Johannus Monday",
+    "away": "Philip Henning"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Ioannis Xilas",
+    "away": "Sergey Fomin"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Ryan Peniston",
+    "away": "Oleksii Krutykh"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Ankara",
+    "home": "Leonardo Rossi",
+    "away": "Daniel Rincon"
+   },
+   {
+    "debut": "2026-11-24T08:00",
+    "tournoi": "ATP Challenger Ankara",
+    "home": "Alexander Binda",
+    "away": "Matisse Bobichon"
+   }
+  ]
+ },
  "regle": "lecture seule ; alerte si un joueur réuni garde deux classements ou si un doublon écarté avait deux classements différents (lien alors appris en direct)",
  "historique": [
   {
    "jour": "2026-11-23",
    "matchs": 101,
    "rejets": {
-    "doublon_meme_match": 1
+    "doublon_meme_match": 2
    },
    "sans_historique": 2,
-   "deux_classements": 0
+   "deux_classements": 0,
+   "sans_programme": 68
   }
  ]
 }
