@@ -2039,6 +2039,13 @@
    "prive": true,
    "quoi": "CODES D'ACCÈS PLUS À USAGE UNIQUE (paquet 381, Lucas) : créés depuis /compte/admin (formule ou nombre de jours d'accès, validité du code, nombre de codes, note) ; un compte connecté et confirmé les saisit dans « Mon compte ». Un code ne sert qu'une fois et ne marche plus après sa date de validité ; seule son empreinte est gardée ; 10 essais ratés par heure au plus.",
    "garde_fou": "Tests : workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-23",
+   "statut": "site",
+   "paquet": 382,
+   "quoi": "COMPTES : CONFIDENTIALITÉ ET ANTI-ROBOTS (paquet 382) : depuis « Mon compte », changer de mot de passe (les autres appareils sont déconnectés), télécharger ses données, supprimer son compte (effacé tout de suite). Un compte jamais confirmé est effacé après 30 jours. L'inscription et le mot de passe oublié sont protégés contre les robots (Cloudflare Turnstile). Politique de confidentialité et conditions d'utilisation mises à jour (compte, e-mails, cookie de connexion, accès Plus et codes).",
+   "garde_fou": "Suppression et changement de mot de passe demandent le mot de passe actuel. Tests : workers/algo/test_comptes.mjs."
   }
  ]
 }

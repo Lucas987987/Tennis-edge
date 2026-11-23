@@ -14,6 +14,7 @@ function r2() {
       if (o.onlyIf && o.onlyIf.etagMatches && o.onlyIf.etagMatches !== 'e' + (v.get(k) || 0)) return null;
       m.set(k, String(x)); v.set(k, (v.get(k) || 0) + 1); return { key: k };
     },
+    delete: async (k) => { m.delete(k); v.delete(k); },
     list: async ({ prefix }) => ({ objects: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })), truncated: false }),
   };
 }
@@ -198,4 +199,63 @@ test('381 : code d’accès à usage unique, durée limitée, réservé à un co
   // 10 essais ratés par heure au plus
   for (let i = 0; i < 10; i++) await worker.fetch(post('/compte/api/code', { code: 'GSA-AAAA-AAAA-AAA' + 'B' }, { Cookie: c }), env);
   assert.equal((await worker.fetch(post('/compte/api/code', { code: r.codes[0] }, { Cookie: c }), env)).status, 429);
+});
+
+
+test('382 : changer de mot de passe, télécharger ses données, supprimer son compte', async () => {
+  const { env, mails, C } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'g@exemple.fr', mdp: 'motdepasse1' }), env);
+  let c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  assert.equal((await worker.fetch(post('/compte/api/mdp', { ancien: 'faux12345', nouveau: 'nouveau123' }, { Cookie: c }), env)).status, 403);
+  let r = await worker.fetch(post('/compte/api/mdp', { ancien: 'motdepasse1', nouveau: 'nouveau123' }, { Cookie: c }), env);
+  assert.equal(r.status, 200);
+  const ancien = c; c = cookie(r);
+  assert.equal((await (await worker.fetch(get('/compte/api/moi', { Cookie: ancien }), env)).json()).compte, null);   // autres sessions fermées
+  const ex = await worker.fetch(get('/compte/api/export', { Cookie: c }), env);
+  assert.match(ex.headers.get('Content-Disposition'), /attachment/);
+  const d = await ex.json();
+  assert.equal(d.email, 'g@exemple.fr');
+  assert.ok(!JSON.stringify(d).includes('sel') || !('sel' in d));
+  assert.ok(!('hash' in d) && !('sel' in d));
+  assert.equal((await worker.fetch(post('/compte/api/supprimer', { mdp: 'motdepasse1' }, { Cookie: c }), env)).status, 403);
+  r = await worker.fetch(post('/compte/api/supprimer', { mdp: 'nouveau123' }, { Cookie: c }), env);
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('Set-Cookie'), /Max-Age=0/);
+  assert.ok(![...C.m.keys()].some((k) => k.startsWith('comptes/u/')));
+  assert.equal((await worker.fetch(post('/compte/api/connexion', { email: 'g@exemple.fr', mdp: 'nouveau123' }), env)).status, 401);
+});
+
+test('382 : Turnstile exigé pour l’inscription et le mot de passe oublié quand il est configuré', async () => {
+  const { env, mails } = monde();
+  env.TURNSTILE_SECRET = 's'; env.TURNSTILE_SITEKEY = 'cle-publique';
+  const brevo = globalThis.fetch, vus = [];
+  globalThis.fetch = async (u, o) => {
+    if (String(u).includes('turnstile/v0/siteverify')) { vus.push(o.body.get('response')); return new Response(JSON.stringify({ success: o.body.get('response') === 'bon' })); }
+    return brevo(u, o);
+  };
+  assert.equal((await (await worker.fetch(get('/compte/api/moi'), env)).json()).turnstile, 'cle-publique');
+  assert.equal((await worker.fetch(post('/compte/api/inscription', { email: 'h@exemple.fr', mdp: 'motdepasse1' }), env)).status, 403);
+  assert.equal((await worker.fetch(post('/compte/api/inscription', { email: 'h@exemple.fr', mdp: 'motdepasse1', turnstile: 'mauvais' }), env)).status, 403);
+  assert.equal(mails.length, 0);
+  assert.equal((await worker.fetch(post('/compte/api/inscription', { email: 'h@exemple.fr', mdp: 'motdepasse1', turnstile: 'bon' }), env)).status, 200);
+  assert.equal(mails.length, 1);
+  assert.equal((await worker.fetch(post('/compte/api/oubli', { email: 'h@exemple.fr' }), env)).status, 403);
+  assert.deepEqual(vus, ['mauvais', 'bon']);
+  // la page autorise le script et le cadre de Turnstile, rien d'autre de nouveau
+  globalThis.fetch = async () => new Response('<!doctype html>ok', { status: 200 });
+  const csp = (await worker.fetch(get('/'), env)).headers.get('Content-Security-Policy');
+  assert.match(csp, /script-src 'self' 'unsafe-inline' https:\/\/challenges\.cloudflare\.com;/);
+  assert.match(csp, /frame-src https:\/\/challenges\.cloudflare\.com;/);
+  assert.match(csp, /connect-src 'self';/);
+});
+
+test('382 : un compte jamais confirmé est effacé après 30 jours (à l’ouverture de l’administration)', async () => {
+  const { env, C } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'vieux@exemple.fr', mdp: 'motdepasse1' }), env);
+  await worker.fetch(post('/compte/api/inscription', { email: 'recent@exemple.fr', mdp: 'motdepasse1' }), env);
+  for (const [k, x] of C.m) if (k.startsWith('comptes/u/') && x.includes('vieux@'))
+    C.m.set(k, JSON.stringify({ ...JSON.parse(x), cree: '2026-01-01T00:00:00Z' }));
+  const l = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.deepEqual(l.comptes.map((c) => c.email), ['recent@exemple.fr']);
+  assert.ok(![...C.m.values()].some((x) => x.includes('vieux@')));
 });
