@@ -2242,6 +2242,13 @@
    "paquet": 411,
    "quoi": "STATISTIQUES DU MATCH TERMINÉ (paquet 411, Lucas : « toutes les statistiques après le match »). La fiche d'un match terminé affiche désormais tout de suite la vraie feuille (aces, doubles fautes, 1res balles, points derrière la 1re et la 2e, balles de break, breaks, points gagnés) face à ce que l'algo avait prévu, comme pendant le direct — sans attendre le bilan après match calculé par la chaîne. Le worker du site garde cette feuille définitive 24 h : une seule requête TennisApi par match terminé.",
    "garde_fou": "Données descriptives : rien ne change dans le %. Si TennisApi n'a pas la feuille, le bilan après match prend le relais quand il existe. Tests : tests/test_stats_apres_match.py, workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 412,
+   "quoi": "DÉPLOIEMENT AUTOMATIQUE, DÉLAI FONDATEUR, ACCUEIL (paquet 412, Lucas : « 1 2 3 »). 1) « Appliquer un paquet » redéploie lui-même chaque worker (site, déclenchement, joueurs, base) dont un fichier change, juste après la fusion : plus de redéploiement à la main. 2) Le tarif fondateur suit les conditions de vente : perdu pour de bon si un mois est payé plus de 7 jours après la fin du précédent mois fondateur ; la demande passe alors au prix normal, l'administration refuse un virement « tarif fondateur » pour ce compte, et l'e-mail de rappel donne la date limite pour garder le tarif. 3) Texte d'accueil du site : « un algorithme indépendant ; on publie son % de victoire et tous ses résultats », sans parler de cotes.",
+   "garde_fou": "Rien ne change dans les pronostics. Tests : tests/test_deploiement_auto.py, workers/algo/test_comptes.mjs."
   }
  ]
 }

@@ -574,3 +574,32 @@ test('407 : prix du mois pour un fondateur au-delà des 100 places : prix normal
   assert.equal(V.montantDemande('semaine', 1), 4.99);
   assert.equal(V.montantDemande('decennie', 1), null);
 });
+
+test('412 : tarif fondateur perdu après 7 jours de retard ; rappel avec la date limite ; virement fondateur refusé', async () => {
+  const V = await import('./ventes.js');
+  const now = Date.parse('2026-12-20T12:00:00Z');
+  const u = (jusqu, extra = {}) => ({ acces: { paye: true, fondateur_tarif: true, jusqu_au: jusqu }, ...extra });
+  assert.equal(V.fondateurPerdu(u('2026-12-15T00:00:00Z'), now), false);          // 5 jours : gardé
+  assert.equal(V.fondateurPerdu(u('2026-12-10T00:00:00Z'), now), true);           // 10 jours : perdu
+  assert.equal(V.fondateurPerdu({ acces: {} }, now), false);                      // jamais payé : pas de délai
+  assert.equal(V.fondateurPerdu(u('2027-01-30T00:00:00Z', { fondateur_perdu: '2026-11-01' }), now), true);   // définitif
+  const m = V.messageRappel({ id: 'abcdef', acces: { paye: true, fondateur_tarif: true, jusqu_au: '2026-12-15T00:00:00Z', montant: 9.99 } }, {}, 'https://gamesetalgo.com');
+  assert.match(m.texte, /garder ton tarif fondateur, paie au plus tard le 22\/12\/2026/);
+  // demande d'un fondateur en retard : prix normal, perte notée
+  const { env, mails, C } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 'r@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
+  for (const [k, x] of C.m) if (k.startsWith('comptes/u/')) {
+    const v = JSON.parse(x); v.acces = { formule: 'mois', paye: true, fondateur_tarif: true, jusqu_au: new Date(Date.now() - 20 * 86400e3).toISOString() };
+    C.m.set(k, JSON.stringify(v));
+  }
+  await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }, { Cookie: c }), env);
+  const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.compte.demande.montant, 14.99);
+  assert.equal(moi.compte.fondateur_perdu, true);
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'X', adresse: 'Y', siret: '1' });
+  const o = await worker.fetch(post('/compte/admin/api/virement', { compte: 'r@exemple.fr', formule: 'mois', montant: '9,99', fondateur: true, sans_renonciation: true },
+    { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
+  assert.equal(o.erreur, 'fondateur_perdu');
+});

@@ -10,6 +10,9 @@ name: Déployer le worker tennis-edge-db
 
 on:
   workflow_dispatch:
+  # 24/11/2026 (paquet 412) : lancé aussi par « Appliquer un paquet » quand le paquet change workers/tennis-edge-db/
+  repository_dispatch:
+    types: [deployer-tennis-edge-db]
   push:
     branches: [main]
     paths:
