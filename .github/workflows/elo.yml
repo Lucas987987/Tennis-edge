@@ -77,10 +77,19 @@ jobs:
       - name: Récupérer les Elo publiés
         run: python scripts/elo_fetch.py || echo "⚠️ récupération échouée — le modèle tournera sans référence"
 
+      # 24/11/2026 (paquet 402) : « env » vide = fichier refusé par GitHub. Les courbes se reconstruisent
+      # sans les clés R2 (comportement d'avant) ; le script suit, dans sa propre étape, avec les clés du journal privé.
+      - name: Reconstruire les courbes
+        run: python scripts/curves_parts.py rebuild || true
+
       - name: Construire le modèle et comparer au marché
         env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/curves_parts.py rebuild || true
           python scripts/discret.py -- python scripts/elo_model.py --eval
 
       # Même famille que l'Elo : des signaux qui ne regardent AUCUNE cote, et la
