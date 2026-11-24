@@ -37,3 +37,10 @@ def test_mon_compte_montre_l_abonnement():
     assert '${blocMonAbonnement()}' in p
     for cle in ('cp_abo_titre', 'cp_abo_fond', 'cp_abo_dem', 'cp_abo_ref', 'cp_abo_voir'):
         assert p.count(cle + ':') == 2, cle
+
+
+def test_appli_installee_depuis_gamesetalgo_seulement():
+    p = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
+    assert "location.href = 'https://' + HOTE_APPLI + '/?installer=1'" in p and "HOTE_APPLI = 'gamesetalgo.com'" in p
+    w = (R / 'workers' / 'algo' / 'worker.js').read_text(encoding='utf-8')
+    assert "url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)" in w
