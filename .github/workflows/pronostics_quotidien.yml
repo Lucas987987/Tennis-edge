@@ -16,12 +16,13 @@ name: Pronostics du jour
 # collectées (feuilles/, workflow « Feuilles de match ») ; non commités ici.
 on:
   workflow_dispatch:
-  # 23/10/2026 : déclenché toutes les 2 h par le worker Cloudflare (tennis-edge-closing) ; le cron reste en filet.
+  # 23/10/2026 : déclenché par le worker Cloudflare (tennis-edge-closing) ; le cron reste en filet.
+  # 24/11/2026 (paquet 410) : le worker relance un passage dès que le précédent est fini (au plus toutes les 20 min).
   repository_dispatch:
     types: [pronostics_quotidien]
   schedule:
-    # Toutes les 2 h pour pronostiquer les nouveaux matchs plus vite.
-    - cron: '23 */2 * * *'
+    # Filet horaire si le worker ne déclenche plus (un passage en cours garde la main : groupe « pronostics »).
+    - cron: '23 * * * *'
 
 permissions:
   contents: write
