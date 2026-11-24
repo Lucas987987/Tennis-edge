@@ -229,6 +229,14 @@ svg.curve{width:100%;height:auto;display:block}
 .plus ul{margin:10px 0 0;padding-left:1.1em}
 .plus li{margin:4px 0}
 .plus .soon{display:inline-block;margin-top:12px}
+.plus-preuve{margin:10px 0 0;font-size:.92rem;color:var(--dim)}.plus-preuve b{color:var(--ink)}
+.plus-comp-wrap{overflow-x:auto;margin:12px 0 0}.plus-comp{width:100%;border-collapse:collapse;font-size:.9rem}
+.plus-comp th{font-weight:700;text-align:center;padding:6px 8px;border-bottom:1px solid var(--line,rgba(255,255,255,.12))}.plus-comp th:first-child{text-align:left}
+.plus-comp td{padding:7px 8px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));text-align:center;vertical-align:middle}.plus-comp td:first-child{text-align:left}
+.plus-comp .oui{color:var(--ok);font-weight:700}.plus-comp .non{color:var(--dim)}.plus-comp small{color:var(--dim);font-size:.78rem}
+.plus-comp th.p,.plus-comp td.p{background:rgba(46,230,255,.07)}
+.plus .lien.plus-ex{background:none;border:0;color:var(--p1);cursor:pointer;padding:6px 0;font:inherit;font-size:.92rem;text-decoration:underline}
+.fd-pay{margin-top:14px}.fd-pay .iban{font-family:ui-monospace,Menlo,monospace;background:rgba(var(--wv),.06);border-radius:8px;padding:10px 12px;margin:8px 0 0;line-height:1.6;user-select:all;word-break:break-all}
 /* 23/11/2026 (paquet 377) — comptes et accès Plus */
 .compte-b{border:1px solid var(--line2);background:rgba(var(--wv),.06);border-radius:999px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
 .compte-b.plus{border-color:var(--ball)}
@@ -846,16 +854,18 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <div class="panel" id="calib-rejoue"></div>
   </section>
 
-  <section aria-labelledby="plus-h">
+  <section id="plus" aria-labelledby="plus-h">
     <h2 id="plus-h" data-t="plus_titre"></h2>
     <div class="panel plus">
       <p style="margin:0" data-t="plus_texte"></p>
-      <ul id="plus-list"></ul>
-      <span class="badge soon" data-t="plus_bientot"></span>
+      <p class="plus-preuve" id="plus-preuve" hidden></p>
+      <div class="plus-comp-wrap"><table class="plus-comp" id="plus-comp"></table></div>
+      <p style="margin:10px 0 0"><button type="button" class="lien plus-ex" data-plus="mdj" data-t="plus_exemple"></button></p>
+      <span class="badge soon" id="plus-bientot" data-t="plus_bientot"></span>
       <p style="margin:12px 0 0"><button type="button" class="btn go" id="plus-compte" data-t="verrou_cta_compte"></button></p>
       <div class="fondateurs" id="fondateurs" hidden>
         <h3 style="margin:16px 0 6px" data-t="fd_titre"></h3>
-        <p style="margin:0" data-t="fd_texte"></p>
+        <p style="margin:0" id="fd-texte" data-t="fd_texte"></p>
         <div id="fd-etat" role="status" aria-live="polite"></div>
       </div>
     </div>
@@ -866,7 +876,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
-    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a></p>
+    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a></p>
   </footer>
   <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
@@ -1090,8 +1100,18 @@ const T = {
   calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
-  plus_items:['Le pronostic de tous les matchs : % de victoire et note de fiabilité','Sets, scores probables, statistiques prévues et scénarios du match','Le direct de chaque match et la simulation rejouable','À la semaine, au mois, au trimestre ou à l’année'],
   plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
+  plus_comp_tete:['', 'Gratuit', 'Plus'],
+  plus_comp:[['Le match du jour, en entier', true, true], ['% de victoire de tous les matchs', ['une fois le match commencé'], ['avant le match']],
+    ['Note de fiabilité de chaque pronostic', false, true], ['Sets et scores probables', false, true],
+    ['Statistiques prévues (aces, 1re balle, breaks…)', false, true], ['Direct et simulation rejouable de chaque match', false, true],
+    ['Bilan public, toutes les erreurs comprises', true, true]],
+  plus_exemple:"Voir un exemple : le match du jour, offert en entier",
+  plus_preuve:(n, b) => `Aujourd'hui : <b>${n} matchs</b> analysés, dont un offert.` + (b ? ` Sur les 30 derniers jours : <b>${b.pct} de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.` : ''),
+  fd_place:n=>`Ta place fondateur n° ${n} est confirmée : 9,99 € par mois, à vie, tant que tu renouvelles chaque mois au plus tard 7 jours après la fin du précédent.`,
+  fd_pay_titre:'Payer par virement', fd_pay_texte:"Ton accès s'ouvre dès réception du virement (un virement instantané arrive en quelques secondes). La facture part par e-mail.",
+  fd_pay_lignes:(p) => [`Titulaire : ${p.titulaire}`, `IBAN : ${p.iban}`, ...(p.bic ? [`BIC : ${p.bic}`] : []), `Montant : ${String(p.montant.toFixed(2)).replace('.', ',')} €`, `Libellé (important) : ${p.reference}`],
+  fd_pay_cgv:'Conditions de vente', fd_pay_avant:"Commence par cocher l'accès immédiat ci-dessus.",
   verrou_commence:"Le match a commencé : le % de l'algo d'avant match est affiché. Le détail (sets, scores, scénarios, statistiques) reste réservé à l'accès Plus.",
   fd_titre:'Offre fondateurs',
   fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Le paiement n'est pas encore ouvert : réserve ta place, on te prévient par e-mail à l'ouverture. Réserver est gratuit et n'engage à rien.",
@@ -1130,7 +1150,7 @@ const T = {
   verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.",
   pwa_installer:"📲 Installer l'appli sur ce téléphone",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
-  lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation",
+  lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente',
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
   v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'gamesetalgo.com',
@@ -1427,8 +1447,18 @@ const T = {
   calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
-  plus_items:['The forecast for every match: win % and reliability score','Sets, likely scores, predicted stats and match scenarios','Live coverage of every match and the replayable simulation','Weekly, monthly, quarterly or yearly'],
   plus_bientot:'Payment coming soon · create your account now.',
+  plus_comp_tete:['', 'Free', 'Plus'],
+  plus_comp:[['The match of the day, in full', true, true], ['Win % for every match', ['once the match has started'], ['before the match']],
+    ['Reliability score for every forecast', false, true], ['Likely sets and scores', false, true],
+    ['Predicted stats (aces, 1st serve, breaks…)', false, true], ['Live view and replayable simulation for every match', false, true],
+    ['Public record, every miss included', true, true]],
+  plus_exemple:'See an example: the match of the day, free in full',
+  plus_preuve:(n, b) => `Today: <b>${n} matches</b> analysed, one of them free.` + (b ? ` Over the last 30 days: <b>${b.pct} of winners found</b> across ${b.n} matches, every miss included.` : ''),
+  fd_place:n=>`Your founder spot no. ${n} is confirmed: €9.99 a month, for life, as long as you renew each month no later than 7 days after the previous one ends.`,
+  fd_pay_titre:'Pay by bank transfer', fd_pay_texte:'Access opens as soon as the transfer arrives (an instant transfer takes seconds). The invoice is emailed to you.',
+  fd_pay_lignes:(p) => [`Account holder: ${p.titulaire}`, `IBAN: ${p.iban}`, ...(p.bic ? [`BIC: ${p.bic}`] : []), `Amount: €${p.montant.toFixed(2)}`, `Reference (important): ${p.reference}`],
+  fd_pay_cgv:'Terms of sale', fd_pay_avant:'Start by ticking immediate access above.',
   verrou_commence:"The match has started: the algo's pre-match % is shown. The details (sets, scores, scenarios, stats) stay reserved for Plus access.",
   fd_titre:'Founders offer',
   fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as the subscription stays active. Payment isn't open yet: reserve your spot and we'll email you when it opens. Reserving is free and commits you to nothing.",
@@ -1467,7 +1497,7 @@ const T = {
   verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.',
   pwa_installer:'📲 Install the app on this phone',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
-  lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use',
+  lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
   v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'gamesetalgo.com',
@@ -3222,7 +3252,7 @@ function rendTextes(){
   document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
   document.querySelectorAll('.circuits button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.circuit===circuit)));
   document.getElementById('retour-mdj').textContent = t('retour_mdj');
-  document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
+  rendPlus();
   if (typeof majBoutonCompte === 'function') majBoutonCompte();
   if (typeof rendFondateurs === 'function' && !document.getElementById('fondateurs').hidden) rendFondateurs();
   boutonSon();
@@ -7774,6 +7804,7 @@ function texteLegal(page, e){
   const editeur = pro ? `<p>${x(e.nom)}${e.statut ? ' — ' + x(e.statut) : ''}<br>${x(e.adresse)}${e.siret ? '<br>SIRET : ' + x(e.siret) : ''}${e.ape ? '<br>' + (fr ? 'Code APE : ' : 'APE code: ') + x(e.ape) : ''}${e.tva_franchise ? '<br>' + (fr ? 'TVA non applicable, article 293 B du Code général des impôts.' : 'VAT not applicable (French tax code, art. 293 B).') : (e.tva ? '<br>' + (fr ? 'TVA intracommunautaire : ' : 'VAT number: ') + x(e.tva) : '')}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`
     : `<p>${fr ? "Site édité à titre non professionnel par un particulier. Conformément à l'article 6-III-2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, ses coordonnées ont été communiquées à l'hébergeur." : 'Published on a non-professional basis by a private individual, whose details have been provided to the host (French law no. 2004-575, art. 6-III-2).'}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`;
   const heb = `<p>GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.<br>${fr ? 'Diffusion et sécurité :' : 'Delivery and security:'} Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.</p>`;
+  if (page === 'cgv') return texteCgv(e, fr, x, contact, editeur, pro);
   if (page === 'mentions') return fr ? `<h2>Mentions légales</h2>
     <h3>Éditeur et directeur de la publication</h3>${editeur}<h3>Hébergement</h3>${heb}
     <h3>Ce que propose le site</h3><p>Game Set Algo publie des analyses statistiques de matchs de tennis : chaque match est simulé point par point par un algorithme indépendant. Ce sont des probabilités, pas des certitudes : le site ne donne aucun conseil de pari et ne promet aucun gain. Le bilan publié comprend toutes les erreurs.</p>
@@ -7816,16 +7847,57 @@ function texteLegal(page, e){
     <h3>Pas de conseil de pari</h3><p>Les informations publiées sont des estimations statistiques, sans garantie de résultat. Elles ne constituent ni un conseil de pari ni une incitation à jouer. Vous restez seul responsable de l'usage que vous en faites.</p>
     <h3>Disponibilité</h3><p>Le site est fourni tel quel ; il peut être interrompu, modifié ou comporter des erreurs, notamment dans les données sportives reçues de tiers.</p>
     <h3>Propriété</h3><p>Les contenus du site ne peuvent pas être reproduits ou revendus sans autorisation. Partager un lien ou une image publiée sur nos comptes est bienvenu.</p>
-    <h3>Offre payante</h3><p>Aucune offre payante n'est ouverte aujourd'hui. Avant toute ouverture, des conditions générales de vente seront publiées ici (prix, durée, résiliation, droit de rétractation).</p>
+    <h3>Offre payante</h3><p>L'accès Plus payant est régi par les <a href="#cgv">conditions générales de vente</a> (prix, durée, accès immédiat, droit de rétractation, médiation).</p>
     <h3>Accès immédiat et droit de rétractation</h3><p>L'accès Plus est un contenu numérique fourni en ligne, sans support matériel. Avant de payer, vous pouvez demander qu'il s'ouvre dès réception de votre paiement, avant la fin du délai de rétractation de 14 jours, en cochant deux cases distinctes dans la section Plus ; vous reconnaissez alors perdre votre droit de rétractation une fois l'accès ouvert (Code de la consommation, art. L221-28). Une confirmation vous est envoyée par e-mail et la date de la demande figure sur la facture. Sans cette demande, l'accès n'est ouvert qu'avec votre droit de rétractation de 14 jours intact.</p>
     <h3>Liste d'attente fondateurs</h3><p>Un compte confirmé peut réserver gratuitement une place sur la liste d'attente fondateurs ; réserver n'engage à rien et s'annule à tout moment. Les places sont attribuées dans l'ordre des réservations : les 100 premières donneront droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif, dans les conditions générales de vente publiées à l'ouverture. Un compte supprimé perd sa place.</p>
     <h3>Droit applicable</h3><p>Ces conditions relèvent du droit français.</p>${maj}`
-    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses (match of the day, public record); the full analysis of every match is reserved for Plus access, linked to an account. These are estimates without any guaranteed outcome; they are not betting advice. Accounts are personal (one person, one account); sharing access, automated scraping or abuse may lead to suspension; you can delete your account at any time. Until payment opens, Plus access is granted by the publisher, notably through single-use access codes valid until their expiry date. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. A confirmed account can reserve a founders spot for free (no commitment, cancel anytime); spots go in reservation order and the first 100 will get Plus access at €9.99 a month for life while the subscription stays active, under the terms of sale published at opening. Plus access is digital content supplied online without a physical medium: before paying, you can ask for it to open as soon as your payment is received, before the 14-day withdrawal period ends, by ticking two separate boxes in the Plus section; you then acknowledge losing your right of withdrawal once access is open (French Consumer Code, art. L221-28). A confirmation is emailed and the request date appears on the invoice. Without this request, access opens with your 14-day withdrawal right intact. French law applies.</p>${maj}`;
+    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses (match of the day, public record); the full analysis of every match is reserved for Plus access, linked to an account. These are estimates without any guaranteed outcome; they are not betting advice. Accounts are personal (one person, one account); sharing access, automated scraping or abuse may lead to suspension; you can delete your account at any time. Until payment opens, Plus access is granted by the publisher, notably through single-use access codes valid until their expiry date. The site is provided as is. Paid Plus access is governed by the <a href="#cgv">terms of sale</a>. A confirmed account can reserve a founders spot for free (no commitment, cancel anytime); spots go in reservation order and the first 100 will get Plus access at €9.99 a month for life while the subscription stays active, under the terms of sale published at opening. Plus access is digital content supplied online without a physical medium: before paying, you can ask for it to open as soon as your payment is received, before the 14-day withdrawal period ends, by ticking two separate boxes in the Plus section; you then acknowledge losing your right of withdrawal once access is open (French Consumer Code, art. L221-28). A confirmation is emailed and the request date appears on the invoice. Without this request, access opens with your 14-day withdrawal right intact. French law applies.</p>${maj}`;
+}
+// 24/11/2026 (paquet 405, Lucas : « fais 1-2-3 ») — CONDITIONS GÉNÉRALES DE VENTE de l'accès Plus. Vendeur : editeur.json
+// (nom, adresse, SIRET…) ; médiateur de la consommation : champ facultatif « mediateur » d'editeur.json
+// ({ "nom": …, "adresse": …, "site": … }), obligatoire avant le premier paiement. Pas de renouvellement automatique
+// (virement), accès immédiat avec renonciation (paquet 403), tarif fondateur gardé si chaque mois est payé au plus tard
+// 7 jours après la fin du précédent. À faire relire par un juriste avant d'encaisser.
+const CGV_VERSION = '24/11/2026', FONDATEUR_DELAI_J = 7;
+function texteCgv(e, fr, x, contact, editeur, pro){
+  const md = e.mediateur || {}, med = md.nom ? `${x(md.nom)}${md.adresse ? ', ' + x(md.adresse) : ''}${md.site ? ' — <a href="' + x(/^https?:\/\//.test(md.site) ? md.site : 'https://' + md.site) + '" rel="noopener">' + x(md.site) + '</a>' : ''}` : null;
+  const vend = pro ? editeur : `<p>${fr ? "Les ventes ne sont pas encore ouvertes : l'identité complète du vendeur (nom, adresse, SIRET) sera publiée ici avant le premier paiement." : "Sales are not open yet: the seller's full identity (name, address, company number) will be published here before the first payment."}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`;
+  const tva = e.tva_franchise ? (fr ? ' TVA non applicable, article 293 B du Code général des impôts.' : ' VAT not applicable (French tax code, art. 293 B).') : '';
+  if (fr) return `<h2>Conditions générales de vente</h2>
+    <p>Elles s'appliquent à l'accès Plus de Game Set Algo vendu sur gamesetalgo.com à des personnes physiques agissant à titre personnel. La version en vigueur le jour du paiement s'applique à ce paiement.</p>
+    <h3>1. Vendeur</h3>${vend}
+    <h3>2. Ce qui est vendu</h3><p>L'accès Plus est un accès personnel, en ligne, pendant la période payée, à toutes les analyses publiées sur le site pour chaque match : % de victoire, note de fiabilité, sets et scores probables, statistiques prévues, scénarios, suivi en direct et simulation rejouable. C'est un contenu numérique fourni en ligne, sans support matériel. Ces analyses sont des probabilités calculées par un algorithme : elles ne constituent ni un conseil de pari ni une promesse de résultat ou de gain. Le nombre de matchs couverts dépend du calendrier des tournois et des données disponibles ; la présentation peut évoluer. Les matchs ITF ne font l'objet d'aucun pronostic.</p>
+    <h3>3. Prix</h3><p>Les prix sont indiqués en euros, toutes taxes comprises, dans la section Plus au moment du paiement.${tva} Offre fondateurs : les 100 premières places de la liste d'attente, dans l'ordre des réservations, ont l'accès Plus au mois à 9,99 €. Ce tarif est garanti à vie tant que l'accès reste actif, c'est-à-dire tant que chaque nouveau mois est payé au plus tard ${FONDATEUR_DELAI_J} jours après la fin du mois précédent ; au-delà, le prix en vigueur s'applique.</p>
+    <h3>4. Commande et paiement</h3><p>Il faut un compte dont l'adresse e-mail est confirmée. Le paiement se fait par virement bancaire, du montant exact, avec la référence personnelle du compte (GSA-…) dans le libellé. Le contrat est conclu à la réception du paiement. L'accès s'ouvre dès que le virement est reçu et rattaché au compte, en principe le jour même (un virement instantané arrive en quelques secondes). Une facture est envoyée par e-mail et reste disponible dans « Mon compte ». Aucune carte bancaire n'est enregistrée et aucun prélèvement n'est fait.</p>
+    <h3>5. Durée, sans renouvellement automatique</h3><p>Chaque paiement ouvre l'accès pour la période choisie (semaine, mois, trimestre ou année) ; s'il est payé pendant un accès en cours, il le prolonge. Rien ne se renouvelle tout seul : aucun paiement n'est demandé sans action du client, et un e-mail rappelle la fin de l'accès quelques jours avant. Pour arrêter, il suffit de ne pas renouveler ; il n'y a rien à résilier.</p>
+    <h3>6. Accès immédiat et droit de rétractation</h3><p>Avant de payer, le client peut demander que l'accès s'ouvre dès réception de son paiement, avant la fin du délai de rétractation de 14 jours, en cochant deux cases distinctes dans la section Plus ; il reconnaît alors perdre son droit de rétractation une fois l'accès ouvert (Code de la consommation, art. L221-28). Une confirmation lui est envoyée par e-mail et la facture le mentionne. Sans cette demande, le client peut se rétracter sans motif dans les 14 jours suivant le paiement, en l'écrivant à ${contact} ; il est alors remboursé en totalité, par virement, dans les 14 jours.</p>
+    <h3>7. Compte personnel</h3><p>L'accès est réservé au titulaire du compte. Le partage d'accès, la revente des analyses et leur extraction automatisée sont interdits. En cas de manquement établi, et après un avertissement par e-mail resté sans effet, l'accès peut être suspendu ou le contrat résilié ; la période restante n'est alors pas remboursée.</p>
+    <h3>8. Disponibilité et responsabilité</h3><p>Le vendeur fait ses meilleurs efforts pour que le site soit disponible et à jour, sans pouvoir le garantir en permanence : maintenance, pannes de ses prestataires ou retards des données sportives reçues de tiers peuvent l'interrompre ou le retarder. Si l'accès Plus est interrompu plus de 72 heures de suite du fait du vendeur, la période payée est prolongée d'autant. Le vendeur n'est pas responsable des décisions, notamment de paris, que le client prend à partir des analyses.</p>
+    <h3>9. Garantie légale de conformité</h3><p>Le client bénéficie de la garantie légale de conformité des contenus et services numériques (Code de la consommation, articles L224-25-12 et suivants) : en cas de défaut de conformité, il peut obtenir la mise en conformité, ou à défaut une réduction du prix ou la fin du contrat avec remboursement.</p>
+    <h3>10. Données personnelles</h3><p>Elles sont traitées comme décrit dans la page <a href="#confidentialite">Confidentialité</a>. Les factures sont conservées 10 ans, comme l'impose la loi.</p>
+    <h3>11. Réclamations et médiation</h3><p>Toute réclamation s'adresse d'abord par écrit à ${contact}. Si elle n'aboutit pas, le client peut saisir gratuitement le médiateur de la consommation : ${med || 'ses coordonnées seront publiées ici avant le premier paiement'}.</p>
+    <h3>12. Droit applicable</h3><p>Ces conditions relèvent du droit français. En cas de litige, le client consommateur peut saisir le tribunal de son lieu de résidence.</p>
+    <p class="maj">Version du ${CGV_VERSION}.</p>`;
+  return `<h2>Terms of sale</h2>
+    <p>These terms apply to Game Set Algo Plus access sold on gamesetalgo.com to individuals acting for personal purposes. The version in force on the day of payment applies to that payment.</p>
+    <h3>1. Seller</h3>${vend}
+    <h3>2. What is sold</h3><p>Plus access is personal online access, for the period paid, to every analysis the site publishes for each match: win %, reliability score, likely sets and scores, predicted stats, scenarios, live follow-up and replayable simulation. It is digital content supplied online, without a physical medium. These analyses are probabilities computed by an algorithm: they are neither betting advice nor a promise of any result or winnings. Coverage depends on the tournament calendar and available data; presentation may change. ITF matches never get a forecast.</p>
+    <h3>3. Price</h3><p>Prices are shown in euros, all taxes included, in the Plus section at the time of payment.${tva} Founders offer: the first 100 spots on the waiting list, in reservation order, get monthly Plus access at €9.99. This price is guaranteed for life as long as access stays active, meaning each new month is paid no later than ${FONDATEUR_DELAI_J} days after the previous month ends; after that, the current price applies.</p>
+    <h3>4. Order and payment</h3><p>A confirmed account is required. Payment is by bank transfer of the exact amount, with the account's personal reference (GSA-…) in the transfer label. The contract is formed when payment is received. Access opens as soon as the transfer is received and matched to the account, normally the same day (an instant transfer arrives within seconds). An invoice is emailed and stays available in "My account". No card is stored and no direct debit is taken.</p>
+    <h3>5. Duration, no automatic renewal</h3><p>Each payment opens access for the chosen period (week, month, quarter or year); paid during an active access, it extends it. Nothing renews by itself: no payment is ever taken without the customer's action, and an email reminds you a few days before access ends. To stop, simply don't renew; there is nothing to cancel.</p>
+    <h3>6. Immediate access and right of withdrawal</h3><p>Before paying, the customer may ask for access to open as soon as payment is received, before the 14-day withdrawal period ends, by ticking two separate boxes in the Plus section; they then acknowledge losing their right of withdrawal once access is open (French Consumer Code, art. L221-28). A confirmation is emailed and the invoice mentions it. Without this request, the customer may withdraw without giving a reason within 14 days of payment by writing to ${contact}, and is refunded in full by bank transfer within 14 days.</p>
+    <h3>7. Personal account</h3><p>Access is for the account holder only. Sharing access, reselling the analyses or scraping them is forbidden. If a breach is established and an email warning goes unheeded, access may be suspended or the contract ended; the remaining period is then not refunded.</p>
+    <h3>8. Availability and liability</h3><p>The seller makes its best efforts to keep the site available and up to date but cannot guarantee it at all times: maintenance, provider outages or delays in third-party sports data may interrupt or delay it. If Plus access is interrupted for more than 72 consecutive hours through the seller's fault, the paid period is extended accordingly. The seller is not liable for decisions, including bets, the customer makes based on the analyses.</p>
+    <h3>9. Legal guarantee of conformity</h3><p>The customer benefits from the legal guarantee of conformity for digital content and services (French Consumer Code, art. L224-25-12 and following): in case of non-conformity, they can obtain conformity, or failing that a price reduction or the end of the contract with a refund.</p>
+    <h3>10. Personal data</h3><p>Processed as described on the <a href="#confidentialite">Privacy</a> page. Invoices are kept for 10 years, as required by law.</p>
+    <h3>11. Complaints and mediation</h3><p>Any complaint should first be sent in writing to ${contact}. If it is not resolved, the customer may refer it free of charge to the consumer mediator: ${med || 'details will be published here before the first payment'}.</p>
+    <h3>12. Governing law</h3><p>French law applies. A consumer customer may bring a dispute before the court of their place of residence.</p>
+    <p class="maj">Version of ${CGV_VERSION}.</p>`;
 }
 function ouvrirLegal(){
   const page = (location.hash || '').slice(1), box = document.getElementById('legal');
   if (!box) return;
-  if (!['mentions', 'confidentialite', 'cgu'].includes(page)) { box.hidden = true; return; }
+  if (!['mentions', 'confidentialite', 'cgu', 'cgv'].includes(page)) { box.hidden = true; return; }
   lireEditeur().then(e => { document.getElementById('legal-txt').innerHTML = texteLegal(page, e); box.hidden = false; box.scrollTop = 0; });
 }
 window.addEventListener('hashchange', ouvrirLegal);
@@ -7840,7 +7912,7 @@ function chargerPlus(){                                              // paquet 3
   if (!D || !D._plus) return;
   lireJson(D._plus).then(p => {
     Object.assign(D, p); delete D._plus;
-    rendBilan(); rendJournal(); rendSuivi(); rendCalib();
+    rendBilan(); rendJournal(); rendSuivi(); rendCalib(); rendPlus();
   }).catch(() => {});
 }
 function rendTout(){
@@ -8273,16 +8345,44 @@ function majBoutonCompte(){
   b.textContent = COMPTE ? (COMPTE.abonne ? '★ ' : '') + t('cp_btn_moi') : t('cp_btn');
   b.classList.toggle('plus', !!(COMPTE && COMPTE.abonne));
 }
+// 24/11/2026 (paquet 405, Lucas : « fais 1-2-3 ») — section Plus lisible en 10 secondes : gratuit contre Plus (tableau),
+// le nombre de matchs du jour et le bilan des 30 derniers jours (public, erreurs comprises), un lien vers l'exemple
+// complet (le match du jour). Aucun élément repris d'un autre site ; aucune promesse de gain.
+function rendPlus(){
+  const tb = document.getElementById('plus-comp'); if (!tb) return;
+  const cel = (v, cl) => v === true ? `<td class="${cl} oui" aria-label="✓">✓</td>` : v === false ? `<td class="${cl} non" aria-label="—">—</td>`
+    : `<td class="${cl}"><small>${esc(v[0])}</small></td>`;
+  const tete = t('plus_comp_tete');
+  tb.innerHTML = `<thead><tr><th>${esc(tete[0])}</th><th>${esc(tete[1])}</th><th class="p">${esc(tete[2])}</th></tr></thead><tbody>`
+    + t('plus_comp').map(r => `<tr><td>${esc(r[0])}</td>${cel(r[1], '')}${cel(r[2], 'p')}</tr>`).join('') + '</tbody>';
+  const pr = document.getElementById('plus-preuve'); if (!pr || !D) return;
+  const n = (D.matchs || []).filter(m => m.circuit !== 'ITF').length;
+  const g = ((D.bilan_30j || {}).global) || null;
+  pr.innerHTML = n ? t('plus_preuve', fmt(n), g && g.n >= 30 ? { pct: pc(g.pct), n: fmt(g.n) } : null) : '';
+  pr.hidden = !n;
+}
+// 405 — fondateur prévenu de l'ouverture : n° de place, puis les coordonnées du virement (après l'accès immédiat)
+let PAIEMENT = null;
+function blocPaiement(){
+  if (!COMPTE || !COMPTE.fondateur_place || !PAIEMENT) return '';
+  const avant = COMPTE.acces_immediat ? '' : `<p class="msg" style="margin:6px 0 0">${esc(t('fd_pay_avant'))}</p>`;
+  return `<div class="fd-pay"><h3 style="margin:0 0 6px">${esc(t('fd_pay_titre'))}</h3>${avant}<p style="margin:6px 0 0">${esc(t('fd_pay_texte'))}</p>
+    <div class="iban">${t('fd_pay_lignes', PAIEMENT).map(esc).join('<br>')}</div>
+    <p style="margin:8px 0 0"><a href="#cgv">${esc(t('fd_pay_cgv'))}</a></p></div>`;
+}
 // 23/11/2026 (paquet 384, Lucas) — liste d'attente fondateurs, dans la section Plus. Aucun compteur visible.
 function rendFondateurs(msg){
   const z = document.getElementById('fondateurs'), e = document.getElementById('fd-etat'); if (!z || !e) return;
   z.hidden = false;
+  const ouvert = !!(COMPTE && COMPTE.fondateur_place && PAIEMENT);       // 405 : « paiement pas encore ouvert » ne vaut plus
+  ['plus-bientot', 'fd-texte'].forEach(id => { const x = document.getElementById(id); if (x) x.hidden = ouvert; });
   const note = msg ? `<p class="msg ok" style="margin:8px 0 0">${esc(msg)}</p>` : '';
   if (!COMPTE) e.innerHTML = `<div class="actions" style="margin-top:10px"><button type="button" class="btn go" data-compte="inscription">${esc(t('fd_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('fd_cx'))}</button></div>` + note;
+  else if (COMPTE.fondateur_place) e.innerHTML = `<p class="msg ok" style="margin:10px 0 0">${esc(t('fd_place', COMPTE.fondateur_place))}</p>`;
   else if (COMPTE.fondateur) e.innerHTML = `<p class="msg ok" style="margin:10px 0 0">${esc(t('fd_ok', String(COMPTE.fondateur).slice(0,10).split('-').reverse().join('/')))}</p><button type="button" class="lien" data-fd="annuler">${esc(t('fd_annuler'))}</button>`;
   else if (!COMPTE.verifie) e.innerHTML = `<p class="msg" style="margin:10px 0 0">${esc(t('fd_verif'))}</p>`;
   else e.innerHTML = `<p style="margin:10px 0 0"><button type="button" class="btn go" data-fd="reserver">${esc(t('fd_reserver'))}</button></p>` + note;
-  if (COMPTE && COMPTE.verifie && (COMPTE.fondateur || COMPTE.paye)) e.insertAdjacentHTML('beforeend', blocAccesImmediat());
+  if (COMPTE && COMPTE.verifie && (COMPTE.fondateur || COMPTE.paye)) e.insertAdjacentHTML('beforeend', blocAccesImmediat() + blocPaiement());
 }
 // 24/11/2026 (paquet 403, Lucas : « paiement sans rétractation ») — avant de payer, le client demande l'accès immédiat
 // et reconnaît perdre son droit de rétractation une fois l'accès ouvert. Deux cases distinctes, jamais pré-cochées.
@@ -8421,6 +8521,7 @@ function brancherCompte(){
   document.addEventListener('click', ev => {
     const fd = ev.target.closest('[data-fd]'); if (fd) return fondateurAction(fd.dataset.fd === 'reserver', fd);
     const ri = ev.target.closest('[data-ri]'); if (ri) return accesImmediatAction(ri.dataset.ri, ri);
+    const px = ev.target.closest('[data-plus="mdj"]'); if (px) { const z = document.getElementById('mdj'); if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     const x = ev.target.closest('[data-cp],[data-compte],#b-compte,#plus-compte'); if (!x) { if (ev.target.id === 'compte-fond') fermerCompte(); return; }
     if (x.id === 'b-compte') return ouvrirCompte(COMPTE ? 'moi' : 'connexion');
     if (x.id === 'plus-compte') return ouvrirCompte(COMPTE ? 'moi' : 'inscription');
@@ -8434,7 +8535,7 @@ function brancherCompte(){
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
-    COMPTE = o.compte || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
+    COMPTE = o.compte || null; PAIEMENT = o.paiement || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));

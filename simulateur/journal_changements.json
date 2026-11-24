@@ -2193,6 +2193,20 @@
    "paquet": 403,
    "quoi": "PAIEMENT AVEC ACCÈS IMMÉDIAT (paquet 403, Lucas : « paiement sans rétractation »). Dans la section Plus, avant de payer, le client coche deux cases distinctes, jamais pré-cochées : il demande que l'accès commence dès réception de chaque paiement, avant la fin des 14 jours, et reconnaît perdre son droit de rétractation une fois l'accès ouvert. Les deux textes exacts, leur version et la date sont gardés sur le compte, une confirmation part par e-mail, la facture le mentionne. Sans cette demande, l'administration refuse le virement, sauf case « sans renonciation » (le client garde alors ses 14 jours). Conditions d'utilisation complétées.",
    "garde_fou": "Rien ne change dans les pronostics. La demande se retire tant qu'aucun accès payé n'est ouvert. Tests : workers/algo/test_comptes.mjs (textes du site identiques à ceux gardés comme preuve)."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 405,
+   "quoi": "CONDITIONS DE VENTE, OUVERTURE FONDATEURS, SECTION PLUS (paquet 405, Lucas : « fais 1-2-3 »). 1) Conditions générales de vente en français et en anglais (lien « Conditions de vente » en bas de page) : vendeur, ce qui est vendu, prix, offre fondateurs (9,99 € par mois à vie si chaque mois est renouvelé au plus tard 7 jours après la fin du précédent), virement, aucun renouvellement automatique, accès immédiat et rétractation, compte personnel, disponibilité, garantie légale de conformité, médiation, droit français. 2) Depuis l'administration, e-mail d'ouverture personnel aux 100 premières places (ordre de réservation), par lots de 25, jamais deux fois : n° de place, prix, référence et coordonnées du virement, lien vers l'accès immédiat ; le fondateur prévenu voit ces coordonnées dans la section Plus. 3) Section Plus : tableau gratuit contre Plus, nombre de matchs du jour, bilan des 30 derniers jours (au moins 30 matchs), lien vers le match du jour en exemple.",
+   "garde_fou": "Rien ne change dans les pronostics. Médiateur : champ « mediateur » d'editeur.json à remplir avant le premier paiement. Conditions à faire relire. Tests : tests/test_cgv_plus.py, workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "decision",
+   "paquet": 406,
+   "quoi": "PUBLICATION GITHUB PAGES : SECOND ESSAI (paquet 406). Le déploiement a échoué une seconde après un envoi réussi de l'archive du site (« 0 artefact trouvé » : GitHub ne l'avait pas encore enregistrée). Le site servi par Cloudflare était déjà à jour ; seule la copie GitHub Pages manquait. Désormais, en cas d'échec, un second déploiement part 30 secondes plus tard.",
+   "garde_fou": "Aucun changement du site ni des calculs. Tests : tests/test_workflows_sans_cle_vide.py et les tests du site."
   }
  ]
 }

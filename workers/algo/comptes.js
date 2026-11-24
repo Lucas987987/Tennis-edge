@@ -79,7 +79,16 @@ function vueCompte(u) {
   return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
     reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
-    acces_immediat: (u.acces_immediat || {}).le || null };
+    acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.ouverture_envoyee ? u.fondateur_place || null : null };
+}
+// 405 : coordonnées de paiement, montrées dans la section Plus au seul fondateur prévenu de l'ouverture
+export const PRIX_FONDATEUR_SITE = 9.99;
+function paiementDe(u, env) {
+  if (!u || !u.verifie || !u.ouverture_envoyee || !u.fondateur_place) return null;
+  let c = null;
+  try { c = JSON.parse(env.VIREMENT || 'null'); } catch (e) { c = null; }
+  if (!c || !c.iban) return null;
+  return { titulaire: c.titulaire || '', iban: c.iban, bic: c.bic || '', montant: PRIX_FONDATEUR_SITE, reference: referenceVirement(u) };
 }
 
 // --------------------------------------------------------------------------------------------- session
@@ -318,7 +327,8 @@ async function supprimer(req, env, b) {
 async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
-  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat'];
+  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat',
+    'fondateur_place', 'ouverture_envoyee'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -329,7 +339,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (!env.COFFRE || !env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep({ ok: false, erreur: 'ferme' }, 503);
   if (p === 'moi' && req.method === 'GET') {
     const u = await utilisateur(req, env);
-    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u),
+    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u), paiement: paiementDe(u, env),
       turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
   if (p === 'export' && req.method === 'GET') return exporter(req, env);
@@ -550,6 +560,7 @@ button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff
 <input id="vc" type="text" placeholder="e-mail ou référence (GSA-…)"><select id="vf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option></select>
 <input id="vm" type="text" inputmode="decimal" placeholder="montant reçu (€), ex. 9,99"><input id="vd" type="date"><label style="display:block;margin:6px 0"><input id="vfo" type="checkbox" style="width:auto"> tarif fondateur</label><label style="display:block;margin:6px 0"><input id="vsr" type="checkbox" style="width:auto"> sans renonciation (le client n'a pas demandé l'accès immédiat : il garde 14 jours de rétractation, remboursement intégral)</label>
 <button id="vb">Valider le virement</button><p id="vr"></p></div>
+<div class="c"><b>Ouverture fondateurs</b><br><small>E-mail personnel aux 100 premières places (n° de place, 9,99 €/mois, référence, coordonnées bancaires, accès immédiat). Par lots de 25 ; un compte n'est prévenu qu'une fois.</small><div style="margin-top:8px"><button id="oa">Aperçu</button> <button id="oe">Envoyer un lot</button></div><p id="or"></p><div id="oh" style="background:#fff;border-radius:8px;overflow:hidden"></div></div>
 <div class="c"><b>Factures</b><div id="lfa"><small>…</small></div></div><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
 <select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="admin">Admin (toi : sections internes)</option><option value="retirer">Retirer l'accès</option></select>
 <input id="j" type="number" min="1" placeholder="jours (facultatif)"><button id="b">Valider</button><p id="r"></p></div>
@@ -574,6 +585,11 @@ $('en').innerHTML='<table style="width:100%;font-size:14px"><tr><td></td><td>24 
 function factures(){fetch('/compte/admin/api/factures',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lfa').innerHTML=(o.vendeur?'':'<p class="non"><small>Secret FACTURE_VENDEUR absent : aucune facture possible.</small></p>')+(o.factures.length?o.factures.map(f=>'<div><a style="color:#2ee6ff" target="_blank" href="/compte/admin/facture?n='+e(f.numero)+'">'+e(f.numero)+'</a> · '+e(f.email)+' · '+String(f.total.toFixed(2)).replace('.',',')+' € · '+String(f.emise_le).slice(0,10)+'</div>').join(''):'<small>Aucune facture.</small>');});}
 $('vd').value=new Date().toISOString().slice(0,10);
 $('vb').onclick=()=>{$('vb').disabled=true;fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked,sans_renonciation:$('vsr').checked})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vr').textContent=o.ok?'Fait : facture '+o.numero+', accès jusqu’au '+String(o.jusqu_au).slice(0,10)+(o.mail?', e-mail envoyé.':', e-mail NON envoyé.')+(o.renonciation?'':' Sans renonciation : 14 jours de rétractation.'):o.erreur==='sans_renonciation'?'Refusé : ce client n’a pas coché l’accès immédiat (section Plus). Demande-lui de le faire, ou coche « sans renonciation ».':'Refusé : '+o.erreur;charger();factures();entonnoir();});};
+const ERR_O={vendeur_absent:'secret FACTURE_VENDEUR absent',coordonnees_absentes:'secret VIREMENT absent (titulaire, iban, bic)',aucun_fondateur:'aucun fondateur confirmé'};
+function ouv(mode){$('or').textContent='…';fetch('/compte/admin/api/ouverture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode})}).then(r=>r.json()).then(o=>{if(!o.ok){$('or').textContent='Refusé : '+(ERR_O[o.erreur]||o.erreur);return;}
+if(mode==='apercu'){$('or').textContent=o.places+' place(s), '+o.deja+' déjà prévenue(s). Sujet : '+o.sujet;$('oh').innerHTML=o.html;}
+else{$('or').textContent=o.envoyes+' envoyé(s), '+o.restants+' restant(s) sur '+o.places+(o.arret?' — arrêt : '+o.arret:'');charger();}});}
+$('oa').onclick=()=>ouv('apercu');$('oe').onclick=()=>{if(confirm('Envoyer le lot suivant d’e-mails d’ouverture ?'))ouv('envoyer');};
 charger();codes();entonnoir();factures();
 </script></body></html>`;
 }
