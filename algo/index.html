@@ -146,6 +146,7 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .filtres{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px}
 .filtres input{flex:1 1 240px;min-height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);color:var(--ink);padding:10px 12px;font:inherit}
 .filtres input::placeholder{color:var(--dim)}
+.fiab-bloc{display:flex;flex-direction:column;gap:4px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding-left:4px}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap;min-height:36px}
 .circuits button{min-height:44px;min-width:44px}
 .compte{min-height:1.5em;margin:0 0 8px;color:var(--dim);font-size:.9rem}
 .list{list-style:none;margin:0;padding:0}
@@ -802,6 +803,14 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
         <button type="button" data-circuit="CH" aria-pressed="false">CH</button>
         <button type="button" data-circuit="LIVE" aria-pressed="false">🔴 LIVE</button>
       </div>
+      <div class="fiab-bloc"><span class="fiab-lab" data-t="fiab_filtre_label" aria-hidden="true"></span>
+      <div class="seg fiab-filtre" role="group" data-t-aria="fiab_filtre_label">
+        <button type="button" data-fniv="TOUS" aria-pressed="true" data-t="fiab_toutes"></button>
+        <button type="button" data-fniv="solide" aria-pressed="false" data-t="niv_solide"></button>
+        <button type="button" data-fniv="correct" aria-pressed="false" data-t="niv_correct"></button>
+        <button type="button" data-fniv="prudent" aria-pressed="false" data-t="niv_prudent"></button>
+        <button type="button" data-fniv="fragile" aria-pressed="false" data-t="niv_fragile"></button>
+      </div></div>
     </div>
     <p class="compte" id="liste-compte" aria-live="polite"></p>
     <div class="panel"><ul class="list" id="list"></ul><button type="button" class="more" id="liste-more" hidden></button></div>
@@ -821,6 +830,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
       <button type="button" data-bc="CH" aria-pressed="false">Challenger</button>
     </div>
     <div class="panel" id="bilan-facts"></div>
+    <div class="panel" style="margin-top:12px" id="bilan-fiab" hidden></div>
     <div class="panel" style="margin-top:12px;padding:14px 10px 6px" id="bilan-curve"></div>
     <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
   </section>
@@ -979,6 +989,10 @@ const T = {
   sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
   niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
+  fiab_toutes:'Toutes', fiab_filtre_label:'Niveau de fiabilité', fiab_filtre_plus:'Le tri par fiabilité est réservé à l’accès Plus.',
+  fiab_filtre_vide:'Aucun match de ce niveau de fiabilité pour l’instant.',
+  bf_titre:'Réussite par niveau de fiabilité', bf_sous:'Niveau annoncé avant chaque match, jamais recalculé. La fiabilité ne dit pas si le favori va gagner : elle dit si le % annoncé se réalise. Comparez donc le % annoncé et le % trouvé de chaque ligne.',
+  bf_niveau:'Fiabilité', bf_annonce:'% annoncé', bf_trouve:'Vainqueurs trouvés', bf_peu:'moins de 100 matchs : trop tôt pour conclure',
   ds_titre:'Elo et simulation en désaccord', ds_sous:'Les matchs où l’Elo et la simulation ne désignent pas le même vainqueur : qui avait raison, et l’algo affiché. Ce sont les arbres, jugés chaque lundi, qui apprennent quoi en faire.',
   ds_n:(d,n)=>`${fmt(d)} désaccords sur ${fmt(n)} matchs`, ds_sim:'Simul.', ds_aff:'Affiché',
   ds_direct:'Sur nos matchs', ds_vide:'Pas encore de désaccord jugé sur nos matchs (suivi depuis le 29 octobre).',
@@ -1338,6 +1352,10 @@ const T = {
   sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
   niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
+  fiab_toutes:'All', fiab_filtre_label:'Reliability level', fiab_filtre_plus:'Sorting by reliability is part of Plus access.',
+  fiab_filtre_vide:'No match at this reliability level yet.',
+  bf_titre:'Hit rate by reliability level', bf_sous:'Level announced before each match, never recalculated. Reliability does not say whether the favourite will win: it says whether the announced % comes true. So compare the announced % and the called % on each line.',
+  bf_niveau:'Reliability', bf_annonce:'Announced %', bf_trouve:'Winners called', bf_peu:'fewer than 100 matches: too early to conclude',
   ds_titre:'Elo and simulation disagree', ds_sous:'Matches where Elo and the simulation pick different winners: who was right, and the published forecast. The trees, judged every Monday, learn what to do with it.',
   ds_n:(d,n)=>`${fmt(d)} disagreements out of ${fmt(n)} matches`, ds_sim:'Sim.', ds_aff:'Published',
   ds_direct:'On our matches', ds_vide:'No judged disagreement on our matches yet (tracked since 29 October).',
@@ -3273,7 +3291,7 @@ function Arcade(root, m, opts){
 
 /* ───────────── rendu de la page ───────────── */
 let D = null, nRes = 12, circBilan = 'TOUS', nListe = 30, borne = null;
-let selectionId = null, circuit = 'TOUS', recherche = '';
+let selectionId = null, circuit = 'TOUS', recherche = '', fiabNiv = 'TOUS';
 function boutonSon(){
   const b = document.getElementById('b-son'), on = Bruit.actif;
   b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? t('son_on') : t('son_off')); b.title = on ? t('son_on') : t('son_off');
@@ -3287,6 +3305,8 @@ function rendTextes(){
   document.querySelectorAll('[data-t-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.tPlaceholder); });
   document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
   document.querySelectorAll('.circuits button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.circuit===circuit)));
+  document.querySelectorAll('.fiab-filtre button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.fniv===fiabNiv)));
+  document.querySelectorAll('[data-t-aria]').forEach(el=>el.setAttribute('aria-label', t(el.dataset.tAria)));
   document.getElementById('retour-mdj').textContent = t('retour_mdj');
   rendPlus();
   if (typeof majBoutonCompte === 'function') majBoutonCompte();
@@ -3801,7 +3821,8 @@ function matchsFiltres(){
   const q = recherche.trim().toLocaleLowerCase(loc());
   return D.matchs.filter(m=>(m.verrou || (m.simulation && m.simulation_disponible !== false)) &&
     (circuit==='TOUS' || (circuit==='LIVE' ? !!LIVE.par_uid[m.uid] : m.circuit===circuit)) &&
-    (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
+    (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)) &&
+    (fiabNiv==='TOUS' || (m.fiabilite||{}).niveau===fiabNiv));   // 420 : filtre par niveau de fiabilité
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, TennisApi) tant qu'un match de la liste peut être
 // en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
@@ -7522,9 +7543,12 @@ function rendListe(){
   const visiblesFinis = termines.slice().sort((a,b) => utc(b.debut) - utc(a.debut));
   const etaitOuvert = !!document.querySelector('#list .finished-group details[open]');   // replié par défaut ; reste ouvert seulement si le visiteur l'a ouvert
   const total = D.matchs.filter(m=>m.verrou || (m.simulation && m.simulation_disponible !== false)).length;
+  // 420 : sans accès Plus, seuls les matchs offerts portent une fiabilité ; on le dit au lieu de filtrer en silence
+  const sansFiab = fiabNiv!=='TOUS' && !D.matchs.some(m=>m.fiabilite && m.uid!==(D.match_du_jour||{}).uid);
+  const notePlus = sansFiab ? `<li class="empty" style="display:block">${esc(t('fiab_filtre_plus'))}</li>` : '';
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
-    ul.innerHTML = `<li class="empty" style="display:block">${esc(circuit==='LIVE' ? (L==='fr'?'Aucun match en direct actuellement.':'No live matches at the moment.') : t('liste_vide'))}</li>`;
+    ul.innerHTML = `<li class="empty" style="display:block">${esc(circuit==='LIVE' ? (L==='fr'?'Aucun match en direct actuellement.':'No live matches at the moment.') : fiabNiv!=='TOUS' ? t(sansFiab?'fiab_filtre_plus':'fiab_filtre_vide') : t('liste_vide'))}</li>`;
     document.getElementById('liste-more').hidden = true;
     return;
   }
@@ -7539,7 +7563,7 @@ function rendListe(){
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendType(m)}${rendFiabilite(m.fiabilite)}
     </span></a></li>`; };
-  ul.innerHTML = (termines.length && circuit!=='LIVE' ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '') + visibles.map(ligneMatch).join('');
+  ul.innerHTML = notePlus + (termines.length && circuit!=='LIVE' ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '') + visibles.map(ligneMatch).join('');
   const more = document.getElementById('liste-more');
   more.hidden = visibles.length >= enCours.length;
   more.textContent = t('voir_matchs',Math.min(30,enCours.length-visibles.length));
@@ -7736,13 +7760,14 @@ function rendBilan(){
   document.querySelectorAll('.bilan-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.bc===circBilan)));
   document.getElementById('bilan-sous').textContent = t('bilan_sous', B.depuis || '2026-10-21');
   const facts = document.getElementById('bilan-facts');
-  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; document.getElementById('bilan-curve').hidden = true; document.getElementById('bilan-res').innerHTML = ''; document.getElementById('bilan-more').hidden = true; return; }
+  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; rendBilanFiab(null); document.getElementById('bilan-curve').hidden = true; document.getElementById('bilan-res').innerHTML = ''; document.getElementById('bilan-more').hidden = true; return; }
   const circ = Object.entries(B.par_circuit||{}).sort((a,b)=>b[1].n-a[1].n).map(([c,v])=>`${CIRC[c]||c} ${pc(v.pct)} (${fmt(v.n)})`).join(' · ');
   facts.innerHTML = `<div class="scores">
     <div><div class="k">${esc(t('matchs_juges'))}</div><div class="v">${fmt(g.n)}</div></div>
     <div><div class="k">${esc(t('vainqueurs'))}</div><div class="v">${pc(g.pct)}</div><div class="k">${fmt(g.vainqueurs)} / ${fmt(g.n)}</div></div>
     <div><div class="k">${esc(t('brier'))}</div><div class="v">${dec(g.brier,3)}</div><div class="k">${esc(t('brier_aide'))}</div></div>
   </div>${C ? '' : `<div class="circ"><span style="color:var(--dim)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`}`;
+  rendBilanFiab(C ? C.par_fiabilite : B.par_fiabilite);
   const cv = courbeSvg((C ? C.courbe : B.courbe)||[]);
   const cb = document.getElementById('bilan-curve'); cb.innerHTML = cv; cb.hidden = !cv;
   const res = (C ? C.derniers : B.derniers) || [];
@@ -7755,6 +7780,15 @@ function rendBilan(){
       <span class="p">${pc0(pw)}</span>${am ? rendApresMatch(am) : ''}</li>`; }).join('');
   const more = document.getElementById('bilan-more');
   if (res.length > nRes){ more.hidden=false; more.textContent=t('voir_plus', Math.min(20,res.length-nRes)); more.onclick=()=>{ nRes+=20; rendBilan(); }; } else more.hidden=true;
+}
+// 24/11/2026 (paquet 420, Lucas) : % de réussite par niveau de fiabilité annoncé avant le match (vitrine.bilan)
+function rendBilanFiab(PF){
+  const el = document.getElementById('bilan-fiab'); if (!el) return;
+  const niv = ['solide','correct','prudent','fragile'].filter(k=>PF && PF[k]);
+  el.hidden = !niv.length; if (!niv.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<h3 class="cv-h" style="margin-top:0">${esc(t('bf_titre'))}</h3><p class="cv-p">${esc(t('bf_sous'))}</p>
+    <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('bf_niveau'))}</th><th>${esc(t('bf_annonce'))}</th><th>${esc(t('bf_trouve'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PF[k];
+      return `<tr${v.assez?'':' style="opacity:.6"'}><td>${esc(t('niv_'+k))}<br><span class="cv-n">${esc(t('cv_m',v.n))}${v.assez?'':' · '+esc(t('bf_peu'))}</span></td><td>${pc(v.confiance_pct)}</td><td><b>${pc(v.pct)}</b><br><span class="cv-n">${fmt(v.vainqueurs)} / ${fmt(v.n)}</span></td></tr>`;}).join('')}</tbody></table></div>`;
 }
 function rendSuivi(){
   const B = D.validation_fiabilite || {}, g = B.global;
@@ -7998,6 +8032,11 @@ document.getElementById('liste-more').addEventListener('click',()=>{ nListe+=30;
 document.getElementById('retour-mdj').addEventListener('click',()=>{
   const id = D && D.match_du_jour && D.match_du_jour.uid; if (id) ouvrirMatch(id);
 });
+document.querySelectorAll('.fiab-filtre button').forEach(b=>b.addEventListener('click',()=>{
+  fiabNiv = b.dataset.fniv; nListe = 30;
+  document.querySelectorAll('.fiab-filtre button').forEach(x=>x.setAttribute('aria-pressed', String(x.dataset.fniv===fiabNiv)));
+  rendListe();
+}));
 document.getElementById('recherche').addEventListener('input',e=>{
   recherche=e.target.value; nListe=30; rendListe();
 });

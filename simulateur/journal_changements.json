@@ -2298,6 +2298,13 @@
    "paquet": 419,
    "quoi": "TOURNOIS, BILANS DE LA SEMAINE ET PAGES EN ANGLAIS (paquet 419, Lucas : « fais 1-2-3-4 », référencement). Une page par tournoi (gamesetalgo.com/tournoi/…) avec le taux de vainqueurs trouvés et tous ses matchs jour par jour ; une page par semaine (gamesetalgo.com/bilan/2026-s47…) avec le bilan total et par circuit et les plus grosses surprises ; chaque page existe aussi en anglais sous /en/, reliée à la version française pour Google. Plus de liens entre les pages : un match renvoie à son tournoi, à sa semaine et aux autres matchs du tournoi ; nouveaux liens « Tournois » et « Bilans de la semaine » en bas de l'accueil (en anglais, ils mènent aux pages anglaises). Plan du site : environ 5 000 adresses au 24/11.",
    "garde_fou": "Mêmes règles que les pages des matchs : passé seulement, jamais un match à venir, une cote, un classement interne de l'algorithme ni un match ITF. Tests : tests/test_pages_seo.py, workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 420,
+   "quoi": "FIABILITÉ : TRI ET RÉUSSITE PAR NIVEAU (paquet 420, Lucas : « trier par niveau de fiabilité » et « calculer le % de réussite par niveau »). Dans la liste des matchs, sous la recherche et les circuits, un choix Toutes / Solide / Correct / Prudent / Fragile ne garde que les matchs du niveau choisi (sans accès Plus, la page dit que ce tri est réservé à l'accès Plus). Dans le bilan, un tableau « Réussite par niveau de fiabilité » : pour chaque niveau, le % annoncé en moyenne pour le favori et les vainqueurs trouvés, sur toute la période ou les 30 derniers jours, tous circuits ou par circuit. Au 24/11 : solide 66,5 % (275 matchs, 64,7 % annoncé), correct 66,4 % (559, 65,1 %), prudent 69,8 % (248, 71,1 %), fragile 65,5 % (345, 68,9 %).",
+   "garde_fou": "Niveau tel qu'annoncé avant le match, jamais recalculé. Descriptif : la fiabilité dit si le % annoncé se réalise, pas si le favori gagne ; un niveau sous 100 matchs est grisé avec « trop tôt pour conclure ». Le choix du match du jour et les % ne changent pas. Tests : tests/test_bilan_fiabilite.py."
   }
  ]
 }
