@@ -272,7 +272,10 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-        run: python scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés, copie publique seulement"
+        run: |
+          python scripts/pronostics_prives.py pull . --seulement algo/donnees.json || echo "::warning::pronostics complets non rapatriés, copie publique seulement"
+          # 414 : résultats jugés à jour (git n'en a qu'une photo toutes les 2 h)
+          python scripts/pronostics_prives.py pull . --seulement Tennis_Edge_Lab/live/pronostics_resultats.json || echo "::warning::résultats non rapatriés, photo git seulement"
       - name: Construire _site
         env:
           LAB_PRECEDENT: ${{ steps.precedent.outputs.base }}

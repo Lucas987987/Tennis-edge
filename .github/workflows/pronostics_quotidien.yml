@@ -206,12 +206,21 @@ jobs:
           git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      Tennis_Edge_Lab/live/elo_service_retour.json \
-                     simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
+                     simulateur/rapport_pronostic.json \
                      simulateur/choix_simulation.json simulateur/stabilite.json \
                      simulateur/gouvernance_etat.json simulateur/rapport_gouvernance.json \
-                     simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
-                     simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
-                     algo/donnees.json
+                     simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md
+          # 24/11/2026 (paquet 414, Lucas : « stocker sur Cloudflare comme le reste ») : les gros fichiers (journal des
+          # pronostics, journaux figés, résultats jugés, site) vivent au coffre R2, envoyés à CHAQUE passage ci-dessus ;
+          # git n'en reçoit qu'une photo toutes les PHOTO_MIN minutes (110 par défaut, ~2 h), comme les états chauds.
+          derniere=$(git log -1 --format=%ct -- Tennis_Edge_Lab/live/pronostics_resultats.json 2>/dev/null || true)
+          if [ $(( $(date +%s) - ${derniere:-0} )) -ge $(( ${PHOTO_MIN:-110} * 60 )) ]; then
+            git add -- simulateur/pronostics_log.jsonl simulateur/journal_pronostics \
+                       Tennis_Edge_Lab/live/pronostics_resultats.json algo/donnees.json
+            echo "Photo git des gros fichiers : oui"
+          else
+            echo "Photo git des gros fichiers : non (dernière il y a moins de ${PHOTO_MIN:-110} min ; le coffre R2 est à jour)"
+          fi
           # 28/10/2026 : analyse après match (descriptive, pour l'algo) — publiée si elle a été écrite
           if [ -e simulateur/analyse_apres_match.json ]; then git add -- simulateur/analyse_apres_match.json; fi
           if [ -e feuilles/lieux_archive.json ]; then git add -- feuilles/lieux_archive.json; fi

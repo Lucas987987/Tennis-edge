@@ -2256,6 +2256,13 @@
    "paquet": 413,
    "quoi": "SURVEILLANCE ET « MON COMPTE » (paquet 413, Lucas : « 2-3-4-5 »). 1) Taille du dépôt : mesurée chaque jour comme avant, désormais gardée jour après jour ; message Telegram privé chaque lundi (taille et croissance sur 7 jours) et tous les jours en cas d'alerte (zone de vigilance, ou plus de 0,5 Go pris en 7 jours). 2) Feuilles de match : collecte toutes les heures au lieu de 2 h (bilan après match plus tôt), mêmes réserves de quota. 3) « Mon compte » : tarif fondateur et date limite pour le garder, demande en cours avec un lien vers les instructions, référence de virement, factures. 4) Déploiement d'un worker en échec : message Telegram privé avec le lien du journal.",
    "garde_fou": "Rien ne change dans les pronostics. Tests : tests/test_repo_sentinel_suivi.py, tests/test_deploiement_auto.py, tests du worker de déclenchement."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "production",
+   "paquet": 414,
+   "quoi": "GROS FICHIERS DES PRONOSTICS SUR CLOUDFLARE (paquet 414, Lucas : « stocker sur Cloudflare comme le reste »). Le journal des pronostics, les journaux figés (lignes et statistiques prévues), les bilans après match, les résultats jugés et les données du site vivent au coffre R2, envoyés à chaque passage. Git n'en reçoit plus qu'une photo toutes les 2 heures, comme les états chauds : environ 6 fois moins de nouvelles versions de ces fichiers, qui faisaient près des deux tiers de la croissance du dépôt. Les journaux figés publiés dans git ne montrent plus que les matchs commencés (ils contenaient en clair les prévisions des matchs à venir). Le site prend les résultats à jour dans R2.",
+   "garde_fou": "Calcul inchangé. Un seul rédacteur (pronostics du jour) ; si le coffre est injoignable, rien n'y est écrit et la photo git reste la référence. Tests : tests/test_photo_r2.py."
   }
  ]
 }
