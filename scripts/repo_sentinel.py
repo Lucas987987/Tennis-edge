@@ -32,6 +32,41 @@ import oddspapi_v5 as ov   # AJOUTÉ 29/08/2026 (validation externe, point 1) : 
 REPO = os.environ.get('REPO', 'Lucas987987/Tennis-edge')
 SEUIL_GO = float(os.environ.get('SEUIL_GO', '4.0'))
 SEUIL_VIGILANCE_GO = float(os.environ.get('SEUIL_VIGILANCE_GO', '3.0'))
+# 24/11/2026 (paquet 413, Lucas) : pronostics enchaînés (paquet 410) → beaucoup plus de commits. La taille est gardée
+# jour après jour (60 mesures) ; message Telegram PRIVÉ : chaque lundi (taille, croissance sur 7 jours), et tous les
+# jours si la zone n'est pas « ok » ou si le dépôt a pris plus de SEUIL_CROISSANCE_7J_GO en 7 jours.
+SEUIL_CROISSANCE_7J_GO = float(os.environ.get('SEUIL_CROISSANCE_7J_GO', '0.5'))
+HISTORIQUE_MAX = 60
+
+
+def historique_et_croissance(prec, taille_go, maintenant):
+    """(historique mis à jour, croissance sur 7 jours en Go ou None). `prec` : contenu précédent du statut."""
+    h = [x for x in ((prec or {}).get('historique') or []) if isinstance(x, dict) and x.get('le') and x.get('go') is not None]
+    if taille_go is not None:
+        h = (h + [{'le': maintenant.isoformat(timespec='seconds'), 'go': round(taille_go, 3)}])[-HISTORIQUE_MAX:]
+    if taille_go is None or not h:
+        return h, None
+    limite = maintenant - datetime.timedelta(days=7)
+    avant = [x for x in h if datetime.datetime.fromisoformat(x['le']) <= limite]
+    return h, (round(taille_go - avant[-1]['go'], 3) if avant else None)
+
+
+def message_taille(zone, taille_go, croissance, maintenant):
+    """Texte Telegram, ou None quand il n'y a rien à dire (pas lundi, zone ok, croissance sous le seuil)."""
+    if taille_go is None:
+        return None
+    alerte = zone in ('vigilance', 'alarme') or (croissance is not None and croissance >= SEUIL_CROISSANCE_7J_GO)
+    if not alerte and maintenant.weekday() != 0:
+        return None
+    f = lambda x: f"{x:.2f}".replace('.', ',')  # noqa: E731
+    icone = {'alarme': '🔴', 'vigilance': '🟠'}.get(zone, '🟠' if alerte else '📦')
+    cr = f" ({'+' if croissance >= 0 else ''}{f(croissance)} Go en 7 jours)" if croissance is not None else ''
+    lignes = [f"{icone} Taille du dépôt : {f(taille_go)} Go{cr}",
+              f"Vigilance {f(SEUIL_VIGILANCE_GO)} Go · alarme {f(SEUIL_GO)} Go · GitHub intervient vers 5 Go."]
+    if croissance is not None and croissance >= SEUIL_CROISSANCE_7J_GO:
+        lignes.append(f"Croissance au-dessus de {f(SEUIL_CROISSANCE_7J_GO)} Go par semaine : espacer les passages des "
+                      f"pronostics (variable PRONOSTICS_PERIODE_MIN du worker) ou sortir des fichiers vers R2.")
+    return '\n'.join(lignes)
 
 
 def _ecrire_statut(zone, taille_go=None, marge_go=None, message=''):
@@ -59,7 +94,23 @@ def _ecrire_statut(zone, taille_go=None, marge_go=None, message=''):
         except (OSError, ValueError):
             derniere_reussie = None
     try:
+        _prec = json.load(open('repo_size_status.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        _prec = {}
+    _now = datetime.datetime.now(datetime.timezone.utc)
+    historique, croissance = historique_et_croissance(_prec, taille_go, _now)
+    texte = message_taille(zone, taille_go, croissance, _now)
+    if texte:
+        try:
+            sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'simulateur'))
+            import telegram_envoi
+            telegram_envoi.envoyer(texte)
+        except Exception as e:  # noqa: BLE001 — la sentinelle ne doit jamais tomber pour un message
+            print(f"  ℹ️ message Telegram non envoyé ({type(e).__name__})")
+    try:
         ov.ecriture_atomique('repo_size_status.json', {
+            'historique': historique,
+            'croissance_7j_go': croissance,
             'zone': zone,   # 'ok' | 'vigilance' | 'alarme' | 'indisponible'
             'taille_go': round(taille_go, 2) if taille_go is not None else None,
             'marge_go': round(marge_go, 2) if marge_go is not None else None,

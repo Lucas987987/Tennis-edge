@@ -337,6 +337,7 @@ export const PRONOSTICS_PERIODE_DEFAUT = 20, PRONOSTICS_PERIODE_MINI = 15;
 export function periodePronostics(env) {
   return Math.max(PRONOSTICS_PERIODE_MINI, Number((env || {}).PRONOSTICS_PERIODE_MIN) || PRONOSTICS_PERIODE_DEFAUT);
 }
+export const periodeFeuilles = (env) => Math.max(30, Number((env || {}).FEUILLES_PERIODE_MIN) || 60);
 export function decisionPeriodique(runs, workflowFile, periodeMin, nowMs) {
   const { bloquant } = runsBloquants(runs, workflowFile, nowMs);
   if (bloquant) return { fire: false, raison: 'run en cours ou en file' };
@@ -605,8 +606,11 @@ async function run(env) {
       workflowFile: 'pronostics_quotidien.yml', periodeMin: periodePronostics(env) });
   }
   if ((env.FEUILLES_ENABLED || '1') !== '0') {
+    // 24/11/2026 (paquet 413, Lucas) : toutes les heures au lieu de 2 h — feuilles et bilan après match plus tôt. Coût : la
+    // liste des jours récents et les résultats ITF à chaque passage (~50 requêtes), les feuilles une seule fois par match ;
+    // la collecte s'arrête sous 1 500 requêtes restantes (ITF : 3 000), les rattrapages gardent leurs fenêtres du matin.
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Feuilles', evenement: 'feuilles_match',
-      workflowFile: 'feuilles_match.yml', periodeMin: Math.max(30, Number(env.FEUILLES_PERIODE_MIN) || 120) });
+      workflowFile: 'feuilles_match.yml', periodeMin: periodeFeuilles(env) });
   }
   // 22/11/2026 (paquet 347) — les crons GitHub du rattrapage ATP/WTA et du point par point ITF ne sont pas partis le
   // 22/11 (ajoutés le matin, aucun passage dans la journée) : le worker les lance, toutes les 8 h par défaut. Chacun
