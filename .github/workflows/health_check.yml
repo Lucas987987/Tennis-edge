@@ -95,6 +95,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           REPO: Lucas987987/Tennis-edge
+          # 413 : message privé (lundi, ou alerte de taille / de croissance)
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/repo_sentinel.py || true
 
       # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : health_check.yml
