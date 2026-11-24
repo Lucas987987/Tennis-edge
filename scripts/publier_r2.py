@@ -81,30 +81,61 @@ def _manifeste(r2, prefixe):
         return {}
 
 
-def envoyer(r2, site, journal=print):
+TACHES = 16           # 424 : envois en parallèle (un par un : ~10 000 fichiers ne passaient plus avant l'annulation)
+POINT = 400           # 424 : manifeste réécrit tous les 400 envois : un run annulé ne fait pas tout repartir
+
+
+def envoyer(r2, site, journal=print, taches=TACHES, point=POINT):
+    """24/11/2026 (paquet 424, Lucas : « déploy page ko, le site n'est toujours pas revenu »). Avec les ~5 000 pages de
+    référencement (×2 langues), l'envoi un par un durait plus de 20 minutes ; la publication suivante l'annulait
+    (pages.yml, cancel-in-progress) AVANT l'écriture du manifeste, si bien que tout repartait à chaque fois et que la
+    nouvelle page d'accueil restait en ligne sans sa feuille de style. Désormais : envois en parallèle, par vagues
+    (fichiers chargés par les pages → pages → pages d'accueil, chaque vague finie avant la suivante), et manifeste
+    réécrit en cours de route avec ce qui est déjà parti."""
+    from concurrent.futures import ThreadPoolExecutor
     rels = fichiers(site)
     anciens = {p: _manifeste(r2, p) for p in (PREFIXE_PUBLIC, PREFIXE_PRIVE)}
     nouveaux = {p: {} for p in anciens}
+    faits = {p: dict(m) for p, m in anciens.items()}        # ce qui est réellement dans R2, mis à jour en cours de route
     n = {'public': [0, 0], 'prive': [0, 0], 'inchanges': 0}
+    vagues = {}
     for rel in rels:
         cle = cle_de(rel)
         pre = PREFIXE_PUBLIC if cle.startswith(PREFIXE_PUBLIC) else PREFIXE_PRIVE
         with open(os.path.join(site, rel), 'rb') as f:
-            data = f.read()
-        md5 = hashlib.md5(data).hexdigest()
+            md5 = hashlib.md5(f.read()).hexdigest()
         nom = cle[len(pre):]
         nouveaux[pre][nom] = md5
         if anciens[pre].get(nom) == md5:
             n['inchanges'] += 1
             continue
-        r2.put(cle, data, content_type=type_de(rel))
-        k = 'public' if pre == PREFIXE_PUBLIC else 'prive'
-        n[k][0] += 1
-        n[k][1] += len(data)
-    for pre, m in nouveaux.items():
-        if m != anciens[pre]:
+        vagues.setdefault(ordre_envoi(rel)[:2], []).append((rel, cle, pre, nom, md5))
+
+    def ecrire_manifeste(m_par_pre):
+        for pre, m in m_par_pre.items():
             r2.put(pre + MANIFESTE, json.dumps(m, sort_keys=True, separators=(',', ':')).encode(),
                    content_type='application/json')
+
+    def un(t):
+        rel, cle, pre, nom, md5 = t
+        with open(os.path.join(site, rel), 'rb') as f:
+            data = f.read()
+        r2.put(cle, data, content_type=type_de(rel))
+        return t, len(data)
+
+    depuis_point = 0
+    with ThreadPoolExecutor(max_workers=max(1, taches)) as ex:
+        for v in sorted(vagues):                             # chaque vague est finie avant la suivante
+            for (rel, cle, pre, nom, md5), taille in ex.map(un, vagues[v]):
+                faits[pre][nom] = md5
+                k = 'public' if pre == PREFIXE_PUBLIC else 'prive'
+                n[k][0] += 1
+                n[k][1] += taille
+                depuis_point += 1
+                if depuis_point >= point:
+                    ecrire_manifeste(faits)
+                    depuis_point = 0
+    ecrire_manifeste({p: m for p, m in nouveaux.items() if m != anciens[p] or faits[p] != anciens[p]})
     journal(f"R2 : {len(rels)} fichiers · public envoyés {n['public'][0]} ({n['public'][1] // 1024} Ko) · "
             f"privés envoyés {n['prive'][0]} ({n['prive'][1] // 1024} Ko) · inchangés {n['inchanges']}")
     return n

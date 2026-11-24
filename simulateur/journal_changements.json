@@ -2333,6 +2333,13 @@
    "paquet": 424,
    "quoi": "PAGE SANS MISE EN FORME PENDANT LA PUBLICATION (paquet 424, Lucas : « problème d'affichage » à 22 h, juste après le paquet 423). Cause : à chaque publication, les fichiers partaient dans l'ordre alphabétique, donc la nouvelle page d'accueil avant sa nouvelle feuille de style ; pendant l'envoi, la page pointait vers un style pas encore en ligne et s'affichait brute. Les pages partent maintenant en dernier, les pages d'accueil tout à la fin : une page n'est en ligne qu'une fois ses styles, scripts, données et images en place.",
    "garde_fou": "Rien ne change dans les fichiers publiés, seulement l'ordre d'envoi. Tests : tests/test_publier_r2.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 425,
+   "quoi": "PUBLICATION DU SITE QUI N'ABOUTISSAIT PLUS (paquet 425, Lucas : « déploy page ko, le site n'est toujours pas revenu »). Depuis les pages de référencement (environ 10 000 fichiers en deux langues), l'envoi vers Cloudflare, fichier par fichier, durait plus de 20 minutes ; la publication suivante (après chaque passage des pronostics) l'annulait avant la fin, avant même que la liste de ce qui était déjà parti soit enregistrée : tout repartait de zéro à chaque fois, et la page d'accueil restait en ligne sans sa feuille de style. Corrections : envois en parallèle (16 à la fois), liste de ce qui est parti enregistrée tous les 400 fichiers (un envoi coupé reprend où il en était), et une publication n'est plus annulée en cours de route (la suivante attend).",
+   "garde_fou": "Mêmes fichiers publiés ; l'ordre du paquet 424 est gardé (les pages après ce qu'elles chargent, les pages d'accueil à la fin). Tests : tests/test_publier_r2.py."
   }
  ]
 }
