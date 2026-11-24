@@ -8657,12 +8657,21 @@ if (!MODE_IMAGE && 'serviceWorker' in navigator && (location.protocol === 'https
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 let INSTALL = null;
+// 24/11/2026 (paquet 415, Lucas) — l'appli s'installe depuis gamesetalgo.com seulement. Ailleurs (workers.dev, copie de
+// secours GitHub), le bouton mène à gamesetalgo.com, où il suffit de le toucher à nouveau.
+const HOTE_APPLI = 'gamesetalgo.com';
+const SUR_SITE = /(^|\.)gamesetalgo\.com$/.test(location.hostname) || location.hostname === 'localhost';
 window.addEventListener('beforeinstallprompt', ev => {
   ev.preventDefault(); INSTALL = ev;
   const z = document.getElementById('installer'); if (z) z.hidden = false;
+  if (SUR_SITE && Q.get('installer')) { const b = document.getElementById('b-installer'); if (b) { b.classList.add('go'); b.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
 });
+if (!SUR_SITE && !MODE_IMAGE && /Android|iPhone|iPad/i.test(navigator.userAgent || '')) {
+  const z = document.getElementById('installer'); if (z) z.hidden = false;
+}
 window.addEventListener('appinstalled', () => { INSTALL = null; const z = document.getElementById('installer'); if (z) z.hidden = true; });
 document.getElementById('b-installer').addEventListener('click', () => {
+  if (!SUR_SITE) { location.href = 'https://' + HOTE_APPLI + '/?installer=1'; return; }
   if (!INSTALL) return; INSTALL.prompt();
   INSTALL.userChoice.finally(() => { INSTALL = null; document.getElementById('installer').hidden = true; });
 });
