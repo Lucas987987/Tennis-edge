@@ -110,6 +110,9 @@ jobs:
           pip install --quiet boto3 || true
           python scripts/r2_parts.py pull --kinds kx || true
 
+      # 24/11/2026 (paquet 416, Lucas : « stocker sur Cloudflare comme le reste ») : la partition chaude du jour vient de R2
+      - name: Journaux chauds — rapatrier de R2 (kalshi)
+        run: python scripts/journaux_chauds.py pull kalshi || true
       - name: Kalshi collector
         env:
           R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && '1' || '0' }}
@@ -138,6 +141,9 @@ jobs:
         if: always()
         run: python scripts/r2_parts.py push --kinds kx || true
 
+      - name: Journaux chauds — envoyer à R2 (kalshi)
+        if: always()
+        run: python scripts/journaux_chauds.py push kalshi || true
       - name: Commit Kalshi data
         if: always()
         run: |
@@ -152,6 +158,8 @@ jobs:
           done
           # 16/10/2026 : registre en ajout seul (market_registry) — fichiers du jour.
           for f in registres_marches/*.jsonl; do [ -f "$f" ] && git add -- "$f" || true; done
+          # 416 : partition chaude dans git toutes les ~2 h seulement (R2 est à jour à chaque passage)
+          python scripts/journaux_chauds.py garde kalshi || true
 
           # GARDE-FOU TAILLE. Le 19/08, une partition de 221 Mo a fait rejeter
           # le push ENTIER par GitHub : 15 min de collecte et tous les autres
