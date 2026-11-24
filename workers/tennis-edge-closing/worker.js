@@ -262,7 +262,8 @@ async function planifierCollecteur(cfg) {
 export const GARDE_PLAFOND_MIN = 45;
 export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes.yml': 10,
   // 23/10/2026 : workflows planifiés par période (planifierPeriodique) — plafond au-delà de leur timeout
-  'pronostics_quotidien.yml': 60, 'feuilles_match.yml': 360,
+  // 24/11/2026 (paquet 410) : pronostics enchaînés — plafond au-delà du timeout du workflow (90 min)
+  'pronostics_quotidien.yml': 100, 'feuilles_match.yml': 360,
   // 22/11/2026 (paquet 347) : rattrapage ATP/WTA (timeout 120 min) et point par point ITF (timeout 90 min)
   'historique_feuilles.yml': 150, 'itf_points.yml': 120,
   // 22/11/2026 (paquet 350) : études de la semaine (timeouts 90 et 120 min)
@@ -331,6 +332,10 @@ async function runEnCours(owner, repo, token, workflowFile) {
 // pas eu lieu). Comme pour la capture le 04/09, le worker devient le déclencheur ; les crons GitHub restent
 // en filet. Règle : on lance si aucun run n'est actif (même plafond anti-fantôme) ET si le dernier run, quel
 // que soit son déclencheur (cron, worker, manuel), a été créé il y a au moins `periodeMin` minutes.
+export const PRONOSTICS_PERIODE_DEFAUT = 20, PRONOSTICS_PERIODE_MINI = 15;
+export function periodePronostics(env) {
+  return Math.max(PRONOSTICS_PERIODE_MINI, Number((env || {}).PRONOSTICS_PERIODE_MIN) || PRONOSTICS_PERIODE_DEFAUT);
+}
 export function decisionPeriodique(runs, workflowFile, periodeMin, nowMs) {
   const { bloquant } = runsBloquants(runs, workflowFile, nowMs);
   if (bloquant) return { fire: false, raison: 'run en cours ou en file' };
@@ -593,8 +598,10 @@ async function run(env) {
   // 23/10/2026 : pronostics du jour (toutes les 2 h) et feuilles de match (toutes les 2 h, matchs du jour
   // compris) — le worker les déclenche, les crons GitHub restent en filet. Désactivables : *_ENABLED=0.
   if ((env.PRONOSTICS_ENABLED || '1') !== '0') {
+    // 24/11/2026 (paquet 410, Lucas : « que pronostic tourne le plus régulièrement possible ») : un passage relance le
+    // suivant dès qu'il est fini (le worker regarde toutes les 3 min), au plus un départ toutes les 20 min.
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Pronostics', evenement: 'pronostics_quotidien',
-      workflowFile: 'pronostics_quotidien.yml', periodeMin: Math.max(30, Number(env.PRONOSTICS_PERIODE_MIN) || 120) });
+      workflowFile: 'pronostics_quotidien.yml', periodeMin: periodePronostics(env) });
   }
   if ((env.FEUILLES_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Feuilles', evenement: 'feuilles_match',
