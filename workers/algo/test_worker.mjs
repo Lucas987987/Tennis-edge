@@ -480,3 +480,25 @@ test('415 : pas de manifeste hors de gamesetalgo.com', async () => {
   const r2 = await worker.fetch(new Request('https://gamesetalgo.com/manifest.webmanifest'), { CLE_PRIVEE: CLE, COFFRE: { get: async () => null } });
   assert.notEqual(r2.status, 405);
 });
+
+// 24/11/2026 (paquet 417) — référencement
+test('417 : robots.txt, sitemap.xml, www → gamesetalgo.com, adresse technique jamais indexée', async () => {
+  const envS = { CLE_PRIVEE: CLE, COFFRE: { get: async () => null } };
+  let r = await worker.fetch(new Request('https://gamesetalgo.com/robots.txt'), envS);
+  let t = await r.text();
+  assert.match(t, /Allow: \//); assert.match(t, /Disallow: \/compte\//); assert.match(t, /Sitemap: https:\/\/gamesetalgo\.com\/sitemap\.xml/);
+  r = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/robots.txt'), envS);
+  assert.equal(await r.text(), 'User-agent: *\nDisallow: /\n');
+  r = await worker.fetch(new Request('https://gamesetalgo.com/sitemap.xml'), envS);
+  t = await r.text();
+  assert.match(r.headers.get('Content-Type'), /xml/);
+  for (const p of ['/', '/methode.html', '/apropos.html']) assert.ok(t.includes(`<loc>https://gamesetalgo.com${p}</loc>`), p);
+  r = await worker.fetch(new Request('https://www.gamesetalgo.com/methode.html?lang=en'), envS);
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get('Location'), 'https://gamesetalgo.com/methode.html?lang=en');
+  globalThis.fetch = async () => new Response('<html></html>', { status: 200 });
+  r = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/'), envS);
+  assert.equal(r.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+  r = await worker.fetch(new Request('https://gamesetalgo.com/'), envS);
+  assert.equal(r.headers.get('X-Robots-Tag'), null);
+});
