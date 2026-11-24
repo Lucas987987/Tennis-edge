@@ -2158,6 +2158,13 @@
    "paquet": 398,
    "quoi": "SONDE DES OUTSIDERS : la sonde s'arrêtait dès que le quota TennisApi du jour passait sous 6 000 requêtes (arrêt ce matin après une requête). Réserve réglable au lancement, 3 500 par défaut (la collecte du jour garde les siennes, 1 500 à 3 000) ; en cas d'arrêt, le journal indique l'heure du renouvellement du quota.",
    "garde_fou": "Environ 250 requêtes au plus pour cette sonde. Tests : tests/test_sonde_outsiders.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 399,
+   "quoi": "PISTE SUIVIE : OUTSIDER PEU DOCUMENTÉ (paquet 399). La sonde du 24/11 (règle fixée avant) conclut que nos données ne manquent pas en général (médiane 18 matchs connus de TennisApi depuis juin 2024 contre 14 chez nous ; il manque surtout des matchs du circuit UTR). Le profil « outsider de moins de 60 matchs classés face à un favori qui en a 60 ou plus » passe donc en suivi chaque lundi : seuls les matchs à partir du 25/11 comptent ; décision en Challenger à 1 000 matchs (correction de la confiance apprise sur la première moitié, jugée sur la seconde, gain ≥ 0,001 et ≥ 2 erreurs types, même sens sur les deux moitiés).",
+   "garde_fou": "Le % ne change pas. Rapport sans nom de joueur : simulateur/rapport_outsider_peu_documente.json. Tests : tests/test_suivi_outsider.py."
   }
  ]
 }
