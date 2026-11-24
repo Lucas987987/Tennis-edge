@@ -92,3 +92,21 @@ class Workflow(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class OrdreEnvoi(unittest.TestCase):
+    """424 : une page ne part qu'après ce qu'elle charge (sinon : page sans style pendant l'envoi)."""
+
+    def test_pages_en_dernier(self):
+        with tempfile.TemporaryDirectory() as d:
+            site(d, {'algo/index.html': '<link href="style-0123456789ab.css">', 'algo/style-0123456789ab.css': 'a{}',
+                     'algo/app-0123456789ab.js': '1', 'algo/joueur/x.html': 'j', 'algo/site.json': '{}',
+                     'arena/index.html': 'a', 'algo/zz.png': 'p'})
+            r2 = FauxR2()
+            P.envoyer(r2, d, journal=lambda *_: None)
+            ordre = [k for k, _ in r2.puts if not k.endswith(P.MANIFESTE)]
+            pos = {k.split('/', 1)[1]: i for i, k in enumerate(ordre)}
+            self.assertLess(pos['algo/style-0123456789ab.css'], pos['algo/index.html'])
+            self.assertLess(pos['algo/app-0123456789ab.js'], pos['algo/joueur/x.html'])
+            self.assertLess(pos['algo/zz.png'], pos['algo/joueur/x.html'])
+            self.assertEqual({ordre[-1].split('/', 1)[1], ordre[-2].split('/', 1)[1]}, {'algo/index.html', 'arena/index.html'})
