@@ -1,0 +1,42 @@
+{
+ "genere_le": "2026-11-24T07:16:31+00:00",
+ "depuis": "2024-06-01",
+ "regle": "LE 23/11/2026, AVANT LA SONDE :\n  DONNÉES MANQUANTES si, pour la MÉDIANE des outsiders sondés (au moins 30 joueurs), TennisApi connaît au moins\n  2 fois plus de matchs terminés depuis le 01/06/2024 que notre classement n'en compte en tout, ET au moins 10 de plus.\n  Alors : collecte des catégories manquantes (étude à part, jugée avant la production). Sinon : nos données ne sont\n  pas en cause, le profil passe en suivi (règle à part) comme un défaut du modèle.",
+ "outsiders": 83,
+ "sondes": 0,
+ "requetes": 1,
+ "quota_restant": 5626,
+ "verdict": {
+  "donnees_manquantes": null,
+  "raison": "sonde incomplète : quota restant 5626 ≤ réserve 6000"
+ },
+ "par_categorie": {},
+ "vainqueurs_contre_battus": {
+  "vainqueurs": [],
+  "battus": []
+ },
+ "identites_a_verifier": [
+  {
+   "joueur": "Tin Chen",
+   "matchs": 18,
+   "autre_nom": "Ti Chen",
+   "matchs_autre": 75,
+   "proximite_prenom": 0.8
+  },
+  {
+   "joueur": "William Mroz Mroz",
+   "matchs": 0,
+   "autre_nom": "William Mroz",
+   "matchs_autre": 26,
+   "proximite_prenom": 0.78
+  },
+  {
+   "joueur": "Zachary Viiala",
+   "matchs": 3,
+   "autre_nom": "Zach Viiala",
+   "matchs_autre": 27,
+   "proximite_prenom": 0.73
+  }
+ ],
+ "par_joueur": []
+}
