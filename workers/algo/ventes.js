@@ -120,6 +120,9 @@ export async function virementRecu(env, b, req) {
   if (!(montant > 0 && montant < 10000)) return { ok: false, erreur: 'montant' };
   const u = await trouverCompte(env, b.compte);
   if (!u) return { ok: false, erreur: 'inconnu' };
+  // 403 : sans demande d'accès immédiat, refus sauf case « sans renonciation » (le client garde alors ses 14 jours)
+  const ri = u.acces_immediat && u.acces_immediat.le ? u.acces_immediat : null;
+  if (!ri && b.sans_renonciation !== true) return { ok: false, erreur: 'sans_renonciation' };
   const paye_le = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : jourUtc();
   const num = await numeroSuivant(env, new Date().getUTCFullYear());
   if (!num) return { ok: false, erreur: 'numero' };
@@ -130,7 +133,8 @@ export async function virementRecu(env, b, req) {
   const f = { numero: num, emise_le: new Date().toISOString(), vendeur: v, client: { email: u2.email, reference: referenceVirement(u2) },
     designation: `Accès Plus Game Set Algo, ${PAYANTES[b.formule]}${fondateur ? ' (tarif fondateur)' : ''}`,
     periode: { du: jourUtc(), au: String(u2.acces.jusqu_au || '').slice(0, 10) }, quantite: 1, prix_unitaire: montant, total: montant,
-    paiement: { moyen: 'virement bancaire', le: paye_le } };
+    paiement: { moyen: 'virement bancaire', le: paye_le },
+    retractation: ri ? { renonciation_le: ri.le, version: ri.version } : { delai_jours: 14 } };
   await env.COFFRE.put(`factures/${num}.json`, JSON.stringify(f), { httpMetadata: { contentType: 'application/json' } });
   u2.acces = { ...u2.acces, paye: true, montant, formule_payee: b.formule, fondateur_tarif: fondateur };
   u2.factures = [...(u2.factures || []), num];
@@ -141,9 +145,18 @@ export async function virementRecu(env, b, req) {
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:16px;color:#14102e"><p>Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${ESC(dateFr(f.periode.au))}.</p>${htmlFacture(f, true)}<p style="color:#666;font-size:13px">Elle reste disponible dans « Mon compte » : ${ESC(lienF)}</p></div>`,
     texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(f.periode.au)}.\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
   await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`);
-  return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au };
+  return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation: !!ri };
 }
 const dateFr = (d) => String(d || '').slice(0, 10).split('-').reverse().join('/');
+// 403 : la facture dit ce qu'il en est du droit de rétractation (anciennes factures : rien)
+export function ligneRetractation(f) {
+  const r = f.retractation;
+  if (!r) return '';
+  const t = r.renonciation_le
+    ? `Accès immédiat demandé par le client le ${dateFr(r.renonciation_le)}, avec renonciation au droit de rétractation (Code de la consommation, art. L221-28).`
+    : `Droit de rétractation : ${r.delai_jours || 14} jours à compter du paiement.`;
+  return `<p style="margin:6px 0 0;color:#555;font-size:13px">${ESC(t)}</p>`;
+}
 export function htmlFacture(f, mail = false) {
   const v = f.vendeur, l = (t) => ESC(t).replace(/\n/g, '<br>');
   const td = 'style="padding:8px;border-bottom:1px solid #ddd"';
@@ -154,7 +167,7 @@ export function htmlFacture(f, mail = false) {
 <table style="width:100%;border-collapse:collapse"><tr style="background:#f1eefc"><th ${td} align="left">Désignation</th><th ${td}>Qté</th><th ${td} align="right">Prix unitaire</th><th ${td} align="right">Total</th></tr>
 <tr><td ${td}>${ESC(f.designation)}<br><small style="color:#555">du ${ESC(dateFr(f.periode.du))} au ${ESC(dateFr(f.periode.au))}</small></td><td ${td} align="center">${f.quantite}</td><td ${td} align="right">${eur(f.prix_unitaire)}</td><td ${td} align="right">${eur(f.total)}</td></tr>
 <tr><td colspan="3" ${td} align="right"><b>Total à payer</b></td><td ${td} align="right"><b>${eur(f.total)}</b></td></tr></table>
-<p style="margin:14px 0 0">${ESC(v.mention_tva)}</p><p style="margin:6px 0 0">Payée par ${ESC(f.paiement.moyen)} le ${ESC(dateFr(f.paiement.le))}.</p></div>`;
+<p style="margin:14px 0 0">${ESC(v.mention_tva)}</p><p style="margin:6px 0 0">Payée par ${ESC(f.paiement.moyen)} le ${ESC(dateFr(f.paiement.le))}.</p>${ligneRetractation(f)}</div>`;
 }
 async function lireFacture(env, n) {
   if (!/^F\d{4}-\d{4,6}$/.test(String(n || ''))) return null;

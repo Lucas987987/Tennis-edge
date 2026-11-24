@@ -74,10 +74,19 @@ jobs:
       # rebuild d'abord : les courbes plates ne sont plus commitées, et
       # player_form les lit pour ses résidus de marché. Sans elles il tourne
       # quand même, en perdant cette seule section.
+      # 24/11/2026 (paquet 402) : « env » vide = fichier refusé par GitHub. Les courbes se reconstruisent
+      # sans les clés R2 (comportement d'avant) ; le script suit, dans sa propre étape, avec les clés du journal privé.
+      - name: Reconstruire les courbes
+        run: python scripts/curves_parts.py rebuild || true
+
       - name: Forme et fatigue des joueurs
         env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/curves_parts.py rebuild || true
           python scripts/discret.py -- python scripts/player_form.py || true
 
       # build_profiles ne lit QUE des fichiers plats a la racine : ni

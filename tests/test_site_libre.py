@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.join(RACINE, 'scripts'))
 import site_leger as SL  # noqa: E402
 
 
-def _site():
-    m = lambda u, p: {'uid': u, 'debut': '2026-11-24T10:00', 'tournoi': 'T', 'circuit': 'CH', 'surface': 'Hard',
+def _site():   # 24/11/2026 : matchs dans le futur (le test cassait une fois l'heure passée : match « commencé »)
+    m = lambda u, p: {'uid': u, 'debut': '2099-11-24T10:00', 'tournoi': 'T', 'circuit': 'CH', 'surface': 'Hard',
                       'home': 'A ' + u, 'away': 'B ' + u, 'p_home': p, 'sets': {'2-0': .4}, 'simulation': {'n': 20000},
                       'cotes_justes': [1.5, 3.0], 'fiabilite': {'note': 80}, 'scenarios': [1]}
     return {'match_du_jour': {'uid': 'u1'}, 'matchs': [m('u1', .61), m('u2', .73), m('u3', .55)], 'bilan': {'n': 3}}
