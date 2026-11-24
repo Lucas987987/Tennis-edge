@@ -463,8 +463,22 @@ def calibration(points, n_min=20):
     return out
 
 
+def _par_fiabilite(points_niv):
+    """24/11/2026 (paquet 420, Lucas : « calcule le % de réussite par niveau de fiabilité ») : par niveau ANNONCÉ avant
+    le match (tel qu'enregistré, jamais recalculé) : vainqueurs trouvés, % annoncé en moyenne pour le favori, n.
+    Descriptif : rien n'est conclu sous 100 matchs (« assez » = False), la page le dit."""
+    out = {}
+    for niv in reversed(NIVEAUX_FIABILITE):            # solide d'abord
+        L = points_niv.get(niv) or []
+        if L:
+            out[niv] = dict(_mesures(L), confiance_pct=round(100 * sum(max(p, 1 - p) for p, _ in L) / len(L), 1),
+                            assez=len(L) >= 100)
+    return out
+
+
 def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
     lignes, points, par_c, par_jour = [], [], {}, {}
+    par_f, par_cf = {}, {}
     for m in (resultats or {}).get('matchs') or []:
         if m.get('circuit') not in CIRCUITS or str(m.get('debut'))[:10] < debut or not connu(m):
             continue
@@ -480,6 +494,10 @@ def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
         points.append((p, y))
         par_c.setdefault(m['circuit'], []).append((p, y))
         par_jour.setdefault(jour_paris(m['debut']), []).append((p, y))
+        niv = (m.get('fiabilite') or {}).get('niveau')
+        if niv in NIVEAUX_FIABILITE:
+            par_f.setdefault(niv, []).append((p, y))
+            par_cf.setdefault(m['circuit'], {}).setdefault(niv, []).append((p, y))
         lignes.append({'uid': m.get('uid'), 'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m['circuit'],
                        'home': m['home'], 'away': m['away'], 'p_home': round(p, 3),
                        'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1),
@@ -493,8 +511,10 @@ def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
                 y = 1 if x['gagnant'] == 'home' else 0
                 jours_c.setdefault(jour_paris(x['debut']), []).append((x['p_home'], y))
         par_circuit[c] = dict(_mesures(v), courbe=_courbe(jours_c),
-                              derniers=[x for x in lignes if x['circuit'] == c][:40])
+                              derniers=[x for x in lignes if x['circuit'] == c][:40],
+                              par_fiabilite=_par_fiabilite(par_cf.get(c) or {}))
     return {'depuis': debut, 'global': _mesures(points), 'par_circuit': par_circuit,
+            'par_fiabilite': _par_fiabilite(par_f),
             'calibration': calibration(points), 'courbe': _courbe(par_jour), 'derniers': lignes[:40]}
 
 
