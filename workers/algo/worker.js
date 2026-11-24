@@ -682,6 +682,10 @@ export default {
         || url.pathname.startsWith('/lab/') || url.pathname.startsWith('/tableau/')) return sitePrive(req, env, url);
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
+    // 24/11/2026 (paquet 415, Lucas : « l'adresse est-elle bonne ? ») : l'appli ne s'installe que depuis gamesetalgo.com.
+    // Ailleurs (adresse workers.dev, celle des vidéos et du Lab) pas de manifeste : le navigateur ne propose pas
+    // d'installer une appli à la mauvaise adresse (compte et réglages seraient séparés de ceux du site).
+    if (url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
     return publique(req, url.pathname, env);
   },
 };

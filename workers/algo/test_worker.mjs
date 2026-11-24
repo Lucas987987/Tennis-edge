@@ -448,7 +448,7 @@ test('391 : fichiers à empreinte gardés un an, service worker jamais en cache,
   assert.match(r.headers.get('Content-Type'), /javascript/);
   r = await worker.fetch(req('/sw.js'), envP);
   assert.equal(r.headers.get('Cache-Control'), 'no-cache');
-  r = await worker.fetch(req('/manifest.webmanifest'), envP);
+  r = await worker.fetch(new Request('https://gamesetalgo.com/manifest.webmanifest'), envP);   // 415 : seulement sur le site
   assert.match(r.headers.get('Content-Type'), /manifest\+json/);
   assert.equal((await worker.fetch(req('/app-zz.js'), envP)).status, 404);
   assert.equal((await worker.fetch(req('/app-0123456789ab.js.map'), envP)).status, 404);
@@ -471,4 +471,12 @@ test('411 : stats d’un match terminé marquées final et gardées 24 h ; match
   assert.equal(appels, 2);
   await worker.fetch(req('/live/stats?id=987654'), envF);
   assert.equal(appels, 2);                                                            // gardée
+});
+
+// 24/11/2026 (paquet 415) — l'appli ne s'installe que depuis gamesetalgo.com
+test('415 : pas de manifeste hors de gamesetalgo.com', async () => {
+  const r = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/manifest.webmanifest'), { CLE_PRIVEE: CLE });
+  assert.equal(r.status, 404);
+  const r2 = await worker.fetch(new Request('https://gamesetalgo.com/manifest.webmanifest'), { CLE_PRIVEE: CLE, COFFRE: { get: async () => null } });
+  assert.notEqual(r2.status, 405);
 });

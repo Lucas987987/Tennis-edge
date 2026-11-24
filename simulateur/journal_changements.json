@@ -2263,6 +2263,13 @@
    "paquet": 414,
    "quoi": "GROS FICHIERS DES PRONOSTICS SUR CLOUDFLARE (paquet 414, Lucas : « stocker sur Cloudflare comme le reste »). Le journal des pronostics, les journaux figés (lignes et statistiques prévues), les bilans après match, les résultats jugés et les données du site vivent au coffre R2, envoyés à chaque passage. Git n'en reçoit plus qu'une photo toutes les 2 heures, comme les états chauds : environ 6 fois moins de nouvelles versions de ces fichiers, qui faisaient près des deux tiers de la croissance du dépôt. Les journaux figés publiés dans git ne montrent plus que les matchs commencés (ils contenaient en clair les prévisions des matchs à venir). Le site prend les résultats à jour dans R2.",
    "garde_fou": "Calcul inchangé. Un seul rédacteur (pronostics du jour) ; si le coffre est injoignable, rien n'y est écrit et la photo git reste la référence. Tests : tests/test_photo_r2.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 415,
+   "quoi": "APPLI INSTALLÉE À LA BONNE ADRESSE (paquet 415, Lucas : « l'adresse est-elle bonne ? »). L'installation proposait l'adresse technique algo.tennis-edge.workers.dev (celle des vidéos et du Lab) : l'appli y aurait eu un compte et des réglages séparés de ceux du site. Désormais l'appli ne s'installe que depuis gamesetalgo.com ; ailleurs, le bouton « Installer l'appli » mène à gamesetalgo.com, où il suffit de le toucher à nouveau, et le navigateur ne propose plus d'installation.",
+   "garde_fou": "Rien d'autre ne change. Tests : workers/algo/test_worker.mjs, tests/test_deploiement_auto.py."
   }
  ]
 }
