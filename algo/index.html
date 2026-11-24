@@ -7,8 +7,13 @@
 <script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Game Set Algo — l'algo du tennis</title>
-<meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant : % de victoire, scénarios, projections et un bilan public, pertes comprises.">
+<title>Game Set Algo — l'algorithme du tennis : % de victoire de chaque match</title>
+<meta name="description" content="Game Set Algo : chaque match de tennis (ATP, WTA, Challenger) simulé 20 000 fois par un algorithme indépendant. % de victoire, scénarios et un bilan public, erreurs comprises.">
+<!-- 24/11/2026 (paquet 417, Lucas : « si on tape game set algo on ne trouve pas le site ») : référencement -->
+<link rel="canonical" href="https://gamesetalgo.com/">
+<link rel="alternate" hreflang="fr" href="https://gamesetalgo.com/?lang=fr"><link rel="alternate" hreflang="en" href="https://gamesetalgo.com/?lang=en"><link rel="alternate" hreflang="x-default" href="https://gamesetalgo.com/">
+<meta property="og:url" content="https://gamesetalgo.com/"><meta property="og:site_name" content="Game Set Algo"><meta property="og:locale" content="fr_FR">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://gamesetalgo.com/#site","name":"Game Set Algo","alternateName":["GameSetAlgo","Game Set Algo tennis","gamesetalgo"],"url":"https://gamesetalgo.com/","inLanguage":["fr","en"],"description":"Chaque match de tennis simulé 20 000 fois par un algorithme indépendant : % de victoire, scénarios et un bilan public, erreurs comprises.","publisher":{"@id":"https://gamesetalgo.com/#org"}},{"@type":"Organization","@id":"https://gamesetalgo.com/#org","name":"Game Set Algo","alternateName":"GameSetAlgo","url":"https://gamesetalgo.com/","logo":"https://gamesetalgo.com/icone-512.png"}]}</script>
 <meta property="og:title" content="Game Set Algo — l'algo du tennis">
 <meta property="og:description" content="Chaque match de tennis simulé 20 000 fois. % de victoire, projections et bilan public.">
 <meta property="og:type" content="website">
@@ -758,7 +763,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
 <div class="page">
 <div class="wrap">
   <header class="top">
-    <p class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></p>
+    <h1 class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></h1>
     <div class="reglages">
       <button type="button" class="compte-b" id="b-compte" hidden></button>
       <span class="arena-w"><button type="button" class="arena-nav" id="b-arena" aria-expanded="false" aria-controls="arena-bulle" data-t="arena_btn"></button><span class="arena-bulle" id="arena-bulle" role="status" hidden data-t="arena_msg"></span></span>
@@ -774,7 +779,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
       </div>
     </div>
   </header>
-  <p class="lede" data-t="lede"></p>
+  <p class="lede" data-t="lede">Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.</p>
   <p class="lede-lien"><a href="methode.html" data-t="cm_lien" class="lien-methode"></a></p>
 
   <section id="mdj" aria-labelledby="mdj-h" style="margin-top:0">
@@ -1618,7 +1623,8 @@ function matchDemande(){
   return fragment.get('match') || Q.get('match') || new URLSearchParams(location.search).get('match');
 }
 let L = 'fr';
-try { L = Q.get('lang') || localStorage.getItem('te_lang') || ((navigator.language||'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'); } catch(e){}
+try { L = Q.get('lang') || localStorage.getItem('te_lang') || (/bot|crawler|spider|Google-InspectionTool/i.test(navigator.userAgent || '') ? 'fr'   // 417 : moteurs de recherche → français
+  : (navigator.language||'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'); } catch(e){}
 if (!T[L]) L = 'fr';
 const t = (k, ...a) => { const v = T[L][k]; return typeof v === 'function' ? v(...a) : v; };
 const loc = () => L === 'fr' ? 'fr-FR' : 'en-GB';
