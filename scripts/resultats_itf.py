@@ -39,9 +39,13 @@ import feuilles_match as FM  # noqa: E402
 # 25/05/2026 (chevauchement d'une semaine ; un match déjà dans l'archive est écarté par l'étude).
 SEXE = os.environ.get('ITF_SEXE', 'H').upper()
 DOSSIER_HOMMES, DOSSIER_FEMMES = 'resultats_itf', 'resultats_itf_femmes'
-DOSSIER = os.environ.get('ITF_DOSSIER', DOSSIER_FEMMES if SEXE == 'F' else DOSSIER_HOMMES)
-DEBUT = '2026-05-25' if SEXE == 'F' else '2024-06-01'
-CATEGORIE = 'itf women' if SEXE == 'F' else 'itf men'
+# 24/11/2026 (paquet 400, Lucas : « 1 et 2 ») — circuit UTR Pro Tennis Tour (hommes) : même collecte, dossier à part,
+# lu seulement par simulateur/etude_utr_elo.py tant que l'étude ne l'a pas adopté. ITF_CIRCUIT=UTR.
+DOSSIER_UTR = 'resultats_utr'
+UTR = os.environ.get('ITF_CIRCUIT', '').upper() == 'UTR'
+DOSSIER = os.environ.get('ITF_DOSSIER', DOSSIER_UTR if UTR else DOSSIER_FEMMES if SEXE == 'F' else DOSSIER_HOMMES)
+DEBUT = '2024-06-01' if UTR else '2026-05-25' if SEXE == 'F' else '2024-06-01'
+CATEGORIE = 'utr men' if UTR else 'itf women' if SEXE == 'F' else 'itf men'
 DELAI_COMPLET_J = 3
 MINUTES = float(os.environ.get('ITF_MINUTES', '45'))
 CHAMPS = ('categorie', 'id', 'jour', 'debut', 'tournoi', 'tournoi_id', 'surface', 'tour', 'meilleur_des', 'vainqueur',

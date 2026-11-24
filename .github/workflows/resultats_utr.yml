@@ -1,0 +1,82 @@
+name: Résultats UTR → étude Elo
+
+# 24/11/2026 — paquet 400 (Lucas : « 1 et 2 »). La sonde des outsiders peu documentés (24/11) : 458 de leurs matchs
+# depuis juin 2024 sont sur le circuit UTR Pro Tennis Tour, absent de notre classement. Chaque jour, juste après le
+# renouvellement du quota TennisApi (vers 07 h 30 UTC) : collecte des résultats UTR hommes (vainqueur, score ; ~2
+# requêtes par jour, ~1 800 pour rattraper depuis le 01/06/2024), puis l'étude Elo avec / sans UTR (règle fixée avant :
+# simulateur/etude_utr_elo.py) dès que 95 % des jours sont collectés. UTR = donnée seulement : jamais pronostiqué,
+# jamais parié. Rien n'entre en production sans adoption (deux semaines de suite) et l'accord de Lucas.
+on:
+  schedule:
+    - cron: '5 8 * * *'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'Requêtes au plus pour la collecte (défaut 2 000)'
+        default: '2000'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resultats-utr
+  cancel-in-progress: false
+
+jobs:
+  utr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /simulateur/
+            /scripts/feuilles_match.py
+            /scripts/resultats_itf.py
+            /feuilles/
+            /resultats_itf/
+            /resultats_utr/
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Collecte des résultats UTR hommes
+        timeout-minutes: 60
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          # réserve 5 000 : passe après la collecte du jour (1 500 à 3 000) mais avant les rattrapages (7 000 et 9 000)
+          FEUILLES_RESERVE: '5000'
+          ITF_CIRCUIT: 'UTR'
+          ITF_MINUTES: '50'
+          BUDGET: ${{ github.event.inputs.budget || '2000' }}
+        run: python scripts/resultats_itf.py '' '' "$BUDGET"
+
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+
+      - name: Étude Elo avec / sans résultats UTR
+        run: python simulateur/etude_utr_elo.py /tmp/sackmann .
+
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for f in resultats_utr simulateur/etude_utr_elo.json; do if [ -e "$f" ]; then git add -- "$f"; fi; done
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Résultats UTR + étude Elo $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push -q origin HEAD:main; then echo 'Poussé.'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1

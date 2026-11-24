@@ -2165,6 +2165,13 @@
    "paquet": 399,
    "quoi": "PISTE SUIVIE : OUTSIDER PEU DOCUMENTÉ (paquet 399). La sonde du 24/11 (règle fixée avant) conclut que nos données ne manquent pas en général (médiane 18 matchs connus de TennisApi depuis juin 2024 contre 14 chez nous ; il manque surtout des matchs du circuit UTR). Le profil « outsider de moins de 60 matchs classés face à un favori qui en a 60 ou plus » passe donc en suivi chaque lundi : seuls les matchs à partir du 25/11 comptent ; décision en Challenger à 1 000 matchs (correction de la confiance apprise sur la première moitié, jugée sur la seconde, gain ≥ 0,001 et ≥ 2 erreurs types, même sens sur les deux moitiés).",
    "garde_fou": "Le % ne change pas. Rapport sans nom de joueur : simulateur/rapport_outsider_peu_documente.json. Tests : tests/test_suivi_outsider.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 400,
+   "quoi": "QUOTA TENNISAPI ET CIRCUIT UTR (paquet 400). 1) Le quota repasse à 15 000 vers 07 h 30 UTC et les collectes le font tomber vers 7 000 en quelques heures : les rattrapages (point par point ITF, historique ATP/WTA) tombaient presque toujours après et n'avaient rien à prendre. Ils sont désormais lancés aussi juste après le renouvellement, dans l'ordre de priorité fixé le 22/11 : ITF à 07 h 50 et 08 h 50 UTC, historique à 09 h 50 UTC. 2) Résultats du circuit UTR Pro Tennis Tour (hommes) collectés chaque jour depuis juin 2024, et étude Elo avec / sans eux, à règle fixée avant : adoption si la log loss Challenger baisse d'au moins 0,001 sans dégrader l'ATP, deux semaines de suite.",
+   "garde_fou": "UTR = donnée seulement, jamais pronostiqué ni parié ; rien n'entre dans l'Elo de production sans adoption et accord de Lucas. Tests : tests/test_utr_elo.py et les tests du worker de déclenchement."
   }
  ]
 }
