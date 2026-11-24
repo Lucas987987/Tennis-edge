@@ -1,0 +1,61 @@
+name: Étude - projections du match par tranche de % (paquet 421)
+
+# 24/11/2026 — paquet 421 (Lucas : « est-ce qu'on peut le faire avec les autres projections du match ? »). Pour chaque
+# projection d'une fiche (1er set, sets secs, set décisif, tie-break, écart de jeux, total de jeux) : quand l'algo
+# annonce X %, est-ce arrivé X % du temps, et fait-il mieux qu'une annonce naïve ? Règle écrite dans l'en-tête de
+# simulateur/etude_projections_tranches.py. Données : nos projections figées avant le match (copies git des matchs déjà
+# commencés) et les scores réels. Rien ne change dans l'algo ni sur le site. 0 requête d'API. Chaque lundi.
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Projections annoncées contre ce qui est arrivé
+        run: |
+          set -euo pipefail
+          python simulateur/etude_projections_tranches.py . | tee /tmp/projections.log
+          cp simulateur/rapport_projections_tranches.json /tmp/rapport_projections_tranches.json
+          echo '### Projections du match par tranche de % (paquet 421)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/projections.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport (sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_projections_tranches.json simulateur/rapport_projections_tranches.json
+            git add -- simulateur/rapport_projections_tranches.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 421 : projections par tranche de % (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
