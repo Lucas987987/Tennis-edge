@@ -599,6 +599,17 @@ const DETAILS = {
   points: { chemin: id => `/api/tennis/event/${id}/point-by-point`, compacter: compacterPoints, champ: 'jeux' },
 };
 
+// 24/11/2026 (paquet 411, Lucas : « toutes les statistiques après le match ») — un match TERMINÉ (dans la liste des
+// terminés tenue par /live) a une feuille définitive : la première réponse complète est gardée 24 h (une seule requête
+// TennisApi par match terminé, quel que soit le nombre de visiteurs), marquée final: true.
+export const STATS_FINAL_TTL_MS = 24 * 3600 * 1000;
+async function estTermine(env, id) {
+  const dans = o => !!(o && Array.isArray(o.termines) && o.termines.some(x => String(x.id) === String(id)));
+  if (dans(LIVE_MEMOIRE)) return true;
+  if (!env.COFFRE) return false;
+  try { const o = await env.COFFRE.get(LIVE_R2); return o ? dans(JSON.parse(await o.text())) : false; } catch (e) { return false; }
+}
+export const ttlDetail = (genre, connu) => connu && connu.final ? STATS_FINAL_TTL_MS : (genre === 'points' ? 30 * 1000 : STATS_TTL_MS);
 async function liveDetail(req, env, url, genre) {
   const D = DETAILS[genre];
   const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=30' };
@@ -607,12 +618,11 @@ async function liveDetail(req, env, url, genre) {
   if (!/^\d{1,12}$/.test(id)) return rep({ ok: false, message: 'id invalide' }, 400);
   const cleR2 = `live/${genre}/${id}.json`, cleM = `${genre}:${id}`;
   // 06/11/2026 (paquet 215) : le point par point de la fiche ouverte se rafraîchit toutes les 30 s (stats : 60 s)
-  const TTL = genre === 'points' ? 30 * 1000 : STATS_TTL_MS;
   let connu = STATS_MEMOIRE.get(cleM) || null;
-  if (connu && Date.now() - connu.maj < TTL) return rep(connu);
+  if (connu && Date.now() - connu.maj < ttlDetail(genre, connu)) return rep(connu);
   if (env.COFFRE) {
     try { const o = await env.COFFRE.get(cleR2); if (o) { const x = JSON.parse(await o.text()); if (!connu || x.maj > connu.maj) connu = x; } } catch (e) { /* rien */ }
-    if (connu && Date.now() - connu.maj < TTL) { STATS_MEMOIRE.set(cleM, connu); return rep(connu); }
+    if (connu && Date.now() - connu.maj < ttlDetail(genre, connu)) { STATS_MEMOIRE.set(cleM, connu); return rep(connu); }
   }
   const plafond = parseInt(env.LIVE_STATS_PLAFOND, 10) || 6000;
   const { cle } = await compter(env);
@@ -632,6 +642,7 @@ async function liveDetail(req, env, url, genre) {
   } catch (e) {
     o = { ok: false, id: +id, maj: Date.now(), [D.champ]: connu ? connu[D.champ] : null, message: 'TennisApi injoignable.' };
   }
+  if (o.ok && o[D.champ] && await estTermine(env, id)) o.final = true;       // 411 : feuille définitive
   STATS_MEMOIRE.set(cleM, o);
   if (STATS_MEMOIRE.size > 300) STATS_MEMOIRE.delete(STATS_MEMOIRE.keys().next().value);
   if (env.COFFRE) { try { await env.COFFRE.put(cleR2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
