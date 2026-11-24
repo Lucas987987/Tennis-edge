@@ -2151,6 +2151,13 @@
    "paquet": 397,
    "quoi": "SONDE DES OUTSIDERS PEU DOCUMENTÉS (paquet 397) : pour chaque outsider de moins de 30 matchs classés (matchs jugés depuis le 21/10), compare les matchs que TennisApi connaît depuis juin 2024 à ceux de notre classement, par catégorie, et liste les identités à vérifier (même nom de famille, prénom proche). Règle fixée avant : données manquantes si, pour la médiane d'au moins 30 joueurs, TennisApi en connaît au moins deux fois plus et au moins 10 de plus.",
    "garde_fou": "Descriptif : rien ne change dans les %. À lancer à la main quand le quota du jour est frais. Tests : tests/test_sonde_outsiders.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 398,
+   "quoi": "SONDE DES OUTSIDERS : la sonde s'arrêtait dès que le quota TennisApi du jour passait sous 6 000 requêtes (arrêt ce matin après une requête). Réserve réglable au lancement, 3 500 par défaut (la collecte du jour garde les siennes, 1 500 à 3 000) ; en cas d'arrêt, le journal indique l'heure du renouvellement du quota.",
+   "garde_fou": "Environ 250 requêtes au plus pour cette sonde. Tests : tests/test_sonde_outsiders.py."
   }
  ]
 }

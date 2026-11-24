@@ -189,6 +189,10 @@ def main(argv):
     with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     print(f"Sondés : {len(sondes)} · requêtes {c.n} · quota restant {c.restant}" + (f" · ARRÊT : {arret}" if arret else ''))
+    if arret and getattr(c, 'reset_s', None):
+        fin = dt.datetime.now(dt.timezone.utc) + dt.timedelta(seconds=c.reset_s)
+        print(f"Quota TennisApi renouvelé dans {c.reset_s // 3600} h {c.reset_s % 3600 // 60:02d} "
+              f"(vers {fin.strftime('%d/%m %H:%M')} UTC)")
     if sondes:
         print(f"Matchs depuis le 01/06/2024 chez TennisApi (médiane) : {statistics.median(x['tennisapi'] for x in sondes)} · "
               f"dans notre classement (médiane, en tout) : {statistics.median(x['classement'] for x in sondes)}")
