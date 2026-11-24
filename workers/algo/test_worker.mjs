@@ -502,3 +502,19 @@ test('417 : robots.txt, sitemap.xml, www → gamesetalgo.com, adresse technique 
   r = await worker.fetch(new Request('https://gamesetalgo.com/'), envS);
   assert.equal(r.headers.get('X-Robots-Tag'), null);
 });
+
+test('418 : pages des matchs et des joueurs servies depuis R2, plan du site publié', async () => {
+  const stock = { 'site/algo/match/2026-11-20_aa_bb.html': '<h1>match</h1>', 'site/algo/joueur/aaa-bbb.html': '<h1>joueur</h1>',
+    'site/algo/matchs.html': '<h1>matchs</h1>', 'site/algo/sitemap.xml': '<urlset>complet</urlset>' };
+  const envS = { CLE_PRIVEE: CLE, COFFRE: { get: async (k) => (k in stock ? { body: stock[k], size: stock[k].length, text: async () => stock[k] } : null) } };
+  for (const [u, t] of [['/match/2026-11-20_aa_bb', 'match'], ['/joueur/aaa-bbb', 'joueur'], ['/matchs', 'matchs']]) {
+    const r = await worker.fetch(new Request('https://gamesetalgo.com' + u), envS);
+    assert.equal(r.status, 200, u);
+    assert.match(r.headers.get('Content-Type'), /text\/html/);
+    assert.match(await r.text(), new RegExp(t));
+  }
+  globalThis.fetch = async () => new Response('x', { status: 404 });
+  assert.equal((await worker.fetch(new Request('https://gamesetalgo.com/match/../secret'), envS)).status, 404);
+  const s = await worker.fetch(new Request('https://gamesetalgo.com/sitemap.xml'), envS);
+  assert.equal(await s.text(), '<urlset>complet</urlset>');
+});
