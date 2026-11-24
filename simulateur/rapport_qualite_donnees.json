@@ -1,72 +1,67 @@
 {
- "genere_le": "2026-11-23T19:28:25+00:00",
+ "genere_le": "2026-11-24T19:04:36+00:00",
  "paquet": 272,
  "fenetre_jours": 30,
  "regle": "résolu                 — présent dans Tennis_Edge_Lab/live/pronostics_resultats.json ;   adversaire fictif      — « R16P3 », « QF7 »… (vainqueur à venir ; filtré depuis le 04/11, restes du journal) ;   doublon reprogrammé    — même paire de joueurs sous un autre uid à moins de 48 h (match déplacé) : une seule fois                            dans les bilans, rien à réparer ;   abandon / forfait      — feuille TennisApi « Retired » / « Walkover » : volontairement non jugés ;   annulé ou reporté      — feuille « Canceled », « Postponed »… ;   feuille terminée non résolue — feuille « Ended » trouvée mais pas de résultat : DÉFAUT à corriger ;   adversaire remplacé    — pas de feuille pour la paire, mais un des joueurs a joué un autre adversaire à ± 3 h de                            l'horaire prévu (repêché, forfait remplacé) : le match annoncé n'a pas eu lieu ;   aucune feuille         — rien du tout : TROU DE COLLECTE (ou match pas encore relevé). Aussi : paires affichées deux fois sur le site (algo/donnees.json) et paires résolues deux fois (bilans faussés). ALERTE (Telegram privé) si, sur la veille, « aucune feuille » + « feuille terminée non résolue » dépassent 10 % des matchs réels (hors adversaires fictifs et doublons), ou si une paire est résolue deux fois.",
- "matchs": 2257,
+ "matchs": 2302,
  "causes": {
-  "résolu": 1531,
+  "résolu": 1539,
   "adversaire fictif": 151,
-  "doublon reprogrammé": 427,
+  "doublon reprogrammé": 478,
   "abandon / forfait": 53,
   "annulé ou reporté": 0,
   "feuille terminée non résolue": 0,
-  "adversaire remplacé": 45,
-  "aucune feuille": 50
+  "adversaire remplacé": 35,
+  "aucune feuille": 46
  },
  "par_circuit": {
   "ATP": {
-   "résolu": 194,
+   "résolu": 184,
    "adversaire fictif": 38,
    "doublon reprogrammé": 82,
-   "abandon / forfait": 6,
+   "abandon / forfait": 5,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 8,
-   "aucune feuille": 4
+   "adversaire remplacé": 6,
+   "aucune feuille": 2
   },
   "WTA": {
-   "résolu": 164,
+   "résolu": 150,
    "adversaire fictif": 32,
    "doublon reprogrammé": 46,
    "abandon / forfait": 5,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 9,
+   "adversaire remplacé": 7,
    "aucune feuille": 8
   },
   "CH": {
-   "résolu": 1173,
+   "résolu": 1205,
    "adversaire fictif": 81,
-   "doublon reprogrammé": 299,
-   "abandon / forfait": 42,
+   "doublon reprogrammé": 350,
+   "abandon / forfait": 43,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 28,
-   "aucune feuille": 38
+   "adversaire remplacé": 22,
+   "aucune feuille": 36
   }
  },
- "defauts_pct": 3.0,
+ "defauts_pct": 2.7,
  "veille": {
-  "jour": "2026-11-22",
+  "jour": "2026-11-23",
   "causes": {
-   "résolu": 72,
+   "résolu": 73,
    "adversaire fictif": 0,
-   "doublon reprogrammé": 18,
-   "abandon / forfait": 4,
+   "doublon reprogrammé": 47,
+   "abandon / forfait": 2,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 1,
-   "aucune feuille": 6
+   "adversaire remplacé": 0,
+   "aucune feuille": 11
   },
-  "defauts_pct": 7.2
+  "defauts_pct": 12.8
  },
  "par_jour": {
-  "2026-11-10": {
-   "matchs": 105,
-   "resolus": 91,
-   "defauts_pct": 0.0
-  },
   "2026-11-11": {
    "matchs": 50,
    "resolus": 39,
@@ -125,16 +120,23 @@
   "2026-11-22": {
    "matchs": 101,
    "resolus": 72,
-   "defauts_pct": 7.2
+   "defauts_pct": 1.3
   },
   "2026-11-23": {
-   "matchs": 32,
-   "resolus": 21,
-   "defauts_pct": 25.0
+   "matchs": 133,
+   "resolus": 73,
+   "defauts_pct": 12.8
+  },
+  "2026-11-24": {
+   "matchs": 21,
+   "resolus": 15,
+   "defauts_pct": 6.2
   }
  },
  "paires_resolues_deux_fois": 0,
  "paires_en_double_sur_le_site": 0,
- "alerte": [],
+ "alerte": [
+  "veille : 12.8 % de matchs sans résultat exploitable (seuil 10 %)"
+ ],
  "descriptif": "le % de victoire ne change pas"
 }
