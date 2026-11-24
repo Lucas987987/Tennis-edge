@@ -146,6 +146,29 @@ export async function publique(req, chemin, env) {
 
 // ------------------------------------------------------------------ 334 : site privé (Lab, tableau)
 export const MARQUES = new Set(['gamesetalgo.com', 'www.gamesetalgo.com']);
+// 24/11/2026 (paquet 417, Lucas : « si on tape game set algo on ne trouve pas le site ») — RÉFÉRENCEMENT.
+// Une seule adresse officielle (gamesetalgo.com) : www redirige dessus (301) ; l'adresse technique workers.dev (vidéos,
+// Lab) n'est jamais indexée (X-Robots-Tag + robots.txt « Disallow: / »). Sur le site : robots.txt (comptes, direct et
+// données exclus) et sitemap.xml (les trois pages publiques).
+export const SITE_OFFICIEL = 'https://gamesetalgo.com';
+function publiqueOuManifeste(req, url, env) {
+  // 24/11/2026 (paquet 415, Lucas : « l'adresse est-elle bonne ? ») : l'appli ne s'installe que depuis gamesetalgo.com.
+  // Ailleurs (adresse workers.dev, celle des vidéos et du Lab) pas de manifeste : le navigateur ne propose pas
+  // d'installer une appli à la mauvaise adresse (compte et réglages seraient séparés de ceux du site).
+  if (url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
+  return publique(req, url.pathname, env);
+}
+export const PAGES_SITEMAP = ['/', '/methode.html', '/apropos.html'];
+export function robotsTxt(officiel) {
+  return officiel
+    ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\n`
+    : 'User-agent: *\nDisallow: /\n';
+}
+export function sitemapXml(jour) {
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + PAGES_SITEMAP.map(p => `  <url><loc>${SITE_OFFICIEL}${p}</loc><lastmod>${jour}</lastmod><changefreq>${p === '/' ? 'hourly' : 'monthly'}</changefreq></url>`).join('\n')
+    + '\n</urlset>\n';
+}
 const TYPES_PRIVES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8',
   json: 'application/json; charset=utf-8', csv: 'text/csv; charset=utf-8', txt: 'text/plain; charset=utf-8',
   md: 'text/plain; charset=utf-8', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', ico: 'image/x-icon',
@@ -682,10 +705,16 @@ export default {
         || url.pathname.startsWith('/lab/') || url.pathname.startsWith('/tableau/')) return sitePrive(req, env, url);
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
-    // 24/11/2026 (paquet 415, Lucas : « l'adresse est-elle bonne ? ») : l'appli ne s'installe que depuis gamesetalgo.com.
-    // Ailleurs (adresse workers.dev, celle des vidéos et du Lab) pas de manifeste : le navigateur ne propose pas
-    // d'installer une appli à la mauvaise adresse (compte et réglages seraient séparés de ceux du site).
-    if (url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
-    return publique(req, url.pathname, env);
+    // 417 : référencement — une seule adresse officielle, robots.txt et sitemap.xml
+    const officiel = MARQUES.has(url.hostname);
+    if (url.hostname === 'www.gamesetalgo.com') return new Response(null, { status: 301, headers: { Location: SITE_OFFICIEL + url.pathname + url.search } });
+    if (url.pathname === '/robots.txt') return new Response(robotsTxt(officiel), { headers: { ...SECURITE, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+    if (url.pathname === '/sitemap.xml' && officiel) return new Response(sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+    if (!officiel) {                                   // adresse technique : servie, jamais indexée
+      const r = await publiqueOuManifeste(req, url, env);
+      const h = new Headers(r.headers); h.set('X-Robots-Tag', 'noindex, nofollow');
+      return new Response(r.body, { status: r.status, headers: h });
+    }
+    return publiqueOuManifeste(req, url, env);
   },
 };

@@ -2,6 +2,7 @@
 """24/11/2026 (paquet 412, Lucas) — un paquet qui change un worker le fait redéployer (plus d'étape à la main) ;
 texte d'accueil public sans « cotes »."""
 import pathlib
+import json
 import re
 
 R = pathlib.Path(__file__).resolve().parent.parent
@@ -44,3 +45,17 @@ def test_appli_installee_depuis_gamesetalgo_seulement():
     assert "location.href = 'https://' + HOTE_APPLI + '/?installer=1'" in p and "HOTE_APPLI = 'gamesetalgo.com'" in p
     w = (R / 'workers' / 'algo' / 'worker.js').read_text(encoding='utf-8')
     assert "url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)" in w
+
+
+def test_referencement_page():
+    p = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
+    tete = p[:p.index('</head>')]
+    assert '<link rel="canonical" href="https://gamesetalgo.com/">' in tete
+    assert '<title>Game Set Algo' in tete and 'hreflang="x-default"' in tete
+    i = tete.index('application/ld+json')
+    ld = json.loads(tete[tete.index('>', i) + 1:tete.index('</script>', i)])
+    noms = [x.get('name') for x in ld['@graph']]
+    assert noms == ['Game Set Algo', 'Game Set Algo'] and 'GameSetAlgo' in ld['@graph'][0]['alternateName']
+    assert '<h1 class="logo">' in p and 'Chaque match est simulé 20 000 fois' in p[p.index('class="lede"'):][:300]
+    for f, u in (('methode.html', 'methode.html'), ('apropos.html', 'apropos.html')):
+        assert f'<link rel="canonical" href="https://gamesetalgo.com/{u}">' in (R / 'algo' / f).read_text(encoding='utf-8')
