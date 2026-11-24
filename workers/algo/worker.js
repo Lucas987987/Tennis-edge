@@ -41,6 +41,10 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   '/manifest.webmanifest': 'manifest.webmanifest', '/sw.js': 'sw.js', '/icone-192.png': 'icone-192.png',
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
+// 24/11/2026 (paquet 418) : une page par match terminé et par joueur (scripts/pages_seo.py, publiées par pages.yml)
+export const PAGES_SEO = /^\/(?:en\/)?(?:match\/[a-z0-9_-]{5,140}|joueur\/[a-z0-9-]{1,90}|tournoi\/[a-z0-9-]{1,140}|bilan\/\d{4}-s\d{2})$/;
+export const INDEX_SEO = Object.fromEntries(['', '/en'].flatMap(p =>
+  ['matchs', 'joueurs', 'tournois', 'bilans'].map(n => [`${p}/${n}`, `${p.slice(1)}${p ? '/' : ''}${n}.html`])));
 // 391 : le script et la feuille de style de la page, sortis à la publication (scripts/decouper_page.py) ; leur nom
 // contient l'empreinte de leur contenu : gardés un an par le navigateur
 export const EMPREINTES = /^\/(app-[0-9a-f]{12}\.js|style-[0-9a-f]{12}\.css)$/;
@@ -129,7 +133,8 @@ async function reserve(req, chemin, env) {
 
 export async function publique(req, chemin, env) {
   if (chemin in RESERVES) return reserve(req, chemin, env);
-  const f = PUBLICS[chemin] || (POLICES.test(chemin) || EMPREINTES.test(chemin) ? chemin.slice(1) : null);
+  const f = PUBLICS[chemin] || (POLICES.test(chemin) || EMPREINTES.test(chemin) ? chemin.slice(1) : null)
+    || INDEX_SEO[chemin] || (PAGES_SEO.test(chemin) ? chemin.slice(1) + '.html' : null);
   if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
   const ext = f.split('.').pop(), fixe = ext === 'woff2' || ext === 'png', immuable = EMPREINTES.test(chemin);
   const type = TYPES[ext] || 'text/html; charset=utf-8';
@@ -709,7 +714,10 @@ export default {
     const officiel = MARQUES.has(url.hostname);
     if (url.hostname === 'www.gamesetalgo.com') return new Response(null, { status: 301, headers: { Location: SITE_OFFICIEL + url.pathname + url.search } });
     if (url.pathname === '/robots.txt') return new Response(robotsTxt(officiel), { headers: { ...SECURITE, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
-    if (url.pathname === '/sitemap.xml' && officiel) return new Response(sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+    if (url.pathname === '/sitemap.xml' && officiel) {   // 418 : le plan complet (pages des matchs et des joueurs) s'il est publié
+      const o = await depuisR2(env, 'site/algo/sitemap.xml');
+      return new Response(o ? o.body : sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+    }
     if (!officiel) {                                   // adresse technique : servie, jamais indexée
       const r = await publiqueOuManifeste(req, url, env);
       const h = new Headers(r.headers); h.set('X-Robots-Tag', 'noindex, nofollow');
