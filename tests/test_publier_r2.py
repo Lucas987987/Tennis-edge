@@ -110,3 +110,37 @@ class OrdreEnvoi(unittest.TestCase):
             self.assertLess(pos['algo/app-0123456789ab.js'], pos['algo/joueur/x.html'])
             self.assertLess(pos['algo/zz.png'], pos['algo/joueur/x.html'])
             self.assertEqual({ordre[-1].split('/', 1)[1], ordre[-2].split('/', 1)[1]}, {'algo/index.html', 'arena/index.html'})
+
+
+class Reprise(unittest.TestCase):
+    """424 : un envoi interrompu ne fait pas tout repartir (manifeste réécrit en cours de route)."""
+
+    def test_reprise_apres_coupure(self):
+        class Coupe(FauxR2):
+            def __init__(self, apres):
+                super().__init__()
+                self.reste = apres
+
+            def put(self, k, data, **kw):
+                if not k.endswith(P.MANIFESTE):
+                    if self.reste <= 0:
+                        raise RuntimeError('annulé')
+                    self.reste -= 1
+                return super().put(k, data, **kw)
+
+        with tempfile.TemporaryDirectory() as d:
+            site(d, dict({f'algo/match/m{i:03d}.html': str(i) for i in range(30)}, **{'algo/index.html': 'i'}))
+            r2 = Coupe(apres=12)
+            with self.assertRaises(RuntimeError):
+                P.envoyer(r2, d, journal=lambda *_: None, taches=1, point=5)
+            deja = json.loads(r2.o['site/' + P.MANIFESTE])
+            self.assertGreaterEqual(len(deja), 10)                      # au moins deux points d'étape écrits
+            self.assertNotIn('algo/index.html', deja)                   # la page d'accueil n'est pas partie
+            r2.reste = 10 ** 6
+            n = P.envoyer(r2, d, journal=lambda *_: None)
+            self.assertEqual(n['public'][0], 31 - len(deja))            # seuls les fichiers manquants repartent
+            self.assertEqual(len(json.loads(r2.o['site/' + P.MANIFESTE])), 31)
+
+    def test_pages_yml_sans_annulation(self):
+        y = open(os.path.join(RACINE, '.github', 'workflows', 'pages.yml'), encoding='utf-8').read()
+        self.assertIn('group: pages\n  cancel-in-progress: false', y)
