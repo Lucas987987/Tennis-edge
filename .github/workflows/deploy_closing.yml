@@ -14,6 +14,9 @@ name: Déployer le worker tennis-edge-closing
 
 on:
   workflow_dispatch:
+  # 24/11/2026 (paquet 412) : lancé aussi par « Appliquer un paquet » quand le paquet change workers/tennis-edge-closing/
+  repository_dispatch:
+    types: [deployer-tennis-edge-closing]
   push:
     branches: [main]
     paths:

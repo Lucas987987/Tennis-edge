@@ -125,6 +125,7 @@ export async function virementRecu(env, b, req) {
   if (!(montant > 0 && montant < 10000)) return { ok: false, erreur: 'montant' };
   const u = await trouverCompte(env, b.compte);
   if (!u) return { ok: false, erreur: 'inconnu' };
+  if (b.fondateur && fondateurPerdu(u)) return { ok: false, erreur: 'fondateur_perdu' };     // 412
   // 403 : sans demande d'accès immédiat, refus sauf case « sans renonciation » (le client garde alors ses 14 jours)
   const ri = u.acces_immediat && u.acces_immediat.le ? u.acces_immediat : null;
   if (!ri && b.sans_renonciation !== true) return { ok: false, erreur: 'sans_renonciation' };
@@ -241,12 +242,15 @@ export function messageRappel(u, env, url) {
   const fin = dateFr(u.acces.jusqu_au), ref = referenceVirement(u), c = coordonnees(env);
   const banque = c ? `Pour le prolonger, fais un virement${u.acces.montant ? ' de ' + eur(u.acces.montant) : ''} à :\nTitulaire : ${c.titulaire || ''}\nIBAN : ${c.iban}${c.bic ? '\nBIC : ' + c.bic : ''}\nLibellé (important) : ${ref}`
     : `Pour le prolonger, réponds à ce message ou écris-nous : ta référence de virement est ${ref}.`;
+  // 412 : un fondateur sait jusqu'à quand il garde son tarif
+  const ft = finTarifFondateur(u);
+  const garde = ft ? `\nPour garder ton tarif fondateur, paie au plus tard le ${dateFr(ft)}.` : '';
   const lignes = banque.split('\n');
   return { sujet: `Ton accès Plus se termine le ${fin}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e"><h2 style="margin:0 0 12px">Ton accès Plus se termine le ${ESC(fin)}</h2>
-<p>Merci d'avoir soutenu Game Set Algo. Le virement ne se renouvelle pas tout seul.</p><p>${lignes.map(ESC).join('<br>')}</p>
+<p>Merci d'avoir soutenu Game Set Algo. Le virement ne se renouvelle pas tout seul.</p><p>${lignes.map(ESC).join('<br>')}</p>${garde ? `<p><b>${ESC(garde.trim())}</b></p>` : ''}
 <p>L'accès est prolongé dès réception (un virement instantané arrive en quelques secondes).</p><p style="color:#666;font-size:13px">Game Set Algo · ${ESC(url)}</p></div>`,
-    texte: `Ton accès Plus se termine le ${fin}.\n${banque}\n\n${url}` };
+    texte: `Ton accès Plus se termine le ${fin}.\n${banque}${garde}\n\n${url}` };
 }
 export async function rappels(env, maintenant = Date.now()) {
   let n = 0, curseur;
@@ -375,6 +379,21 @@ ${banque ? `<p style="background:#f1eefc;padding:12px;border-radius:8px;font-fam
 ${d.acces_immediat ? '' : `<p>${ESC(T.ri)}</p>`}<p style="color:#666;font-size:13px">${ESC(T.fin)} · <a href="${ESC(lienCgv)}">${ESC(T.cgv)}</a> · Game Set Algo</p></div>`;
   return { sujet: T.sujet, html, texte: [T.intro, T.pay, ...(banque || []), d.acces_immediat ? '' : T.ri, T.fin, `${T.cgv} : ${lienCgv}`].filter(Boolean).join('\n') };
 }
+// 24/11/2026 (paquet 412, Lucas) — conditions de vente, art. 3 : le tarif fondateur est garanti tant que chaque nouveau
+// mois est payé au plus tard DELAI_FONDATEUR_J jours après la fin du précédent. Un accès payé au tarif fondateur, fini
+// depuis plus longtemps, le fait perdre pour de bon (u.fondateur_perdu, gardé sur le compte). Le premier paiement d'une
+// place fondateur n'a pas de délai (aucun accès payé avant).
+export function fondateurPerdu(u, maintenant = Date.now()) {
+  if (!u) return false;
+  if (u.fondateur_perdu) return true;
+  const a = u.acces || {};
+  if (!a.paye || !a.fondateur_tarif || !a.jusqu_au) return false;
+  return Date.parse(a.jusqu_au) + DELAI_FONDATEUR_J * 86400e3 < maintenant;
+}
+export const finTarifFondateur = (u) => {
+  const a = (u && u.acces) || {};
+  return a.paye && a.fondateur_tarif && a.jusqu_au ? new Date(Date.parse(a.jusqu_au) + DELAI_FONDATEUR_J * 86400e3).toISOString() : null;
+};
 async function rangFondateur(env, u) {
   if (!u.fondateur || !u.fondateur.le) return null;
   if (u.fondateur_place) return u.fondateur_place;
@@ -397,7 +416,12 @@ export async function demandeAbonnement(req, env, b) {
     return rep({ ok: true });
   }
   if (!(b.formule in TARIFS)) return rep({ ok: false, erreur: 'formule' }, 400);
-  const place = await rangFondateur(env, u);
+  const perdu = fondateurPerdu(u);
+  if (perdu && !u.fondateur_perdu) {
+    u.fondateur_perdu = maintenant;
+    u.historique = [...(u.historique || []).slice(-19), { le: maintenant, fondateur: 'tarif perdu (renouvellement en retard)' }];
+  }
+  const place = perdu ? null : await rangFondateur(env, u);
   const montant = montantDemande(b.formule, place);
   const fondateur = montant === PRIX_FONDATEUR && b.formule === 'mois';
   if (u.demande && u.demande.formule === b.formule && u.demande.montant === montant) return rep({ ok: true, deja: true });
