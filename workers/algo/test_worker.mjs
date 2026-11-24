@@ -502,3 +502,35 @@ test('417 : robots.txt, sitemap.xml, www → gamesetalgo.com, adresse technique 
   r = await worker.fetch(new Request('https://gamesetalgo.com/'), envS);
   assert.equal(r.headers.get('X-Robots-Tag'), null);
 });
+
+test('418 : pages des matchs et des joueurs servies depuis R2, plan du site publié', async () => {
+  const stock = { 'site/algo/match/2026-11-20_aa_bb.html': '<h1>match</h1>', 'site/algo/joueur/aaa-bbb.html': '<h1>joueur</h1>',
+    'site/algo/matchs.html': '<h1>matchs</h1>', 'site/algo/sitemap.xml': '<urlset>complet</urlset>' };
+  const envS = { CLE_PRIVEE: CLE, COFFRE: { get: async (k) => (k in stock ? { body: stock[k], size: stock[k].length, text: async () => stock[k] } : null) } };
+  for (const [u, t] of [['/match/2026-11-20_aa_bb', 'match'], ['/joueur/aaa-bbb', 'joueur'], ['/matchs', 'matchs']]) {
+    const r = await worker.fetch(new Request('https://gamesetalgo.com' + u), envS);
+    assert.equal(r.status, 200, u);
+    assert.match(r.headers.get('Content-Type'), /text\/html/);
+    assert.match(await r.text(), new RegExp(t));
+  }
+  globalThis.fetch = async () => new Response('x', { status: 404 });
+  assert.equal((await worker.fetch(new Request('https://gamesetalgo.com/match/../secret'), envS)).status, 404);
+  const s = await worker.fetch(new Request('https://gamesetalgo.com/sitemap.xml'), envS);
+  assert.equal(await s.text(), '<urlset>complet</urlset>');
+});
+
+test('419 : tournois, bilans de la semaine et pages anglaises servis depuis R2', async () => {
+  const stock = { 'site/algo/tournoi/atp-basel-2026.html': '<h1>tournoi</h1>', 'site/algo/bilan/2026-s47.html': '<h1>bilan</h1>',
+    'site/algo/en/match/2026-11-20_aa_bb.html': '<h1>enmatch</h1>', 'site/algo/en/tournois.html': '<h1>entournois</h1>',
+    'site/algo/bilans.html': '<h1>bilans</h1>' };
+  const envS = { CLE_PRIVEE: CLE, COFFRE: { get: async (k) => (k in stock ? { body: stock[k], size: stock[k].length, text: async () => stock[k] } : null) } };
+  for (const [u, t] of [['/tournoi/atp-basel-2026', 'tournoi'], ['/bilan/2026-s47', 'bilan'], ['/en/match/2026-11-20_aa_bb', 'enmatch'],
+    ['/en/tournois', 'entournois'], ['/bilans', 'bilans']]) {
+    const r = await worker.fetch(new Request('https://gamesetalgo.com' + u), envS);
+    assert.equal(r.status, 200, u);
+    assert.match(await r.text(), new RegExp(t));
+  }
+  globalThis.fetch = async () => new Response('x', { status: 404 });
+  for (const u of ['/bilan/2026-47', '/en/../secret', '/tournoi/ABC'])
+    assert.equal((await worker.fetch(new Request('https://gamesetalgo.com' + u), envS)).status, 404, u);
+});

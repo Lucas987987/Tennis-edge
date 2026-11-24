@@ -1,0 +1,589 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+pages_seo.py — des pages web lisibles sans JavaScript, pour être trouvé sur Google.
+
+24/11/2026 (paquet 418, Lucas : « on part sur 1-2 ») : une page par MATCH TERMINÉ et par JOUEUR.
+24/11/2026 (paquet 419, Lucas : « fais 1-2-3-4 ») : une page par TOURNOI (édition), un BILAN par semaine, toutes les
+pages AUSSI EN ANGLAIS (/en/…, reliées par hreflang), et plus de LIENS entre les pages (autres matchs du tournoi,
+face-à-face, tournoi, semaine).
+
+Ce qui y figure — uniquement du PASSÉ, déjà public dans le bilan :
+  • match : % annoncé AVANT le match (première prédiction, jamais retouchée), vainqueur, score, statistiques réelles
+    face à ce que l'algorithme avait prévu ;
+  • joueur : matchs analysés, victoires et défaites (total, par surface), forme récente, ses matchs ;
+  • tournoi : matchs terminés du tournoi, vainqueurs trouvés par l'algorithme ;
+  • semaine : matchs jugés, vainqueurs trouvés (total et par circuit), plus grosses surprises.
+Jamais : un match à venir ou pas terminé, une cote, une source de cotes, un classement interne de l'algorithme (il
+permettrait de recalculer les % réservés à l'accès Plus), la calibration (interne), un match ITF, un conseil de pari.
+
+Source : Tennis_Edge_Lab/live/pronostics_resultats.json (matchs jugés, rapatrié à jour de R2 par pages.yml).
+Sortie (dossier du site public, envoyé ensuite à R2 sous site/algo/), en français à la racine et en anglais sous en/ :
+  match/<uid>.html, joueur/<slug>.html, tournoi/<slug>.html, bilan/<AAAA-sNN>.html,
+  matchs.html, joueurs.html, tournois.html, bilans.html, et sitemap.xml (toutes les pages, les deux langues).
+Le worker les sert sans « .html » (/match/<uid>, /en/match/<uid>, /matchs…).
+
+Usage : python scripts/pages_seo.py [racine] [dossier_site]     (défaut : . _site/algo)
+"""
+import collections
+import datetime as dt
+import html
+import json
+import os
+import re
+import sys
+import unicodedata
+
+SITE = 'https://gamesetalgo.com'
+LANGUES = ('fr', 'en')
+CIRCUITS = {'ATP': 'ATP', 'WTA': 'WTA', 'CH': 'Challenger'}
+MIN_MATCHS_JOUEUR = 2
+ECART_EDITION_J = 9                # deux matchs d'un même tournoi à plus de 9 jours : deux éditions
+SURPRISE = 0.75                    # « grosse surprise » : favori annoncé à 75 % ou plus, battu
+UID = re.compile(r'^[a-z0-9_-]{5,140}$')
+def e(x):
+    """Échappe pour le HTML (attributs entre guillemets doubles) ; l'apostrophe reste lisible."""
+    return html.escape(x, quote=False).replace('"', '&quot;')
+
+
+
+T = {
+    'fr': dict(
+        surfaces={'Hard': 'dur', 'Clay': 'terre battue', 'Grass': 'gazon', 'Carpet': 'moquette'},
+        mois=('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'),
+        stats=(('premiere_pct', '% de 1res balles'), ('gagnes_1re_pct', 'Points gagnés derrière la 1re'),
+               ('gagnes_2e_pct', 'Points gagnés derrière la 2e'), ('aces', 'Aces'), ('doubles_fautes', 'Doubles fautes'),
+               ('breaks', 'Breaks'), ('jeux_service_gagnes_pct', 'Jeux de service gagnés'), ('points_gagnes', 'Points gagnés')),
+        accueil='Accueil', matchs='Matchs analysés', joueurs='Joueurs', tournois='Tournois', bilans='Bilans de la semaine',
+        methode='Comment ça marche', mentions='Mentions légales', cgv='Conditions de vente', autre_langue='English',
+        pied="Des probabilités calculées par un algorithme indépendant, pas des certitudes. Ce site ne donne aucun conseil de pari. "
+             "Les paris sportifs sont interdits aux mineurs ; jouer comporte des risques : 09 74 75 13 13 (appel non surtaxé).",
+        avant='Avant le match', simule="L'algorithme, qui simule chaque match 20 000 fois point par point, donnait",
+        resultat='Résultat', gagne='gagne', sets='sets', fav_ok="✓ Le favori de l'algorithme a gagné.",
+        surprise="✗ Surprise : l'algorithme donnait {n} favori à {p}.",
+        interrompu='Match interrompu ({x}) : il ne compte pas dans le bilan.',
+        stats_titre='Statistiques du match : réel contre prévu', prevu='prévu',
+        prevu_note='« Prévu » : la moyenne des 20 000 simulations faites avant le match.',
+        cta_txt="Le % de chaque match est publié avant qu'il commence, pour les abonnés Plus ; le match du jour est offert à tous.",
+        cta='Voir les matchs du jour', retour_matchs='← Tous les matchs analysés', retour_joueurs='← Tous les joueurs',
+        retour_tournois='← Tous les tournois', retour_bilans='← Tous les bilans',
+        meme_tournoi='Autres matchs du tournoi', face_a_face='Leurs autres matchs analysés', semaine_de='Bilan de la semaine',
+        titre_match='{h} – {a} : analyse, % de victoire et statistiques | {t} {y}',
+        desc_match='{h} – {a} ({t}, {d}) : Game Set Algo donnait {f} gagnant à {p} avant le match. Résultat : {w} gagne{s}. '
+                   'Statistiques réelles contre prévues.',
+        analyses='{n} match{s} analysé{s} par Game Set Algo', vd='{v} victoire{sv} – {d} défaite{sd}', sur='sur les matchs analysés.',
+        par_surface='Par surface', forme='Forme récente (du plus récent au plus ancien)', ses_matchs='Ses matchs analysés',
+        contre='contre', annonce="Annoncé à {p} par l'algorithme", V='V', D='D',
+        cta_joueur='Le % de victoire de chaque match à venir est publié avant le match pour les abonnés Plus.',
+        titre_joueur='{n} : forme, résultats et matchs analysés | Game Set Algo',
+        desc_joueur='{n} : {v} victoires et {d} défaites sur {t} matchs analysés par Game Set Algo, forme récente {f}, '
+                    'résultats par surface et % annoncé avant chaque match.',
+        titre_tournoi='{t} {y} : résultats et analyse de chaque match | Game Set Algo',
+        desc_tournoi='{t} {y} : {n} matchs analysés par Game Set Algo, {p} de vainqueurs trouvés. % annoncé avant chaque match, '
+                     'score et statistiques.',
+        tournoi_sub='{c} · {s} · du {d1} au {d2}', trouves='{k} vainqueurs trouvés sur {n} matchs ({p}).',
+        titre_bilan='Bilan de la semaine {w} ({y}) : {p} de vainqueurs trouvés | Game Set Algo',
+        desc_bilan='Semaine {w} ({y}) : {n} matchs de tennis analysés par Game Set Algo, {p} de vainqueurs trouvés. Toutes les '
+                   'erreurs comprises.',
+        bilan_h1='Bilan de la semaine {w} ({y})', bilan_sub='Du {d1} au {d2}', en_cours=' — semaine en cours',
+        par_circuit='Par circuit', surprises='Les plus grosses surprises', aucune_surprise="Aucun favori à 75 % ou plus n'a perdu.",
+        matchs_semaine='Les matchs de la semaine', fav_bat='{f} annoncé à {p}, battu par {w}',
+        titre_matchs="Matchs de tennis analysés par l'algorithme : % annoncé et résultats | Game Set Algo",
+        desc_matchs="Tous les matchs de tennis ATP, WTA et Challenger analysés par Game Set Algo : le % de victoire annoncé avant "
+                    "le match, le résultat et les statistiques réelles contre prévues.",
+        h1_matchs='Matchs analysés', sub_matchs="Chaque match terminé, avec le % que l'algorithme annonçait avant le match et les "
+                                                "statistiques réelles. Erreurs comprises.",
+        titre_joueurs='Joueurs de tennis : forme et matchs analysés | Game Set Algo',
+        desc_joueurs='Forme récente, résultats par surface et matchs analysés par Game Set Algo pour chaque joueur et joueuse des '
+                     'circuits ATP, WTA et Challenger.',
+        sub_joueurs='Les joueuses et joueurs dont Game Set Algo a analysé au moins {n} matchs.', nb_matchs='{n} matchs',
+        titre_tournois='Tournois de tennis : résultats et analyse de chaque match | Game Set Algo',
+        desc_tournois='Tous les tournois ATP, WTA et Challenger suivis par Game Set Algo : résultats, % annoncé avant chaque match '
+                      'et vainqueurs trouvés.',
+        sub_tournois="Chaque tournoi suivi par l'algorithme, avec ses matchs terminés.",
+        titre_bilans="Bilans de la semaine de l'algorithme de tennis | Game Set Algo",
+        desc_bilans="Chaque semaine, les vainqueurs trouvés par Game Set Algo, par circuit, et les plus grosses surprises. "
+                    "Toutes les erreurs comprises.",
+        sub_bilans='Chaque semaine, ce que l\'algorithme a trouvé et raté.', semaine='Semaine {w} ({y})'),
+    'en': dict(
+        surfaces={'Hard': 'hard', 'Clay': 'clay', 'Grass': 'grass', 'Carpet': 'carpet'},
+        mois=('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'),
+        stats=(('premiere_pct', '1st serve %'), ('gagnes_1re_pct', '1st serve points won'), ('gagnes_2e_pct', '2nd serve points won'),
+               ('aces', 'Aces'), ('doubles_fautes', 'Double faults'), ('breaks', 'Breaks'),
+               ('jeux_service_gagnes_pct', 'Service games won'), ('points_gagnes', 'Points won')),
+        accueil='Home', matchs='Analysed matches', joueurs='Players', tournois='Tournaments', bilans='Weekly records',
+        methode='How it works', mentions='Legal notice', cgv='Terms of sale', autre_langue='Français',
+        pied='Probabilities computed by an independent algorithm, not certainties. This site gives no betting advice. '
+             'Sports betting is for adults only and carries risks.',
+        avant='Before the match', simule='The algorithm, which simulates every match 20,000 times point by point, gave',
+        resultat='Result', gagne='wins', sets='sets', fav_ok="✓ The algorithm's favourite won.",
+        surprise='✗ Upset: the algorithm had {n} as favourite at {p}.',
+        interrompu='Match interrupted ({x}): it does not count in the record.',
+        stats_titre='Match stats: actual vs expected', prevu='expected',
+        prevu_note='“Expected”: the average of the 20,000 simulations run before the match.',
+        cta_txt='The win % of every match is published before it starts for Plus subscribers; the match of the day is free for all.',
+        cta="See today's matches", retour_matchs='← All analysed matches', retour_joueurs='← All players',
+        retour_tournois='← All tournaments', retour_bilans='← All weekly records',
+        meme_tournoi='Other matches in this tournament', face_a_face='Their other analysed matches', semaine_de='Weekly record',
+        titre_match='{h} vs {a}: analysis, win probability and stats | {t} {y}',
+        desc_match='{h} vs {a} ({t}, {d}): Game Set Algo gave {f} a {p} chance to win before the match. Result: {w} wins{s}. '
+                   'Actual vs expected stats.',
+        analyses='{n} match{s} analysed by Game Set Algo', vd='{v} win{sv} – {d} loss{sd}', sur='in analysed matches.',
+        par_surface='By surface', forme='Recent form (most recent first)', ses_matchs='Analysed matches',
+        contre='vs', annonce='Given {p} by the algorithm', V='W', D='L',
+        cta_joueur='The win % of every upcoming match is published before the match for Plus subscribers.',
+        titre_joueur='{n}: form, results and analysed matches | Game Set Algo',
+        desc_joueur='{n}: {v} wins and {d} losses in {t} matches analysed by Game Set Algo, recent form {f}, results by surface '
+                    'and the win % given before each match.',
+        titre_tournoi='{t} {y}: results and analysis of every match | Game Set Algo',
+        desc_tournoi='{t} {y}: {n} matches analysed by Game Set Algo, {p} of winners found. Win % given before each match, '
+                     'scores and stats.',
+        tournoi_sub='{c} · {s} · {d1} to {d2}', trouves='{k} winners found out of {n} matches ({p}).',
+        titre_bilan='Week {w} ({y}) record: {p} of winners found | Game Set Algo',
+        desc_bilan='Week {w} ({y}): {n} tennis matches analysed by Game Set Algo, {p} of winners found. Every miss included.',
+        bilan_h1='Week {w} ({y}) record', bilan_sub='{d1} to {d2}', en_cours=' — current week',
+        par_circuit='By tour', surprises='Biggest upsets', aucune_surprise='No favourite at 75% or more lost.',
+        matchs_semaine="This week's matches", fav_bat='{f} given {p}, beaten by {w}',
+        titre_matchs='Tennis matches analysed by the algorithm: win % and results | Game Set Algo',
+        desc_matchs='Every ATP, WTA and Challenger match analysed by Game Set Algo: the win % given before the match, the result '
+                    'and actual vs expected stats.',
+        h1_matchs='Analysed matches', sub_matchs='Every finished match, with the win % the algorithm gave before it and the actual '
+                                                  'stats. Every miss included.',
+        titre_joueurs='Tennis players: form and analysed matches | Game Set Algo',
+        desc_joueurs='Recent form, results by surface and matches analysed by Game Set Algo for every ATP, WTA and Challenger player.',
+        sub_joueurs='Players with at least {n} matches analysed by Game Set Algo.', nb_matchs='{n} matches',
+        titre_tournois='Tennis tournaments: results and analysis of every match | Game Set Algo',
+        desc_tournois='Every ATP, WTA and Challenger tournament followed by Game Set Algo: results, win % given before each match and '
+                      'winners found.',
+        sub_tournois='Every tournament followed by the algorithm, with its finished matches.',
+        titre_bilans='Weekly records of the tennis algorithm | Game Set Algo',
+        desc_bilans='Every week, the winners found by Game Set Algo, by tour, and the biggest upsets. Every miss included.',
+        sub_bilans='Every week, what the algorithm got right and wrong.', semaine='Week {w} ({y})'),
+}
+
+
+def slug(nom):
+    s = unicodedata.normalize('NFKD', str(nom or '')).encode('ascii', 'ignore').decode().lower()
+    return re.sub(r'[^a-z0-9]+', '-', s).strip('-')[:80]
+
+
+def date_txt(iso, L='fr'):
+    try:
+        d = dt.date.fromisoformat(str(iso)[:10])
+    except ValueError:
+        return str(iso)[:10]
+    m = T[L]['mois'][d.month - 1]
+    return f"{d.day} {m} {d.year}" if L == 'fr' else f"{m} {d.day}, {d.year}"
+
+
+def pc(x, L='fr'):
+    return f"{100 * x:.0f} %" if L == 'fr' else f"{100 * x:.0f}%"
+
+
+def p_annonce(m):
+    pr = m.get('premier') or {}
+    for k in ('combinaison', 'simulation', 'stats'):
+        if isinstance(pr.get(k), dict) and pr[k].get('p_home') is not None:
+            return float(pr[k]['p_home'])
+    return float(m['p_affiche']) if m.get('p_affiche') is not None else None
+
+
+def matchs_publiables(doc, maintenant=None):
+    """Matchs terminés (vainqueur connu), commencés, hors ITF, avec un % annoncé et un identifiant propre."""
+    maintenant = maintenant or dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M')
+    out = []
+    for m in (doc or {}).get('matchs') or []:
+        r = m.get('reel') or {}
+        if m.get('circuit') not in CIRCUITS or r.get('gagnant') not in ('home', 'away') or not UID.match(str(m.get('uid') or '')):
+            continue
+        if str(m.get('debut') or '')[:16] > maintenant or p_annonce(m) is None:
+            continue
+        out.append(m)
+    out.sort(key=lambda m: (str(m.get('debut')), m['uid']), reverse=True)
+    return out
+
+
+def score_vu_par(score, a_domicile):
+    """« 6-4 3-6 » vu du joueur : jeux inversés s'il était le second nommé."""
+    if a_domicile or not score:
+        return score
+    return ' '.join('-'.join(reversed(s.split('-'))) if s.count('-') == 1 else s for s in str(score).split())
+
+
+def vainqueur(m):
+    return m['home'] if m['reel']['gagnant'] == 'home' else m['away']
+
+
+def favori(m):
+    p = p_annonce(m)
+    return (m['home'], p) if p >= 0.5 else (m['away'], 1 - p)
+
+
+def juge(m):
+    return not (m.get('reel') or {}).get('interrompu')
+
+
+def semaine(m):
+    y, w, _ = dt.date.fromisoformat(str(m['debut'])[:10]).isocalendar()
+    return f"{y}-s{w:02d}"
+
+
+# ------------------------------------------------------------------------------------------------ gabarit commun
+CSS = """:root{--bg:#0E0A24;--panel:#191338;--ink:#F4F1FF;--dim:#A9A2CC;--p1:#2EE6FF;--p2:#FF4FAE;--ok:#3ee08a;--ko:#ff6b7d;--ball:#D4FF3A;--line:rgba(255,255,255,.12)}
+@font-face{font-family:"Bungee";font-display:swap;src:url(/polices/bungee-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(/polices/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(/polices/barlow-600.woff2) format("woff2")}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif}
+.w{max-width:760px;margin:0 auto;padding:18px 16px 40px}a{color:var(--p1)}
+header{display:flex;align-items:center;gap:10px;margin-bottom:18px}header a{color:var(--ink);text-decoration:none;font-family:Bungee,system-ui;font-size:1.15rem}
+header .b{width:14px;height:14px;border-radius:50%;background:var(--ball);box-shadow:0 0 12px var(--ball)}header .lg{margin-left:auto;font:600 .85rem Barlow,system-ui;color:var(--dim)}
+h1{font-family:Bungee,system-ui;font-weight:400;font-size:1.7rem;line-height:1.15;margin:0 0 6px}h2{font-size:1.15rem;margin:26px 0 8px}
+.sub{color:var(--dim);margin:0 0 14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.a{color:var(--p1)}.b2{color:var(--p2)}.ok{color:var(--ok)}.ko{color:var(--ko)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center}
+th:first-child,td:first-child{text-align:left}small{color:var(--dim)}ul.l{list-style:none;padding:0;margin:0}ul.l li{padding:7px 0;border-bottom:1px solid var(--line)}
+.cta{display:inline-block;margin-top:10px;background:var(--ball);color:#141225;font-weight:600;padding:10px 16px;border-radius:999px;text-decoration:none}
+footer{margin-top:34px;color:var(--dim);font-size:.85rem}footer a{color:var(--dim)}"""
+
+
+def pre(L):
+    return '' if L == 'fr' else '/en'
+
+
+def page(L, titre, description, chemin, corps, ld=None, og='article'):
+    """chemin : sans préfixe de langue (« /match/x ») ; la page existe dans les deux langues."""
+    t = T[L]
+    url = SITE + pre(L) + chemin
+    alt = ''.join(f'<link rel="alternate" hreflang="{x}" href="{e(SITE + pre(x) + chemin)}">' for x in LANGUES) \
+        + f'<link rel="alternate" hreflang="x-default" href="{e(SITE + chemin)}">'
+    lds = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''
+    accueil = '/' if L == 'fr' else '/?lang=en'
+    autre = 'en' if L == 'fr' else 'fr'
+    p = pre(L)
+    return f"""<!doctype html>
+<html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{e(titre)}</title><meta name="description" content="{e(description)}">
+<link rel="canonical" href="{e(url)}">{alt}<meta name="theme-color" content="#0E0A24">
+<meta property="og:title" content="{e(titre)}"><meta property="og:description" content="{e(description)}">
+<meta property="og:url" content="{e(url)}"><meta property="og:type" content="{og}"><meta property="og:site_name" content="Game Set Algo">
+<meta property="og:locale" content="{'fr_FR' if L == 'fr' else 'en_GB'}"><meta property="og:image" content="{SITE}/partage.png"><link rel="icon" href="/icone-192.png">{lds}
+<style>{CSS}</style></head><body><div class="w">
+<header><span class="b" aria-hidden="true"></span><a href="{accueil}">Game Set Algo</a><a class="lg" href="{e(pre(autre) + chemin)}" hreflang="{autre}">{e(t['autre_langue'])}</a></header>
+{corps}
+<footer><p><a href="{accueil}">{e(t['accueil'])}</a> · <a href="{p}/matchs">{e(t['matchs'])}</a> · <a href="{p}/joueurs">{e(t['joueurs'])}</a> · <a href="{p}/tournois">{e(t['tournois'])}</a> · <a href="{p}/bilans">{e(t['bilans'])}</a> · <a href="/methode.html{'' if L == 'fr' else '?lang=en'}">{e(t['methode'])}</a> · <a href="/#mentions">{e(t['mentions'])}</a> · <a href="/#cgv">{e(t['cgv'])}</a></p>
+<p>{e(t['pied'])}</p></footer>
+</div></body></html>
+"""
+
+
+class Site:
+    """Index des matchs publiables : joueurs, éditions de tournoi, semaines, face-à-face."""
+
+    def __init__(self, matchs):
+        self.matchs = matchs
+        self.par_joueur = collections.defaultdict(list)
+        for m in matchs:
+            for n in (m['home'], m['away']):
+                self.par_joueur[n].append(m)
+        self.slugs_j, pris = {}, set()
+        for n in sorted(self.par_joueur, key=lambda n: (-len(self.par_joueur[n]), n)):
+            if len(self.par_joueur[n]) < MIN_MATCHS_JOUEUR or not slug(n):
+                continue
+            s, i = slug(n), 2
+            while s in pris:
+                s, i = f"{slug(n)}-{i}", i + 1
+            pris.add(s)
+            self.slugs_j[n] = s
+        # éditions de tournoi : même nom, matchs à moins de ECART_EDITION_J jours les uns des autres
+        par_nom = collections.defaultdict(list)
+        for m in matchs:
+            if m.get('tournoi'):
+                par_nom[m['tournoi']].append(m)
+        self.editions, self.edition_de = {}, {}
+        for nom, ms in par_nom.items():
+            ms = sorted(ms, key=lambda m: str(m['debut']))
+            groupes, cour = [], [ms[0]]
+            for m in ms[1:]:
+                if (dt.date.fromisoformat(str(m['debut'])[:10]) - dt.date.fromisoformat(str(cour[-1]['debut'])[:10])).days > ECART_EDITION_J:
+                    groupes.append(cour)
+                    cour = [m]
+                else:
+                    cour.append(m)
+            groupes.append(cour)
+            annees = collections.Counter(str(g[0]['debut'])[:4] for g in groupes)
+            for g in groupes:
+                y = str(g[0]['debut'])[:4]
+                s = f"{slug(nom)}-{y}" if annees[y] == 1 else f"{slug(nom)}-{str(g[0]['debut'])[:10]}"
+                if not slug(nom):
+                    continue
+                self.editions[s] = {'nom': nom, 'annee': y, 'matchs': sorted(g, key=lambda m: (str(m['debut']), m['uid']), reverse=True)}
+                for m in g:
+                    self.edition_de[m['uid']] = s
+        self.semaines = collections.defaultdict(list)
+        for m in matchs:
+            self.semaines[semaine(m)].append(m)
+        self.duels = collections.defaultdict(list)
+        for m in matchs:
+            self.duels[frozenset((m['home'], m['away']))].append(m)
+
+    def lien_j(self, n, L):
+        return f'<a href="{pre(L)}/joueur/{self.slugs_j[n]}">{e(n)}</a>' if n in self.slugs_j else e(n)
+
+
+def _li_match(m, L, extra=''):
+    sc = f" · {e(m['reel']['score'])}" if m['reel'].get('score') else ''
+    return f'<li><a href="{pre(L)}/match/{m["uid"]}">{e(m["home"])} – {e(m["away"])}</a> <small>{extra}{e(date_txt(m.get("debut"), L))}{sc}</small></li>'
+
+
+def page_match(m, S, L):
+    t = T[L]
+    h, a = m['home'], m['away']
+    r = m['reel']
+    p = p_annonce(m)
+    fav, pf = favori(m)
+    w = vainqueur(m)
+    circ = CIRCUITS.get(m['circuit'], m['circuit'])
+    surf = t['surfaces'].get(m.get('surface'), m.get('surface') or '')
+    date = date_txt(m.get('debut'), L)
+    issue = f'<p class="ok">{e(t["fav_ok"])}</p>' if w == fav else f'<p class="ko">{e(t["surprise"].format(n=fav, p=pc(pf, L)))}</p>'
+    if r.get('interrompu'):
+        issue = f'<p><small>{e(t["interrompu"].format(x=r["interrompu"]))}</small></p>'
+    diag = ((m.get('diagnostic') or {}).get('stats') or {})
+    feuille = r.get('feuille') if isinstance(r.get('feuille'), list) and len(r['feuille']) == 2 else None
+    lignes = []
+    for cle, lib in t['stats']:
+        pct = cle.endswith('_pct')
+        d, vals = diag.get(cle) or {}, []
+        for i, camp in enumerate(('home', 'away')):
+            reel = (d.get(camp) or {}).get('reel')
+            if reel is None and feuille:
+                reel = (feuille[i] or {}).get(cle)
+            prevu = (d.get(camp) or {}).get('prevu')
+            if reel is None:
+                vals = None
+                break
+            fmt = (lambda x: pc(float(x) / 100, L)) if pct else (lambda x: f"{float(x):.0f}")
+            vals.append(fmt(reel) + (f"<br><small>{t['prevu']} {fmt(prevu)}</small>" if prevu is not None else ''))
+        if vals:
+            lignes.append(f"<tr><td>{e(lib)}</td><td>{vals[0]}</td><td>{vals[1]}</td></tr>")
+    stats = (f"""<h2>{e(t['stats_titre'])}</h2><div class="panel"><table><thead><tr><th></th><th class="a">{e(h)}</th><th class="b2">{e(a)}</th></tr></thead>
+<tbody>{''.join(lignes)}</tbody></table><p><small>{e(t['prevu_note'])}</small></p></div>""" if lignes else '')
+    ed = S.edition_de.get(m['uid'])
+    lieu = m.get('tournoi') or ''
+    lieu_html = (f'<a href="{pre(L)}/tournoi/{ed}">{e(lieu)}</a>' if ed else e(lieu))
+    if circ.lower() not in lieu.lower():
+        lieu_html += f' · {e(circ)}'
+    # 419 : liens entre les pages — autres matchs du tournoi, face-à-face, semaine
+    autres = [x for x in (S.editions[ed]['matchs'] if ed else []) if x['uid'] != m['uid']][:10]
+    duel = [x for x in S.duels[frozenset((h, a))] if x['uid'] != m['uid']]
+    liens = ''
+    if duel:
+        liens += f"<h2>{e(t['face_a_face'])}</h2><ul class=\"l\">{''.join(_li_match(x, L, e(x.get('tournoi') or '') + ' · ') for x in duel)}</ul>"
+    if autres:
+        liens += f"<h2>{e(t['meme_tournoi'])}</h2><ul class=\"l\">{''.join(_li_match(x, L) for x in autres)}</ul>"
+    sem = semaine(m)
+    corps = f"""<h1>{e(h)} – {e(a)}</h1><p class="sub">{lieu_html} · {e(surf)} · {e(date)}</p>
+<div class="panel"><h2 style="margin-top:0">{e(t['avant'])}</h2><p>{e(t['simule'])}
+<b class="a">{S.lien_j(h, L)} {pc(p, L)}</b> – <b class="b2">{pc(1 - p, L)} {S.lien_j(a, L)}</b>.</p>
+<h2>{e(t['resultat'])}</h2><p><b>{S.lien_j(w, L)}</b> {e(t['gagne'])}{(' ' + e(r['score'])) if r.get('score') else ''}{(' (' + t['sets'] + ' ' + e(r['sets']) + ')') if r.get('sets') else ''}.</p>{issue}</div>
+{stats}{liens}
+<div class="panel"><p>{e(t['cta_txt'])}</p><a class="cta" href="{'/' if L == 'fr' else '/?lang=en'}">{e(t['cta'])}</a></div>
+<p><a href="{pre(L)}/bilan/{sem}">{e(t['semaine_de'])} {e(sem.replace('-s', ' · '))}</a> · <a href="{pre(L)}/matchs">{e(t['retour_matchs'])}</a></p>"""
+    titre = t['titre_match'].format(h=h, a=a, t=m.get('tournoi') or circ, y=str(m.get('debut'))[:4])
+    desc = t['desc_match'].format(h=h, a=a, t=m.get('tournoi') or circ, d=date, f=fav, p=pc(pf, L), w=w,
+                                  s=(' ' + r['score']) if r.get('score') else '')
+    ld = {'@context': 'https://schema.org', '@type': 'SportsEvent', 'name': f"{h} – {a}", 'sport': 'Tennis',
+          'startDate': str(m.get('debut')), 'location': {'@type': 'Place', 'name': m.get('tournoi') or circ},
+          'competitor': [{'@type': 'Person', 'name': h}, {'@type': 'Person', 'name': a}], 'url': f"{SITE}{pre(L)}/match/{m['uid']}"}
+    return page(L, titre, desc, f"/match/{m['uid']}", corps, ld)
+
+
+def page_joueur(nom, S, L):
+    t = T[L]
+    ms = S.par_joueur[nom]
+    jug = [m for m in ms if juge(m)]
+    gagne = lambda m: vainqueur(m) == nom  # noqa: E731
+    v = sum(1 for m in jug if gagne(m))
+    d = len(jug) - v
+    par_surf = collections.defaultdict(lambda: [0, 0])
+    for m in jug:
+        par_surf[t['surfaces'].get(m.get('surface'), m.get('surface') or '?')][0 if gagne(m) else 1] += 1
+    forme = ' '.join(t['V'] if gagne(m) else t['D'] for m in jug[:10])
+    surf = ' · '.join(f"{s} : {x[0]} {t['V']} – {x[1]} {t['D']}" for s, x in sorted(par_surf.items(), key=lambda kv: -sum(kv[1])))
+    li = []
+    for m in ms[:40]:
+        adv = m['away'] if m['home'] == nom else m['home']
+        pj = p_annonce(m) if m['home'] == nom else 1 - p_annonce(m)
+        res = '·' if not juge(m) else (f'<span class="ok">{t["V"]}</span>' if gagne(m) else f'<span class="ko">{t["D"]}</span>')
+        sc = (' · ' + e(score_vu_par(m['reel']['score'], m['home'] == nom))) if m['reel'].get('score') else ''
+        ed = S.edition_de.get(m['uid'])
+        tn = f'<a href="{pre(L)}/tournoi/{ed}">{e(m.get("tournoi") or "")}</a>' if ed else e(m.get('tournoi') or '')
+        li.append(f'<li>{res} <a href="{pre(L)}/match/{m["uid"]}">{e(t["contre"])} {e(adv)}</a> — {tn}, {e(date_txt(m.get("debut"), L))}'
+                  f'<br><small>{e(t["annonce"].format(p=pc(pj, L)))}{sc}</small></li>')
+    circuits = sorted({CIRCUITS.get(m['circuit'], m['circuit']) for m in ms})
+    pl = 's' if len(ms) > 1 else ''
+    corps = f"""<h1>{e(nom)}</h1><p class="sub">{e(' · '.join(circuits))} · {e(t['analyses'].format(n=len(ms), s=pl if L == 'fr' else ('es' if len(ms) > 1 else '')))}</p>
+<div class="panel"><p><b>{e(t['vd'].format(v=v, d=d, sv=('s' if v > 1 else ''), sd=(('s' if d > 1 else '') if L == 'fr' else ('es' if d > 1 else ''))))}</b> {e(t['sur'])}</p>
+<p>{e(t['par_surface'])} : {e(surf) or '—'}</p><p>{e(t['forme'])} : <b>{e(forme) or '—'}</b></p></div>
+<h2>{e(t['ses_matchs'])}</h2><ul class="l">{''.join(li)}</ul>
+<div class="panel"><p>{e(t['cta_joueur'])}</p><a class="cta" href="{'/' if L == 'fr' else '/?lang=en'}">{e(t['cta'])}</a></div>
+<p><a href="{pre(L)}/joueurs">{e(t['retour_joueurs'])}</a></p>"""
+    titre = t['titre_joueur'].format(n=nom)
+    desc = t['desc_joueur'].format(n=nom, v=v, d=d, t=len(jug), f=forme[:9])
+    ld = {'@context': 'https://schema.org', '@type': 'Person', 'name': nom, 'url': f"{SITE}{pre(L)}/joueur/{S.slugs_j[nom]}"}
+    return page(L, titre, desc, f"/joueur/{S.slugs_j[nom]}", corps, ld, og='profile')
+
+
+def _trouves(ms):
+    jug = [m for m in ms if juge(m)]
+    k = sum(1 for m in jug if vainqueur(m) == favori(m)[0])
+    return k, len(jug)
+
+
+def page_tournoi(s, S, L):
+    t = T[L]
+    ed = S.editions[s]
+    ms = ed['matchs']
+    k, n = _trouves(ms)
+    circ = CIRCUITS.get(ms[0]['circuit'], ms[0]['circuit'])
+    surf = t['surfaces'].get(ms[0].get('surface'), ms[0].get('surface') or '')
+    d1, d2 = date_txt(ms[-1]['debut'], L), date_txt(ms[0]['debut'], L)
+    par_jour = collections.OrderedDict()
+    for m in ms:
+        par_jour.setdefault(str(m['debut'])[:10], []).append(m)
+    blocs = ''.join(f"<h2>{e(date_txt(j, L))}</h2><ul class=\"l\">{''.join(_li_annonce(m, S, L) for m in x)}</ul>" for j, x in par_jour.items())
+    corps = f"""<h1>{e(ed['nom'])} {e(ed['annee'])}</h1><p class="sub">{e(t['tournoi_sub'].format(c=circ, s=surf, d1=d1, d2=d2))}</p>
+<div class="panel"><p><b>{e(t['trouves'].format(k=k, n=n, p=pc(k / n, L) if n else '—'))}</b></p></div>{blocs}
+<div class="panel"><p>{e(t['cta_txt'])}</p><a class="cta" href="{'/' if L == 'fr' else '/?lang=en'}">{e(t['cta'])}</a></div>
+<p><a href="{pre(L)}/tournois">{e(t['retour_tournois'])}</a></p>"""
+    titre = t['titre_tournoi'].format(t=ed['nom'], y=ed['annee'])
+    desc = t['desc_tournoi'].format(t=ed['nom'], y=ed['annee'], n=n, p=pc(k / n, L) if n else '—')
+    ld = {'@context': 'https://schema.org', '@type': 'SportsEvent', 'name': f"{ed['nom']} {ed['annee']}", 'sport': 'Tennis',
+          'startDate': str(ms[-1]['debut'])[:10], 'endDate': str(ms[0]['debut'])[:10], 'url': f"{SITE}{pre(L)}/tournoi/{s}"}
+    return page(L, titre, desc, f"/tournoi/{s}", corps, ld)
+
+
+def _li_annonce(m, S, L):
+    t = T[L]
+    fav, pf = favori(m)
+    marque = '·' if not juge(m) else ('<span class="ok">✓</span>' if vainqueur(m) == fav else '<span class="ko">✗</span>')
+    sc = f" · {e(m['reel']['score'])}" if m['reel'].get('score') else ''
+    return (f'<li>{marque} <a href="{pre(L)}/match/{m["uid"]}">{e(m["home"])} – {e(m["away"])}</a>'
+            f'<br><small>{e(t["annonce"].format(p=pc(pf, L)))} ({e(fav)}){sc}</small></li>')
+
+
+def page_bilan(sem, S, L, maintenant):
+    t = T[L]
+    ms = sorted(S.semaines[sem], key=lambda m: (str(m['debut']), m['uid']), reverse=True)
+    y, w = sem.split('-s')
+    lundi = dt.date.fromisocalendar(int(y), int(w), 1)
+    dimanche = lundi + dt.timedelta(days=6)
+    en_cours = lundi <= dt.date.fromisoformat(maintenant[:10]) <= dimanche
+    k, n = _trouves(ms)
+    par_c = collections.defaultdict(list)
+    for m in ms:
+        par_c[CIRCUITS.get(m['circuit'], m['circuit'])].append(m)
+    circ = ''.join(f"<li>{e(c)}{' :' if L == 'fr' else ':'} {e(t['trouves'].format(k=a, n=b, p=pc(a / b, L) if b else '—'))}</li>"
+                   for c, (a, b) in sorted(((c, _trouves(x)) for c, x in par_c.items()), key=lambda kv: -kv[1][1]) if b)
+    surpr = sorted((m for m in ms if juge(m) and vainqueur(m) != favori(m)[0] and favori(m)[1] >= SURPRISE), key=lambda m: -favori(m)[1])[:8]
+    li_s = ''.join(f'<li><a href="{pre(L)}/match/{m["uid"]}">{e(t["fav_bat"].format(f=favori(m)[0], p=pc(favori(m)[1], L), w=vainqueur(m)))}</a>'
+                   f' <small>{e(m.get("tournoi") or "")}</small></li>' for m in surpr) or f"<li>{e(t['aucune_surprise'])}</li>"
+    corps = f"""<h1>{e(t['bilan_h1'].format(w=int(w), y=y))}</h1><p class="sub">{e(t['bilan_sub'].format(d1=date_txt(lundi.isoformat(), L), d2=date_txt(dimanche.isoformat(), L)))}{e(t['en_cours']) if en_cours else ''}</p>
+<div class="panel"><p><b>{e(t['trouves'].format(k=k, n=n, p=pc(k / n, L) if n else '—'))}</b></p><h2>{e(t['par_circuit'])}</h2><ul class="l">{circ}</ul></div>
+<h2>{e(t['surprises'])}</h2><ul class="l">{li_s}</ul>
+<h2>{e(t['matchs_semaine'])}</h2><ul class="l">{''.join(_li_annonce(m, S, L) for m in ms)}</ul>
+<p><a href="{pre(L)}/bilans">{e(t['retour_bilans'])}</a></p>"""
+    titre = t['titre_bilan'].format(w=int(w), y=y, p=pc(k / n, L) if n else '—')
+    desc = t['desc_bilan'].format(w=int(w), y=y, n=n, p=pc(k / n, L) if n else '—')
+    return page(L, titre, desc, f"/bilan/{sem}", corps)
+
+
+def page_index(L, quoi, S):
+    t = T[L]
+    if quoi == 'matchs':
+        par_jour = collections.OrderedDict()
+        for m in S.matchs[:400]:
+            par_jour.setdefault(str(m.get('debut'))[:10], []).append(m)
+        corps = f"<h1>{e(t['h1_matchs'])}</h1><p class=\"sub\">{e(t['sub_matchs'])}</p>" + ''.join(
+            f"<h2>{e(date_txt(j, L))}</h2><ul class=\"l\">{''.join(_li_match(m, L, e(m.get('tournoi') or '') + ' · ') for m in ms)}</ul>"
+            for j, ms in par_jour.items())
+        return page(L, t['titre_matchs'], t['desc_matchs'], '/matchs', corps, og='website')
+    if quoi == 'joueurs':
+        noms = sorted(S.slugs_j, key=lambda n: slug(n))
+        li = ''.join(f'<li><a href="{pre(L)}/joueur/{S.slugs_j[n]}">{e(n)}</a> <small>{e(t["nb_matchs"].format(n=len(S.par_joueur[n])))}</small></li>' for n in noms)
+        corps = f"<h1>{e(t['joueurs'])}</h1><p class=\"sub\">{e(t['sub_joueurs'].format(n=MIN_MATCHS_JOUEUR))}</p><ul class=\"l\">{li}</ul>"
+        return page(L, t['titre_joueurs'], t['desc_joueurs'], '/joueurs', corps, og='website')
+    if quoi == 'tournois':
+        eds = sorted(S.editions.items(), key=lambda kv: str(kv[1]['matchs'][0]['debut']), reverse=True)
+        li = ''.join(f'<li><a href="{pre(L)}/tournoi/{s}">{e(ed["nom"])} {e(ed["annee"])}</a> <small>{e(t["nb_matchs"].format(n=len(ed["matchs"])))}'
+                     f' · {e(date_txt(ed["matchs"][-1]["debut"], L))}</small></li>' for s, ed in eds)
+        corps = f"<h1>{e(t['tournois'])}</h1><p class=\"sub\">{e(t['sub_tournois'])}</p><ul class=\"l\">{li}</ul>"
+        return page(L, t['titre_tournois'], t['desc_tournois'], '/tournois', corps, og='website')
+    sems = sorted(S.semaines, reverse=True)
+    li = ''.join(f'<li><a href="{pre(L)}/bilan/{s}">{e(t["semaine"].format(w=int(s.split("-s")[1]), y=s.split("-s")[0]))}</a> '
+                 f'<small>{e(t["trouves"].format(k=_trouves(S.semaines[s])[0], n=_trouves(S.semaines[s])[1], p=pc(_trouves(S.semaines[s])[0] / max(1, _trouves(S.semaines[s])[1]), L)))}</small></li>'
+                 for s in sems)
+    corps = f"<h1>{e(t['bilans'])}</h1><p class=\"sub\">{e(t['sub_bilans'])}</p><ul class=\"l\">{li}</ul>"
+    return page(L, t['titre_bilans'], t['desc_bilans'], '/bilans', corps, og='website')
+
+
+def sitemap(entrees):
+    l = ''.join(f"  <url><loc>{e(SITE + c)}</loc><lastmod>{d}</lastmod></url>\n" for c, d in entrees)
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{l}</urlset>\n'
+
+
+def _ecrire(dossier, rel, texte):
+    p = os.path.join(dossier, rel)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, 'w', encoding='utf-8') as f:
+        f.write(texte)
+
+
+def construire(doc, dossier, maintenant=None):
+    """Écrit toutes les pages (deux langues) et le plan du site ; renvoie (matchs, joueurs)."""
+    maintenant = maintenant or dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M')
+    S = Site(matchs_publiables(doc, maintenant))
+    jour = maintenant[:10]
+    entrees = [('/', jour), ('/methode.html', jour), ('/apropos.html', jour)]
+    for L in LANGUES:
+        d = dossier if L == 'fr' else os.path.join(dossier, 'en')
+        p = pre(L)
+        for m in S.matchs:
+            _ecrire(d, f"match/{m['uid']}.html", page_match(m, S, L))
+            entrees.append((f"{p}/match/{m['uid']}", str(m['debut'])[:10]))
+        for n, s in S.slugs_j.items():
+            _ecrire(d, f"joueur/{s}.html", page_joueur(n, S, L))
+            entrees.append((f"{p}/joueur/{s}", str(S.par_joueur[n][0]['debut'])[:10]))
+        for s, ed in S.editions.items():
+            _ecrire(d, f"tournoi/{s}.html", page_tournoi(s, S, L))
+            entrees.append((f"{p}/tournoi/{s}", str(ed['matchs'][0]['debut'])[:10]))
+        for sem in S.semaines:
+            _ecrire(d, f"bilan/{sem}.html", page_bilan(sem, S, L, maintenant))
+            entrees.append((f"{p}/bilan/{sem}", max(str(m['debut'])[:10] for m in S.semaines[sem])))
+        for quoi in ('matchs', 'joueurs', 'tournois', 'bilans'):
+            _ecrire(d, f"{quoi}.html", page_index(L, quoi, S))
+            entrees.append((f"{p}/{quoi}", jour))
+    _ecrire(dossier, 'sitemap.xml', sitemap(entrees))
+    construire.dernier = {'matchs': len(S.matchs), 'joueurs': len(S.slugs_j), 'tournois': len(S.editions),
+                          'semaines': len(S.semaines), 'adresses': len(entrees)}
+    return len(S.matchs), len(S.slugs_j)
+
+
+def main(argv):
+    racine = argv[1] if len(argv) > 1 else '.'
+    dossier = argv[2] if len(argv) > 2 else os.path.join('_site', 'algo')
+    try:
+        with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        print('Pages de référencement : résultats absents, rien de construit.')
+        return 0
+    construire(doc, dossier)
+    x = construire.dernier
+    print(f"Pages de référencement : {x['matchs']} matchs, {x['joueurs']} joueurs, {x['tournois']} tournois, "
+          f"{x['semaines']} semaines, en français et en anglais ; {x['adresses']} adresses dans le plan du site")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

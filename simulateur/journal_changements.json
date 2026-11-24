@@ -2284,6 +2284,20 @@
    "paquet": 417,
    "quoi": "RÉFÉRENCEMENT (paquet 417, Lucas : « si on tape game set algo, on ne trouve pas le site »). Une seule adresse officielle, gamesetalgo.com : www y redirige, l'adresse technique n'est jamais indexée. Ajouts : robots.txt et plan du site (sitemap.xml), adresse canonique sur les trois pages, données structurées (nom « Game Set Algo », variante « GameSetAlgo »), titre et description qui commencent par le nom, titre principal et texte d'accueil présents dans la page avant le JavaScript, français pour les moteurs de recherche.",
    "garde_fou": "Rien ne change pour les visiteurs ni dans les pronostics. À faire par Lucas : déclarer le domaine dans Google Search Console et y envoyer le plan du site. Tests : workers/algo/test_worker.mjs, tests/test_deploiement_auto.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 418,
+   "quoi": "PAGES DES MATCHS ET DES JOUEURS (paquet 418, Lucas : « on part sur 1-2 », référencement). Chaque match terminé a sa page (gamesetalgo.com/match/…) : % annoncé avant le match, vainqueur, score, statistiques réelles contre prévues. Chaque joueur analysé au moins deux fois a la sienne (gamesetalgo.com/joueur/…) : victoires et défaites, par surface, forme récente, liste de ses matchs. Deux pages de liste (/matchs, /joueurs), des liens en bas de la page d'accueil, et le plan du site complet envoyé à Google (environ 2 400 pages au 24/11). Pages reconstruites à chaque publication du site.",
+   "garde_fou": "Uniquement des matchs terminés, déjà publics dans le bilan : jamais un match à venir, une cote, un classement interne de l'algorithme ni un match ITF. Tests : tests/test_pages_seo.py, workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 419,
+   "quoi": "TOURNOIS, BILANS DE LA SEMAINE ET PAGES EN ANGLAIS (paquet 419, Lucas : « fais 1-2-3-4 », référencement). Une page par tournoi (gamesetalgo.com/tournoi/…) avec le taux de vainqueurs trouvés et tous ses matchs jour par jour ; une page par semaine (gamesetalgo.com/bilan/2026-s47…) avec le bilan total et par circuit et les plus grosses surprises ; chaque page existe aussi en anglais sous /en/, reliée à la version française pour Google. Plus de liens entre les pages : un match renvoie à son tournoi, à sa semaine et aux autres matchs du tournoi ; nouveaux liens « Tournois » et « Bilans de la semaine » en bas de l'accueil (en anglais, ils mènent aux pages anglaises). Plan du site : environ 5 000 adresses au 24/11.",
+   "garde_fou": "Mêmes règles que les pages des matchs : passé seulement, jamais un match à venir, une cote, un classement interne de l'algorithme ni un match ITF. Tests : tests/test_pages_seo.py, workers/algo/test_worker.mjs."
   }
  ]
 }
