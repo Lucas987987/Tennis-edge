@@ -73,7 +73,7 @@ class Client:
     def __init__(self, cle, budget=BUDGET, reserve=RESERVE, ouvrir=None, pause=PAUSE):
         self.cle, self.budget, self.reserve, self.pause = cle, budget, reserve, pause
         self.ouvrir = ouvrir or urllib.request.urlopen
-        self.n, self.restant, self.codes = 0, None, {}
+        self.n, self.restant, self.codes, self.reset_s = 0, None, {}, None
 
     def get(self, chemin):
         """(code, json | None). Lève QuotaAtteint avant de dépasser le budget ou la réserve."""
@@ -100,6 +100,10 @@ class Client:
         self.codes[code] = self.codes.get(code, 0) + 1
         try:
             self.restant = int(ent.get('x-ratelimit-requests-remaining'))
+        except (TypeError, ValueError):
+            pass
+        try:                                    # 398 : secondes avant le renouvellement du quota (si TennisApi le dit)
+            self.reset_s = int(ent.get('x-ratelimit-requests-reset'))
         except (TypeError, ValueError):
             pass
         if code == 429:
