@@ -148,8 +148,21 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .filtres input::placeholder{color:var(--dim)}
 .rt{margin-top:12px;padding:12px 14px;border:1px solid rgba(212,255,58,.3);border-radius:14px;background:rgba(212,255,58,.04)}.rt h4{margin:0 0 6px;font-family:var(--cond);font-size:1.05rem}.rt p{margin:0;font-size:.9rem;line-height:1.4}.rt .rt-v{display:flex;align-items:baseline;gap:8px;margin:4px 0}.rt .rt-v b{font-family:var(--cond);font-size:2.2rem;line-height:1;color:var(--ball)}.rt .rt-v span{color:var(--dim);font-size:.85rem}.rt-j{position:relative;height:10px;border-radius:5px;background:rgba(var(--wv),.08);margin:6px 0 4px}.rt-j i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:rgba(212,255,58,.55)}.rt-j u{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:2px;text-decoration:none}.rt-leg{display:flex;justify-content:space-between;gap:8px;color:var(--dim);font-size:.75rem}.rt .aide{margin-top:8px;font-size:.78rem;color:var(--dim)}.mk-vu{margin:0 0 6px 8px;font-size:.76rem;color:var(--dim)}html[data-theme="light"] .rt{border-color:rgba(111,149,0,.4);background:rgba(111,149,0,.05)}html[data-theme="light"] .rt-j i{background:rgba(111,149,0,.45)}
 .bt-l{display:grid;grid-template-columns:76px minmax(0,1fr) 56px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.bt-l.peu{opacity:.55}.bt-l .tr{font-family:var(--cond);font-weight:600}.bt-l b{font-family:var(--cond);color:var(--ball)}.bt-l .n{text-align:right;color:var(--dim);font-size:.85rem}.bt-l.tete{color:var(--dim);font-size:.78rem}
-.fiab-bloc{display:flex;flex-direction:column;gap:4px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding-left:4px}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap;min-height:36px}
-.circuits button{min-height:44px;min-width:44px}
+/* 426 : libellé à côté du choix, même hauteur que la recherche et les circuits ; seul sur sa ligne au téléphone */
+.live-match.plein{position:fixed;inset:0;z-index:9999;margin:0;border-radius:0;border:0;background:#0E0A24;color:#F4F1FF;overflow:hidden;padding:0}
+.lv-pe{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));box-sizing:border-box}
+.lv-pe-haut .lv-sb{margin:0}.lv-pe-3d{min-height:0;display:flex;flex-direction:column}.lv-pe-3d .te3d{flex:1;min-height:0;display:flex;flex-direction:column;margin:0}
+.lv-pe-3d .te3d-hote,.lv-pe-3d .g3d{flex:1;min-height:0;height:100%}.lv-pe-3d .g3d-cv,.lv-pe-3d .te3d-cv{aspect-ratio:auto;max-height:none;height:100%}
+.lv-pe-3d .te3d-note,.lv-pe .g3d-tab{display:none}.lv-pe-3d .lv-terrain{max-height:100%}
+.lv-pe-stats{max-height:34vh;overflow:auto}.pe-tete{display:flex;justify-content:space-between;font-weight:700;font-size:.85rem}.pe-tete .a,.pe-l b.a{color:#2EE6FF}.pe-tete .b,.pe-l b.b{color:#FF4FAE}
+.pe-l{display:grid;grid-template-columns:60px 1fr 60px;align-items:center;column-gap:8px;margin:4px 0;font-size:.84rem}.pe-l b{font-family:var(--cond);font-size:1.05rem}.pe-l b.b{text-align:right}.pe-l .k{text-align:center;color:#ABA3D6}
+.pe-bb{grid-column:1/-1;display:flex;height:4px;border-radius:2px;overflow:hidden;background:#FF4FAE}.pe-bb i.a{background:#2EE6FF}.pe-bb i.b{flex:1}.pe-vide{color:#ABA3D6;font-size:.85rem;margin:4px 0}
+.lv-pe-3d{position:relative}.lv-pe-x{position:absolute;left:8px;top:8px;z-index:2;background:rgba(10,8,30,.85);min-height:40px}
+@media (orientation:landscape) and (min-aspect-ratio:4/3){.lv-pe{grid-template-columns:minmax(0,1fr) minmax(260px,32%);grid-template-rows:auto minmax(0,1fr)}.lv-pe-3d{grid-column:1;grid-row:1/3}.lv-pe-haut{grid-column:2;grid-row:1}.lv-pe-stats{grid-column:2;grid-row:2;max-height:none}}
+html.pe-ouvert,html.pe-ouvert body{overflow:hidden}
+.fiab-bloc{display:flex;align-items:center;gap:10px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+@media (max-width:560px){.fiab-bloc{flex-direction:column;align-items:flex-start;gap:4px}.fiab-lab{padding-left:4px}}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap}
+.circuits button,.fiab-filtre button{min-height:44px;min-width:44px}
 .compte{min-height:1.5em;margin:0 0 8px;color:var(--dim);font-size:.9rem}
 .list{list-style:none;margin:0;padding:0}
 .list li{border-top:1px solid var(--line);transition:background-color .18s ease-out}
@@ -746,7 +759,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
  .cartes .cj-r text {font-size:10px}
 }
 </style>
-<style id="te-analyse-detaillee-style">.te-analyse-detaillee{margin:12px 0;padding:16px;border:1px solid var(--line2);border-radius:14px;background:var(--panel)}.te-analyse-detaillee[hidden]{display:none!important}.te-analyse-detaillee h3{margin:0 0 10px}.te-analyse-part{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.te-analyse-part h4{margin:0 0 5px}.te-analyse-part p{margin:0;line-height:1.55}.te-analyse-part ul{margin:5px 0;padding-left:22px}.te-analyse-part li{margin:5px 0}.te-analyse-disclaimer{font-size:.85rem;color:var(--dim);line-height:1.5}</style>
+<style id="te-analyse-detaillee-style">.te-analyse-detaillee{margin:12px 0;padding:16px;border:1px solid var(--line2);border-radius:14px;background:var(--panel)}.te-analyse-detaillee[hidden]{display:none!important}.te-analyse-detaillee h3{margin:0 0 10px}.te-analyse-part{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.te-analyse-part h4{margin:0 0 5px}.te-analyse-part p{margin:0;line-height:1.55}.te-analyse-part ul{margin:5px 0;padding-left:22px}.te-analyse-part li{margin:5px 0}.te-analyse-disclaimer{font-size:.85rem;color:var(--dim);line-height:1.5}.te-analyse-detaillee .c1{color:var(--p1)}.te-analyse-detaillee .c2{color:var(--p2)}.ad-s{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.ad-s h4{margin:0 0 8px;font-family:var(--cond);font-size:1.05rem;letter-spacing:.02em}.ad-s p{margin:6px 0 0;line-height:1.5;font-size:.92rem}.ad-duel{display:grid;grid-template-columns:1fr auto auto 1fr;gap:8px;align-items:baseline;font-weight:600}.ad-duel span:last-child{text-align:right}.ad-duel b{font-family:var(--cond);font-size:1.6rem}.ad-barre{position:relative;height:12px;border-radius:6px;background:var(--p2);overflow:hidden;margin:6px 0}.ad-barre i{position:absolute;left:0;top:0;bottom:0;background:var(--p1)}.ad-barre u{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.35);text-decoration:none}.ad-barre u.avant{width:3px;margin-left:-1.5px;background:var(--ink)}.ad-tete{display:flex;justify-content:space-between;font-weight:600;font-size:.85rem;margin-bottom:4px}.ad-l{display:grid;grid-template-columns:30px 1fr 30px;grid-template-areas:"a k b" "a bb b";column-gap:8px;align-items:center;margin:6px 0}.ad-l>b{font-family:var(--cond);font-size:1.15rem;color:var(--dim)}.ad-l>b:first-child{grid-area:a}.ad-l>b:nth-of-type(2){grid-area:b;text-align:right}.ad-l>b.net{font-size:1.3rem}.ad-l>b.c1{color:var(--p1)}.ad-l>b.c2{color:var(--p2)}.ad-k{grid-area:k;text-align:center;font-size:.8rem;color:var(--dim)}.ad-bb{grid-area:bb;display:grid;grid-template-columns:1fr 1fr;gap:3px;height:8px}.ad-bb>span{background:rgba(var(--wv),.07);border-radius:4px;display:flex}.ad-bb>span:first-child{justify-content:flex-end}.ad-bb i{display:block;border-radius:4px}.ad-bb i.c1{background:var(--p1)}.ad-bb i.c2{background:var(--p2)}.ad-av{margin:4px 0 0;padding-left:20px;font-size:.92rem}.ad-av li{margin:3px 0}.ad-p{color:var(--dim)}.ad-note{font-size:.78rem!important;color:var(--dim)}</style>
 <style>
 /* te-cartes-pleine-largeur-v2 */
 .mdj > .fiche{display:contents}
@@ -805,7 +818,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
         <button type="button" data-circuit="CH" aria-pressed="false">CH</button>
         <button type="button" data-circuit="LIVE" aria-pressed="false">🔴 LIVE</button>
       </div>
-      <div class="fiab-bloc"><span class="fiab-lab" data-t="fiab_filtre_label" aria-hidden="true"></span>
+      <div class="fiab-bloc"><span class="fiab-lab" data-t="fiab" aria-hidden="true"></span>
       <div class="seg fiab-filtre" role="group" data-t-aria="fiab_filtre_label">
         <button type="button" data-fniv="TOUS" aria-pressed="true" data-t="fiab_toutes"></button>
         <button type="button" data-fniv="solide" aria-pressed="false" data-t="niv_solide"></button>
@@ -999,6 +1012,7 @@ const T = {
   rt_ligne:(tr,b,n,c,oui)=>`Déjà vu, côté « ${oui?'oui':'non'} » à ${tr} : l’algo a vu juste ${b} du temps (${n} matchs, ${c})`, rt_c_tous:'tous circuits',
   bt_titre:'Ce que l’algo annonce, ce qui arrive', bt_sous:'Pour chaque tranche de %, la part des matchs où le favori de l’algo a gagné. Trait blanc : % annoncé en moyenne. Lignes grisées : moins de 100 matchs, trop tôt pour conclure.',
   bt_annonce:'Annoncé', bt_gagne:'Gagné en vrai', bt_matchs:'Matchs',
+  pe_bouton:'Grand écran', pe_quitter:'Quitter', pe_attente:'Statistiques en attente des premiers points.',
   rs_bouton:'Résumé du match', rs_attente:'Le résumé (prévu contre arrivé) s’affiche dès que le résultat et la feuille de match sont reçus.',
   fiab_toutes:'Toutes', fiab_filtre_label:'Niveau de fiabilité', fiab_filtre_plus:'Le tri par fiabilité est réservé à l’accès Plus.',
   fiab_filtre_vide:'Aucun match de ce niveau de fiabilité pour l’instant.',
@@ -1370,6 +1384,7 @@ const T = {
   rt_ligne:(tr,b,n,c,oui)=>`Track record, “${oui?'yes':'no'}” side at ${tr}: the algorithm was right ${b} of the time (${n} matches, ${c})`, rt_c_tous:'all tours',
   bt_titre:'What the algorithm announces, what happens', bt_sous:'For each % band, the share of matches the algorithm’s favourite won. White mark: average announced %. Greyed rows: fewer than 100 matches, too early to conclude.',
   bt_annonce:'Announced', bt_gagne:'Actually won', bt_matchs:'Matches',
+  pe_bouton:'Full screen', pe_quitter:'Exit', pe_attente:'Stats waiting for the first points.',
   rs_bouton:'Match summary', rs_attente:'The summary (forecast against what happened) appears as soon as the result and match sheet arrive.',
   fiab_toutes:'All', fiab_filtre_label:'Reliability level', fiab_filtre_plus:'Sorting by reliability is part of Plus access.',
   fiab_filtre_vide:'No match at this reliability level yet.',
@@ -7275,11 +7290,48 @@ function svgCourbe(m, courbe){
     ${sep}<polyline fill="none" stroke="#2EE6FF" stroke-width="2.5" stroke-linejoin="round" points="${pts}"/>${pastilles}
     <text x="${Math.min(X(courbe.length-1)+4, W-34)}" y="${Math.max(y(der.p)-6, 12)}" style="fill:#2EE6FF;font-size:13px;font-weight:700">${pc0(der.p)}</text></svg>`;
 }
+// 426 — GRAND ÉCRAN du direct : API plein écran quand le navigateur l'accepte (Android), sinon le panneau couvre la page
+// (iPhone). Le panneau garde ses mises à jour : seul son habillage change. Échap / bouton « Quitter » / geste retour.
+function entrerPlein(el, uid){
+  LIVE.plein = uid; document.documentElement.classList.add('pe-ouvert');
+  try { const f = el.requestFullscreen || el.webkitRequestFullscreen; if (f) { const pr = f.call(el, { navigationUI: 'hide' }); if (pr && pr.catch) pr.catch(() => {}); } } catch (e) {}
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+  rendMatchLive();
+}
+function quitterPlein(){
+  if (!LIVE.plein) return;
+  LIVE.plein = null; document.documentElement.classList.remove('pe-ouvert');
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+  try { const fe = document.fullscreenElement || document.webkitFullscreenElement; if (fe) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
+  rendMatchLive();
+}
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+  if (!(document.fullscreenElement || document.webkitFullscreenElement) && LIVE.plein) quitterPlein(); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && LIVE.plein) quitterPlein(); });
+// les stats du direct, en lignes compactes face à face (mêmes données que le panneau des statistiques)
+function statsPlein(m, r){
+  const st = LIVE.stats[m.uid], S = st && st.o && st.o.stats;
+  if (!S) return `<p class="pe-vide">${esc(t('pe_attente'))}</p>`;
+  const g = k => { const v = S[k]; if (!v) return null; return r.inverse ? [v[2], v[3], v[0], v[1]] : v; };
+  const pct = (a, b) => b ? Math.round(100 * a / b) + (L === 'fr' ? ' %' : '%') : '—';
+  const LL = t('ls_l'), out = [];
+  const ligne = (lib, a, b, xa, xb) => { const s = (xa || 0) + (xb || 0);
+    out.push(`<div class="pe-l"><b class="a">${esc(String(a))}</b><span class="k">${esc(lib)}</span><b class="b">${esc(String(b))}</b>
+      <span class="pe-bb" aria-hidden="true"><i class="a" style="width:${s ? (100 * xa / s).toFixed(1) : 50}%"></i><i class="b"></i></span></div>`); };
+  const c = (k, lib) => { const v = g(k); if (v) ligne(lib, +v[0] || 0, +v[2] || 0, +v[0] || 0, +v[2] || 0); };
+  const rt = (k, lib) => { const v = g(k); if (v && (v[1] || v[3])) ligne(lib, pct(v[0], v[1]), pct(v[2], v[3]), v[1] ? v[0] / v[1] : 0, v[3] ? v[2] / v[3] : 0); };
+  c('aces', LL.aces); c('doubleFaults', LL.df); rt('firstServeAccuracy', LL.prem); rt('firstServePointsAccuracy', LL.g1);
+  rt('secondServePointsAccuracy', LL.g2); c('breakPointsScored', LL.breaks); c('pointsTotal', LL.pts);
+  return `<div class="pe-tete"><span class="a">${esc(court(m.home))}</span><span class="b">${esc(court(m.away))}</span></div>${out.join('')}`;
+}
 function rendMatchLive(){
-  const el = document.querySelector('[data-live-match]'); if (!el) return;
+  const el = document.querySelector('[data-live-match]');
+  // 426 : un grand écran ouvert sur un autre match (ou plus de panneau) se referme proprement
+  if (LIVE.plein && (!el || el.getAttribute('data-live-match') !== LIVE.plein)) { LIVE.plein = null; document.documentElement.classList.remove('pe-ouvert'); }
+  if (!el) return;
   const uid = el.getAttribute('data-live-match'), m = ((D && D.matchs) || []).find(x=>x.uid===uid);
   const r = LIVE.par_uid[uid] || LIVE.vus[uid];
-  if (!m || !r){ el.hidden = true; el.innerHTML = ''; return; }
+  if (!m || !r){ if (LIVE.plein) quitterPlein(); el.classList.remove('plein'); el.hidden = true; el.innerHTML = ''; return; }
   const fini = !LIVE.par_uid[uid], jeux = LIVE.points[uid];
   let corps = '';
   if (jeux && jeux.length && m.simulation) {
@@ -7303,8 +7355,33 @@ function rendMatchLive(){
   }
   if (!corps && !fini) corps = `<p class="styles-note" style="margin:10px 0 0">${esc(t('lv_attente'))}</p>`;
   el.hidden = false;
+  // 426 (Lucas : « un bouton pour mettre en grand écran le match en 3D avec le score en direct + des stats ») : même
+  // panneau, autre habillage — le terrain plein cadre, le tableau et le % en direct au-dessus, les stats du match dessous.
+  const plein = LIVE.plein === uid;
+  el.classList.toggle('plein', plein);
+  if (plein) {
+    // mise à jour sur place : le terrain 3D et le bouton « Quitter » ne sont pas reconstruits (un toucher ne se perd
+    // plus entre deux rafraîchissements), seuls le tableau, le % et les stats changent
+    const deja = el.querySelector('.lv-pe');
+    if (deja && deja.dataset.vue === String(vue3dLive())) {
+      deja.querySelector('.lv-pe-haut').innerHTML = tableauLive(m, r, fini, true) + barreLive(m, r, fini, true);
+      deja.querySelector('.lv-pe-stats').innerHTML = statsPlein(m, r);
+      const h0 = deja.querySelector('.te3d-hote');
+      if (h0) { G3D.monter(h0, m, r, fini) || T3D.monter(h0, m, r, fini); }
+      else { const z = deja.querySelector('.lv-pe-3d'); const x = z.querySelector('.lv-pe-x'); z.innerHTML = terrainLive(m, r, fini); z.appendChild(x); }
+      return;
+    }
+    el.innerHTML = `<div class="lv-pe" data-vue="${vue3dLive()}"><div class="lv-pe-haut">${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}</div>
+      <div class="lv-pe-3d">${vue3dLive() ? terrain3dHtml() : terrainLive(m, r, fini)}<button type="button" class="btn lv-pe-x">✕ ${esc(t('pe_quitter'))}</button></div>
+      <div class="lv-pe-stats">${statsPlein(m, r)}</div></div>`;
+    el.querySelector('.lv-pe-x').onclick = () => quitterPlein();
+    const hp = el.querySelector('.te3d-hote');
+    if (hp && !G3D.monter(hp, m, r, fini) && !T3D.monter(hp, m, r, fini)) { LIVE.vue3d = false; rendMatchLive(); return; }
+    el.querySelectorAll('.te3d-v').forEach(b => b.onclick = () => { G3D.vue(b.dataset.vue); T3D.vue(b.dataset.vue); });
+    return;
+  }
   el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
-    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}<button type="button" class="btn te3d-bascule">${esc(t(vue3dLive() ? 't3_2d' : 't3_3d'))}</button></div>
+    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}${fini ? '' : `<button type="button" class="btn lv-plein-b">⛶ ${esc(t('pe_bouton'))}</button>`}<button type="button" class="btn te3d-bascule">${esc(t(vue3dLive() ? 't3_2d' : 't3_3d'))}</button></div>
     ${vue3dLive() ? terrain3dHtml() : terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
   const bt = el.querySelector('.lv-btn-tous');
   if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
@@ -7316,6 +7393,8 @@ function rendMatchLive(){
   if (b3) b3.onclick = () => { LIVE.vue3d = !vue3dLive(); try { localStorage.setItem('te_direct_vue', LIVE.vue3d ? '3d' : '2d'); } catch(e) {} rendMatchLive(); };
   const bf = el.querySelector('.lv-btn-fil');
   if (bf) bf.onclick = () => { LIVE.filTout = !LIVE.filTout; rendMatchLive(); };
+  const bp = el.querySelector('.lv-plein-b');
+  if (bp) bp.onclick = () => entrerPlein(el, uid);
   el.querySelectorAll('details[data-set]').forEach(d => d.addEventListener('toggle', () => {
     (LIVE.ouverts[uid] = LIVE.ouverts[uid] || {})[d.dataset.set] = d.open; }));
 }
@@ -7426,73 +7505,53 @@ function ouvrirResume(m){
 }
 // te-analyse-detaillee-v1 — synthèse descriptive à partir des données du match, sans appel IA.
 function ouvrirAnalyseDetaillee(m){
-  // 11/11/2026 (paquet 219) : bilingue ; la fourchette est décrite comme dans la fiche (niveau des joueurs, 8 fois sur 10).
-  const zone=document.getElementById('te-analyse-detaillee');
-  const btn=document.getElementById('b-analyse-detaillee');
+  // 24/11/2026 (paquet 426, Lucas : « l'analyse détaillée n'est pas bonne ») : moins de texte générique, plus de lecture
+  // visuelle. Le duel (% et fourchette sur une même barre), où se joue le match (attributs face à face, l'avantage net en
+  // couleur), ce que chacun peut faire valoir, et le direct s'il y en a un. Plus de répétition de la fiabilité ni des
+  // scores (déjà affichés plus haut), plus de conclusion passe-partout.
+  const zone=document.getElementById('te-analyse-detaillee'), btn=document.getElementById('b-analyse-detaillee');
   if(!zone||!btn)return;
   if(!zone.hidden){zone.hidden=true;btn.setAttribute('aria-expanded','false');return;}
-  const fr=L==='fr', tx=(a,b)=>fr?a:b;
-  const num=x=>Number.isFinite(Number(x))?Number(x):null;
-  const pct=x=>Math.round(100*x)+(fr?' %':'%');
-  const p=num(m.p_home), q=p===null?null:1-p;
-  const f=m.fiabilite||{}, C=m.cartes, J=C&&Array.isArray(C.joueurs)?C.joueurs:[];
-  const safe=x=>esc(String(x==null?'':x));
-  const section=(titre,contenu)=>'<section class="te-analyse-part"><h4>'+safe(titre)+'</h4><p>'+contenu+'</p></section>';
-  const h=m.home,a=m.away;
-  let out='<h3>📊 '+tx('Analyse détaillée','Detailed analysis')+' · '+safe(h)+' / '+safe(a)+'</h3>';
-  out+='<p class="te-analyse-disclaimer">'+tx('Analyse descriptive générée à partir des données Game Set Algo. Les pourcentages sont des estimations, pas des certitudes. Les statistiques des cartes sont établies avant le match.',
-    'Descriptive analysis generated from Game Set Algo data. Percentages are estimates, not certainties. Card statistics are set before the match.')+'</p>';
-  if(p!==null){
-    const fav=p>=.5?h:a, fp=Math.max(p,q), ecart=Math.round(Math.abs(p-q)*100), perd=Math.round((1-fp)*100);
-    out+=section(tx('Lecture du duel','Reading the matchup'),
-      tx('Le modèle attribue <strong>'+pct(p)+'</strong> à '+safe(h)+' et <strong>'+pct(q)+'</strong> à '+safe(a)+'. ',
-         'The model gives <strong>'+pct(p)+'</strong> to '+safe(h)+' and <strong>'+pct(q)+'</strong> to '+safe(a)+'. ')
-      +(Math.abs(p-.5)<.06 ? tx('La confrontation est très équilibrée.','The matchup is very even.')
-         : tx(safe(fav)+' possède un avantage estimé de '+ecart+' points de probabilité.', safe(fav)+' has an estimated edge of '+ecart+' percentage points.'))
-      +tx(' Même le favori peut perdre : '+safe(fav)+' perd environ '+perd+' simulations sur 100.',
-          ' Even the favourite can lose: '+safe(fav)+' is beaten in about '+perd+' simulations out of 100.'));
+  const fr=L==='fr', tx=(a,b)=>fr?a:b, num=x=>Number.isFinite(Number(x))?Number(x):null;
+  const p=num(m.p_home); if(p===null){zone.hidden=true;return;}
+  const N=[court(m.home),court(m.away)], fi=p>=.5?0:1, oi=1-fi, fem=m.circuit==='WTA';
+  const C=m.cartes, J=C&&Array.isArray(C.joueurs)?C.joueurs:[];
+  let out=`<h3>📊 ${esc(tx('Analyse détaillée','Detailed analysis'))}</h3>`;
+  // 1. le duel
+  const lo=Array.isArray(m.fourchette)?num(m.fourchette[0]):null, hi=Array.isArray(m.fourchette)?num(m.fourchette[1]):null;
+  out+=`<section class="ad-s"><h4>${esc(tx('Le duel','The matchup'))}</h4>
+    <div class="ad-duel"><span class="c1">${esc(N[0])}</span><b class="c1">${pc0(p)}</b><b class="c2">${pc0(1-p)}</b><span class="c2">${esc(N[1])}</span></div>
+    <div class="ad-barre" aria-hidden="true"><i style="width:${(100*p).toFixed(1)}%"></i>${lo!==null&&hi!==null?`<u style="left:${(100*lo).toFixed(1)}%;width:${(100*(hi-lo)).toFixed(1)}%"></u>`:''}</div>
+    <p>${esc(tx(`${N[fi]} ${fem?'favorite':'favori'} : ${N[oi]} gagne ${Math.round(100*Math.min(p,1-p))} simulations sur 100.`,
+                `${N[fi]} is the favourite: ${N[oi]} wins ${Math.round(100*Math.min(p,1-p))} simulations out of 100.`))}
+    ${lo!==null&&hi!==null?esc(tx(` Bande claire : ${pc0(lo)} à ${pc0(hi)} pour ${N[0]} selon l’incertitude sur le niveau des joueurs (8 fois sur 10).`,
+                                  ` Light band: ${pc0(lo)} to ${pc0(hi)} for ${N[0]} given the uncertainty on the players’ level (8 times out of 10).`)):''}</p></section>`;
+  // 2. où se joue le match
+  const AX=[['ser',tx('Service','Serve')],['ret',tx('Retour','Return')],['ace','Aces'],['pre',tx('1re balle','1st serve')],['df',tx('2e balle','2nd serve')],['for',tx('Forme','Form')]];
+  const att=(k,i)=>num((J[i]&&J[i].attributs&&J[i].attributs[k]) ?? (J[i]&&J[i][k]));
+  const av=[[],[]];
+  const lignes=J.length===2?AX.map(([k,lib])=>{const x=att(k,0), y=att(k,1); if(x===null||y===null)return '';
+    const d=x-y, net=Math.abs(d)>=8; if(net) av[d>0?0:1].push(lib.toLowerCase());
+    return `<div class="ad-l"><b class="${net&&d>0?'c1 net':''}">${x}</b><span class="ad-bb"><span><i class="c1" style="width:${x}%"></i></span><span><i class="c2" style="width:${y}%"></i></span></span><b class="${net&&d<0?'c2 net':''}">${y}</b><span class="ad-k">${esc(lib)}</span></div>`;}).join(''):'';
+  if(lignes){
+    const phrase=i=>av[i].length?`<li><b class="c${i+1}">${esc(N[i])}</b> : ${esc(av[i].join(', '))}</li>`:'';
+    out+=`<section class="ad-s"><h4>${esc(tx('Où se joue le match','Where the match is decided'))}</h4>
+      <div class="ad-tete"><span class="c1">${esc(N[0])}</span><span class="c2">${esc(N[1])}</span></div>${lignes}
+      ${av[0].length||av[1].length?`<p class="ad-p">${esc(tx('Avantages nets (8 points d’écart ou plus) :','Clear edges (8 points or more):'))}</p><ul class="ad-av">${phrase(fi)}${phrase(oi)}</ul>`
+        :`<p class="ad-p">${esc(tx('Aucun avantage net : profils proches.','No clear edge: similar profiles.'))}</p>`}
+      <p class="ad-note">${esc(tx('Rang parmi les joueurs actifs du circuit (99 = le meilleur). Descriptif : ne change pas le %.','Rank among active players on the tour (99 = best). Descriptive: does not change the %.'))}</p></section>`;
+    // 3. la clé pour l'outsider
+    if(av[oi].length) out+=`<section class="ad-s"><h4>${esc(tx('La carte de l’outsider','The underdog’s card'))}</h4><p>${esc(tx(
+      `Pour inverser la tendance, ${N[oi]} devra imposer ${av[oi].join(', ')}${av[fi].length?` face à ${av[fi].join(', ')} de ${N[fi]}`:''}.`,
+      `To turn it around, ${N[oi]} must make ${av[oi].join(', ')} count${av[fi].length?` against ${N[fi]}’s ${av[fi].join(', ')}`:''}.`))}</p></section>`;
   }
-  if(Array.isArray(m.fourchette)&&m.fourchette.length>=2){
-    const lo=num(m.fourchette[0]),hi=num(m.fourchette[1]);
-    if(lo!==null&&hi!==null)out+=section(tx('Fourchette','Range'),
-      tx('Selon l’incertitude sur le niveau des joueurs, la chance estimée pour '+safe(h)+' se situe entre <strong>'+pct(lo)+'</strong> et <strong>'+pct(hi)+'</strong> (8 fois sur 10).',
-         'Given the uncertainty about the players’ level, '+safe(h)+'’s chance lies between <strong>'+pct(lo)+'</strong> and <strong>'+pct(hi)+'</strong> (8 times out of 10).'));
-  }
-  if(f.note!=null){out+=section(tx('Fiabilité de la prévision','Forecast reliability'),
-    tx('Indice affiché : ','Displayed score: ')+'<strong>'+safe(f.note)+'/100</strong>'+(f.niveau?' ('+safe(f.niveau)+')':'')+'. '
-    +tx('Cet indice décrit la calibration historique de ce type de rencontre ; il ne garantit pas la victoire du favori.',
-        'It describes how well-calibrated past forecasts were for this type of match; it does not guarantee the favourite wins.'));}
-  if(J.length===2){
-    const keys=[['ser',tx('service','serve')],['ret',tx('retour','return')],['ace','aces'],['pre',tx('première balle','first serve')],['df',tx('deuxième balle','second serve')],['for',tx('forme','form')]];
-    let lines=[];
-    for(const [k,label] of keys){
-      const x=num((J[0]&&J[0].attributs&&J[0].attributs[k]) ?? (J[0]&&J[0][k]));
-      const y=num((J[1]&&J[1].attributs&&J[1].attributs[k]) ?? (J[1]&&J[1][k]));
-      if(x===null||y===null)continue;
-      const delta=Math.abs(x-y);
-      lines.push('<li><strong>'+safe(label)+'</strong> : '+safe(h)+' '+x+' / '+safe(a)+' '+y+(delta>=8?tx(' — avantage ',' — edge ')+safe(x>y?h:a):tx(' — niveaux proches',' — close'))+'</li>');
-    }
-    if(lines.length)out+='<section class="te-analyse-part"><h4>'+tx('Forces et faiblesses comparées','Strengths and weaknesses')+'</h4><ul>'+lines.join('')+'</ul><p>'
-      +tx('Notes relatives au circuit, pas des probabilités de gagner chaque point.','Ratings relative to the tour, not probabilities of winning each point.')+'</p></section>';
-  }
-  const scores=Array.isArray(m.scores_probables)?m.scores_probables.slice(0,4):[];
-  if(scores.length){
-    const items=scores.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>'<li>'+safe(x[0])+' : '+(num(x[1])!==null?pct(x[1]):'—')+'</li>');
-    if(items.length)out+='<section class="te-analyse-part"><h4>'+tx('Scénarios de score les plus fréquents','Most frequent score scenarios')+'</h4><ul>'+items.join('')+'</ul><p>'
-      +tx('Chaque score exact reste un scénario minoritaire ; les probabilités ne doivent pas être additionnées comme des issues indépendantes.',
-          'Each exact score remains a minority scenario; these probabilities should not be added up as independent outcomes.')+'</p></section>';
-  }
+  // 4. le direct
   const live=typeof LIVE!=='undefined'&&LIVE.par_uid&&LIVE.par_uid[m.uid];
-  if(live){
-    const current=typeof pctLive==='function'?pctLive(m,live):null;
-    out+=section(tx('Situation en direct','Live situation'),tx('Match actuellement signalé en direct.','Match currently live.')
-      +(current!==null ? tx(' La probabilité recalculée de '+safe(h)+' est de <strong>'+pct(current)+'</strong>, contre '+(p!==null?pct(p):'—')+' avant match.',
-                            ' '+safe(h)+'’s recalculated chance is <strong>'+pct(current)+'</strong>, against '+(p!==null?pct(p):'—')+' before the match.')
-                       : tx(' Le score et les probabilités actualisés figurent dans le panneau LIVE.',' The updated score and chances are in the LIVE panel.'))
-      +tx(' Les caractéristiques ci-dessus restent celles d’avant-match.',' The characteristics above are the pre-match ones.'));
-  }
-  out+=section(tx('Conclusion','Conclusion'),tx('Cette analyse aide à comprendre les facteurs du modèle et les scénarios possibles. Elle ne prédit ni les trajectoires réelles ni le déroulement exact des points.',
-    'This analysis helps understand the model’s factors and possible scenarios. It does not predict actual rallies or how points will unfold.'));
+  if(live){ const q=typeof pctLive==='function'?pctLive(m,live):null;
+    if(q!==null) out+=`<section class="ad-s"><h4>${esc(tx('En direct','Live'))}</h4>
+      <div class="ad-barre" aria-hidden="true"><i style="width:${(100*q).toFixed(1)}%"></i><u class="avant" style="left:${(100*p).toFixed(1)}%"></u></div>
+      <p>${esc(tx(`${N[0]} ${pc0(q)} maintenant, contre ${pc0(p)} avant le match (trait blanc).`,`${N[0]} ${pc0(q)} now, against ${pc0(p)} before the match (white mark).`))}</p></section>`; }
+  out+=`<p class="ad-note">${esc(tx('Des estimations, pas des certitudes.','Estimates, not certainties.'))}</p>`;
   zone.innerHTML=out;
   zone.hidden=false;btn.setAttribute('aria-expanded','true');
 }
