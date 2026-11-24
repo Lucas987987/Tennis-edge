@@ -44,11 +44,20 @@ LOG = 'simulateur/pronostics_log.jsonl'
 JOURNAL = 'simulateur/journal_pronostics'
 FICHES = 'simulateur/journal_pronostics/fiches'
 MARQUE = '.pronostics_prives'
+# 24/11/2026 (paquet 414, Lucas : « stocker sur Cloudflare comme le reste ») : le coffre garde aussi les journaux figés
+# des lignes et des statistiques prévues (simulateur/journal_pronostics/*_v1.jsonl : version complète au coffre, git
+# n'a que les matchs commencés — ils contenaient en clair les prévisions des matchs à venir), les bilans après match
+# (apres_match/*.json.gz) et les résultats jugés (pronostics_resultats.json, matchs passés seulement : identiques).
+# Git n'en reçoit plus qu'une photo toutes les 2 h (pronostics_quotidien.yml) : R2 fait foi entre deux photos.
+RESULTATS = 'Tennis_Edge_Lab/live/pronostics_resultats.json'
+APRES = 'simulateur/journal_pronostics/apres_match'
 
 
 def fichiers_locaux(racine):
-    out = [DONNEES, LOG]
+    out = [DONNEES, LOG, RESULTATS]
     out += sorted(os.path.relpath(p, racine) for p in glob.glob(os.path.join(racine, JOURNAL, '20*.jsonl.gz')))
+    out += sorted(os.path.relpath(p, racine) for p in glob.glob(os.path.join(racine, JOURNAL, '*_v1.jsonl')))
+    out += sorted(os.path.relpath(p, racine) for p in glob.glob(os.path.join(racine, APRES, '20*.json.gz')))
     out += sorted(os.path.relpath(p, racine) for p in glob.glob(os.path.join(racine, FICHES, '20*.json.gz')))
     return [f for f in out if os.path.exists(os.path.join(racine, f))]
 
@@ -69,7 +78,8 @@ def public_log(texte, maintenant):
         if not l.strip():
             continue
         try:
-            if commence(json.loads(l).get('debut'), maintenant):
+            r = json.loads(l)
+            if commence(r.get('debut') or r.get('debut_utc'), maintenant):     # 414 : journaux figés (debut_utc)
                 out.append(l)
         except ValueError:
             continue
@@ -121,6 +131,12 @@ def rendre_public(racine, maintenant=None):
         if pub != t:
             _ecrire_gz(p, pub)
         bilan[os.path.relpath(p, racine)] = (pub.count('\n'), sum(1 for l in t.splitlines() if l.strip()))
+    for p in sorted(glob.glob(os.path.join(racine, JOURNAL, '*_v1.jsonl'))):      # 414 : journaux figés
+        t = open(p, encoding='utf-8').read()
+        pub = public_log(t, maintenant)
+        if pub != t:
+            open(p, 'w', encoding='utf-8').write(pub)
+        bilan[os.path.relpath(p, racine)] = (pub.count('\n'), sum(1 for l in t.splitlines() if l.strip()))
     for p in sorted(glob.glob(os.path.join(racine, FICHES, '20*.json.gz'))):
         with gzip.open(p, 'rt', encoding='utf-8') as f:
             doc = json.load(f)
@@ -139,7 +155,7 @@ def pull(r2, racine, seulement=None):
     n, vus = 0, {}
     for cle, _ in r2.list(PREFIXE + (seulement or '')):
         rel = cle[len(PREFIXE):]
-        if not rel or '..' in rel.split('/') or not (rel == DONNEES or rel == LOG or rel.startswith(JOURNAL + '/')):
+        if not rel or '..' in rel.split('/') or not (rel in (DONNEES, LOG, RESULTATS) or rel.startswith(JOURNAL + '/')):
             continue
         got = r2.get_with_etag(cle)
         if got is None:
@@ -183,7 +199,7 @@ def push(r2, racine):
 
 
 def rendre(racine):
-    suivis = subprocess.run(['git', 'ls-files', '--', DONNEES, LOG, JOURNAL], capture_output=True, text=True,
+    suivis = subprocess.run(['git', 'ls-files', '--', DONNEES, LOG, JOURNAL, RESULTATS], capture_output=True, text=True,
                             cwd=racine).stdout.split()
     if suivis:
         subprocess.run(['git', 'checkout', '--', *suivis], check=False, cwd=racine)
