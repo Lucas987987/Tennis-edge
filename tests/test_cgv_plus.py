@@ -40,3 +40,14 @@ def test_paiement_seulement_pour_le_fondateur_prevenu():
     seg = _seg('function blocPaiement', '// 23/11/2026 (paquet 384')
     assert 'COMPTE.fondateur_place' in seg and 'PAIEMENT' in seg and 'map(esc)' in seg
     assert re.search(r"PAIEMENT = o\.paiement \|\| null", PAGE)
+
+
+def test_demande_abonnement_prix_du_serveur():
+    seg = _seg('function blocAbonnement', 'function abonnementAction')
+    assert 'TARIFS_SITE[f]' in seg and '14,99' not in seg and '14.99' not in seg     # prix envoyés par le serveur
+    assert "COMPTE.verifie" in seg and 'COMPTE.demande' in seg
+    assert "apiCompte('abonnement'" in PAGE and 'TARIFS_SITE = o.tarifs' in PAGE
+    for cle in ('ab_titre', 'ab_texte', 'ab_lib', 'ab_par', 'ab_go', 'ab_ok', 'ab_annuler', 'ab_sans_iban'):
+        assert PAGE.count(cle + ':') == 2, cle
+    seg_cgv = _seg('function texteCgv', 'function ouvrirLegal')
+    assert "demande d'abonnement" in seg_cgv and 'subscription request' in seg_cgv
