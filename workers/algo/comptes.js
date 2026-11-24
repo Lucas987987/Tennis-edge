@@ -78,7 +78,8 @@ export const referenceVirement = (u) => 'GSA-' + String(u.id || '').slice(0, 6).
 function vueCompte(u) {
   return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
-    reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [] };
+    reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
+    acces_immediat: (u.acces_immediat || {}).le || null };
 }
 
 // --------------------------------------------------------------------------------------------- session
@@ -317,7 +318,7 @@ async function supprimer(req, env, b) {
 async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
-  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures'];
+  const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -347,6 +348,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'mdp') return changerMdp(req, env, b);
   if (p === 'supprimer') return supprimer(req, env, b);
   if (p === 'fondateur') return fondateur(req, env, b);
+  if (p === 'acces_immediat') return accesImmediat(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
 }
 
@@ -376,6 +378,58 @@ async function fondateur(req, env, b) {
     await ecrire(env, u);
     if (premier) { try { await envoyerMail(env, u.email, messageMail('fondateur', base(req, env), u.lang || LANG(b))); } catch (e) { /* la place reste réservée */ } }
     await alerte(env, `place fondateur réservée : ${masquer(u.email)}`);
+  }
+  return rep({ ok: true, compte: vueCompte(u) });
+}
+
+// --------------------------------------------------------------------------------------------- accès immédiat
+// 24/11/2026 (paquet 403, Lucas : « paiement sans rétractation ») : avant de payer, le client coche deux cases dans la
+// section Plus : il DEMANDE que l'accès commence dès réception de chaque paiement, avant la fin des 14 jours, et il
+// RECONNAÎT perdre son droit de rétractation une fois l'accès ouvert (Code de la consommation, art. L221-28 13° pour un
+// contenu numérique fourni sans support matériel). Les deux textes exacts, leur version, la date et la langue sont
+// gardés sur le compte (preuve) ; une confirmation part par e-mail (support durable). Sans cette demande, le virement
+// n'est validé dans /compte/admin que si l'admin coche « sans renonciation » : le client garde alors ses 14 jours.
+// La demande peut être retirée tant qu'aucun accès payé n'est ouvert.
+export const RENONCIATION_VERSION = '2026-11-24';
+export const TEXTES_RENONCIATION = Object.freeze({
+  fr: Object.freeze(["Je demande que mon accès Plus commence dès réception de chacun de mes paiements, avant la fin du délai de rétractation de 14 jours.",
+    "Je reconnais qu'une fois l'accès ouvert, je perds mon droit de rétractation."]),
+  en: Object.freeze(['I ask for my Plus access to start as soon as each of my payments is received, before the 14-day withdrawal period ends.',
+    'I acknowledge that once access is open, I lose my right of withdrawal.']) });
+export function mailRenonciation(r, url) {
+  const fr = r.lang !== 'en', d = String(r.le).slice(0, 10).split('-').reverse().join('/');
+  const t = fr ? ['Ta demande d’accès immédiat', `Le ${d}, tu as coché les deux cases suivantes sur Game Set Algo :`,
+    'Garde cet e-mail : il confirme ta demande. Tu peux la retirer depuis la section Plus tant que ton accès payé n’est pas ouvert.']
+    : ['Your immediate access request', `On ${d}, you ticked the following two boxes on Game Set Algo:`,
+      'Keep this email: it confirms your request. You can withdraw it from the Plus section until your paid access opens.'];
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e">
+<h2 style="margin:0 0 12px">${ESC(t[0])}</h2><p>${ESC(t[1])}</p><ul>${r.textes.map((x) => `<li>${ESC(x)}</li>`).join('')}</ul>
+<p>${ESC(t[2])}</p><p style="color:#666;font-size:13px">Game Set Algo · ${ESC(url)} · version ${ESC(r.version)}</p></div>`;
+  return { sujet: t[0], html, texte: `${t[1]}\n- ${r.textes.join('\n- ')}\n\n${t[2]}\n${url}` };
+}
+async function accesImmediat(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!u.verifie) return rep({ ok: false, erreur: 'non_verifie' }, 403);
+  const maintenant = new Date().toISOString();
+  if (b.retirer === true) {
+    if (u.acces_immediat && abonne(u) && (u.acces || {}).paye) return rep({ ok: false, erreur: 'deja_ouvert' }, 409);
+    if (u.acces_immediat) {
+      delete u.acces_immediat;
+      u.historique = [...(u.historique || []).slice(-19), { le: maintenant, acces_immediat: 'retire' }];
+      await ecrire(env, u);
+      await alerte(env, `accès immédiat retiré : ${masquer(u.email)}`);
+    }
+    return rep({ ok: true, compte: vueCompte(u) });
+  }
+  if (b.demande !== true || b.renonce !== true) return rep({ ok: false, erreur: 'deux_cases' }, 400);
+  if (!u.acces_immediat) {
+    const lang = LANG(b);
+    u.acces_immediat = { le: maintenant, version: RENONCIATION_VERSION, lang, textes: [...TEXTES_RENONCIATION[lang]] };
+    u.historique = [...(u.historique || []).slice(-19), { le: maintenant, acces_immediat: 'demande' }];
+    await ecrire(env, u);
+    try { await envoyerMail(env, u.email, mailRenonciation(u.acces_immediat, base(req, env))); } catch (e) { /* la demande reste notée */ }
+    await alerte(env, `accès immédiat demandé (renonciation) : ${masquer(u.email)}`);
   }
   return rep({ ok: true, compte: vueCompte(u) });
 }
@@ -494,7 +548,7 @@ button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff
 <div class="c"><b>Entonnoir</b><div id="en"><small>…</small></div></div>
 <div class="c"><b>Virement reçu</b><br><small>Donne l'accès, crée la facture numérotée et l'envoie au client.</small>
 <input id="vc" type="text" placeholder="e-mail ou référence (GSA-…)"><select id="vf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option></select>
-<input id="vm" type="text" inputmode="decimal" placeholder="montant reçu (€), ex. 9,99"><input id="vd" type="date"><label style="display:block;margin:6px 0"><input id="vfo" type="checkbox" style="width:auto"> tarif fondateur</label>
+<input id="vm" type="text" inputmode="decimal" placeholder="montant reçu (€), ex. 9,99"><input id="vd" type="date"><label style="display:block;margin:6px 0"><input id="vfo" type="checkbox" style="width:auto"> tarif fondateur</label><label style="display:block;margin:6px 0"><input id="vsr" type="checkbox" style="width:auto"> sans renonciation (le client n'a pas demandé l'accès immédiat : il garde 14 jours de rétractation, remboursement intégral)</label>
 <button id="vb">Valider le virement</button><p id="vr"></p></div>
 <div class="c"><b>Factures</b><div id="lfa"><small>…</small></div></div><div class="c"><b>Donner un accès</b><input id="e" type="email" placeholder="e-mail du compte">
 <select id="f"><option value="semaine">Semaine</option><option value="mois">Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option><option value="offert">Offert (jours ci-dessous)</option><option value="illimite">Illimité</option><option value="admin">Admin (toi : sections internes)</option><option value="retirer">Retirer l'accès</option></select>
@@ -508,7 +562,7 @@ button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff
 const $=id=>document.getElementById(id);
 let TOUS=[],FOND=[];
 function rendre(){const q=$('q').value.trim().toLowerCase(),L=TOUS.filter(c=>!q||c.email.toLowerCase().includes(q)||String(c.reference).toLowerCase().includes(q));
-$('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
+$('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+(c.acces_immediat?' · accès immédiat demandé le '+String(c.acces_immediat).slice(0,10):' · accès immédiat non demandé')+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
 function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{TOUS=o.comptes;FOND=TOUS.filter(c=>c.fondateur&&c.verifie).sort((a,b)=>String(a.fondateur).localeCompare(String(b.fondateur))).map(c=>c.email);
 $('lf').innerHTML='<small>'+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
 $('q').oninput=rendre;$('cf2').onclick=()=>{const t=FOND.join('\\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('cf2').textContent='Copié ('+FOND.length+')';},()=>{$('lf').insertAdjacentHTML('beforeend','<pre style="white-space:pre-wrap;user-select:all">'+t.replace(/</g,'&lt;')+'</pre>');});};
@@ -519,7 +573,7 @@ function entonnoir(){fetch('/compte/admin/api/entonnoir',{cache:'no-store'}).the
 $('en').innerHTML='<table style="width:100%;font-size:14px"><tr><td></td><td>24 h</td><td>7 j</td><td>30 j</td></tr>'+ligne('Visiteurs','visiteurs')+ligne('Comptes créés','comptes')+ligne('Confirmés','confirmes')+ligne('Fondateurs','fondateurs')+'</table><small>Aujourd’hui en tout : '+T.comptes+' comptes, '+T.confirmes+' confirmés, '+T.fondateurs+' fondateurs, '+T.plus_payes+' Plus payés ('+T.plus_tous+' Plus en tout). Visiteurs : sans cookie, compte approché.</small>';});}
 function factures(){fetch('/compte/admin/api/factures',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lfa').innerHTML=(o.vendeur?'':'<p class="non"><small>Secret FACTURE_VENDEUR absent : aucune facture possible.</small></p>')+(o.factures.length?o.factures.map(f=>'<div><a style="color:#2ee6ff" target="_blank" href="/compte/admin/facture?n='+e(f.numero)+'">'+e(f.numero)+'</a> · '+e(f.email)+' · '+String(f.total.toFixed(2)).replace('.',',')+' € · '+String(f.emise_le).slice(0,10)+'</div>').join(''):'<small>Aucune facture.</small>');});}
 $('vd').value=new Date().toISOString().slice(0,10);
-$('vb').onclick=()=>{$('vb').disabled=true;fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vr').textContent=o.ok?'Fait : facture '+o.numero+', accès jusqu’au '+String(o.jusqu_au).slice(0,10)+(o.mail?', e-mail envoyé.':', e-mail NON envoyé.'):'Refusé : '+o.erreur;charger();factures();entonnoir();});};
+$('vb').onclick=()=>{$('vb').disabled=true;fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked,sans_renonciation:$('vsr').checked})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vr').textContent=o.ok?'Fait : facture '+o.numero+', accès jusqu’au '+String(o.jusqu_au).slice(0,10)+(o.mail?', e-mail envoyé.':', e-mail NON envoyé.')+(o.renonciation?'':' Sans renonciation : 14 jours de rétractation.'):o.erreur==='sans_renonciation'?'Refusé : ce client n’a pas coché l’accès immédiat (section Plus). Demande-lui de le faire, ou coche « sans renonciation ».':'Refusé : '+o.erreur;charger();factures();entonnoir();});};
 charger();codes();entonnoir();factures();
 </script></body></html>`;
 }

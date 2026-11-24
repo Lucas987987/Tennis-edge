@@ -325,7 +325,11 @@ test('386 : virement reçu → accès payé, facture numérotée sans trou, e-ma
   assert.equal((await vir({ compte: ref, formule: 'mois', montant: '9,99' })).erreur, 'vendeur_absent');
   env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court\n75000 Paris', siret: '123 456 789 00012' });
   assert.equal((await vir({ compte: ref, formule: 'mois', montant: '0' })).erreur, 'montant');
+  // 403 : sans demande d'accès immédiat, refus ; le client coche les deux cases
+  assert.equal((await vir({ compte: ref, formule: 'mois', montant: '9,99' })).erreur, 'sans_renonciation');
+  assert.equal((await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env)).status, 200);
   let o = await vir({ compte: ref, formule: 'mois', montant: '9,99', fondateur: true });
+  assert.equal(o.renonciation, true);
   assert.equal(o.ok, true);
   assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0001`);
   o = await vir({ compte: 'h@exemple.fr', formule: 'mois', montant: '9,99' });   // par e-mail, prolonge l'accès
@@ -340,7 +344,9 @@ test('386 : virement reçu → accès payé, facture numérotée sans trou, e-ma
   // le client voit sa facture, pas celle d'un autre ; l'administration voit tout
   let r = await worker.fetch(get('/compte/api/facture?n=' + moi.factures[0], { Cookie: c }), env);
   assert.equal(r.status, 200);
-  assert.match(await r.text(), /Accès Plus Game Set Algo, 1 mois \(tarif fondateur\)/);
+  const page = await r.text();
+  assert.match(page, /Accès Plus Game Set Algo, 1 mois \(tarif fondateur\)/);
+  assert.match(page, /avec renonciation au droit de rétractation/);
   assert.equal((await worker.fetch(get('/compte/api/facture?n=F1999-0001', { Cookie: c }), env)).status, 404);
   assert.equal((await worker.fetch(get('/compte/api/facture?n=' + moi.factures[0]), env)).status, 401);
   const l = await (await worker.fetch(get('/compte/admin/api/factures', { 'X-Cle': CLE }, DEV), env)).json();
@@ -392,4 +398,51 @@ test('386 : entonnoir — visites sans cookie comptées une fois par jour, robot
   await V.compacterVisites(env);
   assert.deepEqual(JSON.parse(C.m.get('stats/visites/2026-01-01.json')), { jour: '2026-01-01', vues: 5, uniques: 2 });
   assert.ok(Array.isArray(JSON.parse(C.m.get(`stats/visites/${jour}.json`)).u));   // aujourd'hui : gardées jusqu'à demain
+});
+
+test('403 : accès immédiat — deux cases exigées, textes gardés, e-mail de confirmation, retrait avant paiement, virement sans renonciation', async () => {
+  const { env, mails } = monde();
+  const { TEXTES_RENONCIATION, RENONCIATION_VERSION } = await import('./comptes.js');
+  assert.equal((await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }), env)).status, 401);
+  await worker.fetch(post('/compte/api/inscription', { email: 'k@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  let r = await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: false }, { Cookie: c }), env);
+  assert.equal(r.status, 400);
+  assert.equal((await r.json()).erreur, 'deux_cases');
+  const n0 = mails.length;
+  let o = await (await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env)).json();
+  assert.match(o.compte.acces_immediat, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(mails.length, n0 + 1);
+  assert.match(mails.at(-1).subject, /accès immédiat/);
+  assert.ok(mails.at(-1).htmlContent.includes(TEXTES_RENONCIATION.fr[1].replace(/'/g, "'")) || mails.at(-1).textContent.includes(TEXTES_RENONCIATION.fr[1]));
+  const ex = await (await worker.fetch(get('/compte/api/export', { Cookie: c }), env)).json();
+  assert.deepEqual(ex.acces_immediat.textes, [...TEXTES_RENONCIATION.fr]);
+  assert.equal(ex.acces_immediat.version, RENONCIATION_VERSION);
+  // deux fois : la première date reste, pas de second e-mail
+  const d = o.compte.acces_immediat;
+  o = await (await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env)).json();
+  assert.equal(o.compte.acces_immediat, d);
+  assert.equal(mails.length, n0 + 1);
+  // retrait avant paiement
+  o = await (await worker.fetch(post('/compte/api/acces_immediat', { retirer: true }, { Cookie: c }), env)).json();
+  assert.equal(o.compte.acces_immediat, null);
+  // virement sans renonciation : seulement avec la case de l'admin ; la facture rappelle les 14 jours
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court', siret: '123' });
+  const vir = (b) => worker.fetch(post('/compte/admin/api/virement', b, { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
+  assert.equal((await vir({ compte: 'k@exemple.fr', formule: 'mois', montant: '9,99' })).erreur, 'sans_renonciation');
+  o = await vir({ compte: 'k@exemple.fr', formule: 'mois', montant: '9,99', sans_renonciation: true });
+  assert.equal(o.ok, true);
+  assert.equal(o.renonciation, false);
+  assert.match(mails.at(-1).htmlContent, /Droit de rétractation : 14 jours à compter du paiement/);
+  // accès payé ouvert avec une demande : plus de retrait possible
+  await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env);
+  r = await worker.fetch(post('/compte/api/acces_immediat', { retirer: true }, { Cookie: c }), env);
+  assert.equal(r.status, 409);
+});
+
+test('403 : les textes des deux cases du site sont exactement ceux gardés comme preuve', async () => {
+  const fs = await import('node:fs');
+  const { TEXTES_RENONCIATION } = await import('./comptes.js');
+  const html = fs.readFileSync(new URL('../../algo/index.html', import.meta.url), 'utf-8');
+  for (const t of [...TEXTES_RENONCIATION.fr, ...TEXTES_RENONCIATION.en]) assert.ok(html.includes(JSON.stringify(t).slice(1, -1)) || html.includes(t), t);
 });
