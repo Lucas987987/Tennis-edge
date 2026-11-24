@@ -2214,6 +2214,13 @@
    "paquet": 407,
    "quoi": "DEMANDE D'ABONNEMENT (paquet 407, Lucas : « 14,99 €/mois ; semaine, mois, trimestre, année » et « si on se connecte, que quelqu'un puisse faire une demande d'abonnement »). Un compte confirmé choisit sa durée dans la section Plus : 1 semaine 4,99 €, 1 mois 14,99 € (9,99 € pour une place fondateur parmi les 100 premières), 3 mois 39,99 €, 1 an 129,99 €. Le montant est fixé par le serveur. La demande est gardée sur le compte, un e-mail donne le montant, la référence et les coordonnées du virement (ou annonce qu'elles suivent), Lucas reçoit une alerte, l'administration montre les demandes et préremplit « Virement reçu ». Annulable tant qu'elle n'est pas payée ; effacée quand le virement est validé. Conditions de vente complétées (commande par demande).",
    "garde_fou": "Rien ne change dans les pronostics. Prix de la semaine, du trimestre et de l'année proposés par Claude, à confirmer. Tests : workers/algo/test_comptes.mjs, tests/test_cgv_plus.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 408,
+   "quoi": "BOUTON ARENA (paquet 408, Lucas). Le bouton « Arena » du haut de page ne mène plus vers une page en construction : il s'appelle « Arena · bientôt » et, touché, affiche que l'Arena est un service en développement, pas encore ouvert (français et anglais).",
+   "garde_fou": "Aucun autre changement. Test : tests/test_arena_bouton.py."
   }
  ]
 }

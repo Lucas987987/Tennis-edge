@@ -14,7 +14,9 @@ class PageNettoyee(unittest.TestCase):
         self.assertIn('m.fourchette', PAGE)
 
     def test_un_seul_bouton_arena(self):
-        self.assertEqual(PAGE.count('🏟️ Arena</a>'), 1)
+        # 24/11/2026 (paquet 408) : un seul bouton, qui annonce « service en développement » au lieu d'un lien
+        self.assertEqual(PAGE.count('id="b-arena"'), 1)
+        self.assertNotIn('🏟️ Arena</a>', PAGE)
         self.assertNotIn('position:fixed;bottom:18px', PAGE)
 
     def test_plus_de_code_3d(self):

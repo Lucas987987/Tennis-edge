@@ -700,6 +700,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .list .finished-group > details > .list > li{border-top:1px solid var(--line)}
 /* Arena : bouton visible dans la barre du haut, y compris sur mobile */
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
+/* 24/11/2026 (paquet 408, Lucas) : l'Arena est en développement — le bouton le dit et ne mène plus nulle part */
+button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inline-flex}
+.arena-bulle{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:min(260px,78vw);background:#141225;color:#f4f1ff;border:1px solid #d4ff3a;border-radius:12px;padding:10px 12px;font:600 13px/1.4 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);text-align:left;white-space:normal}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
@@ -757,7 +760,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <p class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></p>
     <div class="reglages">
       <button type="button" class="compte-b" id="b-compte" hidden></button>
-      <a class="arena-nav" href="https://lucas987987.github.io/Tennis-edge/arena/" title="Jouer gratuitement à l'Arena">🏟️ Arena</a>
+      <span class="arena-w"><button type="button" class="arena-nav" id="b-arena" aria-expanded="false" aria-controls="arena-bulle" data-t="arena_btn"></button><span class="arena-bulle" id="arena-bulle" role="status" hidden data-t="arena_msg"></span></span>
       <button type="button" class="ico" id="b-son" aria-pressed="false"></button>
       <div class="seg" role="group" aria-label="Langue / Language">
         <button type="button" data-lang="fr" aria-pressed="true">FR</button>
@@ -1155,6 +1158,7 @@ const T = {
   verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.",
   pwa_installer:"📲 Installer l'appli sur ce téléphone",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
+  arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente',
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
@@ -1507,6 +1511,7 @@ const T = {
   verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.',
   pwa_installer:'📲 Install the app on this phone',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
+  arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
@@ -8558,6 +8563,19 @@ function chargerInterne(){
     go();
   }).catch(() => {});
 }
+// 408 — bouton Arena : affiche « service en développement » (bulle), se ferme au clic ailleurs ou après 6 s
+(function(){
+  let minuterie = null;
+  const fermer = () => { const b = document.getElementById('arena-bulle'), x = document.getElementById('b-arena');
+    if (b) b.hidden = true; if (x) x.setAttribute('aria-expanded', 'false'); clearTimeout(minuterie); };
+  document.addEventListener('click', ev => {
+    const x = ev.target.closest('#b-arena'), b = document.getElementById('arena-bulle'); if (!b) return;
+    if (!x) { if (!b.hidden && !ev.target.closest('#arena-bulle')) fermer(); return; }
+    if (!b.hidden) return fermer();
+    b.hidden = false; x.setAttribute('aria-expanded', 'true'); clearTimeout(minuterie); minuterie = setTimeout(fermer, 6000);
+  });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermer(); });
+})();
 function brancherCompte(){
   const b = document.getElementById('b-compte');
   document.addEventListener('click', ev => {
