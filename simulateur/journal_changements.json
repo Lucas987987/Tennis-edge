@@ -2312,6 +2312,13 @@
    "paquet": 421,
    "quoi": "ÉTUDE : LES PROJECTIONS DU MATCH TIENNENT-ELLES ? (paquet 421, Lucas : « lance l'étude »). Pour chaque projection d'une fiche (vainqueur, 1er set, sets secs, set décisif, tie-break, écart de jeux du favori, total de jeux), quand l'algo annonce X %, est-ce arrivé X % du temps, tranche de 5 points par tranche, et l'algo fait-il mieux qu'une annonce naïve (la fréquence moyenne de l'événement) ? Nouveau workflow « Étude - projections du match par tranche de % », chaque lundi et à la demande ; rapport simulateur/rapport_projections_tranches.json. Premier passage sur 1 392 matchs : les 16 projections battent l'annonce naïve ; en Challenger, le total de jeux est annoncé 3 à 4 points trop bas en moyenne ; ATP et WTA encore trop peu de matchs par tranche pour juger.",
    "garde_fou": "Projections figées avant le match, jamais recalculées ; une tranche n'est jugée qu'à partir de 100 matchs. Étude descriptive : rien ne change dans l'algo ni sur le site. Tests : tests/test_etude_projections_tranches.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 422,
+   "quoi": "FICHE DU MATCH : RÉSUMÉ POUR TOUS, POSTS X POUR L'ADMINISTRATEUR SEUL (paquet 422, Lucas : « les abonnés voient les boutons des posts X ; il faudrait juste un bouton résumé du match pour les résultats, pour comparer ce qui était prévu et ce qui est arrivé »). Les boutons « Générer le post X » (avant match, analyse complète, résultat) et les boutons « Image pour X » (tiroirs, duel des styles, résultat) ne s'affichent plus qu'au compte administrateur. Nouveau bouton « Résumé du match » dès que le match a commencé : vainqueur, score, sets, durée, lignes de l'algo et feuille de match, prévu contre arrivé. Correction au passage : le titre et la note de ce bilan affichaient le texte de « Forme et face-à-face » (deux textes portaient le même nom).",
+   "garde_fou": "Rien ne change dans les % ni dans les données envoyées ; seul l'affichage des boutons dépend du compte. Tests : tests/test_resume_match.py."
   }
  ]
 }

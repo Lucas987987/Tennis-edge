@@ -989,6 +989,7 @@ const T = {
   sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
   niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
+  rs_bouton:'Résumé du match', rs_attente:'Le résumé (prévu contre arrivé) s’affiche dès que le résultat et la feuille de match sont reçus.',
   fiab_toutes:'Toutes', fiab_filtre_label:'Niveau de fiabilité', fiab_filtre_plus:'Le tri par fiabilité est réservé à l’accès Plus.',
   fiab_filtre_vide:'Aucun match de ce niveau de fiabilité pour l’instant.',
   bf_titre:'Réussite par niveau de fiabilité', bf_sous:'Niveau annoncé avant chaque match, jamais recalculé. La fiabilité ne dit pas si le favori va gagner : elle dit si le % annoncé se réalise. Comparez donc le % annoncé et le % trouvé de chaque ligne.',
@@ -1032,13 +1033,13 @@ const T = {
   sv_p:(n,p)=>` Avec cette forme, l’algo dirait ${n} à ${p} (suivi à part, pas encore validé : le pronostic affiché ne change pas).`,
   jc_fv:(n,a,b,g,ok)=>`${fmt(n)} matchs réels : en place ${dec(a,4)}, version d’avant ${dec(b,4)} (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   es_badge:'peu documenté', es_badge_aide:'Un joueur a moins de 1 500 balles de service dans nos données',
-  am_titre:'Bilan après match', am_vainqueur:'Vainqueur', am_vainqueur_v:(n,p)=>`${n} : l’algo lui donnait ${p}`,
+  am_titre:'Bilan après match', am_bilan_titre:'Prévu contre arrivé', am_vainqueur:'Vainqueur', am_vainqueur_v:(n,p)=>`${n} : l’algo lui donnait ${p}`,
   am_score:'Score', am_rang:(r,p)=>`${r}e score le plus probable (${p} %)`, am_hors:'hors des scores prévus à plus de 0,1 %',
   am_top:s=>`Les 3 plus probables : ${s}`, am_sets:'Sets', am_sets_v:(s,p)=>`${s} : probabilité donnée ${p}`,
   am_duree:'Durée', am_duree_v:(p,a,b,r)=>`prévue ${p} (${a} – ${b}), réelle ${r}`, am_duree_inc:p=>`prévue ${p}, réelle pas encore connue`,
   am_oui:'oui', am_non:'non', am_lignes:'Lignes de l’algo (une ligne à 30 % qui n’arrive pas n’est pas une erreur)', am_prevu:'Prévu', am_arrive:'Arrivé', am_handicap:k=>`Favori gagne de plus de ${dec(k,1)} jeux`,
   am_feuille:'Feuille de match : prévu → réel',
-  am_note:d=>`Dernier pronostic affiché avant le match (${d}). Tous ces bilans sont gardés et analysés par l’algo (analyse_apres_match.json) ; rien n’entre dans le modèle sans le test habituel.`,
+  am_bilan_note:d=>`Dernier pronostic affiché avant le match (${d}). Tous ces bilans sont gardés et analysés par l’algo ; rien n’entre dans le modèle sans le test habituel.`,
   sv_rien:'Rien de net contre ce style', sv_plus:e=>`Réussit contre ce style : ${dec(e,1)} pts de plus que prévu`,
   sv_moins:e=>`Peine contre ce style : ${dec(Math.abs(e),1)} pts de moins que prévu`,
   sv_detail:(p,a,n)=>`${Math.round(p)} % de victoires, ${Math.round(a)} % attendus vu le niveau de ses adversaires (${fmt(n)} matchs).`,
@@ -1352,6 +1353,7 @@ const T = {
   sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
   niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
+  rs_bouton:'Match summary', rs_attente:'The summary (forecast against what happened) appears as soon as the result and match sheet arrive.',
   fiab_toutes:'All', fiab_filtre_label:'Reliability level', fiab_filtre_plus:'Sorting by reliability is part of Plus access.',
   fiab_filtre_vide:'No match at this reliability level yet.',
   bf_titre:'Hit rate by reliability level', bf_sous:'Level announced before each match, never recalculated. Reliability does not say whether the favourite will win: it says whether the announced % comes true. So compare the announced % and the called % on each line.',
@@ -1395,13 +1397,13 @@ const T = {
   sv_p:(n,p)=>` With this form, the algo would say ${n} at ${p} (tracked separately, not yet validated: the displayed forecast does not change).`,
   jc_fv:(n,a,b,g,ok)=>`${fmt(n)} real matches: current ${dec(a,4)}, previous version ${dec(b,4)} (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   es_badge:'little data', es_badge_aide:'One player has fewer than 1,500 service points in our data',
-  am_titre:'After-match review', am_vainqueur:'Winner', am_vainqueur_v:(n,p)=>`${n}: the model gave ${p}`,
+  am_titre:'After-match review', am_bilan_titre:'Forecast vs what happened', am_vainqueur:'Winner', am_vainqueur_v:(n,p)=>`${n}: the model gave ${p}`,
   am_score:'Score', am_rang:(r,p)=>`#${r} most likely score (${p}%)`, am_hors:'outside the scores predicted above 0.1%',
   am_top:s=>`3 most likely: ${s}`, am_sets:'Sets', am_sets_v:(s,p)=>`${s}: probability given ${p}`,
   am_duree:'Length', am_duree_v:(p,a,b,r)=>`expected ${p} (${a} – ${b}), actual ${r}`, am_duree_inc:p=>`expected ${p}, actual not yet known`,
   am_oui:'yes', am_non:'no', am_lignes:'Model lines (a 30% line that does not happen is not a mistake)', am_prevu:'Forecast', am_arrive:'Happened', am_handicap:k=>`Favourite wins by more than ${dec(k,1)} games`,
   am_feuille:'Match stats: forecast → actual',
-  am_note:d=>`Last forecast shown before the match (${d}). Every review is kept and analysed by the model (analyse_apres_match.json); nothing enters the model without the usual test.`,
+  am_bilan_note:d=>`Last forecast shown before the match (${d}). Every review is kept and analysed by the model; nothing enters the model without the usual test.`,
   sv_rien:'Nothing clear against this style', sv_plus:e=>`Does well against this style: ${dec(e,1)} pts above expectation`,
   sv_moins:e=>`Struggles against this style: ${dec(Math.abs(e),1)} pts below expectation`,
   sv_detail:(p,a,n)=>`${Math.round(p)}% wins, ${Math.round(a)}% expected given the level of the opponents (${fmt(n)} matches).`,
@@ -2495,6 +2497,8 @@ function postResultat(m, court_){
 // 04/11/2026 — VIDÉO À LA DEMANDE : le worker du site lance le workflow vidéo pour CE match (clé privée gardée sur cet
 // appareil seulement ; la vidéo arrive sur le Telegram privé). Seulement sur l'adresse du worker (le point /video y vit).
 const VIDEO_ICI = /workers\.dev$/.test(location.hostname);
+// 422 : vrai seulement pour l'administrateur (réponse /compte « moi ») — boutons des posts X et image X du résultat
+let ADMIN = false;
 const CLE_VIDEO = 'te_cle_video';
 function lireCle(){ try { return localStorage.getItem(CLE_VIDEO) || ''; } catch(e){ return ''; } }
 // 20/11/2026 (paquet 308) — « Résumé 3D du match » : même chemin, mode « resume » (le vrai déroulé, match terminé).
@@ -3488,7 +3492,7 @@ function rendStylesDescriptifs(sd,m){
     ${rendDerniersStyle(j.global,t('styles_derniers'))}
   </section>`).join('');
   const okX = sd.joueurs.every(j=>j.global && j.global.n && j.global.attendu_pct!=null);
-  const bx = okX ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
+  const bx = okX && ADMIN ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
   const fr = L==='fr';
   return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p>
     ${schemaStyles(sd.joueurs, m, j => styleLib(j.style), j => j.style_adverse ? styleLib(j.style_adverse) : '')}
@@ -3660,7 +3664,7 @@ async function partagerPng(blob, nomF){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
 }
 function boutonXTiroir(det){
-  if (det.querySelector(':scope > .xt-barre')) return;
+  if (!ADMIN || det.querySelector(':scope > .xt-barre')) return;          // 422 : images pour X, administrateur seulement
   const p = document.createElement('p'); p.className = 'xt-barre';
   p.innerHTML = `<button type="button" class="btn-xt">${esc(t('xt_bouton'))}</button>`;
   det.appendChild(p);
@@ -3712,8 +3716,9 @@ function rendMdj(){
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
+        <section id="te-resume-match" hidden aria-live="polite" style="margin-top:10px"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
       </div>
@@ -3747,6 +3752,7 @@ function rendMdj(){
   if (cartesPleineLargeur && fichePleineLargeur) fichePleineLargeur.querySelector('.duelx').after(cartesPleineLargeur);
   const bAnalyse = document.getElementById('b-analyse-detaillee');
   if (bAnalyse) bAnalyse.onclick = () => ouvrirAnalyseDetaillee(m);
+  const bResume = document.getElementById('b-resume-match'); if (bResume) bResume.onclick = () => ouvrirResume(m);
   const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
   const bPostRes = document.getElementById('b-post-res'); if (bPostRes) bPostRes.onclick = () => ouvrirPost(m, 'resultat');
   const bAna = document.getElementById('b-analyse-x'); if (bAna) bAna.onclick = () => ouvrirPost(m, 'analyse');
@@ -7334,6 +7340,17 @@ function rendCartes(m){
     <div class="cj-corps"><div class="cj-g">${C.joueurs.map((c,i)=>carteJoueur(c,i,C.surface,femme)).join('')}</div>
     <div>${radarCartes(C.joueurs)}</div></div>${defs}<p class="styles-note">${esc(t('cj_note'))}</p></div>`;
 }
+// 24/11/2026 (paquet 422, Lucas : « les abonnés voient les boutons des posts X ; juste un bouton résumé du match pour
+// les résultats, pour comparer ce qui était prévu et ce qui est arrivé »). Les boutons X restent à l'administrateur.
+function ouvrirResume(m){
+  const zone = document.getElementById('te-resume-match'), btn = document.getElementById('b-resume-match');
+  if (!zone || !btn) return;
+  if (!zone.hidden) { zone.hidden = true; btn.setAttribute('aria-expanded', 'false'); return; }
+  const am = D.apres_match && D.apres_match[m.uid];
+  zone.innerHTML = am && am.reel ? rendApresMatch(am).replace('<details class="am">', '<details class="am" open>')
+    : `<p class="aide">${esc(t('rs_attente'))}</p>`;
+  zone.hidden = false; btn.setAttribute('aria-expanded', 'true');
+}
 // te-analyse-detaillee-v1 — synthèse descriptive à partir des données du match, sans appel IA.
 function ouvrirAnalyseDetaillee(m){
   // 11/11/2026 (paquet 219) : bilingue ; la fourchette est décrite comme dans la fiche (niveau des joueurs, 8 fois sur 10).
@@ -7601,12 +7618,13 @@ function rendApresMatch(b){
   const F = P.feuille, FR = R.feuille;
   const fe = (F && FR) ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem']].map(([k,lib])=>
     `<tr><th>${esc(t(lib))}</th><td>${dec(F[0][k],1)} → <b>${dec(FR[0][k],k==='premiere_pct'?1:0)}</b></td><td>${dec(F[1][k],1)} → <b>${dec(FR[1][k],k==='premiere_pct'?1:0)}</b></td></tr>`).join('') : '';
-  return `<details class="am"><summary>${esc(t('am_titre'))}</summary>
+  // 422 : « am_titre » est aussi la clé de « Forme et face-à-face » (définie plus loin, elle l'emportait) → clé propre
+  return `<details class="am"><summary>${esc(t('am_bilan_titre'))}</summary>
     <table class="sheet am-t"><tbody>${lig.join('')}</tbody></table>
     ${lgs ? `<h4>${esc(t('am_lignes'))}</h4><table class="sheet am-t"><thead><tr><th></th><th>${esc(t('am_prevu'))}</th><th>${esc(t('am_arrive'))}</th></tr></thead><tbody>${lgs}</tbody></table>` : ''}
     ${fe ? `<h4>${esc(t('am_feuille'))}</h4><table class="sheet am-t"><thead><tr><th></th><th class="c1">${esc(N[0])}</th><th class="c2">${esc(N[1])}</th></tr></thead><tbody>${fe}</tbody></table>` : ''}
-    <p class="aide">${esc(t('am_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p>
-    ${b.uid ? `<p class="xr-barre"><button type="button" class="btn" data-xres="${esc(b.uid)}">${esc(L==='fr' ? 'Image pour X (résultat)' : 'Image for X (result)')}</button></p>` : ''}</details>`;
+    <p class="aide">${esc(t('am_bilan_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p>
+    ${b.uid && ADMIN ? `<p class="xr-barre"><button type="button" class="btn" data-xres="${esc(b.uid)}">${esc(L==='fr' ? 'Image pour X (résultat)' : 'Image for X (result)')}</button></p>` : ''}</details>`;
 }
 // 22/11/2026 (paquet 363, Lucas : « Image X du résultat ») — CARTE RÉSULTAT d'un match terminé, en image sombre pour X :
 // le % d'avant match (figé, publié), le vrai vainqueur et le score, puis ce qui était juste ou faux (durée, sets, score
@@ -8687,7 +8705,7 @@ function brancherCompte(){
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
-    COMPTE = o.compte || null; PAIEMENT = o.paiement || null; TARIFS_SITE = o.tarifs || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
+    COMPTE = o.compte || null; ADMIN = !!o.admin; PAIEMENT = o.paiement || null; TARIFS_SITE = o.tarifs || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
