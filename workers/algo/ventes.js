@@ -15,8 +15,13 @@
 //    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
 import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
   referenceVirement, idCompte, normaliser, ESC, abonne, base } from './comptes.js';
+// coordonnees(), PLACES_FONDATEUR et PRIX_FONDATEUR sont définis plus bas (fonctions et constantes du module)
 
 const PAYANTES = { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' };
+// 24/11/2026 (paquet 407, Lucas : 14,99 €/mois ; semaine, mois, trimestre, année) — prix TTC, un seul endroit : le site
+// les reçoit de /compte/api/moi, la demande d'abonnement et l'e-mail les reprennent. Semaine, trimestre et année : choisis
+// par Claude (≈ −11 % au trimestre, ≈ −28 % à l'année), à confirmer par Lucas.
+export const TARIFS = Object.freeze({ semaine: 4.99, mois: 14.99, trimestre: 39.99, annee: 129.99 });
 const RAPPEL_J = 3;
 const jourUtc = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
 const eur = (x) => Number(x).toFixed(2).replace('.', ',') + ' €';
@@ -137,6 +142,10 @@ export async function virementRecu(env, b, req) {
     retractation: ri ? { renonciation_le: ri.le, version: ri.version } : { delai_jours: 14 } };
   await env.COFFRE.put(`factures/${num}.json`, JSON.stringify(f), { httpMetadata: { contentType: 'application/json' } });
   u2.acces = { ...u2.acces, paye: true, montant, formule_payee: b.formule, fondateur_tarif: fondateur };
+  if (u2.demande) {                                                  // 407 : la demande d'abonnement est honorée
+    u2.historique = [...(u2.historique || []).slice(-19), { le: new Date().toISOString(), demande: 'payee ' + num }];
+    u2.demande = null;
+  }
   u2.factures = [...(u2.factures || []), num];
   u2.rappel_fin = null;
   await ecrire(env, u2);
@@ -330,6 +339,77 @@ export async function ouverture(env, b, req) {
   const restants = L.filter((u) => !u.ouverture_envoyee).length;
   if (envoyes) await alerte(env, `ouverture fondateurs : ${envoyes} e-mail(s) envoyé(s), ${restants} restant(s)`);
   return { ok: true, envoyes, restants, places: L.length, arret };
+}
+
+// --------------------------------------------------------------------------------------------- 5. demande d'abonnement
+// 24/11/2026 (paquet 407, Lucas : « si on se connecte sur le site, que quelqu'un puisse faire une demande d'abonnement »).
+// Un compte confirmé choisit sa formule dans la section Plus. Le montant est fixé ICI (jamais celui envoyé par le
+// navigateur) : TARIFS, ou 9,99 € au mois pour une place fondateur parmi les 100 premières (rang calculé à la demande).
+// La demande est gardée sur le compte, l'e-mail part au client (formule, montant, référence, coordonnées si le secret
+// VIREMENT existe, sinon « coordonnées envoyées par e-mail »), une alerte Telegram part à Lucas ; l'administration la
+// montre et préremplit « Virement reçu ». Le client peut l'annuler ou en changer tant qu'elle n'est pas payée.
+export function montantDemande(formule, place) {
+  if (!(formule in TARIFS)) return null;
+  return formule === 'mois' && place && place <= PLACES_FONDATEUR ? PRIX_FONDATEUR : TARIFS[formule];
+}
+export function mailDemande(u, d, c, url) {
+  const fr = u.lang !== 'en', ref = referenceVirement(u);
+  const lib = fr ? { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' } : { semaine: '1 week', mois: '1 month', trimestre: '3 months', annee: '1 year' };
+  const m = fr ? eur(d.montant) : '€' + d.montant.toFixed(2);
+  const banque = c ? (fr ? [`Titulaire : ${c.titulaire || ''}`, `IBAN : ${c.iban}`, ...(c.bic ? [`BIC : ${c.bic}`] : []), `Montant : ${m}`, `Libellé (important) : ${ref}`]
+    : [`Account holder: ${c.titulaire || ''}`, `IBAN: ${c.iban}`, ...(c.bic ? [`BIC: ${c.bic}`] : []), `Amount: ${m}`, `Reference (important): ${ref}`]) : null;
+  const T = fr ? { sujet: `Ta demande d'abonnement : ${lib[d.formule]}, ${m}`,
+    intro: `Merci ! Ta demande d'accès Plus est bien enregistrée : ${lib[d.formule]}, ${m}${d.fondateur ? ' (tarif fondateur)' : ''}.`,
+    pay: banque ? 'Pour la finaliser, fais un virement :' : `Les coordonnées du virement t'arrivent par e-mail très vite. Ta référence : ${ref}.`,
+    ri: "Pour que l'accès s'ouvre dès réception du virement, coche les deux cases « accès immédiat » dans la section Plus.",
+    fin: "Rien ne se renouvelle tout seul. Tu peux annuler ta demande dans la section Plus tant qu'elle n'est pas payée.", cgv: 'Conditions de vente' }
+    : { sujet: `Your subscription request: ${lib[d.formule]}, ${m}`,
+      intro: `Thank you! Your Plus access request is saved: ${lib[d.formule]}, ${m}${d.fondateur ? ' (founder price)' : ''}.`,
+      pay: banque ? 'To complete it, make a bank transfer:' : `Transfer details will reach you by email very soon. Your reference: ${ref}.`,
+      ri: 'For access to open as soon as the transfer arrives, tick the two "immediate access" boxes in the Plus section.',
+      fin: 'Nothing renews by itself. You can cancel your request in the Plus section until it is paid.', cgv: 'Terms of sale' };
+  const lienCgv = url.replace(/\/$/, '') + '/#cgv';
+  const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;padding:24px;color:#14102e">
+<h2 style="margin:0 0 12px">${ESC(T.sujet)}</h2><p>${ESC(T.intro)}</p><p>${ESC(T.pay)}</p>
+${banque ? `<p style="background:#f1eefc;padding:12px;border-radius:8px;font-family:monospace">${banque.map(ESC).join('<br>')}</p>` : ''}
+${d.acces_immediat ? '' : `<p>${ESC(T.ri)}</p>`}<p style="color:#666;font-size:13px">${ESC(T.fin)} · <a href="${ESC(lienCgv)}">${ESC(T.cgv)}</a> · Game Set Algo</p></div>`;
+  return { sujet: T.sujet, html, texte: [T.intro, T.pay, ...(banque || []), d.acces_immediat ? '' : T.ri, T.fin, `${T.cgv} : ${lienCgv}`].filter(Boolean).join('\n') };
+}
+async function rangFondateur(env, u) {
+  if (!u.fondateur || !u.fondateur.le) return null;
+  if (u.fondateur_place) return u.fondateur_place;
+  const L = await fondateursOrdonnes(env);
+  const i = L.findIndex((x) => x.id === u.id);
+  return i >= 0 && i < PLACES_FONDATEUR ? i + 1 : null;
+}
+export async function demandeAbonnement(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!u.verifie) return rep({ ok: false, erreur: 'non_verifie' }, 403);
+  const maintenant = new Date().toISOString();
+  if (b.annuler === true) {
+    if (u.demande) {
+      u.historique = [...(u.historique || []).slice(-19), { le: maintenant, demande: 'annulee' }];
+      u.demande = null;
+      await ecrire(env, u);
+      await alerte(env, `demande d'abonnement annulée : ${masquer(u.email)}`);
+    }
+    return rep({ ok: true });
+  }
+  if (!(b.formule in TARIFS)) return rep({ ok: false, erreur: 'formule' }, 400);
+  const place = await rangFondateur(env, u);
+  const montant = montantDemande(b.formule, place);
+  const fondateur = montant === PRIX_FONDATEUR && b.formule === 'mois';
+  if (u.demande && u.demande.formule === b.formule && u.demande.montant === montant) return rep({ ok: true, deja: true });
+  if (fondateur && !u.fondateur_place) u.fondateur_place = place;
+  u.demande = { le: maintenant, formule: b.formule, montant, fondateur };
+  u.historique = [...(u.historique || []).slice(-19), { le: maintenant, demande: `${b.formule} ${montant}` }];
+  await ecrire(env, u);
+  const url = String(env.SITE_URL || 'https://gamesetalgo.com');
+  let mail = { ok: false };
+  try { mail = await envoyerMail(env, u.email, mailDemande(u, { ...u.demande, acces_immediat: !!u.acces_immediat }, coordonnees(env), url)); } catch (e) { /* la demande reste notée */ }
+  await alerte(env, `demande d'abonnement : ${PAYANTES[b.formule]}, ${eur(montant)}${fondateur ? ' (fondateur n° ' + place + ')' : ''} · réf. ${referenceVirement(u)} · ${masquer(u.email)}${u.acces_immediat ? '' : ' · accès immédiat pas encore coché'}`);
+  return rep({ ok: true, mail: !!mail.ok });
 }
 
 export async function quotidien(env) {

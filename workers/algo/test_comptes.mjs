@@ -508,3 +508,69 @@ test('405 : au-delà des 100 places, pas d’e-mail d’ouverture', async () => 
   assert.equal(r.envoyes, 25);                                                  // un lot à la fois
   assert.equal(r.restants, 75);
 });
+
+test('407 : demande d’abonnement — montant fixé par le serveur, tarif fondateur au mois, e-mail, paiement visible, annulation, effacée au virement', async () => {
+  const { env, mails } = monde();
+  const V = await import('./ventes.js');
+  assert.equal((await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }), env)).status, 401);
+  const comptes = [];
+  for (const e of ['a1@exemple.fr', 'a2@exemple.fr']) {
+    const n0 = mails.length;
+    await worker.fetch(post('/compte/api/inscription', { email: e, mdp: 'motdepasse1' }), env);
+    comptes.push(cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[n0], 'verifier') }), env)));
+  }
+  const [cA, cB] = comptes;
+  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: cA }), env);    // A : fondateur n° 1
+  let r = await worker.fetch(post('/compte/api/abonnement', { formule: 'decennie' }, { Cookie: cB }), env);
+  assert.equal((await r.json()).erreur, 'formule');
+  // sans coordonnées bancaires : la demande est notée, l'e-mail annonce les coordonnées plus tard
+  let n0 = mails.length;
+  r = await (await worker.fetch(post('/compte/api/abonnement', { formule: 'trimestre', montant: 0.01 }, { Cookie: cB }), env)).json();
+  assert.equal(r.ok, true);
+  assert.equal(mails.length, n0 + 1);
+  assert.match(mails.at(-1).subject, /3 mois, 39,99 €/);
+  assert.match(mails.at(-1).textContent, /Ta référence : GSA-[0-9A-F]{6}/);
+  let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cB }), env)).json();
+  assert.equal(moi.compte.demande.montant, V.TARIFS.trimestre);                 // jamais le montant du navigateur
+  assert.deepEqual(moi.tarifs, { ...V.TARIFS });
+  assert.equal(moi.paiement.iban, null);
+  assert.equal(moi.paiement.montant, 39.99);
+  // fondateur parmi les 100 premiers : 9,99 € au mois
+  env.VIREMENT = JSON.stringify({ titulaire: 'Lucas Test', iban: 'FR76 0000', bic: 'TESTFRPP' });
+  r = await (await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }, { Cookie: cA }), env)).json();
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
+  assert.equal(moi.compte.demande.montant, 9.99);
+  assert.equal(moi.compte.demande.fondateur, true);
+  assert.equal(moi.paiement.iban, 'FR76 0000');
+  assert.match(mails.at(-1).htmlContent, /IBAN : FR76 0000/);
+  assert.match(mails.at(-1).htmlContent, /tarif fondateur/);
+  // le même fondateur à l'année : prix normal
+  await worker.fetch(post('/compte/api/abonnement', { formule: 'annee' }, { Cookie: cA }), env);
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
+  assert.equal(moi.compte.demande.montant, 129.99);
+  // l'administration voit les demandes
+  const l = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.equal(l.comptes.filter((c) => c.demande).length, 2);
+  // annulation
+  await worker.fetch(post('/compte/api/abonnement', { annuler: true }, { Cookie: cA }), env);
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
+  assert.equal(moi.compte.demande, null);
+  assert.equal(moi.paiement, null);
+  // virement reçu : la demande de B est effacée
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue', siret: '1' });
+  const o = await worker.fetch(post('/compte/admin/api/virement', { compte: 'a2@exemple.fr', formule: 'trimestre', montant: '39,99', sans_renonciation: true },
+    { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
+  assert.equal(o.ok, true);
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cB }), env)).json();
+  assert.equal(moi.compte.demande, null);
+  assert.equal(moi.compte.paye, true);
+});
+
+test('407 : prix du mois pour un fondateur au-delà des 100 places : prix normal', async () => {
+  const V = await import('./ventes.js');
+  assert.equal(V.montantDemande('mois', 100), 9.99);
+  assert.equal(V.montantDemande('mois', 101), 14.99);
+  assert.equal(V.montantDemande('mois', null), 14.99);
+  assert.equal(V.montantDemande('semaine', 1), 4.99);
+  assert.equal(V.montantDemande('decennie', 1), null);
+});
