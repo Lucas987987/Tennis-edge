@@ -92,10 +92,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/restore_curves.py || true
 
+      # 24/11/2026 (paquet 402) : « env » vide = fichier refusé par GitHub. Les courbes se reconstruisent
+      # sans les clés R2 (comportement d'avant) ; le script suit, dans sa propre étape, avec les clés du journal privé.
+      - name: Reconstruire les courbes
+        run: python scripts/curves_parts.py rebuild || true
+
       - name: Construire l'indice
         env:   # 393 : journal complet de scripts/discret.py → coffre privé (échec : Telegram)
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripts/curves_parts.py rebuild || true
           python scripts/discret.py -- python scripts/book_index.py
           # Calibration + Brier par opérateur (réécrit le 25/08/2026 après la
           # corruption du fichier d'origine). Non bloquant : une étude qui

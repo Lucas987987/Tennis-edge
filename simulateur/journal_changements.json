@@ -2179,6 +2179,20 @@
    "paquet": 401,
    "quoi": "GROS FAVORIS BATTUS : VÉRIFICATION (paquet 401). Les défaites de favoris annoncés à 96–99 % ont été reprises une par une. Sur tous les matchs suivis, 103 favoris annoncés à 90 % ou plus : 6 battus pour 5,3 défaites attendues — l'algorithme n'est pas trop sûr de lui à ce niveau. Données vérifiées : Dominko–Viiala (99 %) venait d'un joueur écrit de deux façons (Zach / Zachary Viiala, même identifiant), déjà corrigé par le paquet 396 ; Hoole–Padgham (97 %) et Mikrut–Raynel (96 %) : aucune erreur de données (Raynel bien documenté, 118 matchs). « William Mroz Mroz » : nom mal écrit par la source, déjà relié au bon joueur, maintenant affiché « William Mroz ». Ti Chen (né vers 1983, dernier match en 2018) et Tin Chen (actif en ITF depuis 2024) : deux joueurs différents, bien séparés. Le bilan de la semaine ajoute un repère (favoris à 90 % ou plus : battus contre attendus) et signale un vainqueur peu documenté.",
    "garde_fou": "Aucun réglage du modèle, aucun % changé. Le mot répété n'est retiré que si le nom obtenu est un joueur connu et l'écriture d'origine inconnue. Tests : tests/test_gros_favoris.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "decision",
+   "paquet": 402,
+   "quoi": "WORKFLOWS REFUSÉS PAR GITHUB (paquet 402) : « Indice des opérateurs », « Signaux indépendants — Elo, fatigue, forme » et « Fiches joueurs » n'apparaissaient plus que sous le nom de leur fichier et ne tournaient plus : une étape gardait un « env: » vide après le paquet 393. L'étape est coupée en deux : reconstruction des courbes (sans clés, comme avant), puis le script avec les clés du journal privé.",
+   "garde_fou": "Aucun changement de calcul. Test ajouté : tests/test_workflows_sans_cle_vide.py vérifie, ligne à ligne (sans PyYAML, absent du runner), qu'aucune clé de workflow n'est restée vide."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 403,
+   "quoi": "PAIEMENT AVEC ACCÈS IMMÉDIAT (paquet 403, Lucas : « paiement sans rétractation »). Dans la section Plus, avant de payer, le client coche deux cases distinctes, jamais pré-cochées : il demande que l'accès commence dès réception de chaque paiement, avant la fin des 14 jours, et reconnaît perdre son droit de rétractation une fois l'accès ouvert. Les deux textes exacts, leur version et la date sont gardés sur le compte, une confirmation part par e-mail, la facture le mentionne. Sans cette demande, l'administration refuse le virement, sauf case « sans renonciation » (le client garde alors ses 14 jours). Conditions d'utilisation complétées.",
+   "garde_fou": "Rien ne change dans les pronostics. La demande se retire tant qu'aucun accès payé n'est ouvert. Tests : workers/algo/test_comptes.mjs (textes du site identiques à ceux gardés comme preuve)."
   }
  ]
 }
