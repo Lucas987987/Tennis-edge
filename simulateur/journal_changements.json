@@ -2235,6 +2235,13 @@
    "paquet": 410,
    "quoi": "PRONOSTICS ENCHAÎNÉS (paquet 410, Lucas : « que pronostic tourne le plus régulièrement possible »). Les pronostics du jour passaient toutes les 2 heures. Le worker de déclenchement relance désormais un passage dès que le précédent est fini (il regarde toutes les 3 minutes), au plus un départ toutes les 20 minutes ; le cron GitHub devient un filet horaire. Nouveaux matchs, programme et site plus vite à jour.",
    "garde_fou": "Calcul inchangé. Un seul passage à la fois (groupe « pronostics »). Liste TennisApi : 16 requêtes par passage, arrêt sous 1 500 restantes. Tests : les tests du worker de déclenchement."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 411,
+   "quoi": "STATISTIQUES DU MATCH TERMINÉ (paquet 411, Lucas : « toutes les statistiques après le match »). La fiche d'un match terminé affiche désormais tout de suite la vraie feuille (aces, doubles fautes, 1res balles, points derrière la 1re et la 2e, balles de break, breaks, points gagnés) face à ce que l'algo avait prévu, comme pendant le direct — sans attendre le bilan après match calculé par la chaîne. Le worker du site garde cette feuille définitive 24 h : une seule requête TennisApi par match terminé.",
+   "garde_fou": "Données descriptives : rien ne change dans le %. Si TennisApi n'a pas la feuille, le bilan après match prend le relais quand il existe. Tests : tests/test_stats_apres_match.py, workers/algo/test_worker.mjs."
   }
  ]
 }
