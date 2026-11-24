@@ -885,7 +885,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
-    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a></p>
+    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a> · <a href="/matchs" data-t="lg_matchs"></a> · <a href="/joueurs" data-t="lg_joueurs"></a> · <a href="/tournois" data-t="lg_tournois"></a> · <a href="/bilans" data-t="lg_bilans"></a></p>
   </footer>
   <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
@@ -1170,7 +1170,7 @@ const T = {
   pwa_ios:"📲 Installer l'appli : touche Partager (le carré avec une flèche vers le haut), puis « Sur l'écran d'accueil ».",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
-  lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente',
+  lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente', lg_matchs:'Matchs analysés', lg_joueurs:'Joueurs', lg_tournois:'Tournois', lg_bilans:'Bilans de la semaine',
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
   v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'gamesetalgo.com',
@@ -1529,7 +1529,7 @@ const T = {
   pwa_ios:'📲 Install the app: tap Share (the square with an upward arrow), then "Add to Home Screen".',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
-  lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale',
+  lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale', lg_matchs:'Analysed matches', lg_joueurs:'Players', lg_tournois:'Tournaments', lg_bilans:'Weekly records',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
   v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'gamesetalgo.com',
@@ -3282,6 +3282,8 @@ function boutonSon(){
 function rendTextes(){
   document.documentElement.lang = t('html_lang');
   document.querySelectorAll('[data-t]').forEach(el=>{ el.textContent = t(el.dataset.t); });
+  // Pages d'archives : version anglaise sous /en/ (paquet 419).
+  document.querySelectorAll('.legal-liens a[href^="/"]').forEach(a=>{ const c = a.getAttribute('href').replace(/^\/en(?=\/)/, ''); a.setAttribute('href', L === 'en' ? '/en' + c : c); });
   document.querySelectorAll('[data-t-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.tPlaceholder); });
   document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
   document.querySelectorAll('.circuits button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.circuit===circuit)));
