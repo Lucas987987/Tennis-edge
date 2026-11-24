@@ -1,60 +1,60 @@
 {
- "genere_le": "2026-11-24T09:35:16Z",
- "pronostiques": 2653,
- "joues_avec_resultat": 115,
+ "genere_le": "2026-11-24T11:45:02Z",
+ "pronostiques": 2660,
+ "joues_avec_resultat": 123,
  "tous": {
   "combinaison": {
-   "n": 110,
-   "reussite_pct": 69.1,
-   "log_loss": 0.6477,
-   "score_sets_juste_pct": 46.4,
-   "n_sets": 110
+   "n": 118,
+   "reussite_pct": 66.9,
+   "log_loss": 0.6621,
+   "score_sets_juste_pct": 44.9,
+   "n_sets": 118
   },
   "simulation": {
-   "n": 110,
-   "reussite_pct": 63.6,
-   "log_loss": 0.6372,
-   "score_sets_juste_pct": 42.7,
-   "n_sets": 110
+   "n": 118,
+   "reussite_pct": 62.7,
+   "log_loss": 0.6402,
+   "score_sets_juste_pct": 41.5,
+   "n_sets": 118
   },
   "stats_seules": {
-   "n": 115,
-   "reussite_pct": 68.7,
-   "log_loss": 0.639,
-   "score_sets_juste_pct": 45.2,
-   "n_sets": 115
+   "n": 123,
+   "reussite_pct": 66.7,
+   "log_loss": 0.6489,
+   "score_sets_juste_pct": 43.9,
+   "n_sets": 123
   }
  },
  "7_derniers_jours": {
   "combinaison": {
-   "n": 27,
-   "reussite_pct": 70.4,
-   "log_loss": 0.6765,
-   "score_sets_juste_pct": 37.0,
-   "n_sets": 27
+   "n": 35,
+   "reussite_pct": 62.9,
+   "log_loss": 0.7182,
+   "score_sets_juste_pct": 34.3,
+   "n_sets": 35
   },
   "simulation": {
-   "n": 27,
-   "reussite_pct": 66.7,
-   "log_loss": 0.638,
-   "score_sets_juste_pct": 37.0,
-   "n_sets": 27
+   "n": 35,
+   "reussite_pct": 62.9,
+   "log_loss": 0.6477,
+   "score_sets_juste_pct": 34.3,
+   "n_sets": 35
   },
   "stats_seules": {
-   "n": 27,
-   "reussite_pct": 70.4,
-   "log_loss": 0.6388,
-   "score_sets_juste_pct": 37.0,
-   "n_sets": 27
+   "n": 35,
+   "reussite_pct": 62.9,
+   "log_loss": 0.6738,
+   "score_sets_juste_pct": 34.3,
+   "n_sets": 35
   }
  },
  "calibration": {
   "combinaison": [
    {
     "tranche": "50–60 %",
-    "n": 44,
+    "n": 47,
     "prevu": 55.4,
-    "reel": 72.7
+    "reel": 70.2
    },
    {
     "tranche": "60–70 %",
@@ -64,47 +64,47 @@
    },
    {
     "tranche": "70–80 %",
-    "n": 17,
-    "prevu": 73.8,
-    "reel": 58.8
+    "n": 19,
+    "prevu": 73.9,
+    "reel": 52.6
    },
    {
     "tranche": "80–90 %",
-    "n": 12,
+    "n": 14,
     "prevu": 85.6,
-    "reel": 66.7
+    "reel": 64.3
    },
    {
     "tranche": "90–100 %",
-    "n": 5,
-    "prevu": 95.3,
+    "n": 6,
+    "prevu": 95.8,
     "reel": 100.0
    }
   ],
   "simulation": [
    {
     "tranche": "50–60 %",
-    "n": 38,
+    "n": 42,
     "prevu": 55.2,
-    "reel": 52.6
+    "reel": 52.4
    },
    {
     "tranche": "60–70 %",
-    "n": 39,
+    "n": 40,
     "prevu": 65.1,
-    "reel": 66.7
+    "reel": 65.0
    },
    {
     "tranche": "70–80 %",
-    "n": 23,
-    "prevu": 74.4,
-    "reel": 65.2
+    "n": 24,
+    "prevu": 74.5,
+    "reel": 62.5
    },
    {
     "tranche": "80–90 %",
-    "n": 6,
-    "prevu": 84.2,
-    "reel": 83.3
+    "n": 8,
+    "prevu": 85.0,
+    "reel": 87.5
    },
    {
     "tranche": "90–100 %",
@@ -116,9 +116,9 @@
   "stats_seules": [
    {
     "tranche": "50–60 %",
-    "n": 57,
-    "prevu": 55.0,
-    "reel": 71.9
+    "n": 61,
+    "prevu": 54.9,
+    "reel": 68.9
    },
    {
     "tranche": "60–70 %",
@@ -128,15 +128,15 @@
    },
    {
     "tranche": "70–80 %",
-    "n": 17,
-    "prevu": 74.5,
-    "reel": 64.7
+    "n": 19,
+    "prevu": 74.7,
+    "reel": 63.2
    },
    {
     "tranche": "80–90 %",
-    "n": 8,
-    "prevu": 83.8,
-    "reel": 75.0
+    "n": 10,
+    "prevu": 84.1,
+    "reel": 70.0
    },
    {
     "tranche": "90–100 %",
@@ -195,101 +195,29 @@
   },
   "CH": {
    "combinaison": {
-    "n": 82,
-    "reussite_pct": 68.3,
-    "log_loss": 0.6741,
-    "score_sets_juste_pct": 43.9,
-    "n_sets": 82
+    "n": 90,
+    "reussite_pct": 65.6,
+    "log_loss": 0.6905,
+    "score_sets_juste_pct": 42.2,
+    "n_sets": 90
    },
    "simulation": {
-    "n": 82,
-    "reussite_pct": 61.0,
-    "log_loss": 0.6628,
-    "score_sets_juste_pct": 40.2,
-    "n_sets": 82
+    "n": 90,
+    "reussite_pct": 60.0,
+    "log_loss": 0.6644,
+    "score_sets_juste_pct": 38.9,
+    "n_sets": 90
    },
    "stats_seules": {
-    "n": 84,
-    "reussite_pct": 66.7,
-    "log_loss": 0.654,
-    "score_sets_juste_pct": 44.0,
-    "n_sets": 84
+    "n": 92,
+    "reussite_pct": 64.1,
+    "log_loss": 0.6659,
+    "score_sets_juste_pct": 42.4,
+    "n_sets": 92
    }
   }
  },
  "derniers": [
-  {
-   "debut": "2026-11-16T00:00",
-   "home": "Maximilian Marterer",
-   "away": "Ben Jones",
-   "gagnant": "home",
-   "combinaison": 0.8682,
-   "simulation": 0.6846,
-   "stats": 0.8463
-  },
-  {
-   "debut": "2026-11-16T00:45",
-   "home": "Zachary Viiala",
-   "away": "Samuel Heredia",
-   "gagnant": "home",
-   "combinaison": 0.1008,
-   "simulation": 0.4353,
-   "stats": 0.4875
-  },
-  {
-   "debut": "2026-11-16T08:00",
-   "home": "Luka Mikrut",
-   "away": "Michael Agwi",
-   "gagnant": "home",
-   "combinaison": 0.7461,
-   "simulation": 0.7149,
-   "stats": 0.7553
-  },
-  {
-   "debut": "2026-11-17T16:00",
-   "home": "Quinn Vandecasteele",
-   "away": "Lui Maxted",
-   "gagnant": "away",
-   "combinaison": 0.2773,
-   "simulation": 0.3051,
-   "stats": 0.2467
-  },
-  {
-   "debut": "2026-11-17T16:30",
-   "home": "Juan Carlos Prado Angelo",
-   "away": "Lautaro Midon",
-   "gagnant": "home",
-   "combinaison": 0.4531,
-   "simulation": 0.4592,
-   "stats": 0.4314
-  },
-  {
-   "debut": "2026-11-17T17:40",
-   "home": "Genaro Alberto Olivieri",
-   "away": "Gonzalo Villanueva",
-   "gagnant": "home",
-   "combinaison": 0.5997,
-   "simulation": 0.5755,
-   "stats": 0.574
-  },
-  {
-   "debut": "2026-11-18T00:10",
-   "home": "Zachary Viiala",
-   "away": "Geoffrey Blancaneaux",
-   "gagnant": "away",
-   "combinaison": 0.2975,
-   "simulation": 0.5528,
-   "stats": 0.4197
-  },
-  {
-   "debut": "2026-11-18T00:30",
-   "home": "Jason Kubler",
-   "away": "Philip Sekulic",
-   "gagnant": "away",
-   "combinaison": 0.6935,
-   "simulation": 0.7929,
-   "stats": 0.734
-  },
   {
    "debut": "2026-11-18T02:00",
    "home": "David Jorda Sanchis",
@@ -480,6 +408,51 @@
    "stats": 0.6223
   },
   {
+   "debut": "2026-11-23T03:35",
+   "home": "Enzo Aguiard",
+   "away": "Blake Ellis",
+   "gagnant": "away",
+   "combinaison": 0.5134,
+   "simulation": 0.5513,
+   "stats": 0.5264
+  },
+  {
+   "debut": "2026-11-23T03:35",
+   "home": "Dhakshineswar Suresh",
+   "away": "Moerani Bouzige",
+   "gagnant": "away",
+   "combinaison": 0.7316,
+   "simulation": 0.7698,
+   "stats": 0.7293
+  },
+  {
+   "debut": "2026-11-23T16:00",
+   "home": "Rafael Botran Neutze",
+   "away": "Adam Farag-Cao",
+   "gagnant": "home",
+   "combinaison": 0.2408,
+   "simulation": 0.3819,
+   "stats": 0.4819
+  },
+  {
+   "debut": "2026-11-23T16:00",
+   "home": "Elijah Strode",
+   "away": "Juan Miguel Bolivar Idarraga",
+   "gagnant": "away",
+   "combinaison": 0.8537,
+   "simulation": 0.545,
+   "stats": 0.8116
+  },
+  {
+   "debut": "2026-11-23T23:30",
+   "home": "Alafia Ayeni",
+   "away": "Alex Bolt",
+   "gagnant": "away",
+   "combinaison": 0.1374,
+   "simulation": 0.1432,
+   "stats": 0.213
+  },
+  {
    "debut": "2026-11-23T23:30",
    "home": "Omar Jasika",
    "away": "Sebastian Gorzny",
@@ -487,83 +460,110 @@
    "combinaison": 0.462,
    "simulation": 0.3761,
    "stats": 0.4698
+  },
+  {
+   "debut": "2026-11-24T01:00",
+   "home": "Kokoro Isomura",
+   "away": "Hikaru Shiraishi",
+   "gagnant": "home",
+   "combinaison": 0.4575,
+   "simulation": 0.5433,
+   "stats": 0.4023
+  },
+  {
+   "debut": "2026-11-24T02:10",
+   "home": "Harrison Satara",
+   "away": "Jason Kubler",
+   "gagnant": "away",
+   "combinaison": 0.0174,
+   "simulation": 0.1067,
+   "stats": 0.1008
+  },
+  {
+   "debut": "2026-11-24T03:00",
+   "home": "Isaac Becroft",
+   "away": "Carl Emil Overbeck",
+   "gagnant": "away",
+   "combinaison": 0.4194,
+   "simulation": 0.4201,
+   "stats": 0.4639
   }
  ],
  "match_simule_contre_feuille": {
-  "n": 1967,
+  "n": 1972,
   "stats": {
    "aces": {
-    "n": 3934,
+    "n": 3944,
     "prevu": 4.72,
-    "reel": 4.96,
+    "reel": 4.97,
     "ecart_moyen": 2.36,
-    "dans_fourchette_pct": 80.0
+    "dans_fourchette_pct": 79.9
    },
    "doubles_fautes": {
-    "n": 3934,
+    "n": 3944,
     "prevu": 3.0,
     "reel": 2.54,
     "ecart_moyen": 1.58,
     "dans_fourchette_pct": 87.8
    },
    "premiere_pct": {
-    "n": 3934,
+    "n": 3944,
     "prevu": 62.34,
     "reel": 64.18,
     "ecart_moyen": 6.1,
-    "dans_fourchette_pct": 75.1
+    "dans_fourchette_pct": 75.2
    },
    "gagnes_1re_pct": {
-    "n": 3934,
-    "prevu": 68.36,
-    "reel": 69.18,
-    "ecart_moyen": 7.36,
+    "n": 3944,
+    "prevu": 68.37,
+    "reel": 69.2,
+    "ecart_moyen": 7.37,
     "dans_fourchette_pct": 76.2
    },
    "gagnes_2e_pct": {
-    "n": 3934,
-    "prevu": 49.4,
-    "reel": 50.12,
+    "n": 3944,
+    "prevu": 49.41,
+    "reel": 50.14,
     "ecart_moyen": 9.29,
     "dans_fourchette_pct": 78.0
    },
    "breaks": {
-    "n": 3934,
-    "prevu": 2.85,
+    "n": 3944,
+    "prevu": 2.84,
     "reel": 2.65,
     "ecart_moyen": 1.35,
-    "dans_fourchette_pct": 90.3
+    "dans_fourchette_pct": 90.2
    },
    "jeux": {
-    "n": 3934,
-    "prevu": 11.39,
+    "n": 3944,
+    "prevu": 11.38,
     "reel": 11.39,
     "ecart_moyen": 2.93,
     "dans_fourchette_pct": 84.3
    },
    "balles_break_obtenues": {
-    "n": 2138,
-    "prevu": 6.65,
-    "reel": 6.49,
-    "ecart_moyen": 3.0,
-    "dans_fourchette_pct": 83.7
+    "n": 2148,
+    "prevu": 6.64,
+    "reel": 6.48,
+    "ecart_moyen": 2.99,
+    "dans_fourchette_pct": 83.8
    },
    "jeux_service_gagnes_pct": {
-    "n": 2138,
+    "n": 2148,
     "prevu": 73.45,
-    "reel": 75.38,
-    "ecart_moyen": 13.17,
-    "dans_fourchette_pct": 86.7
+    "reel": 75.42,
+    "ecart_moyen": 13.19,
+    "dans_fourchette_pct": 86.6
    },
    "points_gagnes": {
-    "n": 2138,
-    "prevu": 70.85,
-    "reel": 72.07,
-    "ecart_moyen": 17.11,
-    "dans_fourchette_pct": 82.4
+    "n": 2148,
+    "prevu": 70.82,
+    "reel": 72.03,
+    "ecart_moyen": 17.14,
+    "dans_fourchette_pct": 82.3
    },
    "total_jeux": {
-    "n": 1967,
+    "n": 1972,
     "prevu": 22.77,
     "reel": 22.78,
     "ecart_moyen": 4.94,
