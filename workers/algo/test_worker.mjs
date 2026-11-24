@@ -453,3 +453,22 @@ test('391 : fichiers à empreinte gardés un an, service worker jamais en cache,
   assert.equal((await worker.fetch(req('/app-zz.js'), envP)).status, 404);
   assert.equal((await worker.fetch(req('/app-0123456789ab.js.map'), envP)).status, 404);
 });
+
+// 24/11/2026 (paquet 411) — feuille d'un match terminé : définitive, gardée 24 h (une seule requête TennisApi)
+test('411 : stats d’un match terminé marquées final et gardées 24 h ; match en cours : 60 s', async () => {
+  const { ttlDetail, STATS_FINAL_TTL_MS, STATS_TTL_MS } = await import('./worker.js');
+  assert.equal(ttlDetail('stats', { final: true }), STATS_FINAL_TTL_MS);
+  assert.equal(ttlDetail('stats', { final: false }), STATS_TTL_MS);
+  assert.equal(ttlDetail('points', null), 30000);
+  let appels = 0; const stock = { 'live/en_cours.json': JSON.stringify({ maj: Date.now(), termines: [{ id: 987654, fin: Date.now() }] }) };
+  const envF = { RAPIDAPI_KEY: 'k', LIVE_STATS_PLAFOND: '100000', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  globalThis.fetch = async () => { appels++; return new Response(JSON.stringify(DOC_STATS), { status: 200 }); };
+  const a = await (await worker.fetch(req('/live/stats?id=987654'), envF)).json();
+  assert.equal(a.final, true);
+  assert.equal(a.stats.aces[0], 3);
+  const b = await (await worker.fetch(req('/live/stats?id=987655'), envF)).json();   // pas dans les terminés
+  assert.equal(b.final, undefined);
+  assert.equal(appels, 2);
+  await worker.fetch(req('/live/stats?id=987654'), envF);
+  assert.equal(appels, 2);                                                            // gardée
+});

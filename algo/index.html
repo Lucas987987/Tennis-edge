@@ -1221,6 +1221,7 @@ const T = {
   am_h2h:'Face-à-face', am_h2h_vide:'Jamais affrontés dans nos données.',
   am_note:'Attendues : la somme de ses chances d’avant match (Elo de l’algo) sur ces matchs, abandons exclus. Repères descriptifs : ils ne changent pas le %.',
   ls_titre:'Statistiques en direct', ls_titre_fin:'Statistiques du match (terminé)',
+  ls_note_fin:'Feuille du match terminé. Trait vert : ce que l’algo avait prévu avant le match (20 000 simulations). En rouge : hors de sa fourchette (8 fois sur 10). Pas de prévision pour la plus longue série de points.',
   ls_note:'Mises à jour chaque minute. Trait vert : ce que l’algo avait prévu avant le match (20 000 simulations), pour le match entier. En rouge : déjà au-delà de sa fourchette (8 fois sur 10), ou nettement hors fourchette après 20 points. Pas de prévision pour la plus longue série de points.',
   ls_attente:'Statistiques pas encore disponibles pour ce match.', ls_plafond:'Statistiques en pause jusqu’à demain (plafond journalier atteint).',
   ls_prevu:(v,a,b)=>a==null?`prévu ${v}`:`prévu ${v} · fourchette ${a}–${b}`,
@@ -1574,6 +1575,7 @@ const T = {
   am_h2h:'Head-to-head', am_h2h_vide:'Never met in our data.',
   am_note:'Expected: the sum of the pre-match chances (the algorithm’s Elo) over those matches, retirements excluded. Descriptive only: they do not change the %.',
   ls_titre:'Live stats', ls_titre_fin:'Match stats (finished)',
+  ls_note_fin:'Final match stats. Green mark: what the algorithm expected before the match (20,000 simulations). In red: outside its range (8 times out of 10). No forecast for the longest run of points.',
   ls_note:'Updated every minute. Green mark: what the algorithm expected before the match (20,000 simulations), for the whole match. In red: already beyond its range (8 times out of 10), or clearly outside it after 20 points. No forecast for the longest run of points.',
   ls_attente:'No stats available yet for this match.', ls_plafond:'Stats paused until tomorrow (daily limit reached).',
   ls_prevu:(v,a,b)=>a==null?`expected ${v}`:`expected ${v} · range ${a}–${b}`,
@@ -3769,7 +3771,7 @@ function tiroirsFiche(m){
     majBoutonTiroirs();
   };
   majBoutonTiroirs();
-  rendStatsLive();
+  rendStatsLive(); if (typeof statsFiche === 'function') statsFiche();   // 411 : feuille d'un match terminé dès l'ouverture
 }
 function majBoutonTiroirs(){
   const b = document.getElementById('tir-tout'), f = document.querySelector('.fiche'); if (!b || !f) return;
@@ -6887,12 +6889,26 @@ function statsFiche(){
       if (o) LIVE.stats[uid] = {o: (o.stats || !deja) ? o : {...o, stats: deja.o.stats}, t: Date.now()};
     }).catch(()=>{}).finally(()=>{ LIVE.attente[uid] = false; majLive(); });
   }
+  // 24/11/2026 (paquet 411, Lucas : « toutes les statistiques après le match ») — fiche ouverte d'un match TERMINÉ
+  // (liste des terminés) : la vraie feuille est demandée une fois (le worker la garde 24 h), sans attendre le bilan
+  // après match ; nouvel essai toutes les 2 min tant qu'elle n'est pas définitive.
+  const el = document.querySelector('[data-live-stats]'), uf = el && el.getAttribute('data-live-stats'), rf = uf && LIVE.vus[uf];
+  if (uf && rf && rf.x && rf.x.id && !LIVE.par_uid[uf] && !LIVE.attente[uf]) {
+    const st = LIVE.stats[uf];
+    if (st && st.o && st.o.final) return;
+    if (Date.now() - (LIVE.essai[uf] || 0) < (st && st.o && st.o.stats ? 120000 : 55000)) return;
+    LIVE.attente[uf] = true; LIVE.essai[uf] = Date.now();
+    fetch('/live/stats?id=' + encodeURIComponent(rf.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
+      if (o && (o.stats || !st)) LIVE.stats[uf] = {o, t: Date.now()};
+    }).catch(()=>{}).finally(()=>{ LIVE.attente[uf] = false; rendStatsLive(); });
+  }
 }
 function rendStatsLive(){
   const el = document.querySelector('[data-live-stats]'); if (!el) return;
   const uid = el.getAttribute('data-live-stats'), m = ((D && D.matchs) || []).find(x=>x.uid===uid);
   const r = LIVE.par_uid[uid] || LIVE.vus[uid], st = LIVE.stats[uid];
-  if (!m || !r || !st){
+  // 411 : match terminé sans feuille TennisApi (pas encore, ou jamais) → le bilan après match s'il existe
+  if (!m || !r || !st || (!LIVE.par_uid[uid] && !(st.o && st.o.stats) && D.apres_match && D.apres_match[uid] && D.apres_match[uid].reel)){
     // 08/11/2026 (paquet 218) : le direct n'est plus là (match fini depuis longtemps, page rechargée) → le bilan après match
     // du site garde le score et les statistiques réelles contre le prévu, dès qu'il est calculé.
     const bil = m && D.apres_match && D.apres_match[uid];
@@ -6961,7 +6977,7 @@ function rendStatsLive(){
   el.innerHTML = `<h3>📊 ${esc(t(fini ? 'ls_titre_fin' : 'ls_titre'))}</h3><div class="pad" style="padding:0 14px 12px">${msg ? `<p class="styles-note">${esc(msg)}</p>` : ''}
     ${L1.length ? `<div class="lv-pc" style="margin-top:4px"><b style="color:var(--p1);font-family:inherit">${esc(court(m.home))}</b><b style="color:var(--p2);font-family:inherit">${esc(court(m.away))}</b></div>
     <div class="lv-grp">${esc(t('lv_grp_srv'))}</div>${L1.join('')}<div class="lv-grp">${esc(t('lv_grp_ret'))}</div>${L2.join('')}
-    <p class="styles-note" style="margin:8px 0 0">${esc(t('ls_note'))}</p>` : ''}</div>`;
+    <p class="styles-note" style="margin:8px 0 0">${esc(t(fini ? 'ls_note_fin' : 'ls_note'))}</p>` : ''}</div>`;
 }
 // 06/11/2026 (paquet 210) — LE MATCH EN DIRECT (fiche) : grand tableau d'affichage, courbe du % jeu après jeu tirée du
 // point par point (/live/points), moments clés (breaks, sets) et jeu par jeu.
