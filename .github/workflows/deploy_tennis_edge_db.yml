@@ -62,3 +62,17 @@ jobs:
           echo
           test "$code" = "200"
           python3 -c "import json; d=json.load(open('api.json')); print('JSON OK')"
+
+      # 24/11/2026 (paquet 413, Lucas) : les déploiements partent tout seuls après un paquet — un échec ne doit pas passer
+      # inaperçu. Message privé avec le lien du run ; le jeton n'est jamais affiché (curl -s, secrets masqués).
+      - name: Alerte Telegram si le déploiement échoue
+        if: failure()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LIEN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -n "$TELEGRAM_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ] || exit 0
+          curl -s -o /dev/null --max-time 15 "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=🔴 Déploiement du worker base (tennis-edge-db) échoué. Journal : ${LIEN}" || true

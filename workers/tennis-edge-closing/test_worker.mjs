@@ -85,3 +85,10 @@ test('410 : pronostics enchaînés — relancés dès la fin du passage, au plus
   assert.equal(W.decisionPeriodique([run(10)], 'pronostics_quotidien.yml', 20, now).fire, false);
   assert.equal(W.decisionPeriodique([run(70, 'in_progress')], 'pronostics_quotidien.yml', 20, now).fire, false);  // passage long : on attend
 });
+
+test('413 : feuilles de match toutes les heures par défaut, jamais plus serré que 30 min', async () => {
+  const W = await import('./worker.js');
+  assert.equal(W.periodeFeuilles({}), 60);
+  assert.equal(W.periodeFeuilles({ FEUILLES_PERIODE_MIN: '10' }), 30);
+  assert.equal(W.periodeFeuilles({ FEUILLES_PERIODE_MIN: '120' }), 120);
+});

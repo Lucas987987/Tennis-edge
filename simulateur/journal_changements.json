@@ -2249,6 +2249,13 @@
    "paquet": 412,
    "quoi": "DÉPLOIEMENT AUTOMATIQUE, DÉLAI FONDATEUR, ACCUEIL (paquet 412, Lucas : « 1 2 3 »). 1) « Appliquer un paquet » redéploie lui-même chaque worker (site, déclenchement, joueurs, base) dont un fichier change, juste après la fusion : plus de redéploiement à la main. 2) Le tarif fondateur suit les conditions de vente : perdu pour de bon si un mois est payé plus de 7 jours après la fin du précédent mois fondateur ; la demande passe alors au prix normal, l'administration refuse un virement « tarif fondateur » pour ce compte, et l'e-mail de rappel donne la date limite pour garder le tarif. 3) Texte d'accueil du site : « un algorithme indépendant ; on publie son % de victoire et tous ses résultats », sans parler de cotes.",
    "garde_fou": "Rien ne change dans les pronostics. Tests : tests/test_deploiement_auto.py, workers/algo/test_comptes.mjs."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 413,
+   "quoi": "SURVEILLANCE ET « MON COMPTE » (paquet 413, Lucas : « 2-3-4-5 »). 1) Taille du dépôt : mesurée chaque jour comme avant, désormais gardée jour après jour ; message Telegram privé chaque lundi (taille et croissance sur 7 jours) et tous les jours en cas d'alerte (zone de vigilance, ou plus de 0,5 Go pris en 7 jours). 2) Feuilles de match : collecte toutes les heures au lieu de 2 h (bilan après match plus tôt), mêmes réserves de quota. 3) « Mon compte » : tarif fondateur et date limite pour le garder, demande en cours avec un lien vers les instructions, référence de virement, factures. 4) Déploiement d'un worker en échec : message Telegram privé avec le lien du journal.",
+   "garde_fou": "Rien ne change dans les pronostics. Tests : tests/test_repo_sentinel_suivi.py, tests/test_deploiement_auto.py, tests du worker de déclenchement."
   }
  ]
 }
