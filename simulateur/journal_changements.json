@@ -2326,6 +2326,13 @@
    "paquet": 423,
    "quoi": "CE QUE L'ALGO A FAIT À CE % (paquet 423, Lucas : « fais ça »). Fiche du match : un encadré « Ce % a-t-il tenu par le passé ? » sous le % (ex. : quand l'algo a donné un joueur à 65–70 %, ce joueur a gagné 66,8 % du temps, 155 sur 232 matchs), et une ligne « Déjà vu » sous le 1er set, le set décisif, le tie-break, les écarts de jeux du favori et les sets secs. Bilan, pour tout le monde : un tableau « Ce que l'algo annonce, ce qui arrive », tranche de 5 points par tranche, avec le % annoncé en trait blanc, sur toute la période ou 30 jours, par circuit. Pas d'historique sous les totaux de jeux tant que le biais Challenger n'est pas corrigé (étude 421). La liste des matchs ne change pas.",
    "garde_fou": "Historique seulement : rien ne change dans les %. Une tranche n'est montrée qu'à partir de 100 matchs ; en dessous, la même tranche tous circuits, puis une tranche de 10 points tous circuits, sinon rien. Lu du côté que l'algo jugeait le plus probable. Tests : tests/test_reussite_tranches.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 424,
+   "quoi": "PAGE SANS MISE EN FORME PENDANT LA PUBLICATION (paquet 424, Lucas : « problème d'affichage » à 22 h, juste après le paquet 423). Cause : à chaque publication, les fichiers partaient dans l'ordre alphabétique, donc la nouvelle page d'accueil avant sa nouvelle feuille de style ; pendant l'envoi, la page pointait vers un style pas encore en ligne et s'affichait brute. Les pages partent maintenant en dernier, les pages d'accueil tout à la fin : une page n'est en ligne qu'une fois ses styles, scripts, données et images en place.",
+   "garde_fou": "Rien ne change dans les fichiers publiés, seulement l'ordre d'envoi. Tests : tests/test_publier_r2.py."
   }
  ]
 }
