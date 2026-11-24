@@ -2221,6 +2221,13 @@
    "paquet": 408,
    "quoi": "BOUTON ARENA (paquet 408, Lucas). Le bouton « Arena » du haut de page ne mène plus vers une page en construction : il s'appelle « Arena · bientôt » et, touché, affiche que l'Arena est un service en développement, pas encore ouvert (français et anglais).",
    "garde_fou": "Aucun autre changement. Test : tests/test_arena_bouton.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 409,
+   "quoi": "BOUTON « S'ABONNER » (paquet 409, Lucas : « je suis connecté mais je n'ai pas l'onglet s'abonner »). Le formulaire de demande est en bas, dans la section Plus, et n'apparaît que si le worker du site envoie les prix (déployé avec le paquet 407). Le panneau d'un match réservé et « Mon compte » affichent désormais un bouton « S'abonner » qui y mène, au lieu de « le paiement arrive bientôt ».",
+   "garde_fou": "Sans le worker à jour, l'ancien texte reste affiché. Test : tests/test_cgv_plus.py."
   }
  ]
 }

@@ -51,3 +51,11 @@ def test_demande_abonnement_prix_du_serveur():
         assert PAGE.count(cle + ':') == 2, cle
     seg_cgv = _seg('function texteCgv', 'function ouvrirLegal')
     assert "demande d'abonnement" in seg_cgv and 'subscription request' in seg_cgv
+
+
+def test_bouton_s_abonner_depuis_le_match_verrouille_et_mon_compte():
+    assert PAGE.count('<button type="button" class="btn go" data-plus="abo">') == 2   # match réservé + « Mon compte »
+    for cle in ('verrou_libre_abo', 'ab_cta', 'cp_moi_libre_abo'):
+        assert PAGE.count(cle + ':') == 2, cle
+    seg = _seg('function panneauVerrou', '\nfunction ')
+    assert 'TARIFS_SITE' in seg                                     # seulement si le worker envoie les prix

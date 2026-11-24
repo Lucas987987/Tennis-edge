@@ -1155,7 +1155,7 @@ const T = {
   cp_moi_plus:d=>`Accès Plus actif${d?` jusqu’au ${dateLong(d)}`:''}.`, cp_moi_libre:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs (paiement bientôt disponible).",
   cp_deco:'Se déconnecter', cp_fermer:'Fermer',
   verrou_titre:'Réservé à l’accès Plus', verrou_texte:"Le match du jour est offert. L'accès Plus ouvre le pronostic de tous les matchs : % de victoire, fiabilité, sets, scores, statistiques prévues, scénarios et direct.",
-  verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.",
+  verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.", verrou_libre_abo:'Ton compte est en accès gratuit. Abonne-toi pour ouvrir tous les matchs.', ab_cta:"S'abonner", cp_moi_libre_abo:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs.",
   pwa_installer:"📲 Installer l'appli sur ce téléphone",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
@@ -1508,7 +1508,7 @@ const T = {
   cp_moi_plus:d=>`Plus access active${d?` until ${dateLong(d)}`:''}.`, cp_moi_libre:'Free access: the match of the day is on us. Plus access unlocks every match (payment coming soon).',
   cp_deco:'Log out', cp_fermer:'Close',
   verrou_titre:'Plus access only', verrou_texte:'The match of the day is free. Plus access unlocks the forecast for every match: win %, reliability, sets, scores, predicted stats, scenarios and live coverage.',
-  verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.',
+  verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.', verrou_libre_abo:'Your account is on free access. Subscribe to unlock every match.', ab_cta:'Subscribe', cp_moi_libre_abo:'Free access: the match of the day is on us. Plus access unlocks every match.',
   pwa_installer:'📲 Install the app on this phone',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
@@ -7461,7 +7461,9 @@ function ligneVerrou(m){
     </span></a></li>`;
 }
 function panneauVerrou(m){
-  const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t('verrou_libre'))}</p><div class="actions"><button type="button" class="btn" data-compte="moi">${esc(t('verrou_code'))}</button></div>`
+  // 409 : avec le worker à jour (prix reçus), « S'abonner » mène au formulaire de la section Plus
+  const abo = COMPTE && COMPTE.verifie && TARIFS_SITE;
+  const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t(abo ? 'verrou_libre_abo' : 'verrou_libre'))}</p><div class="actions">${abo ? `<button type="button" class="btn go" data-plus="abo">${esc(t('ab_cta'))}</button>` : ''}<button type="button" class="btn" data-compte="moi">${esc(t('verrou_code'))}</button></div>`
     : `<div class="actions"><button type="button" class="btn go" data-compte="inscription">${esc(t('verrou_cta_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('verrou_cta_cx'))}</button></div>`;
   return `<div class="panel verrou-p"><span class="verrou-b">🔒 ${esc(t('verrou_titre'))}</span>
     <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
@@ -8475,7 +8477,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
   const tete = k => `<button type="button" class="ferme" data-cp="fermer" aria-label="${esc(t('cp_fermer'))}">×</button><h3 id="compte-h">${esc(t(k))}</h3>`;
   let h = '';
   if (vue === 'moi' && COMPTE) {
-    h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t('cp_moi_libre'))}</p>
+    h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t(TARIFS_SITE && COMPTE.verifie ? 'cp_moi_libre_abo' : 'cp_moi_libre'))}</p>${!COMPTE.abonne && TARIFS_SITE && COMPTE.verifie ? `<p style="margin:8px 0 0"><button type="button" class="btn go" data-plus="abo">${esc(t('ab_cta'))}</button></p>` : ''}
       <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
       <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
       ${(COMPTE.factures||[]).length ? `<p style="margin:12px 0 4px"><b>${esc(t('cp_factures'))}</b></p>` + COMPTE.factures.map(n => `<a class="lien" target="_blank" rel="noopener" href="/compte/api/facture?n=${encodeURIComponent(n)}">${esc(n)}</a>`).join('') : ''}
@@ -8583,6 +8585,7 @@ function brancherCompte(){
     const ri = ev.target.closest('[data-ri]'); if (ri) return accesImmediatAction(ri.dataset.ri, ri);
     const ab = ev.target.closest('[data-ab]'); if (ab) return abonnementAction(ab.dataset.ab, ab);
     const px = ev.target.closest('[data-plus="mdj"]'); if (px) { const z = document.getElementById('mdj'); if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    const pa = ev.target.closest('[data-plus="abo"]'); if (pa) { fermerCompte(); const z = document.getElementById('ab-bloc') || document.getElementById('plus'); if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     const x = ev.target.closest('[data-cp],[data-compte],#b-compte,#plus-compte'); if (!x) { if (ev.target.id === 'compte-fond') fermerCompte(); return; }
     if (x.id === 'b-compte') return ouvrirCompte(COMPTE ? 'moi' : 'connexion');
     if (x.id === 'plus-compte') return ouvrirCompte(COMPTE ? 'moi' : 'inscription');
