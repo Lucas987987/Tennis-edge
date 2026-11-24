@@ -1,6 +1,6 @@
 {
- "genere_le": "2026-11-23T21:54:30Z",
- "pronostiques": 2623,
+ "genere_le": "2026-11-24T00:00:29Z",
+ "pronostiques": 2629,
  "joues_avec_resultat": 115,
  "tous": {
   "combinaison": {
@@ -27,25 +27,25 @@
  },
  "7_derniers_jours": {
   "combinaison": {
-   "n": 30,
-   "reussite_pct": 70.0,
-   "log_loss": 0.6998,
-   "score_sets_juste_pct": 36.7,
-   "n_sets": 30
+   "n": 27,
+   "reussite_pct": 70.4,
+   "log_loss": 0.6765,
+   "score_sets_juste_pct": 37.0,
+   "n_sets": 27
   },
   "simulation": {
-   "n": 30,
+   "n": 27,
    "reussite_pct": 66.7,
-   "log_loss": 0.6258,
-   "score_sets_juste_pct": 36.7,
-   "n_sets": 30
+   "log_loss": 0.638,
+   "score_sets_juste_pct": 37.0,
+   "n_sets": 27
   },
   "stats_seules": {
-   "n": 30,
-   "reussite_pct": 70.0,
-   "log_loss": 0.6138,
-   "score_sets_juste_pct": 36.7,
-   "n_sets": 30
+   "n": 27,
+   "reussite_pct": 70.4,
+   "log_loss": 0.6388,
+   "score_sets_juste_pct": 37.0,
+   "n_sets": 27
   }
  },
  "calibration": {
@@ -490,84 +490,84 @@
   }
  ],
  "match_simule_contre_feuille": {
-  "n": 1925,
+  "n": 1938,
   "stats": {
    "aces": {
-    "n": 3850,
-    "prevu": 4.73,
-    "reel": 4.98,
-    "ecart_moyen": 2.36,
-    "dans_fourchette_pct": 80.0
+    "n": 3876,
+    "prevu": 4.72,
+    "reel": 4.96,
+    "ecart_moyen": 2.35,
+    "dans_fourchette_pct": 80.1
    },
    "doubles_fautes": {
-    "n": 3850,
+    "n": 3876,
     "prevu": 3.0,
     "reel": 2.54,
     "ecart_moyen": 1.58,
-    "dans_fourchette_pct": 87.8
+    "dans_fourchette_pct": 87.9
    },
    "premiere_pct": {
-    "n": 3850,
-    "prevu": 62.33,
+    "n": 3876,
+    "prevu": 62.34,
     "reel": 64.17,
-    "ecart_moyen": 6.09,
+    "ecart_moyen": 6.1,
     "dans_fourchette_pct": 75.1
    },
    "gagnes_1re_pct": {
-    "n": 3850,
-    "prevu": 68.39,
-    "reel": 69.21,
+    "n": 3876,
+    "prevu": 68.36,
+    "reel": 69.16,
     "ecart_moyen": 7.36,
-    "dans_fourchette_pct": 76.2
+    "dans_fourchette_pct": 76.3
    },
    "gagnes_2e_pct": {
-    "n": 3850,
-    "prevu": 49.4,
-    "reel": 50.08,
-    "ecart_moyen": 9.24,
+    "n": 3876,
+    "prevu": 49.39,
+    "reel": 50.07,
+    "ecart_moyen": 9.26,
     "dans_fourchette_pct": 78.1
    },
    "breaks": {
-    "n": 3850,
+    "n": 3876,
     "prevu": 2.85,
-    "reel": 2.65,
+    "reel": 2.66,
     "ecart_moyen": 1.35,
     "dans_fourchette_pct": 90.2
    },
    "jeux": {
-    "n": 3850,
+    "n": 3876,
     "prevu": 11.4,
     "reel": 11.39,
-    "ecart_moyen": 2.94,
-    "dans_fourchette_pct": 84.3
+    "ecart_moyen": 2.93,
+    "dans_fourchette_pct": 84.4
    },
    "balles_break_obtenues": {
-    "n": 2054,
+    "n": 2080,
     "prevu": 6.65,
-    "reel": 6.51,
-    "ecart_moyen": 3.01,
-    "dans_fourchette_pct": 83.7
+    "reel": 6.53,
+    "ecart_moyen": 3.0,
+    "dans_fourchette_pct": 83.8
    },
    "jeux_service_gagnes_pct": {
-    "n": 2054,
-    "prevu": 73.51,
-    "reel": 75.43,
-    "ecart_moyen": 13.19,
-    "dans_fourchette_pct": 86.5
+    "n": 2080,
+    "prevu": 73.43,
+    "reel": 75.26,
+    "ecart_moyen": 13.15,
+    "dans_fourchette_pct": 86.7
    },
    "points_gagnes": {
-    "n": 2054,
-    "prevu": 70.98,
-    "reel": 72.11,
-    "ecart_moyen": 17.12,
-    "dans_fourchette_pct": 82.2
+    "n": 2080,
+    "prevu": 70.91,
+    "reel": 72.04,
+    "ecart_moyen": 17.06,
+    "dans_fourchette_pct": 82.4
    },
    "total_jeux": {
-    "n": 1925,
-    "prevu": 22.81,
-    "reel": 22.79,
-    "ecart_moyen": 4.94,
-    "dans_fourchette_pct": 84.2
+    "n": 1938,
+    "prevu": 22.79,
+    "reel": 22.77,
+    "ecart_moyen": 4.93,
+    "dans_fourchette_pct": 84.3
    }
   }
  }
