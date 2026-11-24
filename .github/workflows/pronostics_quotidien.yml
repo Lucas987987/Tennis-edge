@@ -79,6 +79,7 @@ jobs:
             /algo/
             /scripts/cotes_privees.py
             /scripts/pronostics_prives.py
+            /scripts/controle_fuites.py
             /scripts/site_leger.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
@@ -227,6 +228,9 @@ jobs:
           for f in simulateur/rapport_entrees.json simulateur/alias_observes.json; do
             if [ -f "$f" ] && ! git check-ignore -q --no-index -- "$f"; then git add -- "$f"; fi
           done
+          # 24/11/2026 (paquet 416) : contrôle des fuites — un fichier qui porterait le pronostic d'un match à venir est
+          # écarté du commit (sa version complète est au coffre R2) ; seuls les noms des fichiers sont affichés.
+          for f in $(python scripts/controle_fuites.py . || true); do git reset -q -- "$f" || true; echo "::warning::$f écarté du commit (pronostic d'un match à venir)"; done
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
