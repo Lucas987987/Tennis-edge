@@ -193,6 +193,9 @@ jobs:
           pip install --quiet boto3 || true
           python scripts/r2_parts.py pull --kinds pm || true
 
+      # 24/11/2026 (paquet 416, Lucas : « stocker sur Cloudflare comme le reste ») : la partition chaude du jour vient de R2
+      - name: Journaux chauds — rapatrier de R2 (polymarket)
+        run: python scripts/journaux_chauds.py pull polymarket || true
       - name: Polymarket collector
         if: '!inputs.diag && !inputs.probe'
         env:
@@ -224,6 +227,9 @@ jobs:
         if: always()
         run: python scripts/r2_parts.py push --kinds pm || true
 
+      - name: Journaux chauds — envoyer à R2 (polymarket)
+        if: always()
+        run: python scripts/journaux_chauds.py push polymarket || true
       - name: Commit Polymarket data (robuste)
         if: always()
         shell: bash
@@ -247,6 +253,8 @@ jobs:
           done
           # 16/10/2026 : registre en ajout seul (market_registry) — fichiers du jour.
           for f in registres_marches/*.jsonl; do [ -f "$f" ] && git add -- "$f" || true; done
+          # 416 : partition chaude dans git toutes les ~2 h seulement (R2 est à jour à chaque passage)
+          python scripts/journaux_chauds.py garde polymarket || true
           # GARDE-FOU TAILLE, avant tout git add.
           # Le 19/08/2026, parts/pm_ticks_2026-08-19.jsonl a atteint 221 Mo et
           # GitHub a rejeté le push entier ("pre-receive hook declined") : les

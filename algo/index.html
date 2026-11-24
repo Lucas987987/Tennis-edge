@@ -229,6 +229,7 @@ svg.curve{width:100%;height:auto;display:block}
 .plus ul{margin:10px 0 0;padding-left:1.1em}
 .plus li{margin:4px 0}
 .plus .soon{display:inline-block;margin-top:12px}
+.aide-ios{display:block;font-size:.9rem;color:var(--dim);border:1px dashed var(--line,rgba(255,255,255,.2));border-radius:12px;padding:10px 12px}
 .plus-preuve{margin:10px 0 0;font-size:.92rem;color:var(--dim)}.plus-preuve b{color:var(--ink)}
 .plus-comp-wrap{overflow-x:auto;margin:12px 0 0}.plus-comp{width:100%;border-collapse:collapse;font-size:.9rem}
 .plus-comp th{font-weight:700;text-align:center;padding:6px 8px;border-bottom:1px solid var(--line,rgba(255,255,255,.12))}.plus-comp th:first-child{text-align:left}
@@ -1161,6 +1162,7 @@ const T = {
   verrou_titre:'Réservé à l’accès Plus', verrou_texte:"Le match du jour est offert. L'accès Plus ouvre le pronostic de tous les matchs : % de victoire, fiabilité, sets, scores, statistiques prévues, scénarios et direct.",
   verrou_cta_compte:'Créer un compte', verrou_cta_cx:'Se connecter', verrou_libre:"Ton compte est en accès gratuit. Le paiement de l'accès Plus arrive bientôt.", verrou_libre_abo:'Ton compte est en accès gratuit. Abonne-toi pour ouvrir tous les matchs.', ab_cta:"S'abonner", cp_moi_libre_abo:"Accès gratuit : le match du jour est offert. L'accès Plus ouvre tous les matchs.",
   pwa_installer:"📲 Installer l'appli sur ce téléphone",
+  pwa_ios:"📲 Installer l'appli : touche Partager (le carré avec une flèche vers le haut), puis « Sur l'écran d'accueil ».",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente',
@@ -1519,6 +1521,7 @@ const T = {
   verrou_titre:'Plus access only', verrou_texte:'The match of the day is free. Plus access unlocks the forecast for every match: win %, reliability, sets, scores, predicted stats, scenarios and live coverage.',
   verrou_cta_compte:'Create an account', verrou_cta_cx:'Log in', verrou_libre:'Your account is on free access. Payment for Plus access is coming soon.', verrou_libre_abo:'Your account is on free access. Subscribe to unlock every match.', ab_cta:'Subscribe', cp_moi_libre_abo:'Free access: the match of the day is on us. Plus access unlocks every match.',
   pwa_installer:'📲 Install the app on this phone',
+  pwa_ios:'📲 Install the app: tap Share (the square with an upward arrow), then "Add to Home Screen".',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale',
@@ -8668,6 +8671,14 @@ window.addEventListener('beforeinstallprompt', ev => {
 });
 if (!SUR_SITE && !MODE_IMAGE && /Android|iPhone|iPad/i.test(navigator.userAgent || '')) {
   const z = document.getElementById('installer'); if (z) z.hidden = false;
+}
+// 24/11/2026 (paquet 416, Lucas) — iPhone et iPad : Safari ne propose pas de bouton d'installation. Sur gamesetalgo.com,
+// hors appli déjà installée, une indication : Partager → « Sur l'écran d'accueil ».
+const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (SUR_SITE && IOS && !MODE_IMAGE && !navigator.standalone && !(window.matchMedia && matchMedia('(display-mode: standalone)').matches)) {
+  const z = document.getElementById('installer');
+  const b = document.getElementById('b-installer');               // le bouton reste (écouteurs), caché
+  if (z) { z.hidden = false; if (b) b.hidden = true; z.insertAdjacentHTML('beforeend', `<span class="aide-ios" data-t="pwa_ios">${esc(t('pwa_ios'))}</span>`); }
 }
 window.addEventListener('appinstalled', () => { INSTALL = null; const z = document.getElementById('installer'); if (z) z.hidden = true; });
 document.getElementById('b-installer').addEventListener('click', () => {
