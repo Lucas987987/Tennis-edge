@@ -11,7 +11,7 @@
 // CLE_PRIVEE), HttpOnly, Secure, SameSite=Lax, 90 jours ; un changement de mot de passe ferme toutes les sessions.
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
-import { adminVentes, factureClient } from './ventes.js';
+import { adminVentes, factureClient, demandeAbonnement, TARIFS } from './ventes.js';
 
 export const COOKIE_COMPTE = 'gsa_compte';
 export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null,
@@ -79,16 +79,20 @@ function vueCompte(u) {
   return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
     reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
-    acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.ouverture_envoyee ? u.fondateur_place || null : null };
+    acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.ouverture_envoyee ? u.fondateur_place || null : null,
+    demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null };
 }
 // 405 : coordonnées de paiement, montrées dans la section Plus au seul fondateur prévenu de l'ouverture
 export const PRIX_FONDATEUR_SITE = 9.99;
+// 407 : ou à tout compte qui a une demande d'abonnement en cours (montant de la demande)
 function paiementDe(u, env) {
-  if (!u || !u.verifie || !u.ouverture_envoyee || !u.fondateur_place) return null;
+  if (!u || !u.verifie) return null;
+  const montant = u.demande ? u.demande.montant : (u.ouverture_envoyee && u.fondateur_place ? PRIX_FONDATEUR_SITE : null);
+  if (montant == null) return null;
   let c = null;
   try { c = JSON.parse(env.VIREMENT || 'null'); } catch (e) { c = null; }
-  if (!c || !c.iban) return null;
-  return { titulaire: c.titulaire || '', iban: c.iban, bic: c.bic || '', montant: PRIX_FONDATEUR_SITE, reference: referenceVirement(u) };
+  if (!c || !c.iban) return u.demande ? { iban: null, montant, reference: referenceVirement(u) } : null;
+  return { titulaire: c.titulaire || '', iban: c.iban, bic: c.bic || '', montant, reference: referenceVirement(u) };
 }
 
 // --------------------------------------------------------------------------------------------- session
@@ -328,7 +332,7 @@ async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
   const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat',
-    'fondateur_place', 'ouverture_envoyee'];
+    'fondateur_place', 'ouverture_envoyee', 'demande'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -339,7 +343,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (!env.COFFRE || !env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep({ ok: false, erreur: 'ferme' }, 503);
   if (p === 'moi' && req.method === 'GET') {
     const u = await utilisateur(req, env);
-    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u), paiement: paiementDe(u, env),
+    return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u), paiement: paiementDe(u, env), tarifs: TARIFS,
       turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
   if (p === 'export' && req.method === 'GET') return exporter(req, env);
@@ -359,6 +363,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'supprimer') return supprimer(req, env, b);
   if (p === 'fondateur') return fondateur(req, env, b);
   if (p === 'acces_immediat') return accesImmediat(req, env, b);
+  if (p === 'abonnement') return demandeAbonnement(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
 }
 
@@ -573,10 +578,11 @@ button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff
 const $=id=>document.getElementById(id);
 let TOUS=[],FOND=[];
 function rendre(){const q=$('q').value.trim().toLowerCase(),L=TOUS.filter(c=>!q||c.email.toLowerCase().includes(q)||String(c.reference).toLowerCase().includes(q));
-$('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+(c.acces_immediat?' · accès immédiat demandé le '+String(c.acces_immediat).slice(0,10):' · accès immédiat non demandé')+'</small><br>'+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
+$('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+(c.acces_immediat?' · accès immédiat demandé le '+String(c.acces_immediat).slice(0,10):' · accès immédiat non demandé')+'</small><br>'+(c.demande?'<span class="ok">Demande : '+c.demande.formule+' · '+String(c.demande.montant.toFixed(2)).replace('.',',')+' €'+(c.demande.fondateur?' (fondateur)':'')+' · le '+String(c.demande.le).slice(0,10)+'</span> <button data-pre="'+c.reference+'|'+c.demande.formule+'|'+c.demande.montant+'|'+(c.demande.fondateur?1:0)+'">Préremplir le virement</button><br>':'')+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
 function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{TOUS=o.comptes;FOND=TOUS.filter(c=>c.fondateur&&c.verifie).sort((a,b)=>String(a.fondateur).localeCompare(String(b.fondateur))).map(c=>c.email);
-$('lf').innerHTML='<small>'+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
-$('q').oninput=rendre;$('cf2').onclick=()=>{const t=FOND.join('\\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('cf2').textContent='Copié ('+FOND.length+')';},()=>{$('lf').insertAdjacentHTML('beforeend','<pre style="white-space:pre-wrap;user-select:all">'+t.replace(/</g,'&lt;')+'</pre>');});};
+const DEM=TOUS.filter(c=>c.demande).length;$('lf').innerHTML='<small>'+DEM+' demande(s) d’abonnement en attente · '+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
+$('q').oninput=rendre;
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-pre]');if(!b)return;const x=b.dataset.pre.split('|');$('vc').value=x[0];$('vf').value=x[1];$('vm').value=String(x[2]).replace('.',',');$('vfo').checked=x[3]==='1';$('vc').scrollIntoView({behavior:'smooth',block:'center'});});$('cf2').onclick=()=>{const t=FOND.join('\\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('cf2').textContent='Copié ('+FOND.length+')';},()=>{$('lf').insertAdjacentHTML('beforeend','<pre style="white-space:pre-wrap;user-select:all">'+t.replace(/</g,'&lt;')+'</pre>');});};
 $('b').onclick=()=>fetch('/compte/admin/api/acces',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('e').value,formule:$('f').value,jours:$('j').value||null})}).then(r=>r.json()).then(o=>{$('r').textContent=o.ok?'Fait.':'Refusé : '+o.erreur;charger();});
 function codes(){fetch('/compte/admin/api/codes',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lc').innerHTML='<p><small>Codes ('+o.codes.length+')</small></p>'+o.codes.map(c=>'<div class="c">…'+e(c.indice)+' · '+e(c.formule)+' '+c.jours+' j'+(c.note?' · '+e(c.note):'')+'<br><small>'+(c.utilise_par?'<span class="ok">utilisé par '+e(c.utilise_par)+' le '+String(c.utilise_le).slice(0,10)+'</span>':(Date.parse(c.expire)<Date.now()?'<span class="non">expiré</span>':'libre jusqu’au '+String(c.expire).slice(0,10)))+'</small></div>').join('')});}
 $('cb').onclick=()=>fetch('/compte/admin/api/codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({formule:$('cf').value,jours:$('cj').value||null,validite:$('cv').value||30,nombre:$('cn').value||1,note:$('cno').value})}).then(r=>r.json()).then(o=>{$('cr').textContent=o.ok?o.codes.join('\\n')+'\\n('+o.jours+' jours d’accès, code valable '+o.valide_jours+' jours, une seule utilisation)':'Refusé : '+o.erreur;codes();});
