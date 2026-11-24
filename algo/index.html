@@ -146,6 +146,8 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .filtres{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px}
 .filtres input{flex:1 1 240px;min-height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);color:var(--ink);padding:10px 12px;font:inherit}
 .filtres input::placeholder{color:var(--dim)}
+.rt{margin-top:12px;padding:12px 14px;border:1px solid rgba(212,255,58,.3);border-radius:14px;background:rgba(212,255,58,.04)}.rt h4{margin:0 0 6px;font-family:var(--cond);font-size:1.05rem}.rt p{margin:0;font-size:.9rem;line-height:1.4}.rt .rt-v{display:flex;align-items:baseline;gap:8px;margin:4px 0}.rt .rt-v b{font-family:var(--cond);font-size:2.2rem;line-height:1;color:var(--ball)}.rt .rt-v span{color:var(--dim);font-size:.85rem}.rt-j{position:relative;height:10px;border-radius:5px;background:rgba(var(--wv),.08);margin:6px 0 4px}.rt-j i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:rgba(212,255,58,.55)}.rt-j u{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:2px;text-decoration:none}.rt-leg{display:flex;justify-content:space-between;gap:8px;color:var(--dim);font-size:.75rem}.rt .aide{margin-top:8px;font-size:.78rem;color:var(--dim)}.mk-vu{margin:0 0 6px 8px;font-size:.76rem;color:var(--dim)}html[data-theme="light"] .rt{border-color:rgba(111,149,0,.4);background:rgba(111,149,0,.05)}html[data-theme="light"] .rt-j i{background:rgba(111,149,0,.45)}
+.bt-l{display:grid;grid-template-columns:76px minmax(0,1fr) 56px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.bt-l.peu{opacity:.55}.bt-l .tr{font-family:var(--cond);font-weight:600}.bt-l b{font-family:var(--cond);color:var(--ball)}.bt-l .n{text-align:right;color:var(--dim);font-size:.85rem}.bt-l.tete{color:var(--dim);font-size:.78rem}
 .fiab-bloc{display:flex;flex-direction:column;gap:4px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding-left:4px}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap;min-height:36px}
 .circuits button{min-height:44px;min-width:44px}
 .compte{min-height:1.5em;margin:0 0 8px;color:var(--dim);font-size:.9rem}
@@ -831,6 +833,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     </div>
     <div class="panel" id="bilan-facts"></div>
     <div class="panel" style="margin-top:12px" id="bilan-fiab" hidden></div>
+    <div class="panel" style="margin-top:12px" id="bilan-tranches" hidden></div>
     <div class="panel" style="margin-top:12px;padding:14px 10px 6px" id="bilan-curve"></div>
     <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
   </section>
@@ -989,6 +992,13 @@ const T = {
   sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
   niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
+  rt_titre:'Ce % a-t-il tenu par le passé ?', rt_phrase:(tr,c)=>`Quand l’algo a donné un joueur à ${tr}${c}, ce joueur a gagné`, rt_sur:(b,n)=>`${b} sur ${n} matchs`,
+  rt_annonce:p=>`Trait blanc : ${p} annoncé`, rt_realise:p=>`Barre : ${p} réalisé`, rt_en:c=>` en ${c}`, rt_tous:' (tous circuits)',
+  rt_note:'Historique de l’algo : il ne change pas le % de ce match. Une tranche n’est montrée qu’à partir de 100 matchs ; en dessous, elle reprend tous les circuits, puis s’élargit à 10 points.',
+  rt_secs:(n,g)=>`${n} en ${g===3?'trois':'deux'} sets secs`,
+  rt_ligne:(tr,b,n,c,oui)=>`Déjà vu, côté « ${oui?'oui':'non'} » à ${tr} : l’algo a vu juste ${b} du temps (${n} matchs, ${c})`, rt_c_tous:'tous circuits',
+  bt_titre:'Ce que l’algo annonce, ce qui arrive', bt_sous:'Pour chaque tranche de %, la part des matchs où le favori de l’algo a gagné. Trait blanc : % annoncé en moyenne. Lignes grisées : moins de 100 matchs, trop tôt pour conclure.',
+  bt_annonce:'Annoncé', bt_gagne:'Gagné en vrai', bt_matchs:'Matchs',
   rs_bouton:'Résumé du match', rs_attente:'Le résumé (prévu contre arrivé) s’affiche dès que le résultat et la feuille de match sont reçus.',
   fiab_toutes:'Toutes', fiab_filtre_label:'Niveau de fiabilité', fiab_filtre_plus:'Le tri par fiabilité est réservé à l’accès Plus.',
   fiab_filtre_vide:'Aucun match de ce niveau de fiabilité pour l’instant.',
@@ -1353,6 +1363,13 @@ const T = {
   sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
   niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
+  rt_titre:'Has this % held up before?', rt_phrase:(tr,c)=>`When the algorithm gave a player ${tr}${c}, that player won`, rt_sur:(b,n)=>`${b} of ${n} matches`,
+  rt_annonce:p=>`White mark: ${p} announced`, rt_realise:p=>`Bar: ${p} happened`, rt_en:c=>` on the ${c} tour`, rt_tous:' (all tours)',
+  rt_note:'The algorithm’s track record: it does not change this match’s %. A band is shown only from 100 matches; below that it uses all tours, then widens to 10 points.',
+  rt_secs:(n,g)=>`${n} in straight sets`,
+  rt_ligne:(tr,b,n,c,oui)=>`Track record, “${oui?'yes':'no'}” side at ${tr}: the algorithm was right ${b} of the time (${n} matches, ${c})`, rt_c_tous:'all tours',
+  bt_titre:'What the algorithm announces, what happens', bt_sous:'For each % band, the share of matches the algorithm’s favourite won. White mark: average announced %. Greyed rows: fewer than 100 matches, too early to conclude.',
+  bt_annonce:'Announced', bt_gagne:'Actually won', bt_matchs:'Matches',
   rs_bouton:'Match summary', rs_attente:'The summary (forecast against what happened) appears as soon as the result and match sheet arrive.',
   fiab_toutes:'All', fiab_filtre_label:'Reliability level', fiab_filtre_plus:'Sorting by reliability is part of Plus access.',
   fiab_filtre_vide:'No match at this reliability level yet.',
@@ -1803,7 +1820,7 @@ function rendScenarios(m, sc){
   ].filter(Boolean);
   return `<div class="panel scen"><h3>${esc(fr?'Scénarios du match':'Match scenarios')}</h3>
     <div class="sc-barre" aria-hidden="true">${barre}</div>
-    <ul class="sc-l">${lignes}</ul>
+    <ul class="sc-l">${lignes}</ul>${ligneSetsSecs(m)}
     <div class="es-tuiles sc-tu">${[
       [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
       [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
@@ -2024,8 +2041,13 @@ function rendMarches(k,m){
   const fav = k.favori==='home' ? court(m.home) : court(m.away);
   const bar = (lib,p) => `<div class="mk-l"><span>${esc(lib)}</span><b>${pc(100*p)}</b><i style="width:${(100*p).toFixed(0)}%"></i></div>`;
   const tot = Object.keys(k).filter(x=>x.startsWith('total_plus_')).map(x=>bar(t('mk_total',parseFloat(x.slice(11))),k[x])).join('');
-  const hc = Object.keys(k).filter(x=>x.startsWith('handicap_favori_')).map(x=>bar(t('mk_handicap',fav,parseFloat(x.slice(16))),k[x])).join('');
-  const forme = bar(t('mk_tb'),k.tie_break) + bar(t('mk_decisif'),k.set_decisif) + bar(t('mk_set1',court(m.home)),k.set1_home);
+  const hc = Object.keys(k).filter(x=>x.startsWith('handicap_favori_')).map(x=>bar(t('mk_handicap',fav,parseFloat(x.slice(16))),k[x])
+    + (k.meilleur_des === 5 ? '' : ligneVu(x, m.circuit, k[x]))).join('');
+  // 423 : historique par tranche (règle des 100 matchs). L'historique est lu du côté jugé le plus probable, donc la même
+  // tranche quel que soit le joueur nommé : on passe la ligne telle qu'affichée (vue de home) pour dire « oui » ou « non ».
+  const forme = bar(t('mk_tb'),k.tie_break) + ligneVu('tie_break', m.circuit, k.tie_break)
+    + bar(t('mk_decisif'),k.set_decisif) + ligneVu('set_decisif', m.circuit, k.set_decisif)
+    + bar(t('mk_set1',court(m.home)),k.set1_home) + ligneVu('set1_favori', m.circuit, k.set1_home);
   return `<div class="panel marches"><h3>${esc(t('mk_titre'))}</h3><p class="styles-intro">${esc(t('mk_sous'))} ${esc(t('mk_jeux',k.jeux_moyen))}.</p>
     ${courbeTotaux(k)}<div class="mk-g"><div><h4>${esc(t('mk_titre_total'))}</h4>${tot}</div><div><h4>${esc(t('mk_titre_handicap'))}</h4>${hc}</div><div><h4>${esc(t('mk_titre_forme'))}</h4>${forme}</div></div>
     <p class="styles-note">${esc(t('mk_note'))}</p></div>`;
@@ -3715,6 +3737,7 @@ function rendMdj(){
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
+        ${rendReussite(m)}
         ${rendCartes(m)}
         <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
@@ -3737,7 +3760,7 @@ function rendMdj(){
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       ${rendStylesJeu(m)}
       ${m.scenarios ? rendScenarios(m, sc) : `<div class="duo">
-        ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
+        ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div>${ligneSetsSecs(m)}</div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
       </div>`}
       ${f && lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3>${feuilleMiroir(f, m)}</div>` : ''}
@@ -7340,6 +7363,56 @@ function rendCartes(m){
     <div class="cj-corps"><div class="cj-g">${C.joueurs.map((c,i)=>carteJoueur(c,i,C.surface,femme)).join('')}</div>
     <div>${radarCartes(C.joueurs)}</div></div>${defs}<p class="styles-note">${esc(t('cj_note'))}</p></div>`;
 }
+// 24/11/2026 (paquet 423, Lucas : « fais ça ») — HISTORIQUE PAR TRANCHE (vitrine.reussite_tranches) : pour un %
+// annoncé, ce que l'algo a fait à ce % sur les matchs passés. Lu du côté que l'algo jugeait le plus probable. Règle :
+// 100 matchs au moins ; sinon la même tranche tous circuits ; sinon une tranche de 10 points tous circuits ; sinon rien.
+function reussiteA(proj, circ, p){
+  const R = D && D.reussite_tranches, P = R && R[proj]; if (!P || p == null) return null;
+  const min = R.min_n || 100, c = Math.max(p, 1 - p), i = Math.min(Math.floor((c - .5) * 20 + 1e-9), 9);
+  const k5 = `${50 + 5*i}-${55 + 5*i}`, lib = (a, b) => L==='fr' ? `${a}–${b} %` : `${a}–${b}%`;
+  const fait = (x, a, b, portee) => ({ n: x[0], annonce: x[1], bon: x[2], pct: 100 * x[2] / x[0], tranche: lib(a, b), portee });
+  const x = (P[circ] || {})[k5];
+  if (x && x[0] >= min) return fait(x, 50 + 5*i, 55 + 5*i, circ);
+  const y = (P.TOUS || {})[k5];
+  if (y && y[0] >= min) return fait(y, 50 + 5*i, 55 + 5*i, 'TOUS');
+  const j = i - (i % 2), A = (P.TOUS || {})[`${50 + 5*j}-${55 + 5*j}`] || [0, 0, 0], B = (P.TOUS || {})[`${55 + 5*j}-${60 + 5*j}`] || [0, 0, 0];
+  const n = A[0] + B[0];
+  if (n >= min) return fait([n, (A[0]*A[1] + B[0]*B[1]) / n, A[2] + B[2]], 50 + 5*j, 60 + 5*j, 'TOUS');
+  return null;
+}
+function porteeTxt(r){ return r.portee === 'TOUS' ? t('rt_tous') : t('rt_en', CIRC[r.portee] || r.portee); }
+function rendReussite(m){
+  if (m.verrou || m.p_home == null) return '';
+  const r = reussiteA('vainqueur', m.circuit, m.p_home); if (!r) return '';
+  const pf = Math.max(m.p_home, 1 - m.p_home) * 100;
+  return `<div class="rt"><h4>${esc(t('rt_titre'))}</h4><p>${esc(t('rt_phrase', r.tranche, porteeTxt(r)))}</p>
+    <div class="rt-v"><b>${pc(r.pct)}</b><span>${esc(t('rt_sur', fmt(r.bon), fmt(r.n)))}</span></div>
+    <div class="rt-j" aria-hidden="true"><i style="width:${Math.min(100, r.pct).toFixed(1)}%"></i><u style="left:${pf.toFixed(1)}%"></u></div>
+    <div class="rt-leg"><span>${esc(t('rt_annonce', pc0(pf/100)))}</span><span>${esc(t('rt_realise', pc(r.pct)))}</span></div>
+    <p class="aide">${esc(t('rt_note'))}</p></div>`;
+}
+function ligneVu(proj, circ, p, avant){
+  const r = reussiteA(proj, circ, p); if (!r) return '';
+  const c = r.portee === 'TOUS' ? t('rt_c_tous') : (CIRC[r.portee] || r.portee);
+  return `<p class="mk-vu">${avant ? esc(avant) + ' — ' : ''}${esc(t('rt_ligne', r.tranche, pc(r.pct), fmt(r.n), c, p >= .5))}</p>`;
+}
+// 423 : sets secs du favori (ou, de l'autre côté, l'outsider prend au moins un set)
+function ligneSetsSecs(m){
+  const S = m.sets || {}, g = S['3-0'] != null || S['0-3'] != null ? 3 : 2, favH = m.p_home >= .5;
+  const q = S[favH ? `${g}-0` : `0-${g}`]; if (q == null) return '';
+  return ligneVu('sets_secs_favori', m.circuit, q, t('rt_secs', court(favH ? m.home : m.away), g));
+}
+function rendBilanTranches(T){
+  const el = document.getElementById('bilan-tranches'); if (!el) return;
+  const k = Object.keys(T || {}).sort((a, b) => parseInt(a) - parseInt(b));
+  el.hidden = !k.length; if (!k.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<h3 class="cv-h" style="margin-top:0">${esc(t('bt_titre'))}</h3><p class="cv-p">${esc(t('bt_sous'))}</p>
+    <div class="bt-l tete"><span>${esc(t('bt_annonce'))}</span><span>${esc(t('bt_gagne'))}</span><span class="n">${esc(t('bt_matchs'))}</span></div>
+    ${k.map(x => { const v = T[x], [a, b] = x.split('-');
+      return `<div class="bt-l${v.n < 100 ? ' peu' : ''}"><span class="tr">${esc(L==='fr' ? `${a}–${b} %` : `${a}–${b}%`)}</span>
+        <span><b>${pc(v.bon_pct)}</b><span class="rt-j" aria-hidden="true" style="display:block;margin:3px 0 0"><i style="width:${Math.min(100, v.bon_pct)}%"></i><u style="left:${v.annonce_pct}%"></u></span></span>
+        <span class="n">${fmt(v.n)}</span></div>`; }).join('')}`;
+}
 // 24/11/2026 (paquet 422, Lucas : « les abonnés voient les boutons des posts X ; juste un bouton résumé du match pour
 // les résultats, pour comparer ce qui était prévu et ce qui est arrivé »). Les boutons X restent à l'administrateur.
 function ouvrirResume(m){
@@ -7778,7 +7851,7 @@ function rendBilan(){
   document.querySelectorAll('.bilan-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.bc===circBilan)));
   document.getElementById('bilan-sous').textContent = t('bilan_sous', B.depuis || '2026-10-21');
   const facts = document.getElementById('bilan-facts');
-  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; rendBilanFiab(null); document.getElementById('bilan-curve').hidden = true; document.getElementById('bilan-res').innerHTML = ''; document.getElementById('bilan-more').hidden = true; return; }
+  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; rendBilanFiab(null); rendBilanTranches(null); document.getElementById('bilan-curve').hidden = true; document.getElementById('bilan-res').innerHTML = ''; document.getElementById('bilan-more').hidden = true; return; }
   const circ = Object.entries(B.par_circuit||{}).sort((a,b)=>b[1].n-a[1].n).map(([c,v])=>`${CIRC[c]||c} ${pc(v.pct)} (${fmt(v.n)})`).join(' · ');
   facts.innerHTML = `<div class="scores">
     <div><div class="k">${esc(t('matchs_juges'))}</div><div class="v">${fmt(g.n)}</div></div>
@@ -7786,6 +7859,7 @@ function rendBilan(){
     <div><div class="k">${esc(t('brier'))}</div><div class="v">${dec(g.brier,3)}</div><div class="k">${esc(t('brier_aide'))}</div></div>
   </div>${C ? '' : `<div class="circ"><span style="color:var(--dim)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`}`;
   rendBilanFiab(C ? C.par_fiabilite : B.par_fiabilite);
+  rendBilanTranches(C ? C.tranches : B.tranches);
   const cv = courbeSvg((C ? C.courbe : B.courbe)||[]);
   const cb = document.getElementById('bilan-curve'); cb.innerHTML = cv; cb.hidden = !cv;
   const res = (C ? C.derniers : B.derniers) || [];

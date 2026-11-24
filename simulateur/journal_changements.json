@@ -2319,6 +2319,13 @@
    "paquet": 422,
    "quoi": "FICHE DU MATCH : RÉSUMÉ POUR TOUS, POSTS X POUR L'ADMINISTRATEUR SEUL (paquet 422, Lucas : « les abonnés voient les boutons des posts X ; il faudrait juste un bouton résumé du match pour les résultats, pour comparer ce qui était prévu et ce qui est arrivé »). Les boutons « Générer le post X » (avant match, analyse complète, résultat) et les boutons « Image pour X » (tiroirs, duel des styles, résultat) ne s'affichent plus qu'au compte administrateur. Nouveau bouton « Résumé du match » dès que le match a commencé : vainqueur, score, sets, durée, lignes de l'algo et feuille de match, prévu contre arrivé. Correction au passage : le titre et la note de ce bilan affichaient le texte de « Forme et face-à-face » (deux textes portaient le même nom).",
    "garde_fou": "Rien ne change dans les % ni dans les données envoyées ; seul l'affichage des boutons dépend du compte. Tests : tests/test_resume_match.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "site",
+   "paquet": 423,
+   "quoi": "CE QUE L'ALGO A FAIT À CE % (paquet 423, Lucas : « fais ça »). Fiche du match : un encadré « Ce % a-t-il tenu par le passé ? » sous le % (ex. : quand l'algo a donné un joueur à 65–70 %, ce joueur a gagné 66,8 % du temps, 155 sur 232 matchs), et une ligne « Déjà vu » sous le 1er set, le set décisif, le tie-break, les écarts de jeux du favori et les sets secs. Bilan, pour tout le monde : un tableau « Ce que l'algo annonce, ce qui arrive », tranche de 5 points par tranche, avec le % annoncé en trait blanc, sur toute la période ou 30 jours, par circuit. Pas d'historique sous les totaux de jeux tant que le biais Challenger n'est pas corrigé (étude 421). La liste des matchs ne change pas.",
+   "garde_fou": "Historique seulement : rien ne change dans les %. Une tranche n'est montrée qu'à partir de 100 matchs ; en dessous, la même tranche tous circuits, puis une tranche de 10 points tous circuits, sinon rien. Lu du côté que l'algo jugeait le plus probable. Tests : tests/test_reussite_tranches.py."
   }
  ]
 }

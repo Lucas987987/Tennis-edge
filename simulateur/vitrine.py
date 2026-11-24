@@ -463,6 +463,52 @@ def calibration(points, n_min=20):
     return out
 
 
+def _tranches(points, min_n=0):
+    """24/11/2026 (paquet 423, Lucas : « fais ça ») : réussite par tranche de 5 points de confiance. Chaque point
+    (p_oui, y) est lu du côté que l'algo jugeait le plus probable : confiance = max(p, 1 − p), « bon » = ce côté est
+    arrivé. {« 65-70 » : {n, annonce_pct, bon, bon_pct}}. La page n'affiche une tranche qu'à partir de 100 matchs."""
+    T = {}
+    for p, y in points:
+        c = max(p, 1 - p)
+        i = min(int((c - 0.5) * 20 + 1e-9), 9)
+        T.setdefault(f'{50 + 5 * i}-{55 + 5 * i}', []).append((c, int((p >= 0.5) == (y == 1))))
+    out = {}
+    for k in sorted(T, key=lambda x: int(x.split('-')[0])):
+        L = T[k]
+        if len(L) >= min_n:
+            b = sum(x for _, x in L)
+            out[k] = {'n': len(L), 'annonce_pct': round(100 * sum(c for c, _ in L) / len(L), 1), 'bon': b,
+                      'bon_pct': round(100 * b / len(L), 1)}
+    return out
+
+
+# Projections montrées avec leur historique sur la fiche (paquet 423) ; les totaux de jeux attendent la correction du
+# biais Challenger (étude 421 : annoncés 3 à 4 points trop bas).
+PROJ_TRANCHES = ('set1_favori', 'sets_secs_favori', 'set_decisif', 'tie_break')
+
+
+def reussite_tranches(racine, B):
+    """Historique par tranche pour la fiche : vainqueur (même source que le bilan public) et projections de l'étude 421
+    (figées avant le match). {projection: {circuit | « TOUS » : {tranche: [n, % annoncé, nombre de bons]}}} (compact)."""
+    def compact(T):
+        return {k: [x['n'], x['annonce_pct'], x['bon']] for k, x in (T or {}).items()}
+    out = {'min_n': 100, 'vainqueur': dict({'TOUS': compact((B or {}).get('tranches'))},
+                                           **{c: compact(v.get('tranches')) for c, v in ((B or {}).get('par_circuit') or {}).items()})}
+    try:
+        sys.path.insert(0, ICI)
+        import etude_projections_tranches as EP
+        par = {}
+        for nom, circ, p, y in EP.evenements(racine):
+            if nom in PROJ_TRANCHES or nom.startswith('handicap_favori_') and not nom.endswith('_bo5'):
+                for c in ('TOUS', circ):
+                    par.setdefault(nom, {}).setdefault(c, []).append((p, y))
+        for nom, v in par.items():
+            out[nom] = {c: compact(_tranches(pts)) for c, pts in v.items()}
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::historique des projections non calculé : {type(e).__name__}')
+    return out
+
+
 def _par_fiabilite(points_niv):
     """24/11/2026 (paquet 420, Lucas : « calcule le % de réussite par niveau de fiabilité ») : par niveau ANNONCÉ avant
     le match (tel qu'enregistré, jamais recalculé) : vainqueurs trouvés, % annoncé en moyenne pour le favori, n.
@@ -512,9 +558,9 @@ def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
                 jours_c.setdefault(jour_paris(x['debut']), []).append((x['p_home'], y))
         par_circuit[c] = dict(_mesures(v), courbe=_courbe(jours_c),
                               derniers=[x for x in lignes if x['circuit'] == c][:40],
-                              par_fiabilite=_par_fiabilite(par_cf.get(c) or {}))
+                              par_fiabilite=_par_fiabilite(par_cf.get(c) or {}), tranches=_tranches(v))
     return {'depuis': debut, 'global': _mesures(points), 'par_circuit': par_circuit,
-            'par_fiabilite': _par_fiabilite(par_f),
+            'par_fiabilite': _par_fiabilite(par_f), 'tranches': _tranches(points),
             'calibration': calibration(points), 'courbe': _courbe(par_jour), 'derniers': lignes[:40]}
 
 
@@ -1078,13 +1124,16 @@ def construire(racine, maintenant=None):
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
+    bilan_tout = bilan(resultats)
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
             'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
-            'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
+            'matchs': lignes, 'bilan': bilan_tout, 'apres_match': apres,
+            # 24/11/2026 (paquet 423) : historique de l'algo par tranche de %, affiché sur la fiche (règle : 100 matchs)
+            'reussite_tranches': reussite_tranches(racine, bilan_tout),
             # 23/11/2026 (paquet 389, Lucas) : le même bilan sur les 30 derniers jours (le modèle d'aujourd'hui)
             'bilan_30j': bilan(resultats, max(DEBUT_BILAN, (maintenant - dt.timedelta(days=29)).astimezone(_paris()).date().isoformat())),
             'controle_scenarios': controle_scenarios(racine),
