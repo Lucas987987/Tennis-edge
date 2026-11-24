@@ -1104,6 +1104,10 @@ const T = {
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
   plus_bientot:"Paiement par virement · crée ton compte, puis fais ta demande d'abonnement ici.",
+  cp_abo_titre:'Mon abonnement',
+  cp_abo_fond:d=>`Tarif fondateur : garde-le en payant le mois suivant au plus tard le ${d}.`,
+  cp_abo_dem:(f, m, d) => `Demande en cours : ${f}, ${m} (envoyée le ${d}).`, cp_abo_ref:r=>`Référence de virement : ${r}`,
+  cp_abo_voir:'Voir les instructions de paiement',
   ab_titre:"S'abonner", ab_texte:"Choisis ta durée. Paiement par virement ; rien ne se renouvelle tout seul. Les instructions t'arrivent aussi par e-mail.",
   ab_lib:{semaine:'1 semaine', mois:'1 mois', trimestre:'3 mois', annee:'1 an'}, ab_par:x=>`soit ${x} par mois`,
   ab_fond:'9,99 € si ta place fondateur est parmi les 100 premières', ab_go:'Envoyer ma demande',
@@ -1458,6 +1462,10 @@ const T = {
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
   plus_bientot:'Payment by bank transfer · create your account, then request your subscription here.',
+  cp_abo_titre:'My subscription',
+  cp_abo_fond:d=>`Founder price: keep it by paying for the next month no later than ${d}.`,
+  cp_abo_dem:(f, m, d) => `Pending request: ${f}, ${m} (sent on ${d}).`, cp_abo_ref:r=>`Transfer reference: ${r}`,
+  cp_abo_voir:'See payment instructions',
   ab_titre:'Subscribe', ab_texte:'Choose your duration. Payment by bank transfer; nothing renews by itself. Instructions are also emailed to you.',
   ab_lib:{semaine:'1 week', mois:'1 month', trimestre:'3 months', annee:'1 year'}, ab_par:x=>`i.e. ${x} a month`,
   ab_fond:'€9.99 if your founder spot is among the first 100', ab_go:'Send my request',
@@ -8485,6 +8493,19 @@ function fondateurAction(reserver, bouton){
     const e = document.getElementById('fd-etat'); if (e) e.insertAdjacentHTML('beforeend', `<p class="msg ko" style="margin:8px 0 0">${esc(erreurCompte(o.erreur))}</p>`);
   });
 }
+// 24/11/2026 (paquet 413, Lucas) — « Mon compte » : formule et date de fin, tarif fondateur (date limite pour le
+// garder), demande en cours avec un lien vers les instructions, référence de virement. Les factures suivent.
+function blocMonAbonnement(){
+  if (!COMPTE || !COMPTE.verifie) return '';
+  const lib = t('ab_lib') || {}, jj = d => String(d).slice(0,10).split('-').reverse().join('/'), L2 = [];
+  if (COMPTE.paye && COMPTE.fondateur_tarif && !COMPTE.fondateur_perdu && COMPTE.jusqu_au)
+    L2.push(t('cp_abo_fond', jj(new Date(Date.parse(COMPTE.jusqu_au) + 7 * 86400e3).toISOString())));
+  if (COMPTE.demande) L2.push(t('cp_abo_dem', lib[COMPTE.demande.formule] || COMPTE.demande.formule, euros(COMPTE.demande.montant), jj(COMPTE.demande.le)));
+  if (!L2.length && !COMPTE.paye) return '';
+  L2.push(t('cp_abo_ref', COMPTE.reference));
+  return `<div style="margin:12px 0 0"><p style="margin:0 0 4px"><b>${esc(t('cp_abo_titre'))}</b></p>${L2.map(x => `<p style="margin:2px 0">${esc(x)}</p>`).join('')}
+    ${COMPTE.demande && TARIFS_SITE ? `<button type="button" class="lien" data-plus="abo">${esc(t('cp_abo_voir'))}</button>` : ''}</div>`;
+}
 function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
 function ouvrirCompte(vue, msg, ok, jeton){
   const boite = document.getElementById('compte-boite'), fond = document.getElementById('compte-fond');
@@ -8496,6 +8517,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
     h = tete('cp_t_moi') + `<p style="margin:0">${esc(COMPTE.email)}</p><p class="msg ${COMPTE.abonne?'ok':''}">${esc(COMPTE.abonne ? t('cp_moi_plus', COMPTE.jusqu_au ? String(COMPTE.jusqu_au).slice(0,10) : null) : t(TARIFS_SITE && COMPTE.verifie ? 'cp_moi_libre_abo' : 'cp_moi_libre'))}</p>${!COMPTE.abonne && TARIFS_SITE && COMPTE.verifie ? `<p style="margin:8px 0 0"><button type="button" class="btn go" data-plus="abo">${esc(t('ab_cta'))}</button></p>` : ''}
       <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
       <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
+      ${blocMonAbonnement()}
       ${(COMPTE.factures||[]).length ? `<p style="margin:12px 0 4px"><b>${esc(t('cp_factures'))}</b></p>` + COMPTE.factures.map(n => `<a class="lien" target="_blank" rel="noopener" href="/compte/api/facture?n=${encodeURIComponent(n)}">${esc(n)}</a>`).join('') : ''}
       <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>
       <button type="button" class="lien" data-cp="mdp">${esc(t('cp_l_mdp'))}</button>

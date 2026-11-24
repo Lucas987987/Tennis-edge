@@ -80,7 +80,7 @@ function vueCompte(u) {
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
     reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
     acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.ouverture_envoyee ? u.fondateur_place || null : null,
-    fondateur_perdu: !!u.fondateur_perdu,
+    fondateur_perdu: !!u.fondateur_perdu, fondateur_tarif: !!(u.acces || {}).fondateur_tarif,
     demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null };
 }
 // 405 : coordonnées de paiement, montrées dans la section Plus au seul fondateur prévenu de l'ouverture
