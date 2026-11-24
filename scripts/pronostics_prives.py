@@ -72,22 +72,42 @@ def commence(debut, maintenant):
 
 
 # --------------------------------------------------------------------------------------------- versions publiques
-def public_log(texte, maintenant):
+# 24/11/2026 (paquet 416, contrôle des fuites) : un match RETARDÉ (début planifié passé, mais le programme du site
+# annonce une heure plus tardive) n'a pas commencé : son pronostic restait public jusqu'à 2–3 h avant le vrai début.
+# `reports` = {uid: début le plus récent connu (site complet)} ; le match n'est public qu'une fois CE début passé.
+def _demarre(uid, debut, maintenant, reports):
+    if not commence(debut, maintenant):
+        return False
+    r = (reports or {}).get(uid)
+    return not r or commence(r, maintenant)
+
+
+def public_log(texte, maintenant, reports=None):
     out = []
     for l in texte.splitlines():
         if not l.strip():
             continue
         try:
             r = json.loads(l)
-            if commence(r.get('debut') or r.get('debut_utc'), maintenant):     # 414 : journaux figés (debut_utc)
+            if _demarre(r.get('uid'), r.get('debut') or r.get('debut_utc'), maintenant, reports):   # 414 : debut_utc
                 out.append(l)
         except ValueError:
             continue
     return ''.join(x + '\n' for x in out)
 
 
-def public_fiches(doc, maintenant):
-    return {u: v for u, v in (doc or {}).items() if isinstance(v, dict) and commence(v.get('debut'), maintenant)}
+def public_fiches(doc, maintenant, reports=None):
+    return {u: v for u, v in (doc or {}).items() if isinstance(v, dict) and _demarre(u, v.get('debut'), maintenant, reports)}
+
+
+def reports_du_site(doc):
+    """{uid: début annoncé par le site complet} (debut_utc, sinon debut) — sert à repérer les matchs retardés."""
+    out = {}
+    for m in (doc or {}).get('matchs') or []:
+        d = m.get('debut_utc') or m.get('debut')
+        if m.get('uid') and d:
+            out[m['uid']] = str(d).replace(' ', 'T')[:16]
+    return out
 
 
 def public_donnees(doc, maintenant=None):
@@ -110,11 +130,12 @@ def _ecrire_gz(p, texte):
 def rendre_public(racine, maintenant=None):
     """Réécrit les copies locales en version publique ; renvoie {fichier: (lignes gardées, lignes au total)}."""
     maintenant = maintenant or _maintenant()
-    bilan = {}
+    bilan, reports = {}, {}
     p = os.path.join(racine, DONNEES)
     if os.path.exists(p):
         with open(p, encoding='utf-8') as f:
             doc = json.load(f)
+        reports = reports_du_site(doc)                 # 416 : AVANT la réécriture publique (site complet)
         pub = public_donnees(doc, maintenant)
         with open(p, 'w', encoding='utf-8') as f:
             json.dump(pub, f, ensure_ascii=False, separators=(',', ':'))
@@ -122,25 +143,25 @@ def rendre_public(racine, maintenant=None):
     p = os.path.join(racine, LOG)
     if os.path.exists(p):
         t = open(p, encoding='utf-8').read()
-        pub = public_log(t, maintenant)
+        pub = public_log(t, maintenant, reports)
         open(p, 'w', encoding='utf-8').write(pub)
         bilan[LOG] = (pub.count('\n'), sum(1 for l in t.splitlines() if l.strip()))
     for p in sorted(glob.glob(os.path.join(racine, JOURNAL, '20*.jsonl.gz'))):
         t = _lire_gz_lignes(p)
-        pub = public_log(t, maintenant)
+        pub = public_log(t, maintenant, reports)
         if pub != t:
             _ecrire_gz(p, pub)
         bilan[os.path.relpath(p, racine)] = (pub.count('\n'), sum(1 for l in t.splitlines() if l.strip()))
     for p in sorted(glob.glob(os.path.join(racine, JOURNAL, '*_v1.jsonl'))):      # 414 : journaux figés
         t = open(p, encoding='utf-8').read()
-        pub = public_log(t, maintenant)
+        pub = public_log(t, maintenant, reports)
         if pub != t:
             open(p, 'w', encoding='utf-8').write(pub)
         bilan[os.path.relpath(p, racine)] = (pub.count('\n'), sum(1 for l in t.splitlines() if l.strip()))
     for p in sorted(glob.glob(os.path.join(racine, FICHES, '20*.json.gz'))):
         with gzip.open(p, 'rt', encoding='utf-8') as f:
             doc = json.load(f)
-        pub = public_fiches(doc, maintenant)
+        pub = public_fiches(doc, maintenant, reports)
         if len(pub) != len(doc):
             with gzip.open(p, 'wt', encoding='utf-8') as f:
                 json.dump(pub, f, ensure_ascii=False, separators=(',', ':'))

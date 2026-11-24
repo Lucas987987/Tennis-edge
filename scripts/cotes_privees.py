@@ -62,6 +62,9 @@ GROUPES_ENTIERS = ('mouvements', 'resultats_reglement',      # 351 : groupes de 
                    'kalshi', 'courbes_absences', 'value', 'book_lag', 'calibration', 'direct', 'figes')   # 352
 SITE_DIRECT = ('direct_matchs.json', 'live_odds.json', 'matches_oddspapi_meta.json')
 PREFIXE_SITE_DIRECT = 'prive/site/Tennis_Edge_Lab/direct/'
+# 24/11/2026 (paquet 416, contrôle des fuites) : la probabilité tirée des cotes pour les matchs à venir (ligne « Cote
+# Pinnacle » du Lab) n'est plus commitée dans le dépôt public : elle part seulement au site privé du Lab.
+SITE_LAB = (('Tennis_Edge_Lab/live/pronostics_marche.json', 'prive/site/Tennis_Edge_Lab/live/pronostics_marche.json'),)
 EXCLUSIONS = ['/closing_lines.json', '/matches_oddspapi.json', '/live_odds.json', '/closing_lines/',
               '/moves_detail.csv', '/moves_detail_hist.csv', '/moves_detail_live.csv', '/suivi_direct/resultats.json',
               '/resultats_oddspapi.json']
@@ -176,19 +179,19 @@ def retirer_entiers(r2, groupe):
 def site_direct(r2, racine='.'):
     """(envoyés, inchangés) — copies de l'onglet Direct du Lab dans le site privé (servi après connexion)."""
     envoyes = inchanges = 0
-    for n in SITE_DIRECT:
+    for n, cle in [(n, PREFIXE_SITE_DIRECT + n) for n in SITE_DIRECT] + list(SITE_LAB):
         p = os.path.join(racine, n)
         if not os.path.exists(p):
             continue
         data = open(p, 'rb').read()
         if not data:
             continue
-        got = r2.get_with_etag(PREFIXE_SITE_DIRECT + n)
+        got = r2.get_with_etag(cle)
         if got is not None and got[0] == data:
             inchanges += 1
             continue
         try:
-            r2.put(PREFIXE_SITE_DIRECT + n, data, content_type='application/json; charset=utf-8')
+            r2.put(cle, data, content_type='application/json; charset=utf-8')
             envoyes += 1
         except Exception:  # noqa: BLE001
             pass

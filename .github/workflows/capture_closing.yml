@@ -103,6 +103,9 @@ jobs:
       - name: État chaud — rapatrier de R2
         run: python scripts/etat_chaud.py pull || true
 
+      # 24/11/2026 (paquet 416, Lucas : « stocker sur Cloudflare comme le reste ») : la partition chaude du jour vient de R2
+      - name: Journaux chauds — rapatrier de R2 (alertes)
+        run: python scripts/journaux_chauds.py pull alertes || true
       - name: Fenêtre de cache (30 min)
         id: bucket
         run: echo "value=$(( $(date -u +%s) / 1800 ))" >> "$GITHUB_OUTPUT"
@@ -164,6 +167,9 @@ jobs:
           python3 scripts/cotes_privees.py retirer || true
 
 
+      - name: Journaux chauds — envoyer à R2 (alertes)
+        if: always()
+        run: python scripts/journaux_chauds.py push alertes || true
       - name: Commit (robuste — persiste TOUTE la capture)
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
@@ -191,6 +197,8 @@ jobs:
           git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
           # 04/11/2026 : en mode ETAT_CHAUD=on, les fichiers chauds ne partent dans git qu'une fois toutes les 2 h
           python scripts/etat_chaud.py garde || true
+          # 416 : partition chaude dans git toutes les ~2 h seulement (R2 est à jour à chaque passage)
+          python scripts/journaux_chauds.py garde alertes || true
           echo "--- fichiers en attente de commit ---"
           git status --short
           # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
