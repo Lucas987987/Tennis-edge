@@ -2305,6 +2305,13 @@
    "paquet": 420,
    "quoi": "FIABILITÉ : TRI ET RÉUSSITE PAR NIVEAU (paquet 420, Lucas : « trier par niveau de fiabilité » et « calculer le % de réussite par niveau »). Dans la liste des matchs, sous la recherche et les circuits, un choix Toutes / Solide / Correct / Prudent / Fragile ne garde que les matchs du niveau choisi (sans accès Plus, la page dit que ce tri est réservé à l'accès Plus). Dans le bilan, un tableau « Réussite par niveau de fiabilité » : pour chaque niveau, le % annoncé en moyenne pour le favori et les vainqueurs trouvés, sur toute la période ou les 30 derniers jours, tous circuits ou par circuit. Au 24/11 : solide 66,5 % (275 matchs, 64,7 % annoncé), correct 66,4 % (559, 65,1 %), prudent 69,8 % (248, 71,1 %), fragile 65,5 % (345, 68,9 %).",
    "garde_fou": "Niveau tel qu'annoncé avant le match, jamais recalculé. Descriptif : la fiabilité dit si le % annoncé se réalise, pas si le favori gagne ; un niveau sous 100 matchs est grisé avec « trop tôt pour conclure ». Le choix du match du jour et les % ne changent pas. Tests : tests/test_bilan_fiabilite.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 421,
+   "quoi": "ÉTUDE : LES PROJECTIONS DU MATCH TIENNENT-ELLES ? (paquet 421, Lucas : « lance l'étude »). Pour chaque projection d'une fiche (vainqueur, 1er set, sets secs, set décisif, tie-break, écart de jeux du favori, total de jeux), quand l'algo annonce X %, est-ce arrivé X % du temps, tranche de 5 points par tranche, et l'algo fait-il mieux qu'une annonce naïve (la fréquence moyenne de l'événement) ? Nouveau workflow « Étude - projections du match par tranche de % », chaque lundi et à la demande ; rapport simulateur/rapport_projections_tranches.json. Premier passage sur 1 392 matchs : les 16 projections battent l'annonce naïve ; en Challenger, le total de jeux est annoncé 3 à 4 points trop bas en moyenne ; ATP et WTA encore trop peu de matchs par tranche pour juger.",
+   "garde_fou": "Projections figées avant le match, jamais recalculées ; une tranche n'est jugée qu'à partir de 100 matchs. Étude descriptive : rien ne change dans l'algo ni sur le site. Tests : tests/test_etude_projections_tranches.py."
   }
  ]
 }
