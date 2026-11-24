@@ -96,6 +96,49 @@ def lignes_biais(B):
     return out
 
 
+SEUIL_GROS_FAVORI = 0.90
+PEU_DOCUMENTE = 60
+
+
+def _principale(m):
+    pr = m.get('premier') or {}
+    k = next((x for x in ('combinaison', 'simulation', 'stats') if pr.get(x)), None)
+    return pr[k] if k else None
+
+
+def repere_gros_favoris(Tous, seuil=SEUIL_GROS_FAVORI):
+    """24/11/2026 — à côté des plus grosses erreurs : sur TOUS les matchs suivis (ITF, abandons et forfaits exclus),
+    combien de favoris annoncés à 90 % ou plus ont perdu, et combien de défaites ces % annonçaient. Un favori à 95 %
+    perd une fois sur vingt : quelques défaites à 96–99 % sont attendues ; c'est l'écart au nombre attendu qui compte."""
+    n, perdus, attendu = 0, 0, 0.0
+    for m in Tous:
+        v = _principale(m)
+        if not v or v.get('vainqueur_juste') is None or v.get('p_home') is None:
+            continue
+        pf = max(v['p_home'], 1 - v['p_home'])
+        if pf < seuil:
+            continue
+        n += 1
+        attendu += 1 - pf
+        perdus += v['vainqueur_juste'] is False
+    if not n:
+        return None
+    return (f"• Repère : depuis le début du suivi, {n} favori{'s' if n > 1 else ''} annoncé{'s' if n > 1 else ''} à {100 * seuil:.0f} % ou plus, {perdus} battu{'s' if perdus > 1 else ''} "
+            f"pour {attendu:.1f} défaites attendues".replace('.', ',') + (" (moins de 30 matchs : ne pas conclure)" if n < 30 else ''))
+
+
+def vainqueur_peu_documente(m, seuil=PEU_DOCUMENTE):
+    """« · vainqueur peu documenté (N matchs) » quand le joueur qui a gagné avait moins de 60 matchs classés."""
+    mj = m.get('matchs_joues')
+    g = (m.get('reel') or {}).get('gagnant')
+    if not isinstance(mj, (list, tuple)) or len(mj) != 2 or g not in ('home', 'away'):
+        return ''
+    n = mj[0 if g == 'home' else 1]
+    if not isinstance(n, (int, float)) or n >= seuil:
+        return ''
+    return f" · vainqueur peu documenté ({'aucun match classé' if n <= 0 else f'{int(n)} match' + ('s' if n > 1 else '')})"
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
     R = lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
@@ -138,7 +181,11 @@ def construire(racine, maintenant=None):
             for p, m in err[:3]:
                 perdant = m['away'] if (m.get('reel') or {}).get('gagnant') == 'home' else m['home']
                 L.append(f"• {perdant} annoncé à {100 * p:.0f} %, battu ({m.get('tournoi', '')}"
-                         + (f", {m['reel']['score']}" if (m.get('reel') or {}).get('score') else '') + ")")
+                         + (f", {m['reel']['score']}" if (m.get('reel') or {}).get('score') else '') + ")"
+                         + vainqueur_peu_documente(m))
+            rep = repere_gros_favoris(Tous)
+            if rep:
+                L.append(rep)
     else:
         L.append("\n🎾 Aucun match joué avec son résultat cette semaine (enregistrement « prédit / réel » en cours).")
     ad = F.get('adoptes') or []

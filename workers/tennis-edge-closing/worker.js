@@ -341,6 +341,57 @@ export function decisionPeriodique(runs, workflowFile, periodeMin, nowMs) {
   return { fire: true, raison: `dernier run il y a ${isFinite(ilYa) ? Math.round(ilYa) : '∞'} min` };
 }
 
+// 24/11/2026 (paquet 400, Lucas : « rééquilibrer le quota ») — FENÊTRES APRÈS LE RENOUVELLEMENT DU QUOTA TENNISAPI.
+// Mesuré du 22 au 24/11 (états des collectes) : le quota repasse à 15 000 chaque jour vers 07 h 10–07 h 40 UTC, puis les
+// collectes le font tomber vers 7 000 en quelques heures. Les collectes de rattrapage (point par point ITF, réserve
+// 7 000 ; historique ATP/WTA, réserve 9 000) lancées « toutes les 4 ou 8 h » tombaient presque toujours APRÈS : rien à
+// prendre (ITF point par point : 656 jours de retard le 24/11). Elles sont désormais AUSSI lancées à heure fixe, juste
+// après le renouvellement, dans l'ordre de priorité fixé le 22/11 (paquet 361) : ITF d'abord, historique ensuite.
+// Règle : une fenêtre « HH:MM » UTC déclenche le workflow si l'heure est passée et qu'aucun run n'a été créé depuis
+// cette heure aujourd'hui (ni run en cours). Un passage sans surplus de quota ne coûte qu'une requête.
+export function minutesUTC(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || '').trim());
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+export function decisionFenetres(runs, workflowFile, fenetres, nowMs) {
+  const { bloquant } = runsBloquants(runs, workflowFile, nowMs);
+  if (bloquant) return { fire: false, raison: 'run en cours ou en file' };
+  const d = new Date(nowMs), minuit = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  const passees = (fenetres || []).map(minutesUTC).filter(m => m !== null && minuit + m * 60000 <= nowMs);
+  if (!passees.length) return { fire: false, raison: 'aucune fenêtre passée aujourd’hui' };
+  const debut = minuit + Math.max(...passees) * 60000;
+  const dates = (runs || []).map(r => Date.parse(r.created_at || '')).filter(t => !isNaN(t));
+  if (dates.some(t => t >= debut)) return { fire: false, raison: 'fenêtre déjà servie' };
+  if (nowMs - debut > 45 * 60000) return { fire: false, raison: 'fenêtre passée depuis plus de 45 min' };
+  return { fire: true, raison: `fenêtre de ${new Date(debut).toISOString().slice(11, 16)} UTC` };
+}
+
+async function planifierFenetres(cfg) {
+  const { owner, repo, token, ts, nom, evenement, workflowFile, fenetres, messages } = cfg;
+  let runs;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/`
+      + `${encodeURIComponent(workflowFile)}/runs?per_page=10`, {
+      headers: { 'Accept': 'application/vnd.github+json', 'Authorization': `Bearer ${token}`,
+        'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'tennis-edge-worker' },
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    runs = ((await r.json()) || {}).workflow_runs || [];
+  } catch (e) {
+    messages.push(`${nom} (fenêtre): API injoignable (${e}), rien lancé.`);
+    return false;
+  }
+  const d = decisionFenetres(runs, workflowFile, fenetres, Date.now());
+  if (!d.fire) return false;
+  try {
+    messages.push(await dispatch(owner, repo, token, evenement, { fenetre: true, triggered_at: ts, raison: d.raison }));
+    return true;
+  } catch (e) {
+    messages.push(`Erreur dispatch ${evenement}: ${e}`);
+    return false;
+  }
+}
+
 async function planifierPeriodique(cfg) {
   const { owner, repo, token, ts, nom, evenement, workflowFile, periodeMin, messages } = cfg;
   let runs;
@@ -553,11 +604,17 @@ async function run(env) {
   // 22/11 (ajoutés le matin, aucun passage dans la journée) : le worker les lance, toutes les 8 h par défaut. Chacun
   // ne prend que le surplus du quota TennisApi (il s'arrête sous 7 000 requêtes restantes). Désactivables : *_ENABLED=0.
   if ((env.HISTORIQUE_ENABLED || '1') !== '0') {
-    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Historique', evenement: 'historique_feuilles',
+    // 400 : après les fenêtres ITF (priorité du paquet 361), une fenêtre à 09:50 UTC par défaut
+    const lanceH = await planifierFenetres({ owner, repo, token, ts, messages, nom: 'Historique', evenement: 'historique_feuilles',
+      workflowFile: 'historique_feuilles.yml', fenetres: String(env.HISTORIQUE_FENETRES || '09:50').split(',') });
+    if (!lanceH) await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Historique', evenement: 'historique_feuilles',
       workflowFile: 'historique_feuilles.yml', periodeMin: Math.max(120, Number(env.HISTORIQUE_PERIODE_MIN) || 480) });
   }
   if ((env.ITF_POINTS_ENABLED || '1') !== '0') {
-    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
+    // 400 : d'abord les fenêtres juste après le renouvellement du quota (07:50 et 08:50 UTC par défaut)
+    const lance = await planifierFenetres({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
+      workflowFile: 'itf_points.yml', fenetres: String(env.ITF_POINTS_FENETRES || '07:50,08:50').split(',') });
+    if (!lance) await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
       workflowFile: 'itf_points.yml', periodeMin: Math.max(120, Number(env.ITF_POINTS_PERIODE_MIN) || 240) });
   // 22/11/2026 (paquet 361) : ITF toutes les 4 h (au lieu de 8) et prioritaire sur l'historique ATP/WTA (qui s'arrête à
   // 9 000 requêtes restantes, l'ITF à 7 000) : un passage sans surplus ne coûte qu'une requête.

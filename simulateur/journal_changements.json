@@ -2151,6 +2151,34 @@
    "paquet": 397,
    "quoi": "SONDE DES OUTSIDERS PEU DOCUMENTÉS (paquet 397) : pour chaque outsider de moins de 30 matchs classés (matchs jugés depuis le 21/10), compare les matchs que TennisApi connaît depuis juin 2024 à ceux de notre classement, par catégorie, et liste les identités à vérifier (même nom de famille, prénom proche). Règle fixée avant : données manquantes si, pour la médiane d'au moins 30 joueurs, TennisApi en connaît au moins deux fois plus et au moins 10 de plus.",
    "garde_fou": "Descriptif : rien ne change dans les %. À lancer à la main quand le quota du jour est frais. Tests : tests/test_sonde_outsiders.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 398,
+   "quoi": "SONDE DES OUTSIDERS : la sonde s'arrêtait dès que le quota TennisApi du jour passait sous 6 000 requêtes (arrêt ce matin après une requête). Réserve réglable au lancement, 3 500 par défaut (la collecte du jour garde les siennes, 1 500 à 3 000) ; en cas d'arrêt, le journal indique l'heure du renouvellement du quota.",
+   "garde_fou": "Environ 250 requêtes au plus pour cette sonde. Tests : tests/test_sonde_outsiders.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 399,
+   "quoi": "PISTE SUIVIE : OUTSIDER PEU DOCUMENTÉ (paquet 399). La sonde du 24/11 (règle fixée avant) conclut que nos données ne manquent pas en général (médiane 18 matchs connus de TennisApi depuis juin 2024 contre 14 chez nous ; il manque surtout des matchs du circuit UTR). Le profil « outsider de moins de 60 matchs classés face à un favori qui en a 60 ou plus » passe donc en suivi chaque lundi : seuls les matchs à partir du 25/11 comptent ; décision en Challenger à 1 000 matchs (correction de la confiance apprise sur la première moitié, jugée sur la seconde, gain ≥ 0,001 et ≥ 2 erreurs types, même sens sur les deux moitiés).",
+   "garde_fou": "Le % ne change pas. Rapport sans nom de joueur : simulateur/rapport_outsider_peu_documente.json. Tests : tests/test_suivi_outsider.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "etude",
+   "paquet": 400,
+   "quoi": "QUOTA TENNISAPI ET CIRCUIT UTR (paquet 400). 1) Le quota repasse à 15 000 vers 07 h 30 UTC et les collectes le font tomber vers 7 000 en quelques heures : les rattrapages (point par point ITF, historique ATP/WTA) tombaient presque toujours après et n'avaient rien à prendre. Ils sont désormais lancés aussi juste après le renouvellement, dans l'ordre de priorité fixé le 22/11 : ITF à 07 h 50 et 08 h 50 UTC, historique à 09 h 50 UTC. 2) Résultats du circuit UTR Pro Tennis Tour (hommes) collectés chaque jour depuis juin 2024, et étude Elo avec / sans eux, à règle fixée avant : adoption si la log loss Challenger baisse d'au moins 0,001 sans dégrader l'ATP, deux semaines de suite.",
+   "garde_fou": "UTR = donnée seulement, jamais pronostiqué ni parié ; rien n'entre dans l'Elo de production sans adoption et accord de Lucas. Tests : tests/test_utr_elo.py et les tests du worker de déclenchement."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "decision",
+   "paquet": 401,
+   "quoi": "GROS FAVORIS BATTUS : VÉRIFICATION (paquet 401). Les défaites de favoris annoncés à 96–99 % ont été reprises une par une. Sur tous les matchs suivis, 103 favoris annoncés à 90 % ou plus : 6 battus pour 5,3 défaites attendues — l'algorithme n'est pas trop sûr de lui à ce niveau. Données vérifiées : Dominko–Viiala (99 %) venait d'un joueur écrit de deux façons (Zach / Zachary Viiala, même identifiant), déjà corrigé par le paquet 396 ; Hoole–Padgham (97 %) et Mikrut–Raynel (96 %) : aucune erreur de données (Raynel bien documenté, 118 matchs). « William Mroz Mroz » : nom mal écrit par la source, déjà relié au bon joueur, maintenant affiché « William Mroz ». Ti Chen (né vers 1983, dernier match en 2018) et Tin Chen (actif en ITF depuis 2024) : deux joueurs différents, bien séparés. Le bilan de la semaine ajoute un repère (favoris à 90 % ou plus : battus contre attendus) et signale un vainqueur peu documenté.",
+   "garde_fou": "Aucun réglage du modèle, aucun % changé. Le mot répété n'est retiré que si le nom obtenu est un joueur connu et l'écriture d'origine inconnue. Tests : tests/test_gros_favoris.py."
   }
  ]
 }

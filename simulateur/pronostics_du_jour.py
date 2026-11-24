@@ -760,6 +760,18 @@ def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, 
     return p_c
 
 
+def nom_sans_doublon(nom, connus):
+    """24/11/2026 — « William Mroz Mroz » (flux de cotes, Challenger de Champaign, 15/11) : un mot répété à la suite
+    est retiré, seulement si le nom ainsi obtenu est un joueur connu et que l'écriture d'origine ne l'est pas.
+    Correction d'affichage : le joueur était déjà relié au bon classement (25 matchs)."""
+    m = str(nom or '').split()
+    p = [w for i, w in enumerate(m) if i == 0 or w.lower() != m[i - 1].lower()]
+    if len(p) == len(m):
+        return nom
+    court = ' '.join(p)
+    return court if E.cle(court) in connus and E.cle(nom) not in connus else nom
+
+
 def situations_du_match(h, a, tournoi, debut, surface):
     """(qualifié, changement de surface) de chaque joueur, depuis le contexte des facteurs ; {} sans contexte."""
     if CONTEXTE is None or not hasattr(CONTEXTE, 'qualifie'):
@@ -1862,6 +1874,10 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
         venir = venir[:int(os.environ['PRONOSTICS_MAX'])]
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
+    connus_ = set(etat['joueurs']) | set(alias)
+    for x in venir:                                   # 24/11/2026 : « William Mroz Mroz » (flux) → « William Mroz »
+        for c_ in ('home', 'away'):
+            x[c_] = nom_sans_doublon(x[c_], connus_)
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
                            [n for x in venir for n in (x['home'], x['away'])]))
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))

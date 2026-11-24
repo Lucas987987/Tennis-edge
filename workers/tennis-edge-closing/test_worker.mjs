@@ -56,3 +56,20 @@ test('périodique : pronostics et feuilles toutes les 2 h, sans doublon avec les
   assert.equal(decisionPeriodique([run('in_progress', 400), fini(400)], 'feuilles_match.yml', 120, now).fire, true);  // fantôme
   assert.equal(plafondMin('pronostics_quotidien.yml'), 60);
 });
+
+// 24/11/2026 (paquet 400) — fenêtres juste après le renouvellement du quota TennisApi
+import { decisionFenetres, minutesUTC } from './worker.js';
+test('fenêtres : ITF à 07:50 et 08:50 UTC, une seule fois par fenêtre, jamais en double', () => {
+  assert.equal(minutesUTC('07:50'), 470);
+  assert.equal(minutesUTC('x'), null);
+  const t = (h, m) => Date.UTC(2026, 10, 24, h, m);
+  const run = (h, m, status = 'completed') => ({ name: 'itf_points.yml', path: '.github/workflows/itf_points.yml',
+    status, created_at: new Date(t(h, m)).toISOString(), updated_at: new Date(t(h, m)).toISOString() });
+  const F = ['07:50', '08:50'];
+  assert.equal(decisionFenetres([run(4, 6)], 'itf_points.yml', F, t(7, 40)).fire, false);   // avant la fenêtre
+  assert.equal(decisionFenetres([run(4, 6)], 'itf_points.yml', F, t(7, 51)).fire, true);
+  assert.equal(decisionFenetres([run(7, 51)], 'itf_points.yml', F, t(7, 54)).fire, false);  // déjà servie
+  assert.equal(decisionFenetres([run(7, 51)], 'itf_points.yml', F, t(8, 52)).fire, true);   // 2e fenêtre
+  assert.equal(decisionFenetres([run(7, 51)], 'itf_points.yml', F, t(10, 0)).fire, false);  // passée depuis 70 min
+  assert.equal(decisionFenetres([run(8, 50, 'in_progress')], 'itf_points.yml', F, t(8, 52)).fire, false);
+});

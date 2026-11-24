@@ -3,13 +3,16 @@ name: Sonde — outsiders peu documentés (TennisApi)
 # 23/11/2026 — paquet 397. À lancer à la main, quand le quota TennisApi du jour est frais (le matin) : pour chaque
 # outsider « peu documenté » des matchs jugés depuis le 21/10, TennisApi connaît-il des matchs récents que notre
 # classement n'a pas ? + liste des identités à vérifier (même nom, prénom proche). Règle fixée avant : voir l'en-tête de
-# scripts/sonde_outsiders_inconnus.py. ≈ 2 à 4 requêtes par joueur ; arrêt si le quota restant passe sous 6 000.
+# scripts/sonde_outsiders_inconnus.py. ≈ 2 à 4 requêtes par joueur ; arrêt si le quota restant passe sous la réserve (3 500 par défaut).
 on:
   workflow_dispatch:
     inputs:
       budget:
         description: 'Requêtes au plus (défaut 500)'
         default: '500'
+      reserve:
+        description: 'Arrêt si le quota restant passe sous (défaut 3 500 : la collecte du jour garde 1 500 à 3 000)'
+        default: '3500'
 
 permissions:
   contents: write
@@ -41,7 +44,7 @@ jobs:
       - name: Sonde
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-          FEUILLES_RESERVE: '6000'
+          FEUILLES_RESERVE: ${{ github.event.inputs.reserve || '3500' }}
           BUDGET: ${{ github.event.inputs.budget || '500' }}
         run: python scripts/sonde_outsiders_inconnus.py . "$BUDGET"
       - name: Publier le rapport
