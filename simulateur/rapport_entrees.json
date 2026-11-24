@@ -1,10 +1,10 @@
 {
- "genere_le": "2026-11-24T11:45:17Z",
- "pronostics_du": "2026-11-24T11:15:19Z",
- "statut": "ok",
- "matchs_pronostiques": 78,
+ "genere_le": "2026-11-24T13:33:37Z",
+ "pronostics_du": "2026-11-24T13:15:53Z",
+ "statut": "alerte",
+ "matchs_pronostiques": 70,
  "rejets_par_raison": {
-  "doublon_meme_match": 1
+  "doublon_meme_match": 2
  },
  "rejets": [
   {
@@ -17,6 +17,17 @@
     "Amit Vales"
    ],
    "meme_classement": true
+  },
+  {
+   "home": "Menelaos Efstathiou",
+   "away": "Gabriel Ghetu",
+   "tournoi": "ATP Challenger Hersonissos 4",
+   "raison": "doublon_meme_match",
+   "garde": [
+    "Melios Efstathiou",
+    "Gabriel Ghetu"
+   ],
+   "meme_classement": false
   }
  ],
  "surfaces_inconnues": [],
@@ -26,7 +37,7 @@
   "cible_sans_classement": []
  },
  "alias_observes": {
-  "n": 1,
+  "n": 2,
   "conflits": []
  },
  "sans_historique": {
@@ -59,20 +70,8 @@
   ]
  },
  "sans_programme": {
-  "n": 24,
+  "n": 25,
   "exemples": [
-   {
-    "debut": "2026-11-24T12:00",
-    "tournoi": "ATP Challenger Monastir 2",
-    "home": "Branko Djuric",
-    "away": "Federico Iannaccone"
-   },
-   {
-    "debut": "2026-11-24T13:00",
-    "tournoi": "ATP Challenger Florianopolis",
-    "home": "Juan Estevez",
-    "away": "Franco Roncadelli"
-   },
    {
     "debut": "2026-11-24T15:40",
     "tournoi": "ATP Challenger Florianopolis",
@@ -84,12 +83,6 @@
     "tournoi": "ATP Challenger San Salvador",
     "home": "Samuel Heredia",
     "away": "Yannick Theodor Alexandrescou"
-   },
-   {
-    "debut": "2026-11-25T01:00",
-    "tournoi": "ATP Challenger Yokohama",
-    "home": "Kokoro Isomura",
-    "away": "Hayato Matsuoka"
    },
    {
     "debut": "2026-11-25T01:55",
@@ -135,6 +128,30 @@
    },
    {
     "debut": "2026-11-25T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Alejo Sanchez Quilez",
+    "away": "Dimitris Azoidis"
+   },
+   {
+    "debut": "2026-11-25T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Melios Efstathiou",
+    "away": "Gabriel Ghetu"
+   },
+   {
+    "debut": "2026-11-25T08:00",
+    "tournoi": "ATP Challenger Hersonissos 4",
+    "home": "Juan Cruz Martin Manzano",
+    "away": "Andres Martin"
+   },
+   {
+    "debut": "2026-11-25T08:00",
+    "tournoi": "ATP Challenger Ankara",
+    "home": "Mert Naci Turker",
+    "away": "Tuncay Duran"
+   },
+   {
+    "debut": "2026-11-25T08:00",
     "tournoi": "ATP Challenger Ankara",
     "home": "Matthew William Donald",
     "away": "Robin Catry"
@@ -148,26 +165,20 @@
    {
     "debut": "2026-11-25T08:00",
     "tournoi": "ATP Challenger Ankara",
-    "home": "Mert Naci Turker",
-    "away": "Tuncay Duran"
+    "home": "Svyatoslav Gulin",
+    "away": "Vadym Ursu"
+   },
+   {
+    "debut": "2026-11-25T08:00",
+    "tournoi": "ATP Challenger Ankara",
+    "home": "Thomas Faurel",
+    "away": "Nikita Belozertsev"
    },
    {
     "debut": "2026-11-25T08:00",
     "tournoi": "ATP Challenger Hersonissos 4",
-    "home": "Alejo Sanchez Quilez",
-    "away": "Dimitris Azoidis"
-   },
-   {
-    "debut": "2026-11-25T08:00",
-    "tournoi": "ATP Challenger Hersonissos 4",
-    "home": "Juan Cruz Martin Manzano",
-    "away": "Andres Martin"
-   },
-   {
-    "debut": "2026-11-25T08:00",
-    "tournoi": "ATP Challenger Hersonissos 4",
-    "home": "Melios Efstathiou",
-    "away": "Gabriel Ghetu"
+    "home": "Anas Mazdrashki",
+    "away": "Philip Henning"
    },
    {
     "debut": "2026-11-25T11:00",
@@ -197,13 +208,13 @@
   },
   {
    "jour": "2026-11-24",
-   "matchs": 78,
+   "matchs": 70,
    "rejets": {
-    "doublon_meme_match": 1
+    "doublon_meme_match": 2
    },
    "sans_historique": 1,
    "deux_classements": 0,
-   "sans_programme": 24
+   "sans_programme": 25
   }
  ]
 }
