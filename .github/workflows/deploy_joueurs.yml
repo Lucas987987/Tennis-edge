@@ -11,6 +11,9 @@ name: Déployer le worker joueurs
 
 on:
   workflow_dispatch:
+  # 24/11/2026 (paquet 412) : lancé aussi par « Appliquer un paquet » quand le paquet change workers/joueurs/
+  repository_dispatch:
+    types: [deployer-joueurs]
   push:
     branches: [main]
     paths:
