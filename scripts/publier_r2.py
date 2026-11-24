@@ -61,7 +61,16 @@ def fichiers(site):
             if rel == '.nojekyll' or rel.startswith('.git/'):
                 continue
             out.append(rel)
-    return sorted(out)
+    return sorted(out, key=ordre_envoi)
+
+
+def ordre_envoi(rel):
+    """24/11/2026 (paquet 424) : les PAGES partent en dernier, les pages d'accueil (index.html) tout à la fin. Avant, l'ordre
+    alphabétique envoyait algo/index.html AVANT algo/style-<empreinte>.css : pendant l'envoi, la nouvelle page pointait
+    vers une feuille de style pas encore dans R2 → page sans mise en forme (vu le 24/11 à 22 h, après le paquet 423). Une
+    page ne part donc qu'une fois tout ce qu'elle charge (styles, scripts, données, polices, images) déjà en place."""
+    nom = rel.rsplit('/', 1)[-1]
+    return (nom == 'index.html', rel.endswith('.html'), rel)
 
 
 def _manifeste(r2, prefixe):
