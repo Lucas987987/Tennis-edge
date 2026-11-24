@@ -1,3 +1,4 @@
+// 24/11/2026 (paquet 412) : redéployé automatiquement par « Appliquer un paquet » quand ce dossier change.
 // tennis-edge-closing — Worker Cloudflare : le SEUL déclencheur des collectes.
 //
 // Cron */3 * * * * : capture des cotes (capture_closing), Polymarket, Kalshi,

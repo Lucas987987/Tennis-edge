@@ -895,7 +895,7 @@ const T = {
  fr:{
   marque:'tennis', html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
   cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche', qs_court:'Qui sommes-nous',
-  lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme qui ne regarde jamais les cotes. On publie son % de victoire, la cote juste qui va avec, et tous ses résultats — y compris quand il se trompe.",
+  lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
   sim_titre:'Simulation du match', sim_sous:"Le détail complet et un scénario représentatif de cette affiche, calculés avec la même variante indépendante.",
   retour_mdj:'Retour au match du jour',
@@ -1248,7 +1248,7 @@ const T = {
  },
  en:{
   marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
-  lede:"Every match is simulated 20,000 times, point by point, by an algorithm that never looks at the odds. We publish its win probability, the fair odds that go with it, and every result — including when it gets it wrong.",
+  lede:"Every match is simulated 20,000 times, point by point, by an independent algorithm. We publish its win probability and every result — including when it gets it wrong.",
   cm_lien:'How the algorithm gets its % →', cm_court:'How it works', qs_court:'About',
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
   sim_titre:'Match simulation', sim_sous:'The full breakdown and a representative scenario for this matchup, calculated with the same independent variant.',
@@ -8419,7 +8419,7 @@ function blocAbonnement(msg){
       <button type="button" class="lien" data-ab="annuler">${esc(t('ab_annuler'))}</button>${note}</div>`;
   }
   const choix = ['semaine', 'mois', 'trimestre', 'annee'].filter(f => TARIFS_SITE[f] != null).map(f => `<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0 0">
-      <input type="radio" name="ab-f" value="${f}" style="width:auto;margin-top:4px"${f === 'mois' ? ' checked' : ''}><span><b>${esc(lib[f])}</b> · ${esc(euros(TARIFS_SITE[f]))}${par(f) ? ` <small style="color:var(--dim)">(${esc(par(f))})</small>` : ''}${f === 'mois' && COMPTE.fondateur ? `<br><small style="color:var(--ok)">${esc(t('ab_fond'))}</small>` : ''}</span></label>`).join('');
+      <input type="radio" name="ab-f" value="${f}" style="width:auto;margin-top:4px"${f === 'mois' ? ' checked' : ''}><span><b>${esc(lib[f])}</b> · ${esc(euros(TARIFS_SITE[f]))}${par(f) ? ` <small style="color:var(--dim)">(${esc(par(f))})</small>` : ''}${f === 'mois' && COMPTE.fondateur && !COMPTE.fondateur_perdu ? `<br><small style="color:var(--ok)">${esc(t('ab_fond'))}</small>` : ''}</span></label>`).join('');
   return `<div id="ab-bloc" style="margin-top:14px"><h3 style="margin:0 0 6px">${esc(t('ab_titre'))}</h3><p style="margin:0">${esc(t('ab_texte'))}</p>${choix}
     <p style="margin:10px 0 0"><button type="button" class="btn go" data-ab="demander">${esc(t('ab_go'))}</button></p>${note}</div>`;
 }

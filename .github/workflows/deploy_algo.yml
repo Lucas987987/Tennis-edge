@@ -8,6 +8,9 @@ name: Déployer le worker algo (site public + coffre privé)
 
 on:
   workflow_dispatch:
+  # 24/11/2026 (paquet 412) : lancé aussi par « Appliquer un paquet » quand le paquet change workers/algo/
+  repository_dispatch:
+    types: [deployer-algo]
   push:
     branches: [main]
     paths:
