@@ -207,6 +207,13 @@ export async function adminVentes(req, env, url) {
     const f = await lireFacture(env, url.searchParams.get('n'));
     return f ? pageFacture(f) : rep({ ok: false, erreur: 'inconnu' }, 404);
   }
+  if (p === '/compte/admin/api/ouverture' && req.method === 'POST') {
+    if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
+    const b = await corps(req);
+    if (!b) return rep({ ok: false, erreur: 'requete' }, 400);
+    const r = await ouverture(env, b, req);
+    return rep(r, r.ok ? 200 : 400);
+  }
   if (p === '/compte/admin/api/virement' && req.method === 'POST') {
     if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
     const b = await corps(req);
@@ -249,6 +256,82 @@ export async function rappels(env, maintenant = Date.now()) {
   if (n) await alerte(env, `${n} rappel(s) de fin d'accès envoyé(s)`);
   return n;
 }
+// --------------------------------------------------------------------------------------------- 4. ouverture fondateurs
+// 24/11/2026 (paquet 405, Lucas : « fais 1-2-3 ») : depuis /compte/admin, l'e-mail d'ouverture part aux 100 premières
+// places de la liste d'attente (comptes confirmés, ordre de réservation), par lots (limites du worker et quota Brevo).
+// Chaque e-mail est personnel : n° de place, prix fondateur, référence de virement, coordonnées bancaires (secret
+// VIREMENT), lien vers la section Plus pour demander l'accès immédiat, lien vers les conditions de vente. Un compte
+// déjà prévenu ne l'est pas deux fois. Refus sans vendeur (FACTURE_VENDEUR) ou sans coordonnées (VIREMENT).
+export const PLACES_FONDATEUR = 100, PRIX_FONDATEUR = 9.99, LOT_OUVERTURE = 25, DELAI_FONDATEUR_J = 7;
+export async function fondateursOrdonnes(env) {
+  const L = [];
+  let curseur;
+  do {
+    const l = await env.COFFRE.list({ prefix: 'comptes/u/', cursor: curseur, limit: 1000 });
+    for (const o of l.objects || []) {
+      const u = await lire(env, o.key.slice('comptes/u/'.length, -5));
+      if (u && u.verifie && u.fondateur && u.fondateur.le) L.push(u);
+    }
+    curseur = l.truncated ? l.cursor : undefined;
+  } while (curseur);
+  return L.sort((a, b) => String(a.fondateur.le).localeCompare(String(b.fondateur.le)) || String(a.id).localeCompare(String(b.id)));
+}
+export function mailOuverture(u, place, c, url) {
+  const fr = u.lang !== 'en', ref = referenceVirement(u), prix = eur(PRIX_FONDATEUR);
+  const prixEn = '€' + PRIX_FONDATEUR.toFixed(2);
+  const banque = fr ? [`Titulaire : ${c.titulaire || ''}`, `IBAN : ${c.iban}`, ...(c.bic ? [`BIC : ${c.bic}`] : []), `Montant : ${prix}`, `Libellé (important) : ${ref}`]
+    : [`Account holder: ${c.titulaire || ''}`, `IBAN: ${c.iban}`, ...(c.bic ? [`BIC: ${c.bic}`] : []), `Amount: ${prixEn}`, `Reference (important): ${ref}`];
+  const T = fr ? {
+    sujet: `L'accès Plus est ouvert : ta place fondateur n° ${place}`,
+    intro: `Merci d'avoir réservé ta place : l'accès Plus de Game Set Algo est ouvert, et tu fais partie des ${PLACES_FONDATEUR} fondateurs (place n° ${place}).`,
+    prix: `Ton tarif : ${prix} par mois, à vie, tant que tu renouvelles chaque mois au plus tard ${DELAI_FONDATEUR_J} jours après la fin du précédent. Rien ne se renouvelle tout seul.`,
+    e1: "1. Dans la section Plus du site (connecté à ton compte), coche les deux cases « accès immédiat » : ton accès s'ouvrira dès réception du virement.",
+    e2: '2. Fais un virement :', e3: "Ton accès s'ouvre dès réception (un virement instantané arrive en quelques secondes) et la facture part par e-mail.",
+    bouton: 'Ouvrir la section Plus', cgv: 'Conditions de vente', fin: "Les pronostics restent des probabilités, sans conseil de pari." }
+    : {
+      sujet: `Plus access is open: your founder spot no. ${place}`,
+      intro: `Thank you for reserving your spot: Game Set Algo Plus access is open, and you are one of the ${PLACES_FONDATEUR} founders (spot no. ${place}).`,
+      prix: `Your price: ${prixEn} a month, for life, as long as you renew each month no later than ${DELAI_FONDATEUR_J} days after the previous one ends. Nothing renews by itself.`,
+      e1: '1. In the Plus section of the site (logged in), tick the two "immediate access" boxes: your access will open as soon as the transfer arrives.',
+      e2: '2. Make a bank transfer:', e3: 'Access opens on receipt (an instant transfer arrives within seconds) and the invoice is emailed to you.',
+      bouton: 'Open the Plus section', cgv: 'Terms of sale', fin: 'Forecasts remain probabilities, never betting advice.' };
+  const lienPlus = url.replace(/\/$/, '') + '/#plus', lienCgv = url.replace(/\/$/, '') + '/#cgv';
+  const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;padding:24px;color:#14102e">
+<h2 style="margin:0 0 12px">${ESC(T.sujet)}</h2><p>${ESC(T.intro)}</p><p><b>${ESC(T.prix)}</b></p>
+<p>${ESC(T.e1)}</p><p style="margin:18px 0"><a href="${ESC(lienPlus)}" style="background:#2ee6ff;color:#0e0a24;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">${ESC(T.bouton)}</a></p>
+<p>${ESC(T.e2)}</p><p style="background:#f1eefc;padding:12px;border-radius:8px;font-family:monospace">${banque.map(ESC).join('<br>')}</p>
+<p>${ESC(T.e3)}</p><p style="color:#666;font-size:13px">${ESC(T.fin)} · <a href="${ESC(lienCgv)}">${ESC(T.cgv)}</a> · Game Set Algo</p></div>`;
+  return { sujet: T.sujet, html, texte: [T.intro, T.prix, T.e1, lienPlus, T.e2, ...banque, T.e3, `${T.cgv} : ${lienCgv}`].join('\n') };
+}
+export async function ouverture(env, b, req) {
+  if (!vendeur(env)) return { ok: false, erreur: 'vendeur_absent' };
+  const c = coordonnees(env);
+  if (!c) return { ok: false, erreur: 'coordonnees_absentes' };
+  const L = (await fondateursOrdonnes(env)).slice(0, PLACES_FONDATEUR);
+  const url = String(env.SITE_URL || 'https://gamesetalgo.com');      // les liens de l'e-mail vont toujours au site
+  if (b.mode === 'apercu') {
+    if (!L.length) return { ok: false, erreur: 'aucun_fondateur' };
+    const m = mailOuverture(L[0], 1, c, url);
+    return { ok: true, sujet: m.sujet, html: m.html, places: L.length, deja: L.filter((u) => u.ouverture_envoyee).length };
+  }
+  if (b.mode !== 'envoyer') return { ok: false, erreur: 'requete' };
+  let envoyes = 0, arret = null;
+  for (let i = 0; i < L.length && envoyes < LOT_OUVERTURE; i++) {
+    const u = L[i];
+    if (u.ouverture_envoyee) continue;
+    const m = await envoyerMail(env, u.email, mailOuverture(u, i + 1, c, url));
+    if (!m.ok) { arret = m.raison; break; }
+    u.fondateur_place = i + 1;
+    u.ouverture_envoyee = new Date().toISOString();
+    u.historique = [...(u.historique || []).slice(-19), { le: u.ouverture_envoyee, fondateur: 'ouverture ' + (i + 1) }];
+    await ecrire(env, u);
+    envoyes++;
+  }
+  const restants = L.filter((u) => !u.ouverture_envoyee).length;
+  if (envoyes) await alerte(env, `ouverture fondateurs : ${envoyes} e-mail(s) envoyé(s), ${restants} restant(s)`);
+  return { ok: true, envoyes, restants, places: L.length, arret };
+}
+
 export async function quotidien(env) {
   if (!env.COFFRE) return;
   try { await compacterVisites(env); } catch (e) { /* le lendemain */ }

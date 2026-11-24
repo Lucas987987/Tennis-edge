@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment2.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -402,5 +402,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ steps.r2.outcome == 'success' && '_pages' || '_site' }}
+      # 24/11/2026 (paquet 406) : « Found 0 artifact(s) » une seconde après un envoi réussi (GitHub n'avait pas encore
+      # enregistré l'artefact) — un second essai 30 s plus tard. Le site réel (Cloudflare R2) est envoyé avant, à part.
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Pages — attendre avant le second essai
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - id: deployment2
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5

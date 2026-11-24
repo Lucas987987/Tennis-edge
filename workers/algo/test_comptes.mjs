@@ -446,3 +446,65 @@ test('403 : les textes des deux cases du site sont exactement ceux gardés comme
   const html = fs.readFileSync(new URL('../../algo/index.html', import.meta.url), 'utf-8');
   for (const t of [...TEXTES_RENONCIATION.fr, ...TEXTES_RENONCIATION.en]) assert.ok(html.includes(JSON.stringify(t).slice(1, -1)) || html.includes(t), t);
 });
+
+test('405 : ouverture fondateurs — aperçu, refus sans coordonnées, envoi par lots aux 100 premières places, une seule fois, paiement visible', async () => {
+  const { env, mails, C } = monde();
+  const V = await import('./ventes.js');
+  const cookies = [];
+  for (let i = 0; i < 3; i++) {
+    const n0 = mails.length;
+    await worker.fetch(post('/compte/api/inscription', { email: `f${i}@exemple.fr`, mdp: 'motdepasse1' }), env);
+    const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[n0], 'verifier') }), env));
+    await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
+    cookies.push(c);
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  const ouv = (b) => worker.fetch(post('/compte/admin/api/ouverture', b, { 'X-Cle': CLE }, DEV), env).then((r) => r.json());
+  assert.equal((await ouv({ mode: 'apercu' })).erreur, 'vendeur_absent');
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court', siret: '123' });
+  assert.equal((await ouv({ mode: 'apercu' })).erreur, 'coordonnees_absentes');
+  env.VIREMENT = JSON.stringify({ titulaire: 'Lucas Test', iban: 'FR76 0000 0000 0000', bic: 'TESTFRPP' });
+  // avant l'ouverture : aucune coordonnée montrée au client
+  let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cookies[0] }), env)).json();
+  assert.equal(moi.paiement, null);
+  assert.equal(moi.compte.fondateur_place, null);
+  const a = await ouv({ mode: 'apercu' });
+  assert.equal(a.places, 3);
+  assert.match(a.sujet, /place fondateur n° 1/);
+  assert.match(a.html, /IBAN : FR76 0000 0000 0000/);
+  assert.match(a.html, /Libellé \(important\) : GSA-[0-9A-F]{6}/);
+  assert.match(a.html, /https:\/\/gamesetalgo\.com\/#plus/);                 // liens vers le site, jamais vers workers.dev
+  assert.match(a.html, /#cgv/);
+  const n0 = mails.length;
+  const o = await ouv({ mode: 'envoyer' });
+  assert.deepEqual([o.envoyes, o.restants, o.places], [3, 0, 3]);
+  assert.equal(mails.length, n0 + 3);
+  assert.match(mails[n0].subject, /n° 1/);
+  assert.equal(mails[n0].to[0].email, 'f0@exemple.fr');                        // ordre de réservation
+  assert.match(mails[n0 + 2].subject, /n° 3/);
+  assert.equal((await ouv({ mode: 'envoyer' })).envoyes, 0);                    // jamais deux fois
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cookies[1] }), env)).json();
+  assert.equal(moi.compte.fondateur_place, 2);
+  assert.equal(moi.paiement.montant, 9.99);
+  assert.equal(moi.paiement.reference, moi.compte.reference);
+  assert.equal(V.PLACES_FONDATEUR, 100);
+});
+
+test('405 : au-delà des 100 places, pas d’e-mail d’ouverture', async () => {
+  const { env, C } = monde();
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'X', adresse: 'Y', siret: '1' });
+  env.VIREMENT = JSON.stringify({ titulaire: 'L', iban: 'FR76' });
+  const { idCompte } = await import('./comptes.js');
+  for (let i = 0; i < 102; i++) {
+    const email = `z${String(i).padStart(3, '0')}@exemple.fr`, id = await idCompte(email);
+    C.m.set(`comptes/u/${id}.json`, JSON.stringify({ id, email, verifie: true, fondateur: { le: new Date(Date.UTC(2026, 10, 1, 0, i)).toISOString() } }));
+  }
+  const V = await import('./ventes.js');
+  const L = (await V.fondateursOrdonnes(env)).slice(0, V.PLACES_FONDATEUR);
+  assert.equal(L.length, 100);
+  assert.equal(L[0].email, 'z000@exemple.fr');
+  assert.ok(!L.some((u) => u.email === 'z100@exemple.fr' || u.email === 'z101@exemple.fr'));
+  const r = await worker.fetch(post('/compte/admin/api/ouverture', { mode: 'envoyer' }, { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
+  assert.equal(r.envoyes, 25);                                                  // un lot à la fois
+  assert.equal(r.restants, 75);
+});
