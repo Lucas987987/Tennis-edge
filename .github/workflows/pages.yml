@@ -34,9 +34,11 @@ permissions:
   actions: read
   pages: write
   id-token: write
+# 24/11/2026 (paquet 424) : plus d'annulation en cours de route — une publication annulée au milieu de l'envoi R2
+# laissait la nouvelle page d'accueil sans sa feuille de style. La suivante attend (une seule en attente, la plus récente).
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   deploy:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
