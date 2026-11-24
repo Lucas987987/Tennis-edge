@@ -1100,7 +1100,12 @@ const T = {
   calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
-  plus_bientot:'Paiement bientôt disponible · crée ton compte dès maintenant.',
+  plus_bientot:"Paiement par virement · crée ton compte, puis fais ta demande d'abonnement ici.",
+  ab_titre:"S'abonner", ab_texte:"Choisis ta durée. Paiement par virement ; rien ne se renouvelle tout seul. Les instructions t'arrivent aussi par e-mail.",
+  ab_lib:{semaine:'1 semaine', mois:'1 mois', trimestre:'3 mois', annee:'1 an'}, ab_par:x=>`soit ${x} par mois`,
+  ab_fond:'9,99 € si ta place fondateur est parmi les 100 premières', ab_go:'Envoyer ma demande',
+  ab_ok:(f, m, d) => `Ta demande : ${f}, ${m}, envoyée le ${d}.`, ab_fond_ok:' Tarif fondateur.', ab_annuler:'Annuler ou changer ma demande',
+  ab_annule:'Demande annulée.', ab_choisir:'Choisis une durée.', ab_sans_iban:r=>`Les coordonnées du virement t'arrivent par e-mail. Ta référence : ${r}.`,
   plus_comp_tete:['', 'Gratuit', 'Plus'],
   plus_comp:[['Le match du jour, en entier', true, true], ['% de victoire de tous les matchs', ['une fois le match commencé'], ['avant le match']],
     ['Note de fiabilité de chaque pronostic', false, true], ['Sets et scores probables', false, true],
@@ -1114,14 +1119,14 @@ const T = {
   fd_pay_cgv:'Conditions de vente', fd_pay_avant:"Commence par cocher l'accès immédiat ci-dessus.",
   verrou_commence:"Le match a commencé : le % de l'algo d'avant match est affiché. Le détail (sets, scores, scénarios, statistiques) reste réservé à l'accès Plus.",
   fd_titre:'Offre fondateurs',
-  fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que l'abonnement reste actif. Le paiement n'est pas encore ouvert : réserve ta place, on te prévient par e-mail à l'ouverture. Réserver est gratuit et n'engage à rien.",
+  fd_texte:"Les 100 premières places de la liste d'attente donnent droit à l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Réserver est gratuit et n'engage à rien ; si ta place fait partie des 100 premières, ta demande au mois passe au tarif fondateur.",
   fd_reserver:'Réserver ma place', fd_compte:'Créer un compte pour réserver', fd_cx:'Se connecter',
-  fd_ok:d=>`Ta place est réservée depuis le ${d}. On te prévient par e-mail à l'ouverture.`, fd_annuler:'Annuler ma réservation',
+  fd_ok:d=>`Ta place est réservée depuis le ${d}.`, fd_annuler:'Annuler ma réservation',
   ri_titre:'Avant de payer : accès immédiat',
   ri_texte:"L'accès Plus s'ouvre dès réception du paiement. Pour cela, coche les deux cases ; une confirmation part par e-mail.",
   ri_demande:"Je demande que mon accès Plus commence dès réception de chacun de mes paiements, avant la fin du délai de rétractation de 14 jours.",
   ri_renonce:"Je reconnais qu'une fois l'accès ouvert, je perds mon droit de rétractation.",
-  ri_go:'Enregistrer ma demande', ri_ok:d=>`Accès immédiat demandé le ${d} (confirmation envoyée par e-mail).`, ri_retirer:'Retirer ma demande',
+  ri_go:'Enregistrer mon accès immédiat', ri_ok:d=>`Accès immédiat demandé le ${d} (confirmation envoyée par e-mail).`, ri_retirer:'Retirer ma demande',
   ri_retire:'Demande retirée.',
   fd_annule:'Réservation annulée.', fd_verif:"Confirme d'abord ton adresse e-mail (lien reçu à l'inscription) pour réserver ta place.",
   cp_btn:'Se connecter', cp_btn_moi:'Mon compte', cp_t_cx:'Connexion', cp_t_ins:'Créer un compte', cp_t_oubli:'Mot de passe oublié',
@@ -1131,7 +1136,7 @@ const T = {
   cp_ins_ok:'Compte créé. Un e-mail de confirmation vient de partir : clique sur le lien pour activer ton compte (pense aux courriers indésirables).',
   cp_ins_sans_mail:"Compte créé, mais l'e-mail de confirmation n'a pas pu partir. Réessaie de créer le compte dans quelques minutes.",
   cp_oubli_ok:'Si un compte existe avec cette adresse, un lien vient de partir (valable 1 heure).',
-  cp_err:{deux_cases:'Coche les deux cases pour enregistrer ta demande.', deja_ouvert:'Ton accès payé est ouvert : la demande ne peut plus être retirée.', identifiants:'E-mail ou mot de passe incorrect.', non_verifie:"Confirme d'abord ton adresse : clique sur le lien reçu par e-mail.",
+  cp_err:{formule:'Choisis une durée.', deux_cases:'Coche les deux cases pour enregistrer ta demande.', deja_ouvert:'Ton accès payé est ouvert : la demande ne peut plus être retirée.', identifiants:'E-mail ou mot de passe incorrect.', non_verifie:"Confirme d'abord ton adresse : clique sur le lien reçu par e-mail.",
     bloque:'Trop d’essais : réessaie dans 15 minutes.', email_invalide:'Adresse e-mail invalide.', mdp_court:'8 caractères minimum.',
     lien_invalide:'Ce lien a expiré ou a déjà servi.', ferme:'Les comptes ne sont pas encore ouverts.', defaut:'Une erreur est survenue, réessaie.',
     code_invalide:'Code inconnu : vérifie ce que tu as saisi.', code_utilise:'Ce code a déjà été utilisé.', code_expire:'Ce code a expiré.',
@@ -1447,7 +1452,12 @@ const T = {
   calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
   plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
-  plus_bientot:'Payment coming soon · create your account now.',
+  plus_bientot:'Payment by bank transfer · create your account, then request your subscription here.',
+  ab_titre:'Subscribe', ab_texte:'Choose your duration. Payment by bank transfer; nothing renews by itself. Instructions are also emailed to you.',
+  ab_lib:{semaine:'1 week', mois:'1 month', trimestre:'3 months', annee:'1 year'}, ab_par:x=>`i.e. ${x} a month`,
+  ab_fond:'€9.99 if your founder spot is among the first 100', ab_go:'Send my request',
+  ab_ok:(f, m, d) => `Your request: ${f}, ${m}, sent on ${d}.`, ab_fond_ok:' Founder price.', ab_annuler:'Cancel or change my request',
+  ab_annule:'Request cancelled.', ab_choisir:'Choose a duration.', ab_sans_iban:r=>`Transfer details will reach you by email. Your reference: ${r}.`,
   plus_comp_tete:['', 'Free', 'Plus'],
   plus_comp:[['The match of the day, in full', true, true], ['Win % for every match', ['once the match has started'], ['before the match']],
     ['Reliability score for every forecast', false, true], ['Likely sets and scores', false, true],
@@ -1461,14 +1471,14 @@ const T = {
   fd_pay_cgv:'Terms of sale', fd_pay_avant:'Start by ticking immediate access above.',
   verrou_commence:"The match has started: the algo's pre-match % is shown. The details (sets, scores, scenarios, stats) stay reserved for Plus access.",
   fd_titre:'Founders offer',
-  fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as the subscription stays active. Payment isn't open yet: reserve your spot and we'll email you when it opens. Reserving is free and commits you to nothing.",
+  fd_texte:"The first 100 spots on the waiting list get Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Reserving is free and commits you to nothing; if your spot is among the first 100, your monthly request gets the founder price.",
   fd_reserver:'Reserve my spot', fd_compte:'Create an account to reserve', fd_cx:'Log in',
-  fd_ok:d=>`Your spot has been reserved since ${d}. We'll email you when payment opens.`, fd_annuler:'Cancel my reservation',
+  fd_ok:d=>`Your spot has been reserved since ${d}.`, fd_annuler:'Cancel my reservation',
   ri_titre:'Before paying: immediate access',
   ri_texte:'Plus access opens as soon as your payment is received. To allow this, tick both boxes; a confirmation is emailed to you.',
   ri_demande:'I ask for my Plus access to start as soon as each of my payments is received, before the 14-day withdrawal period ends.',
   ri_renonce:'I acknowledge that once access is open, I lose my right of withdrawal.',
-  ri_go:'Save my request', ri_ok:d=>`Immediate access requested on ${d} (confirmation emailed).`, ri_retirer:'Withdraw my request',
+  ri_go:'Save immediate access', ri_ok:d=>`Immediate access requested on ${d} (confirmation emailed).`, ri_retirer:'Withdraw my request',
   ri_retire:'Request withdrawn.',
   fd_annule:'Reservation cancelled.', fd_verif:'Confirm your email address first (link sent at sign-up) to reserve your spot.',
   cp_btn:'Log in', cp_btn_moi:'My account', cp_t_cx:'Log in', cp_t_ins:'Create an account', cp_t_oubli:'Forgot password',
@@ -1478,7 +1488,7 @@ const T = {
   cp_ins_ok:'Account created. A confirmation email is on its way: click the link to activate your account (check your spam folder).',
   cp_ins_sans_mail:'Account created, but the confirmation email could not be sent. Try creating the account again in a few minutes.',
   cp_oubli_ok:'If an account exists with this address, a link is on its way (valid for 1 hour).',
-  cp_err:{deux_cases:'Tick both boxes to save your request.', deja_ouvert:'Your paid access is open: the request can no longer be withdrawn.', identifiants:'Wrong email or password.', non_verifie:'Confirm your address first: click the link we emailed you.',
+  cp_err:{formule:'Choose a duration.', deux_cases:'Tick both boxes to save your request.', deja_ouvert:'Your paid access is open: the request can no longer be withdrawn.', identifiants:'Wrong email or password.', non_verifie:'Confirm your address first: click the link we emailed you.',
     bloque:'Too many attempts: try again in 15 minutes.', email_invalide:'Invalid email address.', mdp_court:'At least 8 characters.',
     lien_invalide:'This link has expired or was already used.', ferme:'Accounts are not open yet.', defaut:'Something went wrong, please try again.',
     code_invalide:'Unknown code: check what you typed.', code_utilise:'This code has already been used.', code_expire:'This code has expired.',
@@ -7868,7 +7878,7 @@ function texteCgv(e, fr, x, contact, editeur, pro){
     <h3>1. Vendeur</h3>${vend}
     <h3>2. Ce qui est vendu</h3><p>L'accès Plus est un accès personnel, en ligne, pendant la période payée, à toutes les analyses publiées sur le site pour chaque match : % de victoire, note de fiabilité, sets et scores probables, statistiques prévues, scénarios, suivi en direct et simulation rejouable. C'est un contenu numérique fourni en ligne, sans support matériel. Ces analyses sont des probabilités calculées par un algorithme : elles ne constituent ni un conseil de pari ni une promesse de résultat ou de gain. Le nombre de matchs couverts dépend du calendrier des tournois et des données disponibles ; la présentation peut évoluer. Les matchs ITF ne font l'objet d'aucun pronostic.</p>
     <h3>3. Prix</h3><p>Les prix sont indiqués en euros, toutes taxes comprises, dans la section Plus au moment du paiement.${tva} Offre fondateurs : les 100 premières places de la liste d'attente, dans l'ordre des réservations, ont l'accès Plus au mois à 9,99 €. Ce tarif est garanti à vie tant que l'accès reste actif, c'est-à-dire tant que chaque nouveau mois est payé au plus tard ${FONDATEUR_DELAI_J} jours après la fin du mois précédent ; au-delà, le prix en vigueur s'applique.</p>
-    <h3>4. Commande et paiement</h3><p>Il faut un compte dont l'adresse e-mail est confirmée. Le paiement se fait par virement bancaire, du montant exact, avec la référence personnelle du compte (GSA-…) dans le libellé. Le contrat est conclu à la réception du paiement. L'accès s'ouvre dès que le virement est reçu et rattaché au compte, en principe le jour même (un virement instantané arrive en quelques secondes). Une facture est envoyée par e-mail et reste disponible dans « Mon compte ». Aucune carte bancaire n'est enregistrée et aucun prélèvement n'est fait.</p>
+    <h3>4. Commande et paiement</h3><p>Il faut un compte dont l'adresse e-mail est confirmée. Le client choisit sa durée et envoie sa demande d'abonnement depuis la section Plus ; il reçoit par e-mail le montant et les instructions. Le paiement se fait par virement bancaire, du montant exact, avec la référence personnelle du compte (GSA-…) dans le libellé. Le contrat est conclu à la réception du paiement. L'accès s'ouvre dès que le virement est reçu et rattaché au compte, en principe le jour même (un virement instantané arrive en quelques secondes). Une facture est envoyée par e-mail et reste disponible dans « Mon compte ». Aucune carte bancaire n'est enregistrée et aucun prélèvement n'est fait.</p>
     <h3>5. Durée, sans renouvellement automatique</h3><p>Chaque paiement ouvre l'accès pour la période choisie (semaine, mois, trimestre ou année) ; s'il est payé pendant un accès en cours, il le prolonge. Rien ne se renouvelle tout seul : aucun paiement n'est demandé sans action du client, et un e-mail rappelle la fin de l'accès quelques jours avant. Pour arrêter, il suffit de ne pas renouveler ; il n'y a rien à résilier.</p>
     <h3>6. Accès immédiat et droit de rétractation</h3><p>Avant de payer, le client peut demander que l'accès s'ouvre dès réception de son paiement, avant la fin du délai de rétractation de 14 jours, en cochant deux cases distinctes dans la section Plus ; il reconnaît alors perdre son droit de rétractation une fois l'accès ouvert (Code de la consommation, art. L221-28). Une confirmation lui est envoyée par e-mail et la facture le mentionne. Sans cette demande, le client peut se rétracter sans motif dans les 14 jours suivant le paiement, en l'écrivant à ${contact} ; il est alors remboursé en totalité, par virement, dans les 14 jours.</p>
     <h3>7. Compte personnel</h3><p>L'accès est réservé au titulaire du compte. Le partage d'accès, la revente des analyses et leur extraction automatisée sont interdits. En cas de manquement établi, et après un avertissement par e-mail resté sans effet, l'accès peut être suspendu ou le contrat résilié ; la période restante n'est alors pas remboursée.</p>
@@ -7883,7 +7893,7 @@ function texteCgv(e, fr, x, contact, editeur, pro){
     <h3>1. Seller</h3>${vend}
     <h3>2. What is sold</h3><p>Plus access is personal online access, for the period paid, to every analysis the site publishes for each match: win %, reliability score, likely sets and scores, predicted stats, scenarios, live follow-up and replayable simulation. It is digital content supplied online, without a physical medium. These analyses are probabilities computed by an algorithm: they are neither betting advice nor a promise of any result or winnings. Coverage depends on the tournament calendar and available data; presentation may change. ITF matches never get a forecast.</p>
     <h3>3. Price</h3><p>Prices are shown in euros, all taxes included, in the Plus section at the time of payment.${tva} Founders offer: the first 100 spots on the waiting list, in reservation order, get monthly Plus access at €9.99. This price is guaranteed for life as long as access stays active, meaning each new month is paid no later than ${FONDATEUR_DELAI_J} days after the previous month ends; after that, the current price applies.</p>
-    <h3>4. Order and payment</h3><p>A confirmed account is required. Payment is by bank transfer of the exact amount, with the account's personal reference (GSA-…) in the transfer label. The contract is formed when payment is received. Access opens as soon as the transfer is received and matched to the account, normally the same day (an instant transfer arrives within seconds). An invoice is emailed and stays available in "My account". No card is stored and no direct debit is taken.</p>
+    <h3>4. Order and payment</h3><p>A confirmed account is required. The customer chooses a duration and sends a subscription request from the Plus section, then receives the amount and instructions by email. Payment is by bank transfer of the exact amount, with the account's personal reference (GSA-…) in the transfer label. The contract is formed when payment is received. Access opens as soon as the transfer is received and matched to the account, normally the same day (an instant transfer arrives within seconds). An invoice is emailed and stays available in "My account". No card is stored and no direct debit is taken.</p>
     <h3>5. Duration, no automatic renewal</h3><p>Each payment opens access for the chosen period (week, month, quarter or year); paid during an active access, it extends it. Nothing renews by itself: no payment is ever taken without the customer's action, and an email reminds you a few days before access ends. To stop, simply don't renew; there is nothing to cancel.</p>
     <h3>6. Immediate access and right of withdrawal</h3><p>Before paying, the customer may ask for access to open as soon as payment is received, before the 14-day withdrawal period ends, by ticking two separate boxes in the Plus section; they then acknowledge losing their right of withdrawal once access is open (French Consumer Code, art. L221-28). A confirmation is emailed and the invoice mentions it. Without this request, the customer may withdraw without giving a reason within 14 days of payment by writing to ${contact}, and is refunded in full by bank transfer within 14 days.</p>
     <h3>7. Personal account</h3><p>Access is for the account holder only. Sharing access, reselling the analyses or scraping them is forbidden. If a breach is established and an email warning goes unheeded, access may be suspended or the contract ended; the remaining period is then not refunded.</p>
@@ -8362,13 +8372,44 @@ function rendPlus(){
   pr.hidden = !n;
 }
 // 405 — fondateur prévenu de l'ouverture : n° de place, puis les coordonnées du virement (après l'accès immédiat)
-let PAIEMENT = null;
+// 407 — ou toute demande d'abonnement en cours (montant fixé par le serveur)
+let PAIEMENT = null, TARIFS_SITE = null;
+const euros = x => L === 'fr' ? Number(x).toFixed(2).replace('.', ',') + ' €' : '€' + Number(x).toFixed(2);
 function blocPaiement(){
-  if (!COMPTE || !COMPTE.fondateur_place || !PAIEMENT) return '';
+  if (!COMPTE || !PAIEMENT || !(COMPTE.fondateur_place || COMPTE.demande)) return '';
   const avant = COMPTE.acces_immediat ? '' : `<p class="msg" style="margin:6px 0 0">${esc(t('fd_pay_avant'))}</p>`;
-  return `<div class="fd-pay"><h3 style="margin:0 0 6px">${esc(t('fd_pay_titre'))}</h3>${avant}<p style="margin:6px 0 0">${esc(t('fd_pay_texte'))}</p>
-    <div class="iban">${t('fd_pay_lignes', PAIEMENT).map(esc).join('<br>')}</div>
+  const corps = PAIEMENT.iban ? `<p style="margin:6px 0 0">${esc(t('fd_pay_texte'))}</p><div class="iban">${t('fd_pay_lignes', PAIEMENT).map(esc).join('<br>')}</div>`
+    : `<p style="margin:6px 0 0">${esc(t('ab_sans_iban', PAIEMENT.reference))}</p>`;
+  return `<div class="fd-pay"><h3 style="margin:0 0 6px">${esc(t('fd_pay_titre'))}</h3>${avant}${corps}
     <p style="margin:8px 0 0"><a href="#cgv">${esc(t('fd_pay_cgv'))}</a></p></div>`;
+}
+// 24/11/2026 (paquet 407, Lucas : « si on se connecte, que quelqu'un puisse faire une demande d'abonnement ») — choix de la
+// durée (prix venus du serveur), demande enregistrée, annulable tant qu'elle n'est pas payée.
+function blocAbonnement(msg){
+  if (!COMPTE || !COMPTE.verifie || !TARIFS_SITE) return '';
+  const note = msg ? `<p class="msg ok" style="margin:8px 0 0">${esc(msg)}</p>` : '';
+  const lib = t('ab_lib'), MOIS = { trimestre: 3, annee: 12 };
+  const par = f => MOIS[f] ? t('ab_par', euros(Math.floor(TARIFS_SITE[f] / MOIS[f] * 100) / 100)) : '';
+  if (COMPTE.demande) {
+    const d = COMPTE.demande, j = String(d.le).slice(0,10).split('-').reverse().join('/');
+    return `<div id="ab-bloc" style="margin-top:14px"><h3 style="margin:0 0 6px">${esc(t('ab_titre'))}</h3><p class="msg ok" style="margin:0">${esc(t('ab_ok', lib[d.formule], euros(d.montant), j) + (d.fondateur ? t('ab_fond_ok') : ''))}</p>
+      <button type="button" class="lien" data-ab="annuler">${esc(t('ab_annuler'))}</button>${note}</div>`;
+  }
+  const choix = ['semaine', 'mois', 'trimestre', 'annee'].filter(f => TARIFS_SITE[f] != null).map(f => `<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0 0">
+      <input type="radio" name="ab-f" value="${f}" style="width:auto;margin-top:4px"${f === 'mois' ? ' checked' : ''}><span><b>${esc(lib[f])}</b> · ${esc(euros(TARIFS_SITE[f]))}${par(f) ? ` <small style="color:var(--dim)">(${esc(par(f))})</small>` : ''}${f === 'mois' && COMPTE.fondateur ? `<br><small style="color:var(--ok)">${esc(t('ab_fond'))}</small>` : ''}</span></label>`).join('');
+  return `<div id="ab-bloc" style="margin-top:14px"><h3 style="margin:0 0 6px">${esc(t('ab_titre'))}</h3><p style="margin:0">${esc(t('ab_texte'))}</p>${choix}
+    <p style="margin:10px 0 0"><button type="button" class="btn go" data-ab="demander">${esc(t('ab_go'))}</button></p>${note}</div>`;
+}
+function abonnementAction(action, bouton){
+  const f = (document.querySelector('input[name="ab-f"]:checked') || {}).value;
+  if (action === 'demander' && !f) { const z = document.getElementById('ab-bloc'); if (z) z.insertAdjacentHTML('beforeend', `<p class="msg ko" style="margin:8px 0 0">${esc(t('ab_choisir'))}</p>`); return; }
+  if (bouton) bouton.disabled = true;
+  apiCompte('abonnement', action === 'annuler' ? { annuler: true } : { formule: f }).then(o => {
+    if (bouton) bouton.disabled = false;
+    if (!o.ok) { const z = document.getElementById('ab-bloc'); if (z) z.insertAdjacentHTML('beforeend', `<p class="msg ko" style="margin:8px 0 0">${esc(erreurCompte(o.erreur))}</p>`); return; }
+    apiCompte('moi').then(m => { if (m && m.ok) { COMPTE = m.compte || COMPTE; PAIEMENT = m.paiement || null; TARIFS_SITE = m.tarifs || TARIFS_SITE; }
+      rendFondateurs(); if (action === 'annuler') { const z = document.getElementById('ab-bloc'); if (z) z.outerHTML = blocAbonnement(t('ab_annule')); } });
+  });
 }
 // 23/11/2026 (paquet 384, Lucas) — liste d'attente fondateurs, dans la section Plus. Aucun compteur visible.
 function rendFondateurs(msg){
@@ -8382,7 +8423,8 @@ function rendFondateurs(msg){
   else if (COMPTE.fondateur) e.innerHTML = `<p class="msg ok" style="margin:10px 0 0">${esc(t('fd_ok', String(COMPTE.fondateur).slice(0,10).split('-').reverse().join('/')))}</p><button type="button" class="lien" data-fd="annuler">${esc(t('fd_annuler'))}</button>`;
   else if (!COMPTE.verifie) e.innerHTML = `<p class="msg" style="margin:10px 0 0">${esc(t('fd_verif'))}</p>`;
   else e.innerHTML = `<p style="margin:10px 0 0"><button type="button" class="btn go" data-fd="reserver">${esc(t('fd_reserver'))}</button></p>` + note;
-  if (COMPTE && COMPTE.verifie && (COMPTE.fondateur || COMPTE.paye)) e.insertAdjacentHTML('beforeend', blocAccesImmediat() + blocPaiement());
+  if (COMPTE && COMPTE.verifie) e.insertAdjacentHTML('beforeend', blocAbonnement()
+    + ((COMPTE.fondateur || COMPTE.paye || COMPTE.demande) ? blocAccesImmediat() : '') + blocPaiement());
 }
 // 24/11/2026 (paquet 403, Lucas : « paiement sans rétractation ») — avant de payer, le client demande l'accès immédiat
 // et reconnaît perdre son droit de rétractation une fois l'accès ouvert. Deux cases distinctes, jamais pré-cochées.
@@ -8521,6 +8563,7 @@ function brancherCompte(){
   document.addEventListener('click', ev => {
     const fd = ev.target.closest('[data-fd]'); if (fd) return fondateurAction(fd.dataset.fd === 'reserver', fd);
     const ri = ev.target.closest('[data-ri]'); if (ri) return accesImmediatAction(ri.dataset.ri, ri);
+    const ab = ev.target.closest('[data-ab]'); if (ab) return abonnementAction(ab.dataset.ab, ab);
     const px = ev.target.closest('[data-plus="mdj"]'); if (px) { const z = document.getElementById('mdj'); if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     const x = ev.target.closest('[data-cp],[data-compte],#b-compte,#plus-compte'); if (!x) { if (ev.target.id === 'compte-fond') fermerCompte(); return; }
     if (x.id === 'b-compte') return ouvrirCompte(COMPTE ? 'moi' : 'connexion');
@@ -8535,7 +8578,7 @@ function brancherCompte(){
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') fermerCompte(); });
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
-    COMPTE = o.compte || null; PAIEMENT = o.paiement || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
+    COMPTE = o.compte || null; PAIEMENT = o.paiement || null; TARIFS_SITE = o.tarifs || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) chargerInterne();
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
