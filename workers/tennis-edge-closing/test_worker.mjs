@@ -54,7 +54,7 @@ test('périodique : pronostics et feuilles toutes les 2 h, sans doublon avec les
   assert.equal(decisionPeriodique([], 'feuilles_match.yml', 120, now).fire, true);
   assert.equal(decisionPeriodique([run('in_progress', 200)], 'feuilles_match.yml', 120, now).fire, false);  // vraie collecte longue
   assert.equal(decisionPeriodique([run('in_progress', 400), fini(400)], 'feuilles_match.yml', 120, now).fire, true);  // fantôme
-  assert.equal(plafondMin('pronostics_quotidien.yml'), 60);
+  assert.equal(plafondMin('pronostics_quotidien.yml'), 100);
 });
 
 // 24/11/2026 (paquet 400) — fenêtres juste après le renouvellement du quota TennisApi
@@ -72,4 +72,16 @@ test('fenêtres : ITF à 07:50 et 08:50 UTC, une seule fois par fenêtre, jamais
   assert.equal(decisionFenetres([run(7, 51)], 'itf_points.yml', F, t(8, 52)).fire, true);   // 2e fenêtre
   assert.equal(decisionFenetres([run(7, 51)], 'itf_points.yml', F, t(10, 0)).fire, false);  // passée depuis 70 min
   assert.equal(decisionFenetres([run(8, 50, 'in_progress')], 'itf_points.yml', F, t(8, 52)).fire, false);
+});
+
+test('410 : pronostics enchaînés — relancés dès la fin du passage, au plus toutes les 20 min', async () => {
+  const W = await import('./worker.js');
+  const now = Date.parse('2026-11-24T14:00:00Z');
+  const run = (minAgo, status = 'completed') => ({ status, created_at: new Date(now - minAgo * 60000).toISOString() });
+  assert.equal(W.periodePronostics({}), 20);
+  assert.equal(W.periodePronostics({ PRONOSTICS_PERIODE_MIN: '5' }), 15);          // jamais plus serré que 15 min
+  assert.equal(W.periodePronostics({ PRONOSTICS_PERIODE_MIN: '45' }), 45);
+  assert.equal(W.decisionPeriodique([run(35)], 'pronostics_quotidien.yml', 20, now).fire, true);   // fini il y a peu : on relance
+  assert.equal(W.decisionPeriodique([run(10)], 'pronostics_quotidien.yml', 20, now).fire, false);
+  assert.equal(W.decisionPeriodique([run(70, 'in_progress')], 'pronostics_quotidien.yml', 20, now).fire, false);  // passage long : on attend
 });

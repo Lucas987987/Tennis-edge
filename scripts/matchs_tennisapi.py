@@ -18,7 +18,8 @@ Ce que fait le script (aucune cote, aucun bookmaker) :
 Le fichier n'est PAS publié dans le dépôt (.gitignore) : il est refait à chaque passage des pronostics.
 matchs_a_venir n'y prend que les matchs absents de matches_oddspapi.json (même paire de joueurs à ±18 h).
 
-Budget : 4 jours × (1 + 3) = 16 requêtes par passage, 12 passages par jour ≈ 200 requêtes (formule : 15 000/jour).
+Budget : 4 jours × (1 + 3) = 16 requêtes par passage. 24/11/2026 (paquet 410) : passages enchaînés (au plus toutes les
+20 min, en pratique la durée d'un passage) — au plus ~70 passages par jour ≈ 1 100 requêtes (formule : 15 000/jour).
 Arrêt si le quota restant annoncé passe sous MATCHS_RESERVE (défaut 1 500). La clé n'est jamais affichée.
 Un échec n'empêche jamais les pronostics : le fichier n'est simplement pas écrit.
 

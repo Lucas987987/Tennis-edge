@@ -2228,6 +2228,13 @@
    "paquet": 409,
    "quoi": "BOUTON « S'ABONNER » (paquet 409, Lucas : « je suis connecté mais je n'ai pas l'onglet s'abonner »). Le formulaire de demande est en bas, dans la section Plus, et n'apparaît que si le worker du site envoie les prix (déployé avec le paquet 407). Le panneau d'un match réservé et « Mon compte » affichent désormais un bouton « S'abonner » qui y mène, au lieu de « le paiement arrive bientôt ».",
    "garde_fou": "Sans le worker à jour, l'ancien texte reste affiché. Test : tests/test_cgv_plus.py."
+  },
+  {
+   "date": "2026-11-24",
+   "statut": "production",
+   "paquet": 410,
+   "quoi": "PRONOSTICS ENCHAÎNÉS (paquet 410, Lucas : « que pronostic tourne le plus régulièrement possible »). Les pronostics du jour passaient toutes les 2 heures. Le worker de déclenchement relance désormais un passage dès que le précédent est fini (il regarde toutes les 3 minutes), au plus un départ toutes les 20 minutes ; le cron GitHub devient un filet horaire. Nouveaux matchs, programme et site plus vite à jour.",
+   "garde_fou": "Calcul inchangé. Un seul passage à la fois (groupe « pronostics »). Liste TennisApi : 16 requêtes par passage, arrêt sous 1 500 restantes. Tests : les tests du worker de déclenchement."
   }
  ]
 }
