@@ -475,11 +475,25 @@ export function finDeMatch(e) {
   if (!x) return null;
   return { ...x, gagnant: e.winnerCode === 1 ? 'home' : e.winnerCode === 2 ? 'away' : null, fin: Date.now() };
 }
+// 25/11/2026 (paquet 427, Lucas : « les matchs live commencés doivent rester dans les lives tant qu'ils ne sont pas
+// finis ; là ça donne comme si c'était un nouveau match ») — MATCHS INTERROMPUS (pluie, nuit) : sortis du flux en
+// direct, ils sont gardés avec leur dernier score et leur statut (« Interrompu ») et renvoyés avec le direct jusqu'à la
+// reprise (retour dans le flux), la fin (→ terminés), l'annulation ou 72 h. Revérifiés au plus toutes les 10 minutes,
+// un par rafraîchissement (1 requête).
+export const INTERROMPUS_H = 72, VERIF_INTERROMPU_MS = 10 * 60e3, STATUTS_INTERROMPUS = ['interrupted', 'suspended', 'delayed'];
+export function interrompuDe(e) {
+  if (!e || !e.id || !STATUTS_INTERROMPUS.includes((e.status || {}).type)) return null;
+  const [x] = compacterLive([e]);
+  return x ? { ...x, interrompu: true } : null;
+}
 export async function suivreTermines(env, avant, apres, demander) {
   const maintenant = Date.now(), ids = new Set((apres.matchs || []).map(x => x.id));
   const doc = { termines: (avant && avant.termines) || [], a_verifier: (avant && avant.a_verifier) || [] };
   doc.termines = doc.termines.filter(x => maintenant - (x.fin || 0) < TERMINES_H * 3600e3).slice(-TERMINES_MAX);
   const connus = new Set(doc.termines.map(x => x.id));
+  // interrompus : de retour dans le flux (reprise) ou trop vieux → retirés
+  const interrompus = new Map(((avant && avant.interrompus) || [])
+    .filter(x => !ids.has(x.id) && !connus.has(x.id) && maintenant - (x.depuis || 0) < INTERROMPUS_H * 3600e3).map(x => [x.id, x]));
   const attente = new Map((doc.a_verifier || []).filter(x => !ids.has(x.id) && !connus.has(x.id)).map(x => [x.id, x]));
   for (const x of (avant && avant.matchs) || []) if (!ids.has(x.id) && !connus.has(x.id) && !attente.has(x.id)) attente.set(x.id, { id: x.id, essais: 0 });
   let n = 0;
@@ -488,13 +502,27 @@ export async function suivreTermines(env, avant, apres, demander) {
     n++; v.essais = (v.essais || 0) + 1;
     try {
       const e = await demander(v.id);
-      const f = finDeMatch(e);
+      const f = finDeMatch(e), ir = interrompuDe(e);
       if (f) { doc.termines.push(f); attente.delete(v.id); }
+      else if (ir) { interrompus.set(v.id, { ...ir, depuis: maintenant, verifie: maintenant }); attente.delete(v.id); }
       else if (e && e.status && ['canceled', 'postponed', 'notstarted'].includes(e.status.type)) attente.delete(v.id);
     } catch (err) { /* réessayé au rafraîchissement suivant */ }
     if (attente.has(v.id) && v.essais >= 3) attente.delete(v.id);
   }
+  // une revérification d'interrompu par rafraîchissement, la plus ancienne, au plus toutes les 10 minutes
+  const aRevoir = [...interrompus.values()].filter(x => maintenant - (x.verifie || 0) >= VERIF_INTERROMPU_MS)
+    .sort((a, b) => (a.verifie || 0) - (b.verifie || 0))[0];
+  if (aRevoir && n < VERIFS_MAX) {
+    try {
+      const e = await demander(aRevoir.id), f = finDeMatch(e), ir = interrompuDe(e);
+      if (f) { doc.termines.push(f); interrompus.delete(aRevoir.id); }
+      else if (ir) interrompus.set(aRevoir.id, { ...ir, depuis: aRevoir.depuis, verifie: maintenant });
+      else if (e && e.status && ['canceled', 'postponed'].includes(e.status.type)) interrompus.delete(aRevoir.id);
+      else aRevoir.verifie = maintenant;                         // en cours : il revient dans le flux au rafraîchissement suivant
+    } catch (err) { aRevoir.verifie = maintenant; }
+  }
   doc.a_verifier = [...attente.values()];
+  doc.interrompus = [...interrompus.values()];
   return doc;
 }
 
@@ -503,7 +531,7 @@ export async function suivreTermines(env, avant, apres, demander) {
 export async function live(req, env, vue = 'direct') {
   const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': `public, max-age=${vue === 'termines' ? 20 : 2}` };
   const rep = o => new Response(JSON.stringify(vue === 'termines' ? { ok: o.ok, maj: o.maj, termines: o.termines || [] }
-    : { ...o, termines: undefined, a_verifier: undefined }), { headers: h });
+    : { ...o, matchs: [...(o.matchs || []), ...(o.interrompus || [])], termines: undefined, a_verifier: undefined, interrompus: undefined }), { headers: h });
   const frais = o => o && Date.now() - (o.maj || 0) < (o.ttl || LIVE_TTL_MS);
   if (frais(LIVE_MEMOIRE)) return rep(LIVE_MEMOIRE);
   if (vue === 'termines') {                       // jamais de requête TennisApi : la liste tenue par le direct
@@ -545,7 +573,7 @@ export async function live(req, env, vue = 'direct') {
       o = { ok: false, maj: Date.now(), ttl: LIVE_TTL_MS, message: 'TennisApi injoignable.', matchs: [] };
     }
   }
-  if (!o.termines && avant) { o.termines = avant.termines || []; o.a_verifier = avant.a_verifier || []; }   // panne : rien de perdu
+  if (!o.termines && avant) { o.termines = avant.termines || []; o.a_verifier = avant.a_verifier || []; o.interrompus = avant.interrompus || []; }   // panne : rien de perdu
   o.termines = o.termines || [];
   LIVE_MEMOIRE = o;
   if (env.COFFRE) { try { await env.COFFRE.put(LIVE_R2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
