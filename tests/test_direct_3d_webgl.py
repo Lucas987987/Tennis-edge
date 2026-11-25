@@ -344,7 +344,7 @@ console.log(JSON.stringify(o));
         self.assertEqual(S['score'], ['thirty fifteen', 'Deuce', 'Advantage, Sinner', 'fifteen thirty', 'fifteen all', '', 'Game, Alcaraz'])
         self.assertFalse(S['son'])                                                          # son coupé par défaut
         self.assertIn('cam.real && !cam.vise && !RAL.actif', BLOC)                         # la réalisation : vue TV seulement
-        self.assertIn("tv: { yaw: 0, pitch: 0.33, dist: 23.5, fov: 0.62, suivre: true, real: true }", BLOC)
+        self.assertIn("tv: { yaw: 0, pitch: 0.31, dist: 21.5, fov: 0.58, suivre: true, real: true }", BLOC)
         for v in ('cote', 'haut', 'joueur'):
             self.assertRegex(BLOC, v + r': \{[^}]*real: false')
         self.assertIn('createBufferSource', BLOC)                                           # son fabriqué par le code
