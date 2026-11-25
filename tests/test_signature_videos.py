@@ -1,4 +1,4 @@
-"""Signature des vidéos et des cartes pour X (paquet 310, 20/11/2026) : le nom « TENNIS EDGE », jamais l'adresse."""
+"""Signature des vidéos et des cartes pour X (paquet 310) — depuis le paquet 446 (25/11/2026), l'adresse gamesetalgo.com."""
 import re
 import unittest
 from pathlib import Path
@@ -8,11 +8,11 @@ HTML = (RACINE / 'algo' / 'index.html').read_text(encoding='utf-8')
 
 
 class Signature(unittest.TestCase):
-    def test_nom_seul(self):
+    def test_adresse_officielle(self):
         m = re.search(r"const SIGNE = '(.*?)';", HTML)
         self.assertIsNotNone(m)
-        self.assertIn('GAME SET ALGO', m.group(1))
-        self.assertNotRegex(m.group(1).lower(), r'http|//|\.dev|\.io|\.com|workers|github')
+        self.assertIn('GAMESETALGO.COM', m.group(1))
+        self.assertNotRegex(m.group(1).lower(), r'http|//|\.dev|\.io|workers|github')
 
     def test_partout(self):
         self.assertIn('<div class="f3-fin" hidden></div>${SIGNE}</div>`;', HTML)            # vidéo 3D (et résumé)
