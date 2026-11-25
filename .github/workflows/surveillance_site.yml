@@ -1,0 +1,36 @@
+name: Surveillance du site (gamesetalgo.com)
+
+# AJOUTÉ LE 25/11/2026 (paquet 435, avant l'ouverture du site). Toutes les 10 minutes : la page d'accueil et le worker
+# répondent-ils ? Un message sur le Telegram privé quand le site tombe, un autre quand il revient (pas plus).
+# Le run est rouge tant que le site est en panne. Détails : scripts/surveillance_site.py.
+# Arrêt : désactiver ce workflow dans l'onglet Actions (« ... » → Disable workflow).
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: surveillance-site
+  cancel-in-progress: false
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: scripts/surveillance_site.py
+          sparse-checkout-cone-mode: false
+      - name: Vérifier le site
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/surveillance_site.py
