@@ -149,7 +149,8 @@ def performance(nom, matchs, p_pour, bilans, styles, reps):
     surf, sty = {}, {}
     for m in jug:
         ligne = (p_pour(m), 1 if gagne(m) else 0)
-        surf.setdefault(m.get('surface') or '?', []).append(ligne)
+        if m.get('surface'):                       # surface inconnue : pas de ligne « — »
+            surf.setdefault(m['surface'], []).append(ligne)
         adv = m['away'] if m['home'] == nom else m['home']
         s = _style_au_match(bilans.get(m.get('uid')), adv) or styles.get(adv)
         if s in STYLES:
