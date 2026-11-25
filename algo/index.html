@@ -158,7 +158,7 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .pe-l{display:grid;grid-template-columns:60px 1fr 60px;align-items:center;column-gap:8px;margin:4px 0;font-size:.84rem}.pe-l b{font-family:var(--cond);font-size:1.05rem}.pe-l b.b{text-align:right}.pe-l .k{text-align:center;color:#ABA3D6}
 .pe-bb{grid-column:1/-1;display:flex;height:4px;border-radius:2px;overflow:hidden;background:#FF4FAE}.pe-bb i.a{background:#2EE6FF}.pe-bb i.b{flex:1}.pe-vide{color:#ABA3D6;font-size:.85rem;margin:4px 0}
 .lv-pe-3d{position:relative}.lv-pe-x{position:absolute;left:8px;top:8px;z-index:2;background:rgba(10,8,30,.85);min-height:40px}
-@media (orientation:landscape) and (min-aspect-ratio:4/3){.lv-pe{grid-template-columns:minmax(0,1fr) minmax(260px,32%);grid-template-rows:auto minmax(0,1fr)}.lv-pe-3d{grid-column:1;grid-row:1/3}.lv-pe-haut{grid-column:2;grid-row:1}.lv-pe-stats{grid-column:2;grid-row:2;max-height:none}}
+@media (orientation:landscape) and (min-aspect-ratio:4/3){.lv-pe{grid-template-columns:minmax(0,1fr) minmax(230px,27%);grid-template-rows:auto minmax(0,1fr)}.lv-pe-3d{grid-column:1;grid-row:1/3}.lv-pe-haut{grid-column:2;grid-row:1}.lv-pe-stats{grid-column:2;grid-row:2;max-height:none}}
 html.pe-ouvert,html.pe-ouvert body{overflow:hidden}
 .fiab-bloc{display:flex;align-items:center;gap:10px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
 @media (max-width:560px){.fiab-bloc{flex-direction:column;align-items:flex-start;gap:4px}.fiab-lab{padding-left:4px}}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap}
@@ -4486,10 +4486,18 @@ const G3D = (() => {
       float leve = step(0.55, h) * uDebout;
       if (q.y < 0.56 && abs(q.x) > 0.17 && q.y > 0.05) { q.y += leve * (0.5 + q.y * 0.8); q.x *= 1.0 - leve * 0.35; }  // bras levés
       q.y += leve * 0.25;                                                                   // debout
+      q.x += sin(uT * 0.6 + h * 40.0) * 0.018 * q.y;                                        // paquet 428 bis : le public vit un peu
       float c1 = cos(corps), s1 = sin(corps);
       q = vec3(c1 * q.x + s1 * q.z, q.y, -s1 * q.x + c1 * q.z);
       nI = vec3(c1 * nI.x + s1 * nI.z, nI.y, -s1 * nI.x + c1 * nI.z);
-      p = q * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC;
+      p = q * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0);
+      // paquet 428 bis : seuls les vêtements prennent la couleur du spectateur. Avant, la tête et les cheveux aussi (visages
+      // verts, orange, roses) et le dossier du siège. Peaux et cheveux variés, sièges de la couleur des gradins.
+      float h2 = fract(h * 7.13 + 0.31), h3 = fract(h * 13.7 + 0.77);
+      bool peau = aC.r > 0.8 && aC.b > 0.5 && aC.b < 0.7, chev = aC.r < 0.3 && aC.g < 0.2 && aC.b < 0.16, siege = aC.b > aC.r + 0.1;
+      vec3 peauC = mix(vec3(0.95, 0.79, 0.67), vec3(0.40, 0.27, 0.19), h2 * h2);
+      vec3 chevC = h3 < 0.14 ? vec3(0.80, 0.68, 0.45) : (h3 < 0.24 ? vec3(0.58, 0.57, 0.58) : vec3(0.10, 0.075, 0.06) + vec3(0.22, 0.13, 0.06) * h3 * h3);
+      c = peau ? peauC : (chev ? chevC : (siege ? aC : aC * aIC));
     }
     if (uInst == 2) {
       // vidéo (paquet 276) : chaque spectateur est un panneau tourné vers la caméra (beaucoup moins de sommets)
@@ -6074,9 +6082,87 @@ const G3D = (() => {
   // ── LE SON (paquet 266) : tout est fabriqué par le code (Web Audio), aucun fichier ni site extérieur. Frappe,
   // rebond, filet, rumeur et applaudissements du public ; « Out ! », « Fault ! » et le score annoncés par la voix
   // de synthèse de l'appareil. Coupé par défaut : le visiteur l'allume d'un toucher (bouton 🔈).
+  // paquet 428 bis (Lucas : « améliorer le bruit de frappe… améliorer le public ») — LE SON, refait. Toujours fabriqué
+  // par le code (aucun fichier, aucun site extérieur), mais par SYNTHÈSE MODALE au lieu de bruits filtrés : une frappe
+  // est un claquement très bref + les résonances amorties du cordage et de la balle (comme un vrai « pock ») ; un
+  // rebond, un « pop » plus sourd (plus mat et frotté sur terre). Les applaudissements sont des centaines de
+  // spectateurs qui tapent chacun à leur rythme (3 à 5 claps par seconde), pas des éclats au hasard ; la rumeur du
+  // stade est un brouhaha de voix qui ondule ; une réverbération de stade relie le tout.
+  // paquet 428 bis : et surtout les VRAIS SONS ENREGISTRÉS (CC0, freesound.org, ceux de la vidéo du jour : 24 frappes,
+  // 19 services, 20 rebonds, une tribune, des applaudissements, deux clameurs), préparés par scripts/sons_site.py et
+  // servis par le site (sons/*.mp3, ~860 Ko chargés seulement quand le son est activé). La synthèse ne sert plus que
+  // de secours, le temps du chargement ou si un fichier manque.
   const SON = (() => {
-    let ac = null, sortie = null, bruit = null, rumeur = null, actif = false, voix = null;
-    const LS = 'te_3d_son';
+    let ac = null, sortie = null, reverb = null, bruit = null, rumeur = null, actif = false, voix = null;
+    const LS = 'te_3d_son', BUF = { frappes: [], rebonds: [], terre: [], applaus: null };
+    const REEL = { etat: 'rien', meta: null, murmure: null };
+    function decoder(ab) { return new Promise((ok, ko) => { try { const p = ac.decodeAudioData(ab, ok, ko); if (p && p.then) p.then(ok, ko); } catch (e) { ko(e); } }); }
+    async function chargerReels() {
+      if (REEL.etat !== 'rien') return; REEL.etat = 'charge';
+      try {
+        const r = await fetch('sons/sons.json?v=428'); if (!r.ok) throw new Error('sons absents : ' + r.status);
+        REEL.meta = await r.json();
+        await Promise.all(['frappes', 'services', 'rebonds', 'murmure', 'applaudissements', 'ovation', 'ovation2'].map(async nom => {
+          try { const x = await fetch(`sons/${nom}.mp3?v=428`); if (x.ok) REEL[nom] = await decoder(await x.arrayBuffer()); } catch (e) { /* ce son-là reste synthétique */ }
+        }));
+        REEL.etat = 'pret';
+        if (REEL.murmure && actif) demarrerMurmure();
+      } catch (e) { REEL.etat = 'absent'; }
+    }
+    let murmureG = null;
+    function demarrerMurmure() {                                                    // la vraie tribune, en boucle, sous la rumeur synthétique coupée
+      if (murmureG || !REEL.murmure) return;
+      const s = ac.createBufferSource(); s.buffer = REEL.murmure; s.loop = true;
+      murmureG = ac.createGain(); murmureG.gain.value = 0; s.connect(murmureG); murmureG.connect(sortie); s.start(0, Math.random() * 20);
+      murmureG.gain.setTargetAtTime(actif ? 0.55 : 0, ac.currentTime, 0.8);
+      if (rumeur) rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.5);
+    }
+    function extrait(nom, gain, pan, rev, vitesse) {                               // une frappe, un service, un rebond enregistrés
+      const B = REEL[nom], m = REEL.meta && REEL.meta[nom]; if (!B || !m) return false;
+      const k = Math.floor(Math.random() * m.n), s = ac.createBufferSource(); s.buffer = B; s.playbackRate.value = vitesse || 1;
+      const g = ac.createGain(); g.gain.value = gain;
+      let n = g; if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = cl(pan || 0, -1, 1); g.connect(p); n = p; }
+      s.connect(g); n.connect(sortie); if (reverb && rev) { const r = ac.createGain(); r.gain.value = rev; n.connect(r); r.connect(reverb); }
+      s.start(ac.currentTime, k * m.case_s, m.case_s); return true;
+    }
+    const alea = (a, b) => a + Math.random() * (b - a);
+    function modes(sr, dur, M, clic, bruitT) {                                     // somme de sinus amortis + claquement
+      const n = Math.round(sr * dur), b = ac.createBuffer(1, n, sr), d = b.getChannelData(0);
+      for (const [f, tau, a] of M) { const w = 2 * Math.PI * f / sr, ph = Math.random() * 6.28, k = 1 / (tau * sr);
+        for (let i = 0; i < n; i++) { const e = Math.exp(-i * k); if (e < 1e-4) break; d[i] += a * e * Math.sin(w * i + ph); } }
+      let prec = 0;
+      for (let i = 0; i < n; i++) { const e = Math.exp(-i / (clic * sr)); if (e < 1e-4) break; const x = Math.random() * 2 - 1; d[i] += (x - prec) * e * 0.55; prec = x; }  // claquement aigu (bruit dérivé)
+      if (bruitT) { let lp = 0; for (let i = 0; i < n; i++) { const e = Math.exp(-i / (bruitT * sr)); if (e < 1e-4) break; lp += 0.12 * ((Math.random() * 2 - 1) - lp); d[i] += lp * e * 1.6; } }  // frottement (terre battue)
+      for (let i = 0; i < Math.min(n, 18); i++) d[i] *= i / 18;                    // attaque sans clic numérique
+      let mx = 0; for (let i = 0; i < n; i++) mx = Math.max(mx, Math.abs(d[i])); if (mx) for (let i = 0; i < n; i++) d[i] *= 0.9 / mx;
+      return b;
+    }
+    function fabriquer() {
+      const sr = ac.sampleRate;
+      for (let v = 0; v < 6; v++) { const q = alea(0.93, 1.07);                   // six frappes un peu différentes
+        BUF.frappes.push(modes(sr, 0.22, [[140 * q, 0.018, 0.35], [545 * q * alea(0.96, 1.04), 0.03, 0.75], [1150 * q, 0.02, 0.5], [1720 * q * alea(0.97, 1.03), 0.012, 0.42], [2950 * q, 0.006, 0.22]], 0.0012)); }
+      for (let v = 0; v < 4; v++) { const q = alea(0.9, 1.1);
+        BUF.rebonds.push(modes(sr, 0.12, [[210 * q, 0.022, 0.8], [460 * q, 0.012, 0.45], [980 * q, 0.006, 0.25]], 0.0008));
+        BUF.terre.push(modes(sr, 0.16, [[180 * q, 0.02, 0.6], [400 * q, 0.01, 0.3]], 0.0006, 0.045)); }
+      // applaudissements : 260 spectateurs, chacun son rythme, sa force, sa place (stéréo), 6 s
+      const D = 6, n = Math.round(sr * D), A = ac.createBuffer(2, n, sr), L = A.getChannelData(0), R = A.getChannelData(1);
+      for (let c = 0; c < 260; c++) {
+        const rythme = alea(3.2, 5.4), pan = Math.random(), force = alea(0.25, 1) * (0.5 + 0.5 * Math.random()), clair = alea(0.25, 0.7);
+        const fin = alea(2.6, 5.6); let t = alea(0, 0.5);
+        while (t < fin) {
+          const i0 = Math.round(t * sr), env = Math.min(1, t / 0.35) * Math.max(0, 1 - Math.max(0, t - fin + 1.2) / 1.2);
+          let lp = 0;
+          for (let i = 0; i < 420 && i0 + i < n; i++) { const x = Math.random() * 2 - 1; lp += clair * (x - lp);
+            const y = (x - lp) * Math.exp(-i / (sr * 0.0022)) * force * env * 0.09; L[i0 + i] += y * (1 - pan); R[i0 + i] += y * pan; }
+          t += 1 / rythme * alea(0.85, 1.15);
+        }
+      }
+      BUF.applaus = A;
+      // réverbération de stade : bruit stéréo qui décroît en 1,4 s
+      const nr = Math.round(sr * 1.4), I = ac.createBuffer(2, nr, sr);
+      for (let ch = 0; ch < 2; ch++) { const d = I.getChannelData(ch); for (let i = 0; i < nr; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / nr, 3) * 0.6; }
+      reverb = ac.createConvolver(); reverb.buffer = I; const rg = ac.createGain(); rg.gain.value = 0.22; reverb.connect(rg); rg.connect(sortie);
+    }
     function init() {
       if (ac) return true;
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
@@ -6084,13 +6170,27 @@ const G3D = (() => {
       const comp = ac.createDynamicsCompressor(); sortie.connect(comp); comp.connect(ac.destination);
       bruit = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
       const d = bruit.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1;
-      const src = ac.createBufferSource(); src.buffer = bruit; src.loop = true;                       // rumeur de la foule
-      const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420;
-      rumeur = ac.createGain(); rumeur.gain.value = 0; src.connect(f); f.connect(rumeur); rumeur.connect(sortie); src.start();
+      try { fabriquer(); } catch (e) { reverb = null; }
+      // la rumeur : deux bandes de « voix » (graves et médiums) qui ondulent lentement, comme un brouhaha
+      rumeur = ac.createGain(); rumeur.gain.value = 0; rumeur.connect(sortie);
+      for (const [f, q, lfo] of [[380, 0.7, 0.23], [1150, 1.1, 0.37], [2400, 1.6, 0.51]]) {
+        const src = ac.createBufferSource(); src.buffer = bruit; src.loop = true; src.playbackRate.value = alea(0.97, 1.03);
+        const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q;
+        const g = ac.createGain(); g.gain.value = f > 2000 ? 0.25 : 0.6;
+        const o = ac.createOscillator(); o.frequency.value = lfo; const og = ac.createGain(); og.gain.value = g.gain.value * 0.45; o.connect(og); og.connect(g.gain); o.start();
+        src.connect(bp); bp.connect(g); g.connect(rumeur); src.start(0, Math.random() * 1.8);
+      }
       return true;
     }
     function choisirVoix() {
       try { const L = speechSynthesis.getVoices(); voix = L.find(v => /^en-GB/i.test(v.lang) && v.localService) || L.find(v => /^en/i.test(v.lang)) || null; } catch (e) { voix = null; }
+    }
+    function jouer(b, gain, pan, rev, debut, vitesse) {                            // un son préparé, placé dans la stéréo et le stade
+      const s = ac.createBufferSource(); s.buffer = b; if (vitesse) s.playbackRate.value = vitesse;
+      const g = ac.createGain(); g.gain.value = gain;
+      let n = g; if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = cl(pan || 0, -1, 1); g.connect(p); n = p; }
+      s.connect(g); n.connect(sortie); if (reverb && rev) { const r = ac.createGain(); r.gain.value = rev; n.connect(r); r.connect(reverb); }
+      s.start(debut || ac.currentTime); return { s, g };
     }
     function eclat(t, dur, freq, q, gain, pan) {                                                     // un bruit bref filtré
       const s = ac.createBufferSource(); s.buffer = bruit; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
@@ -6098,38 +6198,47 @@ const G3D = (() => {
       let n = g; if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = cl(pan || 0, -1, 1); g.connect(p); n = p; }
       s.connect(f); f.connect(g); n.connect(sortie); s.start(t, Math.random() * 1.5, dur + 0.05);
     }
-    function ton(t, f0, f1, dur, gain, type) {
-      const o = ac.createOscillator(); o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
-      const g = ac.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-      o.connect(g); g.connect(sortie); o.start(t); o.stop(t + dur + 0.02);
-    }
     function dire(txt, delai) {
       if (!actif || !window.speechSynthesis) return;
       setTimeout(() => { try { if (!voix) choisirVoix(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'en-GB'; if (voix) u.voice = voix;
         u.rate = 1.05; u.pitch = 0.85; u.volume = 0.9; speechSynthesis.speak(u); } catch (e) {} }, (delai || 0) * 1000);
     }
     const prets = () => actif && ac && ac.state === 'running';
+    const pick = L => L[Math.floor(Math.random() * L.length)];
     return {
       get actif() { return actif; },
       basculer(on) {
         actif = on === undefined ? !actif : !!on;
         try { localStorage.setItem(LS, actif ? '1' : '0'); } catch (e) {}
-        if (actif && init()) { ac.resume(); rumeur.gain.setTargetAtTime(0.05, ac.currentTime, 0.5); choisirVoix(); }
-        else if (ac) { rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
+        if (actif && init()) { ac.resume(); choisirVoix(); chargerReels();
+          if (murmureG) murmureG.gain.setTargetAtTime(0.55, ac.currentTime, 0.5); else rumeur.gain.setTargetAtTime(0.035, ac.currentTime, 0.5); }
+        else if (ac) { rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); if (murmureG) murmureG.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
         return actif;
       },
       voulu() { try { return localStorage.getItem(LS) === '1'; } catch (e) { return false; } },
-      frappe(force, pan) { if (!prets()) return; const t = ac.currentTime;                          // cordage : claquement + « pop »
-        eclat(t, 0.05, 2600, 1.2, 0.5 * force, pan); ton(t, 700, 330, 0.06, 0.25 * force); },
-      rebond(pan, terre) { if (!prets()) return; const t = ac.currentTime;
-        eclat(t, terre ? 0.07 : 0.04, terre ? 700 : 1100, 1.0, 0.28, pan); ton(t, 210, 120, 0.05, 0.18); },
-      filet(pan) { if (!prets()) return; const t = ac.currentTime; eclat(t, 0.12, 400, 0.7, 0.35, pan); },
-      applaudir(force) { if (!prets()) return; const t0 = ac.currentTime, n = Math.round(60 + 140 * force), D = 1.6 + 2.2 * force;
-        for (let k = 0; k < n; k++) { const t = t0 + Math.pow(Math.random(), 1.6) * D; eclat(t, 0.025, 900 + Math.random() * 2200, 1.4, 0.06 + 0.05 * Math.random(), Math.random() * 2 - 1); }
-        rumeur.gain.cancelScheduledValues(t0); rumeur.gain.setTargetAtTime(0.05 + 0.12 * force, t0, 0.15); rumeur.gain.setTargetAtTime(0.05, t0 + D, 0.8); },
+      frappe(force, pan) { if (!prets()) return;
+        if (extrait(force >= 1 ? 'services' : 'frappes', 0.75 + 0.25 * force, pan, 0.3, Math.random() * 0.06 + 0.97)) return;
+        if (BUF.frappes.length) jouer(pick(BUF.frappes), 0.55 + 0.4 * force, pan, 0.35, 0, alea(0.97, 1.03) * (force > 0.95 ? 1.04 : 1));
+        else eclat(ac.currentTime, 0.05, 2600, 1.2, 0.5 * force, pan); },
+      rebond(pan, terre) { if (!prets()) return;
+        if (extrait('rebonds', terre ? 0.5 : 0.45, pan, 0.2, terre ? 0.86 : 1)) return;   // enregistrés sur gazon : plus graves sur terre
+        const L = terre ? BUF.terre : BUF.rebonds;
+        if (L.length) jouer(pick(L), terre ? 0.38 : 0.32, pan, 0.25, 0, alea(0.95, 1.05)); else eclat(ac.currentTime, 0.04, 1100, 1.0, 0.28, pan); },
+      filet(pan) { if (!prets()) return; const t = ac.currentTime; eclat(t, 0.14, 380, 0.7, 0.4, pan); eclat(t + 0.01, 0.2, 160, 0.6, 0.25, pan); },
+      applaudir(force) { if (!prets()) return; const t0 = ac.currentTime, D = 1.6 + 2.6 * force;
+        const reel = force >= 1 ? REEL[Math.random() < 0.5 ? 'ovation' : 'ovation2'] || REEL.applaudissements : REEL.applaudissements;
+        if (reel) { const { s, g } = jouer(reel, 0, 0, 0.25, t0);
+          g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.75 + 0.5 * force, t0 + 0.12);
+          g.gain.setTargetAtTime(0, t0 + D, 0.5); s.stop(t0 + D + 3);
+          if (murmureG) { murmureG.gain.cancelScheduledValues(t0); murmureG.gain.setTargetAtTime(0.35, t0, 0.1); murmureG.gain.setTargetAtTime(0.55, t0 + D, 1.2); }
+          return; }
+        if (BUF.applaus) { const { s, g } = jouer(BUF.applaus, 0, 0, 0.5, t0);
+          g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.5 + 0.7 * force, t0 + 0.25);
+          g.gain.setTargetAtTime(0, t0 + D, 0.45); s.stop(t0 + D + 2.5); }
+        rumeur.gain.cancelScheduledValues(t0); rumeur.gain.setTargetAtTime(0.035 + 0.09 * force, t0, 0.15); rumeur.gain.setTargetAtTime(0.035, t0 + D, 0.8); },
       annonce: dire,
       // à la fin d'un vrai point : applaudissements, puis le score par l'arbitre
-      point(Rf, grand) { if (!prets()) return; this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.2 : 1.4); },
+      point(Rf, grand) { if (!prets()) return; this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.6 : 1.8); },
     };
   })();
   // le score annoncé (en anglais, comme sur le circuit) : serveur d'abord ; rien au jeu décisif
@@ -6696,7 +6805,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v428';
+  const VERSION_3D = 'v429';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
