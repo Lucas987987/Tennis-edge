@@ -25,3 +25,12 @@ def test_worker_et_config():
     i = W.index('export class DirectLive'); bloc = W[i:W.index('async function flux(', i)]
     for mot in ('RAPIDAPI_KEY', 'march', 'Pinnacle', 'http'):                             # rien d'autre que live()
         assert mot not in bloc.replace('https://interne/live', ''), mot
+
+
+def test_mesure_tennisapi_privee():
+    assert 'conso: undefined' in W                                     # jamais renvoyée par /live
+    assert "export const CONSO_R2 = 'prive/tennisapi_conso.json'" in W
+    V = (R / 'workers' / 'algo' / 'ventes.js').read_text(encoding='utf-8')
+    C = (R / 'workers' / 'algo' / 'comptes.js').read_text(encoding='utf-8')
+    assert 'export async function consoTennisApi(env)' in V and 'tennisapi: await consoTennisApi(env)' in V
+    assert "tapi(o.tennisapi||[])" in C
