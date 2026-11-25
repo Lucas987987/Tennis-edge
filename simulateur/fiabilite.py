@@ -15,6 +15,18 @@ VERSIONS = ('combinaison', 'simulation', 'stats')
 # d'erreur d'étalonnage, tiers bas pente 0,76 et 3,1 points. La v1 reste calculée à côté (note_v1).
 VERSION_FIABILITE = 'pente_v3'
 ACTIVE_LE = '2026-11-05'
+# 25/11/2026 (paquet 451, Lucas : « chaque match est indépendant […] un match peut être fiable de 0 à 100 % ») : NOTE
+# MESURÉE MATCH PAR MATCH (simulateur/note_par_match.py, règle et garde-fou dans son en-tête) : pente de base de la
+# classe d'expérience × effet mesuré de chaque critère du match, sans plafond ; catégories pour lire vite. Tant qu'elle
+# n'est pas retirée par son garde-fou, c'est la version affichée (bilan par niveau à partir du 25/11, sans mélange).
+try:
+    import json as _json
+    import os as _os
+    with open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'note_par_match.json'), encoding='utf-8') as _f:
+        if not _json.load(_f).get('retire'):
+            VERSION_FIABILITE, ACTIVE_LE = 'par_match', '2026-11-25'
+except (OSError, ValueError):
+    pass
 SEUILS_V3 = {'prudent': 78, 'correct': 85, 'solide': 93}
 _MODELE_V3 = {}
 
@@ -55,6 +67,31 @@ def modele_v3_challenger():
         except (OSError, ValueError):
             _MODELE_CH['m'] = None
     return _MODELE_CH['m']
+
+
+_MODELE_PM = {}
+
+
+def modele_par_match():
+    """Le modèle de la note par match (simulateur/note_par_match.json), ou None (absent, sans effets ou retiré)."""
+    if 'm' not in _MODELE_PM:
+        import note_par_match as NP
+        d = NP.charger()
+        _MODELE_PM['m'] = d if d and not d.get('retire') and d.get('effets') else None
+    return _MODELE_PM['m']
+
+
+def note_du_match(match, p, p_elo, p_sim):
+    """Paquet 451 : la note mesurée de CE match (note, pente, sens, effets), ou None."""
+    M = modele_par_match()
+    c = match.get('circuit')
+    mj = [x for x in (match.get('matchs_joues') or []) if x is not None]
+    if not M or c not in ('ATP', 'WTA', 'CH') or len(mj) < 2:
+        return None
+    import note_par_match as NP
+    r = {'p': float(p), 'pe': p_elo, 'ps': p_sim, 'xp': min(mj), 'tour': match.get('tour'),
+         'p0': match.get('p_premier'), 'p1': (match.get('combinaison') or {}).get('p_home')}
+    return NP.evaluer_match(M, c, min(mj), NP.criteres_du_match(r))
 
 
 def niveau_v3(note):
@@ -280,6 +317,17 @@ def evaluer(match, historique):
             na = min(v3a, SEUILS_V3['prudent'] - 1) if criteres else v3a
             ancien = {'note_v3_ancienne': v3a, 'note_ancienne': na, 'niveau_ancien': niveau_v3(na), 'niveau_correction': niveau_v3(na),
                       'note_v3_challenger': 'comme_en_production_450'}
+    nm = note_du_match(match, p, p_elo, p_sim) if v3 is not None else None
+    if nm:
+        # paquet 451 : la note mesurée match par match remplace la note v3 plafonnée, gardée à côté (garde-fou et
+        # correction Challenger « correct », qui vise toujours les mêmes matchs : aucun % ne change)
+        a_case = pente_v3(match) or 1.0
+        a_anc = a_case if note >= (v3 or 0) else ((SEUILS_V3['prudent'] - 1) / 100 if a_case <= 1 else 100 / (SEUILS_V3['prudent'] - 1))
+        ancien = {'note_ancienne': note, 'niveau_ancien': niveau_v3(note), 'niveau_correction': niveau_v3(note),
+                  'pente_ancienne': round(a_anc, 4), 'note_par_match': nm['note'], 'pente_du_match': nm['pente_du_match'],
+                  'pente_de_base': nm['pente_de_base'], 'effets_criteres': nm['effets_criteres'], 'sens': nm['sens'],
+                  'methode': 'par_match_451'}
+        note = nm['note']
     return {**ancien, 'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
             'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
             'fragile_desaccord_modeles': fragile_force, 'fragile_criteres': criteres,

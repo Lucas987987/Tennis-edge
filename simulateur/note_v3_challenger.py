@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+REMPLACÉ LE 25/11/2026 PAR simulateur/note_par_match.py (paquet 451) : la note Challenger par classe (paquet 450) n'a
+jamais tourné ; simulateur/note_v3_challenger.json est marqué « retire ». Gardé pour mémoire ; plus lancé le lundi.
+
 note_v3_challenger.py — GARDE-FOU DE LA NOTE DE FIABILITÉ CHALLENGER RÉAPPRISE (25/11/2026, paquet 450).
 
 En place depuis le 25/11/2026 (décision de Lucas) : en Challenger, la note v3 prend les pentes réapprises sur le rejeu
