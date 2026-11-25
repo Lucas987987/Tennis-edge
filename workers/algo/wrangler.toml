@@ -41,3 +41,13 @@ MAIL_EXPEDITEUR = "Game Set Algo <noreply@gamesetalgo.com>"
 # Tours PBKDF2 des mots de passe (100 000 au plus sur Cloudflare). À baisser seulement si l'inscription renvoie
 # « erreur 1102 » (limite de calcul de l'offre gratuite des Workers).
 PBKDF2_TOURS = "100000"
+
+# 25/11/2026 (paquet 433) : direct en continu (WebSocket) — un objet « DirectLive » pousse les scores aux téléphones.
+# Nécessite le plan Workers Paid (pris le 25/11/2026). La migration crée la classe une fois, au premier déploiement.
+[[durable_objects.bindings]]
+name = "DIRECT"
+class_name = "DirectLive"
+
+[[migrations]]
+tag = "v1-direct"
+new_sqlite_classes = ["DirectLive"]
