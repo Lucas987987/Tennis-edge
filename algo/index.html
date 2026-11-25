@@ -504,6 +504,8 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 /* 05/11/2026 — « Demande à l'algo » : une question, la réponse des simulations */
 .panel.qa select,.panel.qa input{background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.panel.qa .qa-th{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:10px}.panel.qa .qa-t{border:1px solid var(--line2);background:transparent;color:inherit;border-radius:999px;padding:7px 4px;font-weight:600;font-size:.88rem;cursor:pointer;min-height:40px;white-space:nowrap}.panel.qa .qa-t.on{background:var(--ball,#D4FF3A);color:#141225;border-color:transparent}
+.panel.qa .qa-r small{color:var(--dim);font-size:.9rem}.panel.qa .qa-note{margin:8px 0 0;font-size:.82rem;color:var(--dim)}.panel.qa #qa-q{max-width:100%}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
 /* 430 : mise en valeur (hors tiroir, sous l'en-tête du match) */
 .panel.qa{border:1.5px solid rgba(212,255,58,.55);background:linear-gradient(180deg,rgba(212,255,58,.07),rgba(212,255,58,.015));box-shadow:0 0 0 4px rgba(212,255,58,.05)}
@@ -2032,23 +2034,144 @@ function jeuxParSets(J, fr){
               : `in ${n} sets (${pc0(x.p)}): ${x.p10 === x.p90 ? x.p10 : `${x.p10} to ${x.p90}`}, most often ${x.mode}`; };
   return [l('2', 2), l('3', 3), l('4', 4), l('5', 5)].filter(Boolean).join(' · ') + (fr ? ' (8 cas sur 10)' : ' (8 times out of 10)');
 }
+// 25/11/2026 (paquet 440, Lucas : « améliore Demande à l'algo pour que ce soit plus complet sur l'ensemble de nos
+// données ») — QUATRE THÈMES au lieu d'une liste de 7 questions : le match (simulation), les jeux (et la durée), les
+// statistiques prévues (aces, breaks, service… avec la fourchette 8 cas sur 10) et l'historique (forme contre
+// l'attendu, après le 1er set, dans ce pays, contre ce style, l'algo sur ce % et sur ce joueur). Rien n'est calculé
+// ici : tout est déjà dans le match (simulation, feuille prévue, avant-match, styles) ou dans joueurs_perf.json
+// (pages des joueurs). L'historique est descriptif : la réponse le dit, le % du match ne change pas.
+const tx = o => o == null ? '' : typeof o === 'string' ? o : (o[L] ?? o.fr);
+const QA_THEMES = [['match', {fr:'Match', en:'Match'}], ['jeux', {fr:'Jeux', en:'Games'}],
+  ['stats', {fr:'Stats', en:'Stats'}], ['histo', {fr:'Historique', en:'History'}]];
+let PERF_J = null;
+function perfJoueurs(){ return PERF_J || (PERF_J = lireJson('joueurs_perf.json').catch(() => ({}))); }
+function qaCatalogue(m){
+  const fr = L === 'fr', Z = m.questions || null, k = m.lignes_algo || {}, S = m.sets || {}, sc = m.scenarios;
+  const bo5 = (k.meilleur_des || m.meilleur_des) === 5, fp = m.feuille_prevue, ff = m.feuille_fourchette, fpl = m.feuille_plus;
+  const am = m.avant_match, sd = m.styles_descriptifs, rp = m.rythme && m.rythme.prevision;
+  const W = m.circuit === 'WTA', il = W ? 'elle' : 'il', his = W ? 'her' : 'his', he = W ? 'she' : 'he';
+  const Q = [], add = (id, theme, lib, rep, o) => Q.push(Object.assign({ id, theme, lib, rep }, o || {}));
+  const pj = j => j === 0 ? m.p_home : 1 - m.p_home;
+  // — le match
+  if (m.p_home != null) add('gagne', 'match', {fr:'gagne le match', en:'wins the match'}, j => ({ p: pj(j) }));
+  if (Z) {
+    add('deux', 'match', {fr:'gagne sans perdre de set', en:'wins without dropping a set'}, j => ({ p: Z.j[j].deux }));
+    add('un_set', 'match', {fr:'gagne au moins un set', en:'wins at least one set'}, j => ({ p: Z.j[j].un_set }));
+  }
+  const s1 = m.set1_home ?? k.set1_home;
+  if (s1 != null) add('set1', 'match', {fr:'gagne le 1er set', en:'wins the 1st set'}, j => ({ p: j === 0 ? s1 : 1 - s1 }));
+  if (Z) add('s1m', 'match', {fr:'gagne le 1er set et le match', en:'wins the 1st set and the match'}, j => ({ p: Z.j[j].s1m }));
+  const coherent = sc && Array.isArray(sc.j) && k.set_decisif != null && Math.abs((sc.j[0].long || 0) + (sc.j[1].long || 0) - k.set_decisif) < 0.05;
+  if (coherent && sc.j[0].si_set1_perdu != null)
+    add('remonte', 'match', {fr:'perd le 1er set mais gagne quand même', en:'loses the 1st set but still wins'}, j => ({ p: sc.j[j].si_set1_perdu, si: true, il, he }));
+  const cles = Object.keys(S).map(x => x.split('-').map(Number)).filter(([h, a]) => h > a).sort((x, y) => x[1] - y[1]);
+  for (const [h, a] of cles) add(`sets_${h}${a}`, 'match', {fr:`gagne ${h} sets à ${a}`, en:`wins ${h} sets to ${a}`}, j => ({ p: S[j === 0 ? `${h}-${a}` : `${a}-${h}`] }));
+  if (k.set_decisif != null) add('decisif', 'match', {fr:`Match en ${bo5 ? 5 : 3} sets`, en:`Match goes to ${bo5 ? 5 : 3} sets`}, () => ({ p: k.set_decisif }), { sansJ: true });
+  if (Z && Z.tb != null) add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => ({ p: Z.tb }), { sansJ: true });
+  // — les jeux et la durée
+  const pick = (arr, i, debut) => { const x = Math.floor(i) - (debut || 0); return x < 0 ? 1 : x >= arr.length ? 0 : arr[x]; };
+  if (Z) {
+    add('total', 'jeux', {fr:'Plus de … jeux dans le match', en:'Over … games in the match'}, (j, n) => ({ p: pick(Z.total, n, Z.total_debut) }), { sansJ: true, n: [12, 65, 21] });
+    add('jeux_j', 'jeux', {fr:'gagne plus de … jeux', en:'wins more than … games'}, (j, n) => ({ p: pick(Z.j[j].jeux_j, n) }), { n: [0, 40, 10] });
+    add('ecart', 'jeux', {fr:'gagne avec plus de … jeux d’écart', en:'wins by more than … games'}, (j, n) => ({ p: pick(Z.j[j].ecart, n) }), { n: [0, 15, 3] });
+  }
+  if (coherent && sc.jeux && sc.jeux.mediane != null)
+    add('nb_jeux', 'jeux', {fr:'Combien de jeux dans le match ?', en:'How many games in the match?'},
+      () => ({ txt: `<b>${sc.jeux.mediane}</b> ${esc(fr ? 'jeux le plus souvent' : 'games most often')}<br><small>${esc(jeuxParSets(sc.jeux, fr))}</small>` }), { sansJ: true });
+  if (rp && rp.minutes)
+    add('duree', 'jeux', {fr:'Combien de temps dure le match ?', en:'How long will the match last?'},
+      () => ({ txt: `<b>${esc(hm(rp.minutes))}</b>${rp.minutes_p10 && rp.minutes_p90 ? `<br><small>${esc(fr ? `entre ${hm(rp.minutes_p10)} et ${hm(rp.minutes_p90)} dans 8 cas sur 10` : `between ${hm(rp.minutes_p10)} and ${hm(rp.minutes_p90)} 8 times out of 10`)}</small>` : ''}` }), { sansJ: true });
+  // — les statistiques prévues (moyenne des simulations, fourchette 8 cas sur 10)
+  const est = (v, f, unite, pct) => v == null ? null : ({ txt: `<b>${pct ? pc0(v / 100) : dec(v, 1)}</b> ${esc(unite)}${f && f[0] != null ? `<br><small>${esc(fr
+    ? `entre ${pct ? pc0(f[0] / 100) : dec(f[0], 0)} et ${pct ? pc0(f[1] / 100) : dec(f[1], 0)} dans 8 cas sur 10` : `between ${pct ? pc0(f[0] / 100) : dec(f[0], 0)} and ${pct ? pc0(f[1] / 100) : dec(f[1], 0)} 8 times out of 10`)}</small>` : ''}` });
+  const STF = [['aces', {fr:'Combien d’aces ?', en:'How many aces?'}, {fr:'aces prévus', en:'aces expected'}],
+    ['doubles_fautes', {fr:'Combien de doubles fautes ?', en:'How many double faults?'}, {fr:'doubles fautes prévues', en:'double faults expected'}],
+    ['breaks', {fr:'Combien de breaks réussis ?', en:'How many breaks?'}, {fr:'breaks prévus', en:'breaks expected'}],
+    ['premiere_pct', {fr:'Quel % de premières balles ?', en:'What 1st-serve %?'}, {fr:'de premières balles', en:'first serves in'}, true]];
+  if (Array.isArray(fp)) for (const [c, lib, u, pct] of STF) if (fp[0] && fp[0][c] != null)
+    add('f_' + c, 'stats', lib, j => est(fp[j][c], ff && ff[j] && ff[j][c], tx(u), pct));
+  const STP = [['balles_break_obtenues', {fr:'Combien de balles de break obtenues ?', en:'How many break points earned?'}, {fr:'balles de break', en:'break points'}],
+    ['gagnes_1re_pct', {fr:'Points gagnés derrière la 1re balle ?', en:'Points won on 1st serve?'}, {fr:'des points sur 1re balle', en:'of 1st-serve points'}, true],
+    ['gagnes_2e_pct', {fr:'Points gagnés derrière la 2e balle ?', en:'Points won on 2nd serve?'}, {fr:'des points sur 2e balle', en:'of 2nd-serve points'}, true],
+    ['jeux_service_gagnes_pct', {fr:'Jeux de service gagnés ?', en:'Service games won?'}, {fr:'de jeux de service gagnés', en:'of service games won'}, true],
+    ['points_gagnes', {fr:'Combien de points gagnés au total ?', en:'How many points won in total?'}, {fr:'points gagnés', en:'points won'}]];
+  if (Array.isArray(fpl)) for (const [c, lib, u, pct] of STP) if (fpl[0] && Array.isArray(fpl[0][c]))
+    add('p_' + c, 'stats', lib, j => { const x = fpl[j] && fpl[j][c]; return x ? est(x[0], [x[1], x[2]], tx(u), pct) : null; });
+  // — l'historique (descriptif : ne change pas le %)
+  const av = j => am && am[j === 0 ? 'home' : 'away'];
+  const sur = (v, n) => fr ? `${v} victoire${v > 1 ? 's' : ''} sur ${n}` : `${v} win${v > 1 ? 's' : ''} out of ${n}`;
+  const att = (a, v) => a == null ? '' : (fr ? ` · l’algo en attendait ${dec(a, 1)} (${v - a >= 0 ? '+' : '−'}${dec(Math.abs(v - a), 1)})` : ` · the algorithm expected ${dec(a, 1)} (${v - a >= 0 ? '+' : '−'}${dec(Math.abs(v - a), 1)})`);
+  if (am && av(0) && av(0).reussite) add('forme', 'histo', {fr:`Sa forme : gagne-t-${il} plus que prévu ?`, en:'Form: winning more than expected?'}, j => {
+    const r = av(j) && av(j).reussite, se = av(j) && av(j).serie; if (!r || !r.matchs) return null;
+    const serie = se && se.n ? (fr ? `<br><small>Série en cours : ${se.n} ${se.type === 'victoires' ? 'victoire' : 'défaite'}${se.n > 1 ? 's' : ''} de suite</small>` : `<br><small>Current streak: ${se.n} ${se.type === 'victoires' ? 'win' : 'loss'}${se.n > 1 ? (se.type === 'victoires' ? 's' : 'es') : ''} in a row</small>`) : '';
+    const vic = fr ? `${r.victoires} victoire${r.victoires > 1 ? 's' : ''}` : `${r.victoires} win${r.victoires > 1 ? 's' : ''}`;
+    return { histo: true, txt: `<b>${esc(vic)}</b> ${esc(fr ? `sur ses ${r.matchs} derniers matchs` : `in ${his} last ${r.matchs} matches`)}${esc(att(r.attendu, r.victoires))}${serie}` }; });
+  if (am && av(0) && av(0).apres_set1) add('apres_s1', 'histo', {fr:'Après le 1er set, que fait-il d’habitude ?', en:'After the 1st set, what usually happens?'}, j => {
+    const a = av(j) && av(j).apres_set1; if (!a) return null;
+    const l = (x, quand) => x && x[1] ? `${esc(quand)}${fr ? ' : ' : ': '}<b>${x[0]}/${x[1]}</b> (${pc0(x[0] / x[1])})` : '';
+    return { histo: true, txt: [l(a.gagne, fr ? `Quand ${il} gagne le 1er set, ${il} gagne le match` : `When ${he} wins the 1st set, ${he} wins the match`),
+      l(a.perdu, fr ? `Quand ${il} le perd, ${il} gagne quand même` : `When ${he} loses it, ${he} still wins`)].filter(Boolean).join('<br>') }; });
+  const code = m.meteo && m.meteo.code;
+  if (code && am && av(0) && av(0).conditions && av(0).conditions.pays) add('pays', 'histo', {fr:`Dans ce pays, comment s’en sort-${il} ?`, en:`How does ${he} do in this country?`}, j => {
+    const x = ((av(j) || {}).conditions || {}).pays; const r = x && x[code]; if (!r || !r[0]) return { txt: esc(fr ? 'Pas encore de match connu dans ce pays.' : 'No known match in this country yet.') };
+    let nom = code; try { nom = new Intl.DisplayNames([loc()], { type: 'region' }).of(code) || code; } catch (e) { /* code */ }
+    return { histo: true, txt: `${esc(nom)}${fr ? ' : ' : ': '}<b>${esc(sur(r[1], r[0]))}</b>${esc(att(r[2], r[1]))}` }; });
+  const sj = sd && Array.isArray(sd.joueurs) ? sd.joueurs : null;
+  if (sj && sj.some(x => x && x.global && x.style_adverse)) add('style', 'histo', {fr:'Contre ce style d’adversaire ?', en:'Against this style of opponent?'}, j => {
+    const x = sj.find(y => y && y.joueur === (j === 0 ? m.home : m.away)); const g = x && x.global; if (!g || !g.n || !x.style_adverse) return null;
+    return { histo: true, txt: `${esc(fr ? 'Contre les' : 'Against')} ${esc(styleLibPluriel(x.style_adverse))}${fr ? ' : ' : ': '}<b>${esc(sur(g.victoires, g.n))}</b> (${pc0(g.victoires / g.n)})${g.attendu_pct != null ? esc(fr ? ` · attendu ${pc0(g.attendu_pct / 100)}` : ` · expected ${pc0(g.attendu_pct / 100)}`) : ''}` }; });
+  if (m.p_home != null) add('tranche', 'histo', {fr:'Ce % de l’algo, ça passe souvent ?', en:'Does this % usually come true?'}, () => {
+    const r = reussiteA('vainqueur', m.circuit, m.p_home); if (!r) return null;
+    return { histo: true, txt: `${esc(fr ? `Quand l’algo donne un joueur à ${r.tranche}, ce joueur a gagné` : `When the algorithm gives a player ${r.tranche}, that player won`)} <b>${dec(r.pct, 1)}${fr ? ' %' : '%'}</b> ${esc(fr ? `des fois (${r.bon} sur ${r.n})` : `of the time (${r.bon} of ${r.n})`)}` }; }, { sansJ: true });
+  add('algo_joueur', 'histo', {fr:'L’algo voit-il juste sur ce joueur ?', en:'Is the algorithm accurate on this player?'}, j => ({ attente: perfJoueurs().then(P => {
+    const x = P && P[j === 0 ? m.home : m.away]; if (!x) return { txt: esc(fr ? 'Pas encore assez de matchs analysés pour ce joueur.' : 'Not enough analysed matches for this player yet.') };
+    const [n, a, v, f] = x;
+    return { histo: true, txt: `${esc(fr ? `Sur ses ${n} derniers matchs analysés : annoncé` : `Over ${his} last ${n} analysed matches: announced`)} <b>${pc0(a)}</b> ${esc(fr ? 'en moyenne, gagné' : 'on average, won')} <b>${pc0(v / n)}</b>${f != null ? `<br><small>${esc(fr ? `Fiabilité du joueur : ${f}/100` : `Player reliability: ${f}/100`)}</small>` : ''}` }; }) }));
+  return Q;
+}
 function rendQuestion(m){
-  if (!m.questions) return '';
-  const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0)), Qs = t('qa_q');
-  return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><div class="pad"><p class="aide">${esc(t('qa_sous', nSim))}</p>
+  if (m.p_home == null) return '';
+  const Q = qaCatalogue(m); if (!Q.length) return '';
+  const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0)), fr = L === 'fr';
+  const themes = QA_THEMES.filter(([id]) => Q.some(q => q.theme === id));
+  return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><div class="pad"><p class="aide">${esc(fr
+      ? `${fmt(Q.length)} questions sur ce match : ses ${fmt(nSim)} simulations, les statistiques prévues et l’historique des joueurs.`
+      : `${fmt(Q.length)} questions on this match: its ${fmt(nSim)} simulations, predicted stats and the players’ history.`)}</p>
+    <div class="qa-th" role="tablist">${themes.map(([id, lib], i) => `<button type="button" role="tab" class="qa-t${i ? '' : ' on'}" data-qa-theme="${id}" aria-selected="${i ? 'false' : 'true'}">${esc(tx(lib))}</button>`).join('')}</div>
     <div class="qa-l"><select id="qa-j" aria-label="${esc(t('qa_joueur'))}"><option value="0">${esc(court(m.home))}</option><option value="1">${esc(court(m.away))}</option></select>
-      <select id="qa-q">${Object.entries(Qs).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select>
+      <select id="qa-q" aria-label="Question"></select>
       <input id="qa-n" type="number" step="1" min="0" max="65" value="21" aria-label="${esc(t('qa_n'))}" style="width:5.5em"></div>
-    <p class="qa-r" id="qa-r" aria-live="polite"></p></div></div>`;
+    <div class="qa-r" id="qa-r" aria-live="polite"></div></div></div>`;
 }
 function brancherQuestion(m){
   const q = document.getElementById('qa-q'); if (!q) return;
+  const Q = qaCatalogue(m), fr = L === 'fr', par = Object.fromEntries(Q.map(x => [x.id, x]));
   const j = document.getElementById('qa-j'), n = document.getElementById('qa-n'), r = document.getElementById('qa-r');
-  const maj = () => { const k = q.value, avecN = ['jeux_j','ecart','total'].includes(k), avecJ = !['total','tb'].includes(k);
-    n.hidden = !avecN; j.hidden = !avecJ;
-    if (k === 'total' && Number(n.value) < 12) n.value = 21; if (k === 'ecart' && Number(n.value) > 12) n.value = 3; if (k === 'jeux_j' && Number(n.value) > 25) n.value = 10;
-    const v = repondre(m, k, Number(j.value), Math.max(0, Math.round(Number(n.value) || 0)));
-    r.innerHTML = v == null ? '—' : t('qa_rep', pc0(v), odds(v > .001 ? Math.round(100 / v) / 100 : null)); };
+  const panneau = q.closest('.qa');
+  const remplir = theme => { q.innerHTML = Q.filter(x => x.theme === theme).map(x => `<option value="${x.id}">${esc(tx(x.lib))}</option>`).join(''); };
+  let jeton = 0;
+  const afficher = (o, x) => {
+    if (!o) { r.innerHTML = '—'; return; }
+    const note = o.histo ? `<p class="qa-note">${esc(fr ? 'Historique : il ne change pas le % de ce match.' : 'History: it does not change this match’s %.')}</p>` : '';
+    if (o.p != null) { const v = o.p; r.innerHTML = t('qa_rep', pc0(v), odds(v > .001 ? Math.round(100 / v) / 100 : null))
+      + (o.si ? `<p class="qa-note">${esc(fr ? `Parmi les simulations où ${o.il} perd le 1er set.` : `Among simulations where ${o.he} loses the 1st set.`)}</p>` : ''); return; }
+    r.innerHTML = (o.txt || '—') + note;
+  };
+  const maj = () => {
+    const x = par[q.value]; if (!x) { r.innerHTML = '—'; return; }
+    n.hidden = !x.n; j.hidden = !!x.sansJ;
+    if (x.n) { n.min = x.n[0]; n.max = x.n[1]; const v = Number(n.value); if (!(v >= x.n[0] && v <= x.n[1]) || n.dataset.q !== x.id) n.value = x.n[2]; n.dataset.q = x.id; }
+    const o = x.rep(Number(j.value), Math.max(0, Math.round(Number(n.value) || 0)));
+    const mien = ++jeton;
+    if (o && o.attente) { r.innerHTML = '…'; o.attente.then(y => { if (mien === jeton) afficher(y, x); }); return; }
+    afficher(o, x);
+  };
+  panneau.querySelectorAll('[data-qa-theme]').forEach(b => b.addEventListener('click', () => {
+    panneau.querySelectorAll('[data-qa-theme]').forEach(c => { c.classList.toggle('on', c === b); c.setAttribute('aria-selected', c === b ? 'true' : 'false'); });
+    remplir(b.dataset.qaTheme); maj();
+  }));
+  const premier = panneau.querySelector('[data-qa-theme]');
+  remplir(premier ? premier.dataset.qaTheme : 'match');
   [q, j, n].forEach(x => x.addEventListener('input', maj)); maj();
 }
 // 341 — la courbe « plus de X jeux » : plus la ligne monte, moins c'est probable ; le point où la courbe croise 50 %
