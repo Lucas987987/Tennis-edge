@@ -2396,6 +2396,13 @@
    "paquet": 433,
    "quoi": "DIRECT POUSSÉ (paquet 433, Lucas : « les points en direct comme sur Sofascore », plan Workers Paid pris le 25/11). Le téléphone ouvre une connexion continue (WebSocket /live/flux) ; un seul objet Cloudflare (DirectLive) garde tous les téléphones connectés et leur envoie le direct dès qu'il change, juste après chaque mise à jour TennisApi, au lieu que chaque téléphone redemande toutes les 3 s. Si la connexion tombe (réseau, veille, serveur), la page la rouvre (2 s, 5 s, 15 s puis 60 s) et reprend en attendant la redemande classique de /live. Page cachée : connexion fermée. Une réponse plus ancienne que la dernière reçue est ignorée.",
    "garde_fou": "Rien ne change dans les % ni dans les données : même source (live(), même cache, même quota TennisApi, même réserve de 3 000 requêtes). Personne de connecté : l'objet ne se réveille plus. Au plus 45 000 réveils par jour (sinon retour à la redemande classique jusqu'au lendemain) et 5 000 connexions. Coût estimé : inclus dans les 5 $ du plan (≈ 860 000 réveils et ≈ 220 000 GB-s par mois pour 1 million et 400 000 inclus). Retrait : supprimer la route /live/flux. Tests : workers/algo/test_worker.mjs (433), tests/test_direct_pousse.py ; essai navigateur avec connexion simulée (poussée affichée, aucune redemande de /live tant qu'elle marche, reconnexion après coupure)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 434,
+   "quoi": "MESURE PRIVÉE DE TENNISAPI (paquet 434, Lucas : « je ne vois pas la bande passante » dans RapidAPI). Le worker compte, par jour, les requêtes envoyées à TennisApi et la taille des réponses reçues : direct (liste des matchs et vérification des matchs finis) et fiches (statistiques, point par point). Lecture dans l'administration des comptes, carte « Entonnoir », tableau « TennisApi » des 10 derniers jours, avec le total mesuré face aux 10 240 Mo par mois du forfait. But : savoir avant tout changement de forfait ce que coûterait un direct plus rapide.",
+   "garde_fou": "Rien ne change dans les % ni dans les données, ni dans ce que voient les visiteurs (la mesure n'est jamais renvoyée par /live). Taille du texte décompressé : un plafond. La collecte des données (GitHub Actions) n'est pas comptée. Tests : workers/algo/test_worker.mjs (434), tests/test_direct_pousse.py."
   }
  ]
 }
