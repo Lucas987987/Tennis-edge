@@ -401,10 +401,10 @@ test('388 : un match qui quitte le direct est vérifié une fois ; fini → scor
   const d2 = await suivreTermines({}, { ...apres, ...d }, apres, async (id) => { demandes.push(id); return fini; });
   assert.deepEqual(demandes, [7]);
   assert.equal(d2.termines.length, 1);
-  // pas encore « finished » (coupure) : réessayé, 3 fois au plus
+  // pas encore « finished » (coupure du flux, match toujours en cours) : réessayé, 3 fois au plus
   let n = 0;
   let e = { termines: [], a_verifier: [] };
-  for (let i = 0; i < 5; i++) e = await suivreTermines({}, i === 0 ? avant : { ...apres, ...e }, apres, async () => { n++; return { ...EV, status: { type: 'interrupted' } }; });
+  for (let i = 0; i < 5; i++) e = await suivreTermines({}, i === 0 ? avant : { ...apres, ...e }, apres, async () => { n++; return { ...EV, status: { type: 'inprogress' } }; });
   assert.equal(n, 3);
   assert.equal(finDeMatch({ ...EV, status: { type: 'inprogress' } }), null);
 });
@@ -533,4 +533,55 @@ test('419 : tournois, bilans de la semaine et pages anglaises servis depuis R2',
   globalThis.fetch = async () => new Response('x', { status: 404 });
   for (const u of ['/bilan/2026-47', '/en/../secret', '/tournoi/ABC'])
     assert.equal((await worker.fetch(new Request('https://gamesetalgo.com' + u), envS)).status, 404, u);
+});
+
+// 25/11/2026 (paquet 427) — un match interrompu (pluie) reste dans le direct avec son score jusqu'à la reprise ou la fin
+import { interrompuDe, VERIF_INTERROMPU_MS } from './worker.js';
+test('427 : interrompu gardé avec son score, revérifié toutes les 10 min, puis terminé', async () => {
+  const pluie = { ...EV, status: { type: 'interrupted', description: 'Interrupted' },
+    homeScore: { current: 1, period1: 6, period2: 5 }, awayScore: { current: 0, period1: 3, period2: 4 } };
+  assert.equal(interrompuDe({ ...EV, status: { type: 'inprogress' } }), null);
+  const avant = { matchs: compacterLive([EV]) }, apres = { matchs: [] };
+  let n = 0;
+  const d = await suivreTermines({}, avant, apres, async () => { n++; return pluie; });
+  assert.equal(n, 1);
+  assert.equal(d.interrompus.length, 1);
+  assert.equal(d.interrompus[0].interrompu, true);
+  assert.deepEqual(d.interrompus[0].score_home.sets, [6, 5]);
+  assert.equal(d.interrompus[0].statut.type, 'interrupted');
+  // tout de suite après : pas de nouvelle requête, toujours gardé
+  const d2 = await suivreTermines({}, { ...apres, ...d }, apres, async () => { n++; return pluie; });
+  assert.equal(n, 1);
+  assert.equal(d2.interrompus.length, 1);
+  // 10 minutes plus tard : revérifié ; fini → passe dans les terminés
+  d2.interrompus[0].verifie -= VERIF_INTERROMPU_MS;
+  const fin = { ...pluie, status: { type: 'finished' }, winnerCode: 1 };
+  const d3 = await suivreTermines({}, { ...apres, ...d2 }, apres, async () => { n++; return fin; });
+  assert.equal(n, 2);
+  assert.equal(d3.interrompus.length, 0);
+  assert.equal(d3.termines.length, 1);
+  // de retour dans le flux (reprise) : plus dans les interrompus
+  const d4 = await suivreTermines({}, { ...apres, ...d }, { matchs: compacterLive([EV]) }, async () => { n++; return pluie; });
+  assert.equal(d4.interrompus.length, 0);
+});
+
+test('427 : /live renvoie les interrompus avec les matchs en cours', async () => {
+  const { viderLiveMemoire } = await import('./worker.js');
+  const stock = {};
+  const envL = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  const pluie = { ...EV, status: { type: 'interrupted', description: 'Interrupted' } };
+  let etape = 0;
+  globalThis.fetch = async (u) => {
+    if (String(u).endsWith('/events/live')) return new Response(JSON.stringify({ events: etape === 0 ? [EV] : [] }), { status: 200 });
+    if (String(u).endsWith('/event/7')) return new Response(JSON.stringify({ event: pluie }), { status: 200 });
+    return new Response('x', { status: 404 });
+  };
+  viderLiveMemoire();
+  await worker.fetch(new Request('https://gamesetalgo.com/live'), envL);
+  etape = 1; viderLiveMemoire(); delete stock['live/en_cours.json'] ;
+  stock['live/en_cours.json'] = JSON.stringify({ ok: true, maj: 0, matchs: compacterLive([EV]), termines: [], a_verifier: [] });
+  const o = await (await worker.fetch(new Request('https://gamesetalgo.com/live'), envL)).json();
+  assert.equal(o.matchs.length, 1);
+  assert.equal(o.matchs[0].interrompu, true);
+  assert.equal(o.interrompus, undefined);
 });
