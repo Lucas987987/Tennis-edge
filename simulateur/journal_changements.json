@@ -2452,6 +2452,13 @@
    "paquet": 441,
    "quoi": "THÈME CLAIR OU SOMBRE SUR LES PAGES DES JOUEURS (paquet 441, Lucas : « la fiche des joueurs est sombre, on devrait pouvoir choisir clair ou sombre »). Les pages des joueurs, des matchs, des tournois et des bilans ont le même réglage que l'accueil (Auto, Clair, Sombre ; sombre par défaut), en haut à droite, et la même mémoire sur l'appareil : un choix fait sur l'accueil vaut partout, et inversement. Couleurs du mode clair reprises de l'accueil. « Trait blanc » devient « Trait » (le trait est sombre en mode clair).",
    "garde_fou": "Affichage seulement. Le thème est appliqué avant l'affichage (pas d'éclair sombre au chargement). Tests : tests/test_performance_joueurs.py (441)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 442,
+   "quoi": "NOTRE PROJET (paquet 442, Lucas : « améliorer la présentation de notre projet, mettre en avant notre savoir-faire, nos points forts et nos différenciants »). La page « Qui sommes-nous » devient « Notre projet » (aussi /notre-projet) : titre « Le tennis simulé point par point. Et jugé sur pièces. », chiffres en direct du bilan publié (matchs annoncés puis jugés, % de favoris trouvés, 20 000 simulations, ≈ 30 questions par match), huit différenciants (simulé pas deviné, tout le match, publié avant jamais retouché, des % qui tiennent parole avec un exemple réel de la calibration, il dit quand il doute, les Challengers aussi avec leur part réelle, le direct, la performance de chaque joueur), notre savoir-faire en quatre étapes, un tableau « un avis ou un algorithme ? », puis nos principes. Thème clair ou sombre. Sur l'accueil : un bandeau d'atouts sous l'en-tête et une section « Pourquoi Game Set Algo » avant l'offre Plus, qui mènent à la page.",
+   "garde_fou": "Chiffres lus dans le bilan publié (rien d'écrit à la main, rien de trié). Aucun concurrent nommé, aucun conseil de pari, aucune promesse de gain, aucun mot sur les cotes. Tests : tests/test_notre_projet.py, tests/test_site_pro.py."
   }
  ]
 }

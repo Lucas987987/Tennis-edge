@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E0A24">
-<title>Qui sommes-nous — Game Set Algo</title>
+<script>(function(){try{var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
+<title>Notre projet — Game Set Algo</title>
 <meta name="description" content="Game Set Algo, projet indépendant né en France : un algorithme de tennis qui publie chaque % avant le match et tout son bilan, erreurs comprises. Pas de ticket sûr, pas de promesse de gain.">
 <link rel="canonical" href="https://gamesetalgo.com/apropos.html"><meta property="og:url" content="https://gamesetalgo.com/apropos.html"><meta property="og:site_name" content="Game Set Algo">
-<meta property="og:title" content="Qui sommes-nous — Game Set Algo">
+<meta property="og:title" content="Notre projet — Game Set Algo">
 <meta property="og:description" content="Un projet indépendant : chaque % publié avant le match, tout le bilan, erreurs comprises.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://gamesetalgo.com/partage.png">
@@ -70,6 +71,30 @@ a{color:var(--p1)}
 .principe:nth-child(1) b{color:var(--p1)}.principe:nth-child(2) b{color:var(--ball)}.principe:nth-child(3) b{color:var(--p2)}.principe:nth-child(4) b{color:var(--ok)}
 .encadre{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--p1);border-radius:14px;padding:16px;margin:10px 0}
 </style>
+<style>
+/* 25/11/2026 (paquet 442) — « Notre projet » : savoir-faire, différenciants, comparaison ; thème clair */
+html[data-theme="light"]{--bg:#F4F2FB;--bg2:#E9E3FB;--panel:#FFFFFF;--line:rgba(30,20,80,.14);--ink:#1B1640;--dim:#5C5788;--p1:#0A7FA3;--p2:#C21F78;--ball:#6F9500;--ok:#0E8A57;color-scheme:light}
+html[data-theme="light"] .principe,html[data-theme="light"] .atout,html[data-theme="light"] .chiffre{box-shadow:0 6px 22px rgba(40,20,120,.07)}
+.haut{flex-wrap:wrap;row-gap:10px}.haut .th{order:3;margin-left:auto}
+.th{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.th button{background:transparent;color:var(--dim);border:0;font:600 .78rem "Barlow",system-ui;padding:6px 9px;cursor:pointer;min-height:32px}
+.th button[aria-pressed="true"]{background:var(--ball);color:var(--bg)}
+.atouts{display:grid;gap:12px;margin:8px 0 6px}@media(min-width:620px){.atouts{grid-template-columns:1fr 1fr}}
+.atout{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.atout:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--p1))}
+.atout .ic{font-size:1.2rem;line-height:1;margin-right:8px}
+.atout b{display:block;font-family:var(--cond);font-weight:700;font-size:1.25rem;margin-bottom:4px;color:var(--c,var(--p1))}
+.atout p{margin:0;color:var(--ink);font-size:.98rem}.atout small{display:block;margin-top:8px;color:var(--dim);font-family:var(--cond);font-size:.95rem}
+.savoir{counter-reset:s;display:grid;gap:10px;margin:6px 0}
+.savoir div{counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px 14px 56px;position:relative}
+.savoir div:before{content:counter(s);position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:.85rem;border:2px solid var(--ball);color:var(--ball)}
+.savoir b{display:block;font-family:var(--cond);font-weight:700;font-size:1.15rem;margin-bottom:2px}.savoir p{margin:0;font-size:.97rem}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:.95rem}
+.cmp th,.cmp td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}.cmp tr:last-child td{border-bottom:0}
+.cmp th{font-family:var(--cond);font-weight:700;font-size:1rem}.cmp td:first-child{font-family:var(--cond);font-weight:600;color:var(--dim);width:30%}
+.cmp td:nth-child(2){color:var(--dim)}.cmp td:nth-child(3){font-weight:600}.cmp th:nth-child(3){color:var(--ball)}
+.chiffre b.v{color:var(--p1)}
+</style>
 </head>
 <body>
 <div class="page" id="page"></div>
@@ -82,59 +107,156 @@ try { L = Q.get('lang') || localStorage.getItem('te_lang') || ((navigator.langua
 if (L !== 'en') L = 'fr';
 document.documentElement.lang = L;
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// 25/11/2026 (paquet 442 : « améliorer la présentation de notre projet : mettre en avant notre savoir-faire, nos
+// points forts, nos différenciants ») — la page devient « Notre projet » : chiffres en direct (bilan public), ce qui nous
+// rend différents, notre savoir-faire, un avis contre un algorithme, puis nos principes. Les chiffres viennent du bilan
+// publié (site_plus.json) : rien n'est écrit à la main, rien n'est trié. Aucun conseil de pari, aucune promesse de gain.
+const loc = L === 'fr' ? 'fr-FR' : 'en-GB';
+const fmt = n => Number(n).toLocaleString(loc);
+const dec = (x, d) => Number(x).toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d });
+const pc0 = x => Math.round(x) + (L === 'fr' ? ' %' : '%');
 const T = {
  fr: {
-  titre: 'Qui sommes-nous — Game Set Algo', retour: '← Les matchs du jour',
-  h1: 'Un algo qui montre <em>tout</em>',
-  chapo: 'Game Set Algo est un projet indépendant, conçu et développé en France par un développeur seul. Pas d’agence, pas d’investisseur, pas de partenaire caché : un algorithme, des matchs, et des chiffres que chacun peut vérifier.',
-  pourquoi_t: 'Pourquoi ce site',
-  pourquoi: ['Les pronostics de tennis qu’on trouve en ligne sont presque toujours des avis : on ne sait pas d’où ils viennent, ni combien se sont trompés. Les gagnants sont montrés, les perdants disparaissent.',
-             'Ici, c’est l’inverse. Chaque % est calculé par un algorithme, publié avant le match, et ne bouge plus. Après le match, il entre dans un bilan public, qu’il soit juste ou faux. Vous pouvez juger l’algo sur pièces, pas sur une promesse.'],
+  titre: 'Notre projet — Game Set Algo', retour: '← Les matchs du jour', theme: ['Auto', 'Clair', 'Sombre'],
+  h1: 'Le tennis simulé <em>point par point</em>. Et jugé sur pièces.',
+  chapo: 'Game Set Algo est un projet indépendant né en France. Pour chaque match ATP, WTA et Challenger, un algorithme joue la rencontre 20 000 fois avant qu’elle commence, publie ses pourcentages, puis les confronte au résultat, devant tout le monde.',
+  chiffres: { n: 'matchs annoncés puis jugés', pct: 'favori de l’algo vainqueur', sim: 'simulations par match', q: 'questions par match' },
+  chiffres_note: d => `Bilan public depuis le ${d}, mis à jour après chaque match, erreurs comprises.`,
+  diff_t: 'Ce qui nous rend différents',
+  diff: [
+   ['🎾', 'Simulé, pas deviné', 'Chaque % sort de 20 000 matchs joués par l’ordinateur, point par point, avec le niveau au service et au retour de chaque joueur sur cette surface. Pas un avis, pas une intuition : un calcul que l’on peut refaire.', null, 'var(--p1)'],
+   ['📊', 'Tout le match, pas seulement le vainqueur', 'La même simulation donne les sets, les jeux, les tie-breaks, les aces, les breaks, la durée et les scénarios possibles. Une trentaine de questions par match dans « Demande à l’algo ».', null, 'var(--ball)'],
+   ['🔒', 'Publié avant, jamais retouché', 'Le premier % de chaque match est horodaté et figé. Après le match, il entre dans le bilan public, juste ou faux. Aucune mauvaise semaine n’est effacée.', null, 'var(--p2)'],
+   ['🎯', 'Des % qui tiennent parole', 'Quand l’algo annonce 70 %, le joueur doit gagner environ 7 fois sur 10. C’est vérifié tranche par tranche, circuit par circuit, et affiché sur chaque fiche de match.', 'calib', 'var(--ok)'],
+   ['🧭', 'Il dit quand il doute', 'Chaque match reçoit une note de fiabilité, chaque joueur aussi. Quand les données manquent ou que les modèles ne sont pas d’accord, vous le savez avant le match.', null, 'var(--p1)'],
+   ['🌍', 'Les Challengers aussi', 'Les tournois Challenger, rarement suivis avec ce niveau de détail, sont traités comme l’ATP et la WTA : même simulation, mêmes projections, même bilan.', 'ch', 'var(--ball)'],
+   ['⚡', 'Le direct, point par point', 'Le score arrive en continu, avec les statistiques du match et la rencontre rejouée en 3D.', null, 'var(--p2)'],
+   ['👤', 'La performance de chaque joueur', 'Sur la page de chaque joueur : ce que l’algo annonçait pour lui, ce qui est arrivé, la précision des prévisions d’aces et de breaks, par surface et contre chaque style de jeu.', null, 'var(--ok)']
+  ],
+  calib: (a, r, n) => `Vérifié : quand l’algo donnait un joueur à ${a}, ce joueur a gagné ${r} des fois (${n} matchs).`,
+  ch: p => `${p} des matchs analysés sont des Challengers.`,
+  savoir_t: 'Notre savoir-faire',
+  savoir: [
+   ['Deux mesures du niveau', 'Un classement Elo par surface et un modèle service-retour, corrigé du niveau des adversaires rencontrés.'],
+   ['Un mélange appris, pas réglé à la main', 'La part de chaque modèle a été apprise sur des dizaines de milliers de matchs passés, circuit par circuit.'],
+   ['Une règle d’or pour changer quoi que ce soit', 'Une idée est apprise sur 2018–2022, puis jugée sur 2023 à aujourd’hui, sur des matchs qu’elle n’a jamais vus. Elle n’est gardée que si elle améliore la prévision sur au moins 1 000 matchs, dans le même sens sur les deux périodes et sur chaque circuit.'],
+   ['Contrôlé après chaque match', 'Sets, jeux, aces, breaks, durée : chaque projection est comparée à ce qui s’est passé. Ce qui dérive est corrigé, selon la même règle.']
+  ],
+  methode: 'Le détail de la méthode et le bilan complet →',
+  cmp_t: 'Un avis ou un algorithme ?', cmp_h: ['', 'Un pronostic d’avis', 'Game Set Algo'],
+  cmp: [['D’où vient le % ?', 'Une impression, rarement chiffrée', '20 000 simulations du match'],
+        ['Quand est-il publié ?', 'Souvent sans heure', 'Avant le match, horodaté, figé'],
+        ['Que devient une erreur ?', 'Elle disparaît', 'Elle reste dans le bilan public'],
+        ['Ce que vous apprenez', 'Un nom', 'Une trentaine de projections chiffrées'],
+        ['L’incertitude', 'Rarement dite', 'Une note de fiabilité par match et par joueur']],
   principes_t: 'Nos quatre principes',
   principes: [['Indépendant', 'L’algorithme ne s’appuie que sur les matchs joués. Le match du jour est choisi par une règle fixe, jamais selon ce qui arrange.'],
               ['Transparent', 'Tout le bilan est public, erreurs comprises, avec la comparaison entre les % annoncés et les % réellement arrivés. Chaque changement de l’algo est daté dans un journal.'],
               ['Prudent', 'Rien n’est conclu sur une poignée de matchs. Une idée nouvelle est jugée sur des milliers de matchs qu’elle n’a jamais vus avant d’être gardée, et retirée si elle déçoit.'],
               ['Responsable', 'Des probabilités, pas des certitudes. Aucun conseil de pari, aucune promesse de gain, pas de pronostic sur les tournois ITF.']],
+  qui_t: 'Qui sommes-nous',
+  qui: 'Un projet conçu et développé en France par un développeur seul. Pas d’agence, pas d’investisseur, pas de partenaire caché : un algorithme, des matchs, et des chiffres que chacun peut vérifier.',
   jamais_t: 'Ce que vous ne verrez jamais ici',
   jamais: ['de « ticket sûr », de « coup du jour » ou de « VIP garanti » ;', 'de capture de gains ou de train de vie pour vous convaincre ;', 'de pourcentage de réussite trié, qui oublierait les mauvaises semaines ;', 'de pression pour jouer : le tennis se regarde très bien sans parier.'],
-  methode: 'Comment l’algo calcule ses % →',
   contact_t: 'Nous écrire', contact: c => `Une question, une erreur repérée, une idée ? ${c}`, contact_x: 'Écrivez-nous par message au compte X « Game Set Algo ».',
   cta: 'Voir les matchs du jour', jeu: 'Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé : 09 74 75 13 13 (appel non surtaxé).',
-  liens: ['Mentions légales', 'Confidentialité', 'Conditions d’utilisation']
+  liens: ['Mentions légales', 'Confidentialité', 'Conditions d’utilisation', 'Comment ça marche']
  },
  en: {
-  titre: 'About — Game Set Algo', retour: '← Today’s matches',
-  h1: 'An algorithm that shows <em>everything</em>',
-  chapo: 'Game Set Algo is an independent project, designed and built in France by a single developer. No agency, no investor, no hidden partner: an algorithm, matches, and numbers anyone can check.',
-  pourquoi_t: 'Why this site',
-  pourquoi: ['Most tennis tips online are opinions: you never know where they come from or how many were wrong. Winners are shown, losers vanish.',
-             'Here it is the other way round. Every % is computed by an algorithm, published before the match and never changed. After the match it goes into a public record, right or wrong. You judge the algorithm on evidence, not on a promise.'],
+  titre: 'Our project — Game Set Algo', retour: '← Today’s matches', theme: ['Auto', 'Light', 'Dark'],
+  h1: 'Tennis simulated <em>point by point</em>. And judged on the evidence.',
+  chapo: 'Game Set Algo is an independent project born in France. For every ATP, WTA and Challenger match, an algorithm plays the match 20,000 times before it starts, publishes its percentages, then checks them against the result, in public.',
+  chiffres: { n: 'matches forecast then settled', pct: 'algorithm’s favourite won', sim: 'simulations per match', q: 'questions per match' },
+  chiffres_note: d => `Public record since ${d}, updated after every match, misses included.`,
+  diff_t: 'What makes us different',
+  diff: [
+   ['🎾', 'Simulated, not guessed', 'Every % comes from 20,000 matches played by the computer, point by point, using each player’s serve and return level on that surface. Not an opinion, not a hunch: a calculation anyone could redo.', null, 'var(--p1)'],
+   ['📊', 'The whole match, not just the winner', 'The same simulation gives sets, games, tie-breaks, aces, breaks, duration and the ways the match can go. About thirty questions per match in “Ask the algorithm”.', null, 'var(--ball)'],
+   ['🔒', 'Published before, never edited', 'The first % of every match is time-stamped and frozen. After the match it goes into the public record, right or wrong. No bad week is ever erased.', null, 'var(--p2)'],
+   ['🎯', 'Percentages that keep their word', 'When the algorithm says 70%, the player should win about 7 times out of 10. This is checked band by band, tour by tour, and shown on every match page.', 'calib', 'var(--ok)'],
+   ['🧭', 'It tells you when it is unsure', 'Every match gets a reliability score, and so does every player. When data is thin or the models disagree, you know before the match.', null, 'var(--p1)'],
+   ['🌍', 'Challengers too', 'Challenger events, rarely covered in this much detail, get the same treatment as ATP and WTA: same simulation, same projections, same record.', 'ch', 'var(--ball)'],
+   ['⚡', 'Live, point by point', 'The score is pushed continuously, with live match stats and the match replayed in 3D.', null, 'var(--p2)'],
+   ['👤', 'Every player’s performance', 'On every player page: what the algorithm gave the player, what happened, how accurate the ace and break forecasts were, by surface and against each playing style.', null, 'var(--ok)']
+  ],
+  calib: (a, r, n) => `Checked: when the algorithm gave a player ${a}, that player won ${r} of the time (${n} matches).`,
+  ch: p => `${p} of analysed matches are Challengers.`,
+  savoir_t: 'Our know-how',
+  savoir: [
+   ['Two measures of level', 'A surface-specific Elo rating and a serve–return model, adjusted for the level of the opponents faced.'],
+   ['A learned blend, not hand-tuned', 'The weight of each model was learned on tens of thousands of past matches, tour by tour.'],
+   ['A golden rule before changing anything', 'An idea is trained on 2018–2022, then judged on 2023 to today, on matches it has never seen. It is kept only if it improves forecasts over at least 1,000 matches, in the same direction on both periods and on every tour.'],
+   ['Checked after every match', 'Sets, games, aces, breaks, duration: every projection is compared with what happened. Whatever drifts is corrected, under the same rule.']
+  ],
+  methode: 'Full method and complete record →',
+  cmp_t: 'An opinion or an algorithm?', cmp_h: ['', 'An opinion tip', 'Game Set Algo'],
+  cmp: [['Where does the % come from?', 'A feeling, rarely quantified', '20,000 simulations of the match'],
+        ['When is it published?', 'Often with no time stamp', 'Before the match, time-stamped, frozen'],
+        ['What happens to a miss?', 'It disappears', 'It stays in the public record'],
+        ['What you learn', 'A name', 'About thirty quantified projections'],
+        ['Uncertainty', 'Rarely stated', 'A reliability score per match and per player']],
   principes_t: 'Our four principles',
   principes: [['Independent', 'The algorithm relies only on matches played. The match of the day is picked by a fixed rule, never by convenience.'],
               ['Transparent', 'The full record is public, misses included, with published % compared to what actually happened. Every change to the algorithm is dated in a log.'],
               ['Careful', 'Nothing is concluded from a handful of matches. A new idea is judged on thousands of matches it has never seen before it is kept, and removed if it disappoints.'],
               ['Responsible', 'Probabilities, not certainties. No betting advice, no promise of winnings, no forecasts on ITF events.']],
+  qui_t: 'Who we are',
+  qui: 'A project designed and built in France by a single developer. No agency, no investor, no hidden partner: an algorithm, matches, and numbers anyone can check.',
   jamais_t: 'What you will never see here',
   jamais: ['“sure bets”, “bet of the day” or “guaranteed VIP”;', 'screenshots of winnings or a lavish lifestyle to win you over;', 'a cherry-picked success rate that forgets the bad weeks;', 'pressure to gamble: tennis is great to watch without betting.'],
-  methode: 'How the algorithm gets its % →',
   contact_t: 'Contact', contact: c => `A question, a mistake spotted, an idea? ${c}`, contact_x: 'Send a message to the “Game Set Algo” X account.',
   cta: 'See today’s matches', jeu: 'Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction.',
-  liens: ['Legal notice', 'Privacy', 'Terms of use']
+  liens: ['Legal notice', 'Privacy', 'Terms of use', 'How it works']
  }
 }[L];
 const suf = L === 'en' ? '?lang=en' : '', acc = './' + suf;
 document.title = T.titre;
+const ths = [['auto', T.theme[0]], ['light', T.theme[1]], ['dark', T.theme[2]]];
 document.getElementById('page').innerHTML = `
- <div class="haut"><a class="marque" href="${acc}">GAME SET <b>ALGO</b></a><a class="retour" href="${acc}">${T.retour}</a></div>
+ <div class="haut"><a class="marque" href="${acc}">GAME SET <b>ALGO</b></a><a class="retour" href="${acc}">${T.retour}</a><span class="th" role="group" aria-label="Thème / Theme">${ths.map(([k, v]) => `<button type="button" data-th="${k}">${v}</button>`).join('')}</span></div>
  <h1>${T.h1}</h1><p class="chapo">${T.chapo}</p>
- <h3>${T.pourquoi_t}</h3>${T.pourquoi.map(p => `<p>${p}</p>`).join('')}
+ <div class="chiffres" id="chiffres">
+  <div class="chiffre"><b class="v" id="c-n">—</b><span>${T.chiffres.n}</span></div>
+  <div class="chiffre"><b id="c-pct">—</b><span>${T.chiffres.pct}</span></div>
+  <div class="chiffre"><b class="v">${fmt(20000)}</b><span>${T.chiffres.sim}</span></div>
+  <div class="chiffre"><b>≈ 30</b><span>${T.chiffres.q}</span></div>
+ </div><p class="dim" id="c-note" style="font-size:.92rem"></p>
+ <h3>${T.diff_t}</h3><div class="atouts">${T.diff.map(d => `<div class="atout" style="--c:${d[4]}"><b><span class="ic" aria-hidden="true">${d[0]}</span>${d[1]}</b><p>${d[2]}</p>${d[3] ? `<small id="x-${d[3]}"></small>` : ''}</div>`).join('')}</div>
+ <h3>${T.savoir_t}</h3><div class="savoir">${T.savoir.map(x => `<div><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
+ <p style="margin-top:12px"><a href="methode.html${suf}">${T.methode}</a></p>
+ <h3>${T.cmp_t}</h3><table class="cmp"><tr>${T.cmp_h.map(h => `<th>${h}</th>`).join('')}</tr>${T.cmp.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>
  <h3>${T.principes_t}</h3><div class="principes">${T.principes.map(p => `<div class="principe"><b>${p[0]}</b>${p[1]}</div>`).join('')}</div>
- <p><a href="methode.html${suf}">${T.methode}</a></p>
+ <h3>${T.qui_t}</h3><p>${T.qui}</p>
  <h3>${T.jamais_t}</h3><ul class="non">${T.jamais.map(x => `<li>${x}</li>`).join('')}</ul>
  <h3>${T.contact_t}</h3><div class="encadre" id="contact">${T.contact(T.contact_x)}</div>
  <a class="cta" href="${acc}">${T.cta} →</a>
- <footer><p>${T.jeu}</p><p><a href="${acc}#mentions">${T.liens[0]}</a> · <a href="${acc}#confidentialite">${T.liens[1]}</a> · <a href="${acc}#cgu">${T.liens[2]}</a></p></footer>`;
-fetch('editeur.json?v=' + Math.floor(Date.now() / 60000)).then(r => r.ok ? r.json() : {}).then(e => {
+ <footer><p>${T.jeu}</p><p><a href="methode.html${suf}">${T.liens[3]}</a> · <a href="${acc}#mentions">${T.liens[0]}</a> · <a href="${acc}#confidentialite">${T.liens[1]}</a> · <a href="${acc}#cgu">${T.liens[2]}</a></p></footer>`;
+// thème : mêmes réglages et même mémoire que l'accueil (te_theme)
+(function(){
+  const b = document.querySelectorAll('.th button');
+  const app = v => { const d = v === 'auto' ? (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : v;
+    document.documentElement.setAttribute('data-theme', d === 'light' ? 'light' : 'dark');
+    const m = document.querySelector('meta[name=theme-color]'); if (m) m.setAttribute('content', d === 'light' ? '#F4F2FB' : '#0E0A24');
+    b.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.th === v))); };
+  let v = 'dark'; try { v = localStorage.getItem('te_theme') || 'dark'; } catch (e) {}
+  app(v);
+  b.forEach(x => x.addEventListener('click', () => { v = x.dataset.th; try { localStorage.setItem('te_theme', v); } catch (e) {} app(v); }));
+})();
+// chiffres en direct : le bilan publié (le même que sur la page des matchs)
+const cle = Math.floor(Date.now() / 60000);
+const lire = f => fetch(f + '?v=' + cle).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+lire('site_plus.json').catch(() => lire('donnees.json')).then(d => {
+  const b = d && d.bilan, g = b && b.global; if (!g || !g.n) return;
+  document.getElementById('c-n').textContent = fmt(g.n);
+  document.getElementById('c-pct').textContent = dec(g.pct, 1) + (L === 'fr' ? ' %' : '%');
+  if (b.depuis) document.getElementById('c-note').textContent = T.chiffres_note(new Date(b.depuis + 'T12:00:00Z').toLocaleDateString(loc, { day: 'numeric', month: 'long', year: 'numeric' }));
+  const pc = b.par_circuit && b.par_circuit.CH; const xc = document.getElementById('x-ch');
+  if (pc && pc.n && xc) xc.textContent = T.ch(pc0(100 * pc.n / g.n));
+  const cal = (b.calibration || []).find(c => c.n >= 100 && Math.abs(c.de - .7) < 1e-6), xk = document.getElementById('x-calib');
+  const P = L === 'fr' ? ' %' : '%';
+  if (cal && xk) xk.textContent = T.calib(`${Math.round(cal.de * 100)}–${Math.round(cal.a * 100)}${P}`, dec(cal.reel, 1) + P, fmt(cal.n));
+}).catch(() => {});
+fetch('editeur.json?v=' + cle).then(r => r.ok ? r.json() : {}).then(e => {
   if (e && e.email) document.getElementById('contact').innerHTML = T.contact(`<a href="mailto:${esc(e.email)}">${esc(e.email)}</a>`);
 }).catch(() => {});
 </script>
