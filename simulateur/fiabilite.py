@@ -33,6 +33,30 @@ def modele_v3():
     return _MODELE_V3['m']
 
 
+# 25/11/2026 (paquet 450, DÉCISION DE LUCAS après etude_note_v3_challenger.py, paquet 449) : en CHALLENGER, la note v3
+# prend les pentes réapprises sur le rejeu comme en production (résultats ITF hommes compris) : une pente par classe
+# d'expérience du moins connu (simulateur/note_v3_challenger.json). ATP et WTA ne changent pas. L'ancienne note reste
+# calculée à côté (note_v3_ancienne, niveau_ancien) : la correction Challenger « correct » (paquet 270) vise toujours les
+# matchs que l'ANCIENNE note classe « correct » (niveau_correction), donc aucun % ne change. Retrait automatique :
+# simulateur/note_v3_challenger.py (règle dans le fichier de décision).
+NOTE_V3_CHALLENGER = 'note_v3_challenger.json'
+_MODELE_CH = {}
+
+
+def modele_v3_challenger():
+    """{classe: pente} de la note v3 Challenger réapprise, ou None (absente ou retirée)."""
+    if 'm' not in _MODELE_CH:
+        import json
+        import os
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), NOTE_V3_CHALLENGER), encoding='utf-8') as f:
+                doc = json.load(f)
+            _MODELE_CH['m'] = None if doc.get('retire') else {k: float(v) for k, v in (doc.get('pentes') or {}).items()}
+        except (OSError, ValueError):
+            _MODELE_CH['m'] = None
+    return _MODELE_CH['m']
+
+
 def niveau_v3(note):
     s = SEUILS_V3
     return 'fragile' if note < s['prudent'] else 'prudent' if note < s['correct'] else 'correct' if note < s['solide'] else 'solide'
@@ -53,14 +77,19 @@ def criteres_fragiles(match, p, p_elo, p_sim):
     return sorted(k for k in _ACTIFS['a'] if k in SF.CRITERES and SF.CRITERES[k][1](r))
 
 
-def note_v3(match):
-    """Note v3 du match, ou None (modèle absent, circuit hors ATP / WTA / Challenger, expérience inconnue)."""
+def note_v3(match, ancienne=False):
+    """Note v3 du match, ou None (modèle absent, circuit hors ATP / WTA / Challenger, expérience inconnue).
+    Challenger : pentes réapprises (paquet 450) tant qu'elles ne sont pas retirées ; ancienne=True : l'ancienne note."""
     M = modele_v3()
     c = match.get('circuit')
     n = [x for x in (match.get('matchs_joues') or []) if x is not None]
     if not M or c not in ('ATP', 'WTA', 'CH') or len(n) < 2:
         return None
     import etude_fiabilite_v3 as V3
+    MC = modele_v3_challenger() if c == 'CH' and not ancienne else None
+    if MC:
+        a = MC.get(str(V3.classe_experience(min(n))), MC.get('_circuit'))
+        return V3.note(a) if a else None
     sc = ((match.get('controle') or {}).get('signaux_circuit') or {}).get('decalages') or {}
     return V3.note_du_match(M, c, min(n), sum(sc.values()))
 def pente_v3(match):
@@ -244,7 +273,14 @@ def evaluer(match, historique):
     fragile_force = 'favoris_opposes' in criteres
     if criteres:
         note = min(note, SEUILS_V3['prudent'] - 1)
-    return {'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
+    ancien = {}
+    if v3 is not None and match.get('circuit') == 'CH' and modele_v3_challenger():
+        v3a = note_v3(match, ancienne=True)          # paquet 450 : l'ancienne note, gardée pour la correction et le retrait
+        if v3a is not None:
+            na = min(v3a, SEUILS_V3['prudent'] - 1) if criteres else v3a
+            ancien = {'note_v3_ancienne': v3a, 'note_ancienne': na, 'niveau_ancien': niveau_v3(na), 'niveau_correction': niveau_v3(na),
+                      'note_v3_challenger': 'comme_en_production_450'}
+    return {**ancien, 'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
             'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
             'fragile_desaccord_modeles': fragile_force, 'fragile_criteres': criteres,
             'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,

@@ -1,0 +1,76 @@
+name: Étude - note de fiabilité Challenger réapprise (paquet 449)
+
+# 25/11/2026 — paquet 449 (accord de Lucas après l'analyse 448). La note de fiabilité du Challenger réapprise sur le
+# rejeu comme en production (résultats ITF hommes compris) ? Règle écrite dans l'en-tête de
+# simulateur/etude_note_v3_challenger.py (apprise 01–09/2025, jugée une fois 10/2025 → 05/2026). Se lance tout seul
+# quand le paquet arrive sur main (ou à la main). Écrit simulateur/rapport_note_v3_challenger.json et l'entrée 449 du
+# journal. 0 requête d'API. Rien n'entre dans l'algo.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_note_v3_challenger.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+            /feuilles/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /Tennis_Edge_Lab/books.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Apprendre 01–09/2025, juger une fois 10/2025 → 05/2026
+        run: |
+          set -euo pipefail
+          python simulateur/etude_note_v3_challenger.py /tmp/sackmann . | tee /tmp/note_v3_challenger.log
+          cp simulateur/rapport_note_v3_challenger.json /tmp/rapport_note_v3_challenger.json
+          echo '### Note de fiabilité Challenger réapprise (paquet 449, étude seule)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/note_v3_challenger.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            # À chaque essai : main tel qu'il est maintenant, puis NOTRE rapport et NOTRE entrée (l'entrée du
+            # paquet 449 est remplacée si elle existe déjà) : jamais de rebase sur le journal.
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_note_v3_challenger.json simulateur/rapport_note_v3_challenger.json
+            python simulateur/etude_note_v3_challenger.py --journal-depuis-rapport /tmp/rapport_note_v3_challenger.json
+            git add -- simulateur/rapport_note_v3_challenger.json simulateur/journal_changements.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 449 : note de fiabilité Challenger réapprise (rapport et journal)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
