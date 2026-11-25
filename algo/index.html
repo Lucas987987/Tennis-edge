@@ -504,6 +504,16 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 /* 05/11/2026 — « Demande à l'algo » : une question, la réponse des simulations */
 .panel.qa select,.panel.qa input{background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+/* 25/11/2026 (paquet 442) — nos différenciants : bandeau sous l'en-tête et section « Pourquoi Game Set Algo » */
+.atouts-band{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:-4px 0 16px;text-decoration:none;color:inherit;padding:2px 0}
+.atouts-band::-webkit-scrollbar{display:none}
+.atouts-band span{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:rgba(var(--wv),.04);border-radius:999px;padding:6px 11px;font-size:.84rem;font-weight:600;white-space:nowrap}
+.atouts-band span b{color:var(--p1,#2EE6FF)}.atouts-band .fin{color:var(--ball,#D4FF3A);border-color:transparent;background:transparent}
+.pq-grille{display:grid;gap:10px}@media(min-width:640px){.pq-grille{grid-template-columns:1fr 1fr}}
+.pq{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;position:relative;overflow:hidden}
+.pq:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--p1))}
+.pq b{display:block;font-family:var(--cond);font-size:1.15rem;margin-bottom:4px;color:var(--c,var(--p1))}.pq p{margin:0;font-size:.95rem;color:var(--dim)}
+html[data-theme="light"] .pq{box-shadow:0 6px 22px rgba(40,20,120,.07)}#pq-lien{text-decoration:none;display:inline-block}
 .panel.qa .qa-th{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:10px}.panel.qa .qa-t{border:1px solid var(--line2);background:transparent;color:inherit;border-radius:999px;padding:7px 4px;font-weight:600;font-size:.88rem;cursor:pointer;min-height:40px;white-space:nowrap}.panel.qa .qa-t.on{background:var(--ball,#D4FF3A);color:#141225;border-color:transparent}
 .panel.qa .qa-r small{color:var(--dim);font-size:.9rem}.panel.qa .qa-note{margin:8px 0 0;font-size:.82rem;color:var(--dim)}.panel.qa #qa-q{max-width:100%}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
@@ -809,6 +819,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
   <p class="lede" data-t="lede">Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.</p>
   <p class="lede-lien"><a href="methode.html" data-t="cm_lien" class="lien-methode"></a></p>
 
+  <a class="atouts-band" id="atouts-band" href="apropos.html" hidden></a>
   <section id="mdj" aria-labelledby="mdj-h" style="margin-top:0">
     <h2 id="mdj-h" data-t="mdj_titre"></h2>
     <p class="sub" id="mdj-sous" data-t="mdj_sous"></p>
@@ -900,6 +911,12 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <div class="panel" id="calib-rejoue"></div>
   </section>
 
+  <section id="pourquoi" aria-labelledby="pourquoi-h" hidden>
+    <h2 id="pourquoi-h"></h2>
+    <div class="pq-grille" id="pq-grille"></div>
+    <p style="margin:12px 0 0"><a class="btn go" id="pq-lien" href="apropos.html"></a></p>
+  </section>
+
   <section id="plus" aria-labelledby="plus-h">
     <h2 id="plus-h" data-t="plus_titre"></h2>
     <div class="panel plus">
@@ -937,7 +954,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
 const T = {
  fr:{
   marque:'tennis', html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
-  cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche', qs_court:'Qui sommes-nous',
+  cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche', qs_court:'Notre projet',
   lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
   sim_titre:'Simulation du match', sim_sous:"Le détail complet et un scénario représentatif de cette affiche, calculés avec la même variante indépendante.",
@@ -1310,7 +1327,7 @@ const T = {
  en:{
   marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
   lede:"Every match is simulated 20,000 times, point by point, by an independent algorithm. We publish its win probability and every result — including when it gets it wrong.",
-  cm_lien:'How the algorithm gets its % →', cm_court:'How it works', qs_court:'About',
+  cm_lien:'How the algorithm gets its % →', cm_court:'How it works', qs_court:'Our project',
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
   sim_titre:'Match simulation', sim_sous:'The full breakdown and a representative scenario for this matchup, calculated with the same independent variant.',
   retour_mdj:'Back to match of the day',
@@ -8493,12 +8510,39 @@ function chargerPlus(){                                              // paquet 3
   if (!D || !D._plus) return;
   lireJson(D._plus).then(p => {
     Object.assign(D, p); delete D._plus;
-    rendBilan(); rendJournal(); rendSuivi(); rendCalib(); rendPlus();
+    rendBilan(); rendJournal(); rendSuivi(); rendCalib(); rendPlus(); rendAtouts();
   }).catch(() => {});
+}
+// 25/11/2026 (paquet 442, Lucas : « mettre en avant notre savoir-faire, nos points forts, nos différenciants ») —
+// un bandeau sous l'en-tête (3 atouts, le 3e avec le vrai bilan) et la section « Pourquoi Game Set Algo » avant
+// l'offre Plus ; tous deux mènent à la page « Notre projet » (apropos.html). Chiffres du bilan publié, jamais triés.
+function rendAtouts(){
+  const band = document.getElementById('atouts-band'), sec = document.getElementById('pourquoi'); if (!band || !sec) return;
+  const fr = L === 'fr', g = D && D.bilan && D.bilan.global, suf = fr ? '' : '?lang=en';
+  if (Q.get('video') || Q.get('carte') || Q.get('bilan') || Q.get('semaine') || Q.get('projections')) { band.hidden = true; sec.hidden = true; return; }
+  const sim = (D && D.simulations) || 20000;
+  const items = [`🎾 <b>${fmt(sim)}</b> ${esc(fr ? 'simulations par match' : 'simulations per match')}`,
+    `🔒 ${esc(fr ? 'Publié avant le match, jamais retouché' : 'Published before the match, never edited')}`];
+  if (g && g.n) items.push(`🎯 <b>${esc(dec(g.pct, 1) + (fr ? ' %' : '%'))}</b> ${esc(fr ? `de favoris trouvés sur ${fmt(g.n)} matchs` : `favourites found over ${fmt(g.n)} matches`)}`);
+  items.push(`📊 ${esc(fr ? '≈ 30 questions par match' : '≈ 30 questions per match')}`);
+  band.innerHTML = items.map(x => `<span>${x}</span>`).join('') + `<span class="fin">${esc(fr ? 'Notre projet →' : 'Our project →')}</span>`;
+  band.href = 'apropos.html' + suf; band.hidden = false;
+  document.getElementById('pourquoi-h').textContent = fr ? 'Pourquoi Game Set Algo' : 'Why Game Set Algo';
+  const cartes = fr ? [['Simulé, pas deviné', `Chaque % sort de ${fmt(sim)} matchs joués point par point, avec le niveau au service et au retour de chaque joueur sur cette surface.`, 'var(--p1)'],
+      ['Publié avant, jugé après', 'Le premier % est horodaté et figé. Après le match, il entre dans le bilan public, juste ou faux.', 'var(--p2)'],
+      ['Tout le match', 'Sets, jeux, tie-breaks, aces, breaks, durée : une trentaine de projections par match, et une note de fiabilité qui dit quand l’algo doute.', 'var(--ball)'],
+      ['Les Challengers aussi', 'Même simulation, mêmes projections, même bilan que l’ATP et la WTA, sur des tournois rarement suivis de si près.', 'var(--ok)']]
+    : [['Simulated, not guessed', `Every % comes from ${fmt(sim)} matches played point by point, using each player’s serve and return level on that surface.`, 'var(--p1)'],
+      ['Published before, judged after', 'The first % is time-stamped and frozen. After the match it goes into the public record, right or wrong.', 'var(--p2)'],
+      ['The whole match', 'Sets, games, tie-breaks, aces, breaks, duration: about thirty projections per match, and a reliability score that says when the algorithm is unsure.', 'var(--ball)'],
+      ['Challengers too', 'Same simulation, same projections, same record as ATP and WTA, on events rarely covered this closely.', 'var(--ok)']];
+  document.getElementById('pq-grille').innerHTML = cartes.map(([a, b, c]) => `<div class="pq" style="--c:${c}"><b>${esc(a)}</b><p>${esc(b)}</p></div>`).join('');
+  const l = document.getElementById('pq-lien'); l.textContent = fr ? 'Découvrir notre projet →' : 'Discover our project →'; l.href = 'apropos.html' + suf;
+  sec.hidden = false;
 }
 function rendTout(){
   rendTextes(); if (!D) return;
-  rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
+  rendAtouts(); rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
