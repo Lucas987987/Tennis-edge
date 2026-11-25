@@ -246,7 +246,7 @@ test('382 : Turnstile exigé pour l’inscription et le mot de passe oublié qua
   const csp = (await worker.fetch(get('/'), env)).headers.get('Content-Security-Policy');
   assert.match(csp, /script-src 'self' 'unsafe-inline' https:\/\/challenges\.cloudflare\.com;/);
   assert.match(csp, /frame-src https:\/\/challenges\.cloudflare\.com;/);
-  assert.match(csp, /connect-src 'self';/);
+  assert.match(csp, /connect-src 'self' wss:\/\/gamesetalgo\.com wss:\/\/algo\.tennis-edge\.workers\.dev;/);   // 433 : direct en continu
 });
 
 test('382 : un compte jamais confirmé est effacé après 30 jours (à l’ouverture de l’administration)', async () => {

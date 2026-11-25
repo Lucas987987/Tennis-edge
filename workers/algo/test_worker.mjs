@@ -615,3 +615,57 @@ test('432 : avec la clé privée, pas de redirection ; sans, redirection', async
   const c = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/connexion?suite=/'), { CLE_PRIVEE: CLE });
   assert.match(await c.text(), /name="suite" value="\/"/);
 });
+
+// 25/11/2026 (paquet 433) — direct en continu : l'objet DirectLive pousse le direct aux téléphones connectés
+import { DirectLive, prochainTour, FLUX_PAS_MIN_MS, FLUX_PAS_MAX_MS, viderLiveMemoire as viderLive433 } from './worker.js';
+test('433 : réveil juste après la fin de fraîcheur, borné entre 1 s et 60 s', () => {
+  const t = 1_000_000;
+  assert.equal(prochainTour({ maj: t, ttl: 3000 }, t), t + 3150);
+  assert.equal(prochainTour({ maj: t - 10000, ttl: 3000 }, t), t + FLUX_PAS_MIN_MS);
+  assert.equal(prochainTour({ maj: t, ttl: 600000 }, t), t + FLUX_PAS_MAX_MS);
+  assert.ok(prochainTour(null, t) > t);
+});
+test('433 : connexion → direct envoyé tout de suite ; envoi seulement quand les matchs changent ; arrêt sans téléphone', async () => {
+  viderLive433();
+  let doc = { ok: true, maj: Date.now(), ttl: 3000, matchs: [{ id: 1, home: 'A', away: 'B', score_home: { sets: [3] } }], termines: [] };
+  const envD = { COFFRE: { get: async () => ({ text: async () => JSON.stringify(doc) }), put: async () => {} } };
+  const socks = [];
+  const ctx = { getWebSockets: () => socks, acceptWebSocket: s => socks.push(s), setWebSocketAutoResponse() {},
+    storage: { a: null, async getAlarm() { return this.a; }, async setAlarm(x) { this.a = x; } } };
+  const recu = [];
+  const sock = { send: m => recu.push(JSON.parse(m)), close() {} };
+  const R0 = globalThis.Response;
+  globalThis.WebSocketPair = function () { return { 0: { client: true }, 1: sock }; };
+  globalThis.Response = class extends R0 { constructor(b, i = {}) { if (i.status === 101) { super(null, { status: 200 }); this.ouverte = true; this.webSocket = i.webSocket; } else super(b, i); } };
+  try {
+    const d = new DirectLive(ctx, envD);
+    assert.equal((await d.fetch(new Request('https://x/live/flux'))).status, 426);           // pas un WebSocket
+    const r = await d.fetch(new Request('https://x/live/flux', { headers: { Upgrade: 'websocket' } }));
+    assert.ok(r.ouverte && r.webSocket.client);
+    assert.equal(recu.length, 1); assert.equal(recu[0].matchs[0].id, 1);
+    assert.ok(!JSON.stringify(recu[0]).includes('RAPIDAPI'));
+    assert.ok(ctx.storage.a > 0);
+    await d.alarm(); assert.equal(recu.length, 2);                                            // premier tour : envoi
+    viderLive433(); doc = { ...doc, maj: Date.now() + 1 };                                    // même score, autre heure
+    await d.alarm(); assert.equal(recu.length, 2);                                            // rien de nouveau : rien n'est envoyé
+    viderLive433(); doc = { ...doc, maj: Date.now() + 2, matchs: [{ id: 1, home: 'A', away: 'B', score_home: { sets: [4] } }] };
+    await d.alarm(); assert.equal(recu.length, 3); assert.deepEqual(recu[2].matchs[0].score_home.sets, [4]);
+    socks.length = 0; ctx.storage.a = null;
+    await d.alarm(); assert.equal(ctx.storage.a, null);                                       // personne : plus de réveil
+  } finally { globalThis.Response = R0; delete globalThis.WebSocketPair; viderLive433(); }
+});
+test('433 : /live/flux passe par l’objet ; sans objet configuré, 503 (la page garde la redemande classique)', async () => {
+  const r = await worker.fetch(new Request('https://gamesetalgo.com/live/flux', { headers: { Upgrade: 'websocket' } }), {});
+  assert.equal(r.status, 503);
+  let nom = null;
+  const DIRECT = { idFromName: n => (nom = n), get: () => ({ fetch: async () => new Response('ok-objet') }) };
+  const r2 = await worker.fetch(new Request('https://gamesetalgo.com/live/flux', { headers: { Upgrade: 'websocket' } }), { DIRECT });
+  assert.equal(await r2.text(), 'ok-objet'); assert.equal(nom, 'direct');
+});
+test('433 : la page ouvre le direct poussé et ne redemande /live que s’il ne marche pas', () => {
+  const page = fs.readFileSync(new URL('../../algo/index.html', import.meta.url), 'utf-8');
+  assert.match(page, /new WebSocket\('wss:\/\/' \+ location\.host \+ '\/live\/flux'\)/);
+  assert.match(page, /if \(fluxActif\(\)\) return;/);
+  assert.match(page, /if \(document\.hidden\) fermerFlux\(\); else \{ ouvrirFlux\(\);/);
+  assert.match(page, /ws\.send\('ping'\)/);
+});
