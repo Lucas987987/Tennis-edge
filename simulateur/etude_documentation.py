@@ -13,6 +13,8 @@ Correction : sur ces matchs, p' = σ(a · logit p) (a > 1 : on écarte de 50 %),
 RÈGLE FIXÉE LE 05/11/2026, AVANT LE JUGEMENT PAR CIRCUIT : a appris sur août–septembre (≥ 100 matchs), jugé sur
 octobre → (≥ 100 matchs) ; ADOPTÉ DIRECTEMENT sur un circuit si la log loss y baisse d'au moins 0,001 (décision de
 Lucas). Retrait : fantomes_circuits.py, deux semaines de suite pires (« documentation_faible »).
+ATTENTION (25/11/2026, paquet 453) : la pente Challenger en place est 1,11 (décision de Lucas après
+etude_documentation_itf.py), écrite à la main dans rapport_documentation.json ; relancer cette étude la remplacerait.
 Usage : python simulateur/etude_documentation.py /tmp/sackmann .
 """
 import collections
