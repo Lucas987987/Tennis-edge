@@ -265,7 +265,11 @@ export const VENDOR_3D = Object.freeze({
 });
 // 13/11/2026 (paquet 264) : les modèles des joueurs 3D (CC0, préparés par scripts/modeles_joueurs.py), servis
 // depuis la copie GitHub Pages du site et rien d'autre ; gardés 1 jour (le nom de fichier change avec la version).
-export const MODELES = Object.freeze({ '/modeles/joueurs3d.bin': { type: 'application/octet-stream', min: 100000 } });
+export const MODELES = Object.freeze({ '/modeles/joueurs3d.bin': { type: 'application/octet-stream', min: 100000 },
+  // 25/11/2026 (paquet 428 bis) : les vrais sons enregistrés du direct 3D (CC0, scripts/sons_site.py), même chemin
+  '/sons/sons.json': { type: 'application/json; charset=utf-8', min: 50 },
+  ...Object.fromEntries(['frappes', 'services', 'rebonds', 'murmure', 'applaudissements', 'ovation', 'ovation2']
+    .map(n => [`/sons/${n}.mp3`, { type: 'audio/mpeg', min: 10000 }])) });
 export async function modele(req, pathname, env) {
   const cfg = MODELES[pathname];
   if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });

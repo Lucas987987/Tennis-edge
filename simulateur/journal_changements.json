@@ -2361,6 +2361,13 @@
    "paquet": 428,
    "quoi": "3D, PREMIÈRE PASSE (paquet 428, Lucas : « il faut améliorer la 3D » : joueurs, jeu des points, rendu). 1) Rendu : éclairage en lumière linéaire — les couleurs ne sont plus délavées ni sursaturées (le dur n'est plus cyan, le gazon plus fluo), ombres plus justes, pied des murs et des corps légèrement assombri ; teintes du dur et du gazon revues. 2) Caméra TV plus basse et plus serrée : les joueurs paraissent environ 25 % plus grands (la vidéo verticale ne change pas). 3) Défaut corrigé : la caméra du ralenti se posait parfois dans la chaise de l'arbitre ou dans un juge de ligne assis (gros plan sur des jambes) ; elle s'en écarte, et un officiel collé à l'objectif n'est plus dessiné. Moteur v428.",
    "garde_fou": "Affichage seulement : aucun % ne change. Tests : tests/test_direct_3d_v428.py et les tests 3D existants."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 429,
+   "quoi": "3D : VRAIS SONS ET PUBLIC (paquet 429, Lucas, vidéos du direct : « améliorer le bruit de frappe en prenant un vrai bruit de frappe, améliorer le public »). 1) Le direct 3D joue maintenant les vrais sons enregistrés déjà utilisés par la vidéo du jour (licence CC0, freesound.org) : 24 frappes, 19 services, 20 rebonds (plus graves sur terre battue), une tribune en boucle sans couture, des applaudissements et deux clameurs pour les grands points ; une réverbération de stade les relie. Fichiers légers (≈ 860 Ko au total), chargés seulement quand le son est activé ; synthèse refaite (cordage et balle qui résonnent) en secours. 2) Public : seuls les vêtements prennent la couleur du spectateur (les visages et les cheveux étaient teintés en vert, orange, rose), peaux et cheveux variés, sièges de la couleur des gradins, léger balancement. 3) Grand écran à l'horizontale : plus de place pour le terrain. Contient aussi le paquet 428 (rendu, caméra, ralenti). Moteur v429.",
+   "garde_fou": "Affichage et son seulement : aucun % ne change. Sons : scripts/sons_site.py (découpe et conversion seulement), sources et licences dans algo/sons/SOURCES.md. Tests : tests/test_direct_3d_v428.py."
   }
  ]
 }
