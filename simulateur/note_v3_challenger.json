@@ -1,0 +1,11 @@
+{
+ "paquet": 450,
+ "decision": "Lucas, 25/11/2026 (« Fais le paquet avec l'application immédiate et garde fou ») : en Challenger, la note de fiabilité v3 prend les pentes réapprises sur le rejeu comme en production (etude_note_v3_challenger.py, paquet 449, retenue par sa règle). ATP et WTA ne changent pas. Aucun % ne change : la correction Challenger « correct » (pente 1,142, paquet 270) continue de viser les matchs que l'ANCIENNE note classe « correct ».",
+ "regle_retrait": "simulateur/note_v3_challenger.py, chaque lundi : sur nos matchs Challenger terminés notés depuis l'activation (sans abandon), dès 200 matchs, on compare la nouvelle note et l'ancienne (mêmes critères « fragile », même plafond) sur ce que la note promet : pour chaque niveau d'au moins 20 matchs, la note réelle du niveau (100 · min(a, 1/a), a = sa pente d'étalonnage) contre la note moyenne annoncée ; écart absolu pondéré par les matchs. Si l'écart de la nouvelle dépasse celui de l'ancienne, « retire » passe à true et l'ancienne note revient au passage suivant.",
+ "active_le": "2026-11-25",
+ "retire": false,
+ "pentes": {"0": 1.0308, "1": 1.0337, "2": 1.005, "3": 0.781, "_circuit": 1.005},
+ "classes": {"0": "moins de 30 matchs", "1": "30–99 matchs", "2": "100–299 matchs", "3": "300 matchs et plus"},
+ "origine": "rejeu Challenger comme en production (résultats ITF hommes compris), Elo de production seul ; appris du 01/01 au 30/09/2025 (8 749 matchs), jugé une fois du 01/10/2025 au 31/05/2026 sur 7 442 matchs : log loss de σ(a · logit p) 0,5936 → 0,5886 (gain 0,0049 ± 0,0008), sens inverse +0,0011. Pentes en place (archive sans ITF hommes) : 0,746, 0,789, 0,919, 0,923. Limite connue : la classe « 300 matchs et plus » est instable (0,78 appris, 1,25 sur la période jugée, 542 matchs).",
+ "dernier_controle": null
+}
