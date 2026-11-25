@@ -2417,6 +2417,13 @@
    "paquet": 436,
    "quoi": "ACCÈS À L'ADMINISTRATION (paquet 436, Lucas : « comment je fais pour aller dans le compte admin ? je ne le vois pas »). Sur l'adresse technique, avec la clé privée, un bouton « Admin » apparaît à côté de « Mon compte » et ouvre /compte/admin (comptes, codes, entonnoir, TennisApi). Sans clé, /compte/admin passe par la connexion puis y revient directement (avant : retour au Lab).",
    "garde_fou": "Jamais sur gamesetalgo.com (la page d'administration y répond « introuvable »). Rien ne change dans les % ni dans les données. Tests : workers/algo/test_worker.mjs (436), tests/test_surveillance_site.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 437,
+   "quoi": "NOMS CLIQUABLES DANS LA FICHE D'UN MATCH (paquet 437, Lucas : « il faudrait que l'on puisse accéder à la fiche du joueur en cliquant dessus »). Le nom de chaque joueur ouvre sa page (bilan victoires-défaites, par surface, forme, ses matchs avec le % annoncé et le résultat). Chaque joueur d'au moins un match publié a désormais sa page (avant : deux matchs) ; celles d'un seul match ne sont pas proposées aux moteurs de recherche (noindex, hors du plan du site et de la liste des joueurs). Un petit fichier joueurs_pages.json (nom → adresse) est lu à la première fiche ouverte.",
+   "garde_fou": "Rien ne change dans les % ni dans les données. Un joueur sans aucun match publié (première apparition) n'a pas encore de page : son nom reste du texte jusqu'à son premier match terminé. Tests : tests/test_pages_seo.py (437)."
   }
  ]
 }

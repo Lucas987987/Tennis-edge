@@ -38,6 +38,10 @@ SITE = 'https://gamesetalgo.com'
 LANGUES = ('fr', 'en')
 CIRCUITS = {'ATP': 'ATP', 'WTA': 'WTA', 'CH': 'Challenger'}
 MIN_MATCHS_JOUEUR = 2
+# 25/11/2026 (paquet 437) : une page pour CHAQUE joueur d'au moins un match publié, pour que son nom soit cliquable dans
+# la fiche d'un match. Sous MIN_MATCHS_JOUEUR, la page n'est pas proposée aux moteurs de recherche (noindex, hors du
+# plan du site et de la liste des joueurs) : trop mince pour le référencement, utile au visiteur.
+MIN_PAGE_JOUEUR = 1
 ECART_EDITION_J = 9                # deux matchs d'un même tournoi à plus de 9 jours : deux éditions
 SURPRISE = 0.75                    # « grosse surprise » : favori annoncé à 75 % ou plus, battu
 UID = re.compile(r'^[a-z0-9_-]{5,140}$')
@@ -250,7 +254,7 @@ def pre(L):
     return '' if L == 'fr' else '/en'
 
 
-def page(L, titre, description, chemin, corps, ld=None, og='article'):
+def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=True):
     """chemin : sans préfixe de langue (« /match/x ») ; la page existe dans les deux langues."""
     t = T[L]
     url = SITE + pre(L) + chemin
@@ -263,7 +267,7 @@ def page(L, titre, description, chemin, corps, ld=None, og='article'):
     return f"""<!doctype html>
 <html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(titre)}</title><meta name="description" content="{e(description)}">
-<link rel="canonical" href="{e(url)}">{alt}<meta name="theme-color" content="#0E0A24">
+<link rel="canonical" href="{e(url)}">{alt}{'' if indexer else '<meta name="robots" content="noindex, follow">'}<meta name="theme-color" content="#0E0A24">
 <meta property="og:title" content="{e(titre)}"><meta property="og:description" content="{e(description)}">
 <meta property="og:url" content="{e(url)}"><meta property="og:type" content="{og}"><meta property="og:site_name" content="Game Set Algo">
 <meta property="og:locale" content="{'fr_FR' if L == 'fr' else 'en_GB'}"><meta property="og:image" content="{SITE}/partage.png"><link rel="icon" href="/icone-192.png">{lds}
@@ -287,13 +291,14 @@ class Site:
                 self.par_joueur[n].append(m)
         self.slugs_j, pris = {}, set()
         for n in sorted(self.par_joueur, key=lambda n: (-len(self.par_joueur[n]), n)):
-            if len(self.par_joueur[n]) < MIN_MATCHS_JOUEUR or not slug(n):
+            if len(self.par_joueur[n]) < MIN_PAGE_JOUEUR or not slug(n):
                 continue
             s, i = slug(n), 2
             while s in pris:
                 s, i = f"{slug(n)}-{i}", i + 1
             pris.add(s)
             self.slugs_j[n] = s
+        self.indexable = lambda n: len(self.par_joueur.get(n, ())) >= MIN_MATCHS_JOUEUR  # noqa: E731
         # éditions de tournoi : même nom, matchs à moins de ECART_EDITION_J jours les uns des autres
         par_nom = collections.defaultdict(list)
         for m in matchs:
@@ -431,7 +436,7 @@ def page_joueur(nom, S, L):
     titre = t['titre_joueur'].format(n=nom)
     desc = t['desc_joueur'].format(n=nom, v=v, d=d, t=len(jug), f=forme[:9])
     ld = {'@context': 'https://schema.org', '@type': 'Person', 'name': nom, 'url': f"{SITE}{pre(L)}/joueur/{S.slugs_j[nom]}"}
-    return page(L, titre, desc, f"/joueur/{S.slugs_j[nom]}", corps, ld, og='profile')
+    return page(L, titre, desc, f"/joueur/{S.slugs_j[nom]}", corps, ld, og='profile', indexer=S.indexable(nom))
 
 
 def _trouves(ms):
@@ -509,7 +514,7 @@ def page_index(L, quoi, S):
             for j, ms in par_jour.items())
         return page(L, t['titre_matchs'], t['desc_matchs'], '/matchs', corps, og='website')
     if quoi == 'joueurs':
-        noms = sorted(S.slugs_j, key=lambda n: slug(n))
+        noms = sorted((n for n in S.slugs_j if S.indexable(n)), key=lambda n: slug(n))
         li = ''.join(f'<li><a href="{pre(L)}/joueur/{S.slugs_j[n]}">{e(n)}</a> <small>{e(t["nb_matchs"].format(n=len(S.par_joueur[n])))}</small></li>' for n in noms)
         corps = f"<h1>{e(t['joueurs'])}</h1><p class=\"sub\">{e(t['sub_joueurs'].format(n=MIN_MATCHS_JOUEUR))}</p><ul class=\"l\">{li}</ul>"
         return page(L, t['titre_joueurs'], t['desc_joueurs'], '/joueurs', corps, og='website')
@@ -553,7 +558,8 @@ def construire(doc, dossier, maintenant=None):
             entrees.append((f"{p}/match/{m['uid']}", str(m['debut'])[:10]))
         for n, s in S.slugs_j.items():
             _ecrire(d, f"joueur/{s}.html", page_joueur(n, S, L))
-            entrees.append((f"{p}/joueur/{s}", str(S.par_joueur[n][0]['debut'])[:10]))
+            if S.indexable(n):
+                entrees.append((f"{p}/joueur/{s}", str(S.par_joueur[n][0]['debut'])[:10]))
         for s, ed in S.editions.items():
             _ecrire(d, f"tournoi/{s}.html", page_tournoi(s, S, L))
             entrees.append((f"{p}/tournoi/{s}", str(ed['matchs'][0]['debut'])[:10]))
@@ -564,9 +570,12 @@ def construire(doc, dossier, maintenant=None):
             _ecrire(d, f"{quoi}.html", page_index(L, quoi, S))
             entrees.append((f"{p}/{quoi}", jour))
     _ecrire(dossier, 'sitemap.xml', sitemap(entrees))
-    construire.dernier = {'matchs': len(S.matchs), 'joueurs': len(S.slugs_j), 'tournois': len(S.editions),
+    # 25/11/2026 (paquet 437, Lucas : « accéder à la fiche du joueur en cliquant dessus ») : nom → adresse de sa page,
+    # pour que la fiche d'un match relie chaque joueur qui a une page (au moins MIN_MATCHS_JOUEUR matchs publiés).
+    _ecrire(dossier, 'joueurs_pages.json', json.dumps(S.slugs_j, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
+    construire.dernier = {'matchs': len(S.matchs), 'joueurs': sum(1 for n in S.slugs_j if S.indexable(n)), 'tournois': len(S.editions),
                           'semaines': len(S.semaines), 'adresses': len(entrees)}
-    return len(S.matchs), len(S.slugs_j)
+    return len(S.matchs), construire.dernier['joueurs']
 
 
 def main(argv):
