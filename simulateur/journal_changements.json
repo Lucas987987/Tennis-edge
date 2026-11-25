@@ -2403,6 +2403,13 @@
    "paquet": 434,
    "quoi": "MESURE PRIVÉE DE TENNISAPI (paquet 434, Lucas : « je ne vois pas la bande passante » dans RapidAPI). Le worker compte, par jour, les requêtes envoyées à TennisApi et la taille des réponses reçues : direct (liste des matchs et vérification des matchs finis) et fiches (statistiques, point par point). Lecture dans l'administration des comptes, carte « Entonnoir », tableau « TennisApi » des 10 derniers jours, avec le total mesuré face aux 10 240 Mo par mois du forfait. But : savoir avant tout changement de forfait ce que coûterait un direct plus rapide.",
    "garde_fou": "Rien ne change dans les % ni dans les données, ni dans ce que voient les visiteurs (la mesure n'est jamais renvoyée par /live). Taille du texte décompressé : un plafond. La collecte des données (GitHub Actions) n'est pas comptée. Tests : workers/algo/test_worker.mjs (434), tests/test_direct_pousse.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 435,
+   "quoi": "AVANT L'OUVERTURE DU SITE (paquet 435, Lucas : « fais 2-3-5-6 »). 1) Mentions légales : l'hébergeur est Cloudflare (le site est servi par le worker et R2) ; GitHub Pages devient « copie de secours ». 2) Surveillance : toutes les 10 minutes, GitHub vérifie que la page d'accueil et le worker répondent ; un message sur le Telegram privé quand le site tombe, un autre quand il revient. 3) Sauvegarde quotidienne des comptes, des codes et des factures dans le coffre (sauvegardes/comptes/<jour>/, 14 jours gardés), pendant la tâche de 7 h 17 UTC.",
+   "garde_fou": "Rien ne change dans les % ni dans les données. La surveillance ne lit ni /site.json (fausses visites) ni /live (appels TennisApi) ; le journal public des Actions ne montre que des codes HTTP. Tests : tests/test_surveillance_site.py, workers/algo/test_worker.mjs (435)."
   }
  ]
 }
