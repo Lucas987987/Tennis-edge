@@ -56,3 +56,10 @@ def test_sauvegarde_quotidienne_des_comptes():
     V = (R / 'workers' / 'algo' / 'ventes.js').read_text(encoding='utf-8')
     assert "PREFIXES_SAUVES = ['comptes/u/', 'comptes/codes/', 'factures/']" in V
     assert 'await sauvegarderComptes(env)' in V and 'JOURS_SAUVES = 14' in V
+
+
+def test_bouton_admin_hors_gamesetalgo():
+    P = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
+    assert 'if (o.admin) { chargerInterne(); lienAdmin(); }' in P
+    i = P.index('function lienAdmin(){'); f = P[i:P.index('\n}\n', i)]
+    assert 'gamesetalgo' in f and 'href="/compte/admin"' in f

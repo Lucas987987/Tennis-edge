@@ -214,6 +214,7 @@ export async function autorise(req, env) {
 }
 function suiteSure(s) {
   if (s === '/') return '/';                                    // 432 : /connexion?suite=/ → le site, en administrateur
+  if (s === '/compte/admin') return s;                         // 436 : retour direct à l'administration après la clé
   return /^\/(lab|tableau)\/[A-Za-z0-9_\-./]*$/.test(s || '') && !String(s).includes('..') ? s : '/lab/';
 }
 function pageConnexion(suite, erreur) {
@@ -843,7 +844,7 @@ export default {
     if (url.pathname === '/compte/admin' || url.pathname.startsWith('/compte/admin/')) {
       // 377 : jamais sur gamesetalgo.com ; clé privée exigée (cookie du Lab ou en-tête X-Cle)
       if (MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
-      if (!(await autorise(req, env))) return new Response(null, { status: 303, headers: { ...ENTETES_PRIVES, Location: '/connexion?suite=' + encodeURIComponent('/lab/') } });
+      if (!(await autorise(req, env))) return new Response(null, { status: 303, headers: { ...ENTETES_PRIVES, Location: '/connexion?suite=' + encodeURIComponent('/compte/admin') } });
       return adminComptes(req, env, url);
     }
     // 334 : site privé, seulement hors de gamesetalgo.com (adresse workers.dev)
