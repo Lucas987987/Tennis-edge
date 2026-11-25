@@ -2424,6 +2424,13 @@
    "paquet": 437,
    "quoi": "NOMS CLIQUABLES DANS LA FICHE D'UN MATCH (paquet 437, Lucas : « il faudrait que l'on puisse accéder à la fiche du joueur en cliquant dessus »). Le nom de chaque joueur ouvre sa page (bilan victoires-défaites, par surface, forme, ses matchs avec le % annoncé et le résultat). Chaque joueur d'au moins un match publié a désormais sa page (avant : deux matchs) ; celles d'un seul match ne sont pas proposées aux moteurs de recherche (noindex, hors du plan du site et de la liste des joueurs). Un petit fichier joueurs_pages.json (nom → adresse) est lu à la première fiche ouverte.",
    "garde_fou": "Rien ne change dans les % ni dans les données. Un joueur sans aucun match publié (première apparition) n'a pas encore de page : son nom reste du texte jusqu'à son premier match terminé. Tests : tests/test_pages_seo.py (437)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 438,
+   "quoi": "PERFORMANCE DES JOUEURS (paquet 438, Lucas : « un espace Performance des joueurs » et « je ne veux pas d'un trait qui souligne le nom »). Sur la page de chaque joueur : sur ses 20 derniers matchs analysés, % moyen annoncé pour lui, victoires réelles, écart (victoires et points de %), FIABILITÉ DU JOUEUR (0-100 : ses résultats suivent-ils nos % ? z = (victoires − attendues) / écart-type attendu, note = 100 × (1 − min(|z|; 2,5) / 2,5), pas de note sous 5 matchs, « provisoire » sous 15) ; aces et breaks prévus contre réels (écart moyen, à côté de celui de l'algo sur tous les joueurs du circuit) ; par surface et contre chaque style d'adversaire (% annoncé contre % réel, « trop peu de matchs » sous 3). La liste des joueurs affiche la fiabilité. Le style de chaque joueur est désormais figé au moment du match dans les fiches et les bilans après match. Dans la fiche d'un match, le nom n'est plus souligné : une petite flèche discrète indique le lien.",
+   "garde_fou": "Historique et descriptif : rien n'entre dans le modèle ni ne change un %, et la page le dit. Échantillons d'un joueur petits par nature : la page le dit aussi. Aucune cote ni aucun mot de pari dans le bloc. Les bilans ne sont lus que pour les feuilles prévues/réelles et les styles (rien d'interne). Tests : tests/test_performance_joueurs.py, tests/test_pages_seo.py."
   }
  ]
 }

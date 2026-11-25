@@ -34,6 +34,9 @@ import re
 import sys
 import unicodedata
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import performance_joueurs as PJ  # noqa: E402
+
 SITE = 'https://gamesetalgo.com'
 LANGUES = ('fr', 'en')
 CIRCUITS = {'ATP': 'ATP', 'WTA': 'WTA', 'CH': 'Challenger'}
@@ -165,6 +168,52 @@ T = {
         sub_bilans='Every week, what the algorithm got right and wrong.', semaine='Week {w} ({y})'),
 }
 
+# 25/11/2026 (paquet 438) : « Performance des joueurs » — l'algo face à ce joueur (historique, ne change aucun %)
+T['fr']['perf'] = dict(
+    titre='Performance des joueurs', sous="Ce que l'algorithme annonçait pour {n}, contre ce qui est arrivé — ses {k} derniers matchs analysés.",
+    annonce='annoncé en moyenne', victoires='victoires réelles', ecart='victoire{s} {sens} que prévu', plus='de plus', moins='de moins',
+    ecart_nul='autant de victoires que prévu', fiab='fiabilité du joueur', provisoire='provisoire',
+    niveaux={'haut': 'fiable', 'moyen': 'moyenne', 'bas': 'imprévisible'},
+    fiab_aide="Fiabilité du joueur : ses résultats suivent-ils nos % ? 100 : il gagne exactement aussi souvent qu'annoncé ; "
+              "plus la note baisse, plus il gagne (ou perd) souvent à rebours de nos %. Calculée sur ses {k} derniers matchs analysés.",
+    fiab_absente='Fiabilité du joueur : pas encore de note (au moins {m} matchs analysés).',
+    barre="Trait blanc : {a} annoncé · Barre : {r} réalisé", stats='Statistiques : prévu contre réel', stat='', prevu='Prévu',
+    reel='Réel', ecart_moyen='Écart moyen', repere='Tous joueurs', par_match='par match',
+    stats_aide="Moyennes par match sur ses {n} derniers matchs dont la feuille est connue. « Tous joueurs » : l'écart moyen de "
+               "l'algorithme sur tous les joueurs du circuit — plus l'écart du joueur est petit, plus nos prévisions sont précises pour lui.",
+    noms={'aces': 'Aces', 'breaks': 'Breaks réussis'}, surfaces='Par surface', styles='Contre les styles de jeu',
+    matchs='Matchs', vd='V – D', groupe_aide="Sur tous ses matchs analysés : % moyen annoncé pour lui, puis % de victoires réel.",
+    styles_aide="Style de l'adversaire : nos catégories internes, mesurées sur ses feuilles de match (style au moment du match, "
+                "sinon le dernier connu).", peu='trop peu de matchs',
+    style_noms={'grand_serveur': 'Grands serveurs', 'serveur_attaquant': 'Serveurs attaquants',
+                'retourneur_pressant': 'Retourneurs pressants', 'contreur': 'Contreurs', 'equilibre': 'Joueurs équilibrés'},
+    rien='Pas encore assez de matchs analysés pour ce joueur.',
+    note="Historique de l'algorithme : il ne change pas le % de ses prochains matchs. Sur quelques dizaines de matchs, ces "
+         "chiffres bougent vite : à lire comme une tendance, pas comme une règle.",
+    liste_fiab='fiabilité {f}/100')
+T['en']['perf'] = dict(
+    titre='Player performance', sous="What the algorithm gave {n}, against what happened — last {k} analysed matches.",
+    annonce='average announced', victoires='actual wins', ecart='win{s} {sens} than expected', plus='more', moins='fewer',
+    ecart_nul='as many wins as expected', fiab='player reliability', provisoire='provisional',
+    niveaux={'haut': 'reliable', 'moyen': 'average', 'bas': 'unpredictable'},
+    fiab_aide="Player reliability: do his results follow our %? 100: he wins exactly as often as announced; the lower the score, "
+              "the more often he wins (or loses) against our %. Based on his last {k} analysed matches.",
+    fiab_absente='Player reliability: no score yet (at least {m} analysed matches).',
+    barre="White mark: {a} announced · Bar: {r} actual", stats='Stats: predicted vs actual', stat='', prevu='Predicted',
+    reel='Actual', ecart_moyen='Average gap', repere='All players', par_match='per match',
+    stats_aide="Per-match averages over his last {n} matches with a known match sheet. \"All players\": the algorithm's average gap "
+               "over every player on the tour — the smaller his gap, the more accurate our predictions are for him.",
+    noms={'aces': 'Aces', 'breaks': 'Breaks won'}, surfaces='By surface', styles='Against playing styles',
+    matchs='Matches', vd='W – L', groupe_aide="Over all his analysed matches: average % announced for him, then actual win %.",
+    styles_aide="Opponent style: our own categories, measured from match sheets (style at the time of the match, otherwise the "
+                "latest known).", peu='too few matches',
+    style_noms={'grand_serveur': 'Big servers', 'serveur_attaquant': 'Attacking servers',
+                'retourneur_pressant': 'Pressing returners', 'contreur': 'Counterpunchers', 'equilibre': 'All-round players'},
+    rien='Not enough analysed matches for this player yet.',
+    note="Algorithm history: it does not change the % of his next matches. Over a few dozen matches these figures move fast: "
+         "read them as a trend, not a rule.",
+    liste_fiab='reliability {f}/100')
+
 
 def slug(nom):
     s = unicodedata.normalize('NFKD', str(nom or '')).encode('ascii', 'ignore').decode().lower()
@@ -247,7 +296,17 @@ h1{font-family:Bungee,system-ui;font-weight:400;font-size:1.7rem;line-height:1.1
 table{width:100%;border-collapse:collapse;font-size:.95rem}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center}
 th:first-child,td:first-child{text-align:left}small{color:var(--dim)}ul.l{list-style:none;padding:0;margin:0}ul.l li{padding:7px 0;border-bottom:1px solid var(--line)}
 .cta{display:inline-block;margin-top:10px;background:var(--ball);color:#141225;font-weight:600;padding:10px 16px;border-radius:999px;text-decoration:none}
-footer{margin-top:34px;color:var(--dim);font-size:.85rem}footer a{color:var(--dim)}"""
+footer{margin-top:34px;color:var(--dim);font-size:.85rem}footer a{color:var(--dim)}
+h3{font-size:1rem;margin:18px 0 6px}.jaune{color:var(--ball)}.aide{color:var(--dim);font-size:.85rem;margin:6px 0 0}
+.pf .note{color:var(--dim);font-size:.85rem;margin:14px 0 0;padding-top:10px;border-top:1px solid var(--line)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(min-width:640px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.k{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.kv{font-family:Bungee,system-ui;font-size:1.45rem;line-height:1.1}.kv small{font:600 .85rem Barlow,system-ui;color:var(--dim);margin-left:2px}
+.kl{color:var(--dim);font-size:.82rem;line-height:1.3}
+.cmp{position:relative;height:10px;border-radius:999px;background:rgba(255,255,255,.08);margin:16px 0 4px}
+.cmp i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--p1),var(--p2))}
+.cmp b{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.fj{font-size:.8rem;color:var(--dim);margin-left:6px}"""
 
 
 def pre(L):
@@ -298,6 +357,7 @@ class Site:
                 s, i = f"{slug(n)}-{i}", i + 1
             pris.add(s)
             self.slugs_j[n] = s
+        self.bilans, self.styles, self.reperes, self.perf = {}, {}, {}, {}   # 438 : performance des joueurs
         self.indexable = lambda n: len(self.par_joueur.get(n, ())) >= MIN_MATCHS_JOUEUR  # noqa: E731
         # éditions de tournoi : même nom, matchs à moins de ECART_EDITION_J jours les uns des autres
         par_nom = collections.defaultdict(list)
@@ -403,6 +463,77 @@ def page_match(m, S, L):
     return page(L, titre, desc, f"/match/{m['uid']}", corps, ld)
 
 
+def _dec(x, L, k=1, signe=False):
+    t = f"{x:+.{k}f}" if signe else f"{x:.{k}f}"
+    return t.replace('.', ',').replace('-', '−') if L == 'fr' else t.replace('-', '−')
+
+
+def _perf(S, nom):
+    if nom not in S.perf:
+        S.perf[nom] = PJ.performance(nom, S.par_joueur[nom], lambda m: p_annonce(m) if m['home'] == nom else 1 - p_annonce(m),
+                                     S.bilans, S.styles, S.reperes)
+    return S.perf[nom]
+
+
+def bloc_performance(nom, S, L):
+    """25/11/2026 (paquet 438) — « Performance des joueurs » : l'algo face à ce joueur (scripts/performance_joueurs.py)."""
+    t, P = T[L], T[L]['perf']
+    x = _perf(S, nom)
+    if not x:
+        return f'<h2>{e(P["titre"])}</h2><div class="panel"><p>{e(P["rien"])}</p></div>'
+    n = x['n']
+    ev = x['ecart_victoires']
+    sens = P['plus'] if ev > 0 else P['moins']
+    ecart_txt = P['ecart_nul'] if abs(ev) < 0.05 else P['ecart'].format(s='s' if abs(ev) >= 2 else '', sens=sens)
+    cl_ecart = 'ok' if ev > 0.05 else 'ko' if ev < -0.05 else ''
+    f = x['fiabilite']
+    if f is not None:
+        niv = 'haut' if f >= 75 else 'moyen' if f >= 50 else 'bas'
+        cl = {'haut': 'ok', 'moyen': 'jaune', 'bas': 'ko'}[niv]
+        fiab = (f'<div class="k"><span class="kv {cl}">{f}<small>/100</small></span><span class="kl">{e(P["fiab"])} · '
+                f'{e(P["niveaux"][niv])}{" · " + e(P["provisoire"]) if x["provisoire"] else ""}</span></div>')
+        fiab_aide = f'<p class="aide">{e(P["fiab_aide"].format(k=n))}</p>'
+    else:
+        fiab, fiab_aide = '', f'<p class="aide">{e(P["fiab_absente"].format(m=PJ.MIN_NOTE))}</p>'
+    a, r = x['annonce_moyen'], x['victoires'] / n
+    kpis = (f'<div class="kpis"><div class="k"><span class="kv">{e(pc(a, L))}</span><span class="kl">{e(P["annonce"])}</span></div>'
+            f'<div class="k"><span class="kv">{x["victoires"]}<small>/{n}</small></span><span class="kl">{e(P["victoires"])} ({e(pc(r, L))})</span></div>'
+            f'<div class="k"><span class="kv {cl_ecart}">{e(_dec(ev, L, signe=True))}</span><span class="kl">{e(ecart_txt)} '
+            f'({e(_dec(x["ecart_pts"], L, signe=True))} pts)</span></div>{fiab}</div>')
+    barre = (f'<div class="cmp"><i style="width:{100 * r:.1f}%"></i><b style="left:{100 * a:.1f}%"></b></div>'
+             f'<p class="aide">{e(P["barre"].format(a=pc(a, L), r=pc(r, L)))}</p>')
+    stats = ''
+    if x['stats']:
+        lignes = ''.join(
+            f'<tr><td>{e(P["noms"][k])}</td><td>{e(_dec(v["prevu"], L))}</td><td>{e(_dec(v["reel"], L))}</td>'
+            f'<td><b>{e(_dec(v["ecart_moyen"], L))}</b></td><td>{e(_dec(v["repere"], L)) if v.get("repere") is not None else "—"}</td></tr>'
+            for k, v in x['stats'].items())
+        nst = max(v['n'] for v in x['stats'].values())
+        stats = (f'<h3>{e(P["stats"])}</h3><table><tr><th>{e(P["stat"])}</th><th>{e(P["prevu"])}</th><th>{e(P["reel"])}</th>'
+                 f'<th>{e(P["ecart_moyen"])}</th><th>{e(P["repere"])}</th></tr>{lignes}</table>'
+                 f'<p class="aide">{e(P["stats_aide"].format(n=nst))}</p>')
+
+    def table(titre, groupes, nommer, aide):
+        if not groupes:
+            return ''
+        li = []
+        for k, g in groupes.items():
+            if g['n'] < PJ.MIN_GROUPE:
+                li.append(f'<tr><td>{e(nommer(k))}</td><td>{g["n"]}</td><td colspan="2"><small>{e(P["peu"])}</small></td></tr>')
+                continue
+            d = g['reel'] - g['annonce']
+            cl = 'ok' if d > 0.03 else 'ko' if d < -0.03 else ''
+            li.append(f'<tr><td>{e(nommer(k))}</td><td>{g["n"]} <small>({g["v"]}–{g["n"] - g["v"]})</small></td>'
+                      f'<td>{e(pc(g["annonce"], L))}</td><td class="{cl}"><b>{e(pc(g["reel"], L))}</b></td></tr>')
+        return (f'<h3>{e(titre)}</h3><table><tr><th></th><th>{e(P["matchs"])}</th><th>{e(P["annonce"].split(" ")[0].capitalize())}</th>'
+                f'<th>{e(P["reel"])}</th></tr>{"".join(li)}</table><p class="aide">{e(aide)}</p>')
+    surf = table(P['surfaces'], x['surfaces'], lambda k: t['surfaces'].get(k, k if k != '?' else '—').capitalize(), P['groupe_aide'])
+    sty = table(P['styles'], x['styles'], lambda k: P['style_noms'].get(k, k), P['styles_aide'])
+    return (f'<h2 id="performance">{e(P["titre"])}</h2><p class="sub">{e(P["sous"].format(n=nom, k=n))}</p>'
+            f'<div class="panel pf">{kpis}{barre}{fiab_aide}</div>'
+            f'<div class="panel pf">{stats}{surf}{sty}<p class="note">{e(P["note"])}</p></div>')
+
+
 def page_joueur(nom, S, L):
     t = T[L]
     ms = S.par_joueur[nom]
@@ -410,11 +541,7 @@ def page_joueur(nom, S, L):
     gagne = lambda m: vainqueur(m) == nom  # noqa: E731
     v = sum(1 for m in jug if gagne(m))
     d = len(jug) - v
-    par_surf = collections.defaultdict(lambda: [0, 0])
-    for m in jug:
-        par_surf[t['surfaces'].get(m.get('surface'), m.get('surface') or '?')][0 if gagne(m) else 1] += 1
     forme = ' '.join(t['V'] if gagne(m) else t['D'] for m in jug[:10])
-    surf = ' · '.join(f"{s} : {x[0]} {t['V']} – {x[1]} {t['D']}" for s, x in sorted(par_surf.items(), key=lambda kv: -sum(kv[1])))
     li = []
     for m in ms[:40]:
         adv = m['away'] if m['home'] == nom else m['home']
@@ -429,7 +556,8 @@ def page_joueur(nom, S, L):
     pl = 's' if len(ms) > 1 else ''
     corps = f"""<h1>{e(nom)}</h1><p class="sub">{e(' · '.join(circuits))} · {e(t['analyses'].format(n=len(ms), s=pl if L == 'fr' else ('es' if len(ms) > 1 else '')))}</p>
 <div class="panel"><p><b>{e(t['vd'].format(v=v, d=d, sv=('s' if v > 1 else ''), sd=(('s' if d > 1 else '') if L == 'fr' else ('es' if d > 1 else ''))))}</b> {e(t['sur'])}</p>
-<p>{e(t['par_surface'])} : {e(surf) or '—'}</p><p>{e(t['forme'])} : <b>{e(forme) or '—'}</b></p></div>
+<p>{e(t['forme'])} : <b>{e(forme) or '—'}</b></p></div>
+{bloc_performance(nom, S, L)}
 <h2>{e(t['ses_matchs'])}</h2><ul class="l">{''.join(li)}</ul>
 <div class="panel"><p>{e(t['cta_joueur'])}</p><a class="cta" href="{'/' if L == 'fr' else '/?lang=en'}">{e(t['cta'])}</a></div>
 <p><a href="{pre(L)}/joueurs">{e(t['retour_joueurs'])}</a></p>"""
@@ -515,7 +643,10 @@ def page_index(L, quoi, S):
         return page(L, t['titre_matchs'], t['desc_matchs'], '/matchs', corps, og='website')
     if quoi == 'joueurs':
         noms = sorted((n for n in S.slugs_j if S.indexable(n)), key=lambda n: slug(n))
-        li = ''.join(f'<li><a href="{pre(L)}/joueur/{S.slugs_j[n]}">{e(n)}</a> <small>{e(t["nb_matchs"].format(n=len(S.par_joueur[n])))}</small></li>' for n in noms)
+        def fj(n):                                   # 438 : la fiabilité du joueur dans la liste, quand elle existe
+            x = _perf(S, n)
+            return f' <span class="fj">· {e(t["perf"]["liste_fiab"].format(f=x["fiabilite"]))}</span>' if x and x.get('fiabilite') is not None else ''
+        li = ''.join(f'<li><a href="{pre(L)}/joueur/{S.slugs_j[n]}">{e(n)}</a> <small>{e(t["nb_matchs"].format(n=len(S.par_joueur[n])))}</small>{fj(n)}</li>' for n in noms)
         corps = f"<h1>{e(t['joueurs'])}</h1><p class=\"sub\">{e(t['sub_joueurs'].format(n=MIN_MATCHS_JOUEUR))}</p><ul class=\"l\">{li}</ul>"
         return page(L, t['titre_joueurs'], t['desc_joueurs'], '/joueurs', corps, og='website')
     if quoi == 'tournois':
@@ -544,10 +675,14 @@ def _ecrire(dossier, rel, texte):
         f.write(texte)
 
 
-def construire(doc, dossier, maintenant=None):
-    """Écrit toutes les pages (deux langues) et le plan du site ; renvoie (matchs, joueurs)."""
+def construire(doc, dossier, maintenant=None, bilans=None, donnees=None):
+    """Écrit toutes les pages (deux langues) et le plan du site ; renvoie (matchs, joueurs).
+    bilans (après match) et donnees (matchs du jour) : pour la « Performance des joueurs » (paquet 438), facultatifs."""
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M')
     S = Site(matchs_publiables(doc, maintenant))
+    S.bilans = bilans or {}
+    S.styles = PJ.styles_connus(S.bilans, donnees)
+    S.reperes = PJ.reperes(S.bilans)
     jour = maintenant[:10]
     entrees = [('/', jour), ('/methode.html', jour), ('/apropos.html', jour)]
     for L in LANGUES:
@@ -587,7 +722,7 @@ def main(argv):
     except (OSError, ValueError):
         print('Pages de référencement : résultats absents, rien de construit.')
         return 0
-    construire(doc, dossier)
+    construire(doc, dossier, bilans=PJ.lire_bilans(racine), donnees=PJ.lire_donnees(racine))
     x = construire.dernier
     print(f"Pages de référencement : {x['matchs']} matchs, {x['joueurs']} joueurs, {x['tournois']} tournois, "
           f"{x['semaines']} semaines, en français et en anglais ; {x['adresses']} adresses dans le plan du site")

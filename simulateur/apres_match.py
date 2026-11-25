@@ -126,7 +126,17 @@ def fiche(ligne, maintenant, version):
             # 05/11/2026 : score du scénario montré en vidéo (pour la carte bilan)
             'scenario': _scenario(ligne),
             # 11/11/2026 (paquet 222) : les 6 scénarios affichés, figés pour leur contrôle (scenarios_match.controle)
-            'scenarios': _scenarios(ligne)}
+            'scenarios': _scenarios(ligne),
+            # 25/11/2026 (paquet 438) : style de jeu de chaque joueur au moment du match (catégories internes de
+            # styles_descriptifs) — pour la « Performance des joueurs » (contre quels styles), descriptif seulement
+            'styles': _styles(ligne)}
+
+
+def _styles(ligne):
+    js = ((ligne.get('styles_descriptifs') or {}).get('joueurs')) or []
+    par_nom = {j.get('joueur'): j.get('style') for j in js if isinstance(j, dict)}
+    st = [par_nom.get(ligne.get('home')), par_nom.get(ligne.get('away'))]
+    return st if any(st) else None
 
 
 def _scenarios(ligne):
@@ -218,7 +228,7 @@ def bilan_match(uid, f, reel, duree_reelle=None):
            'home': f.get('home'), 'away': f.get('away'), 'fige_le': d.get('fige_le'),
            'prevu': {'p_home': p, 'sets': d.get('sets'), 'scores': (d.get('scores') or [])[:3],
                      'feuille': d.get('feuille'), 'duree': d.get('duree'), 'fiabilite': d.get('fiabilite'),
-                     'scenario': d.get('scenario')},
+                     'scenario': d.get('scenario'), 'styles': d.get('styles')},
            'reel': {'gagnant': reel['gagnant'], 'score': reel.get('score'), 'sets': reel.get('sets'),
                     'feuille': reel.get('feuille'), 'minutes': duree_reelle},
            'ecarts': {}}
