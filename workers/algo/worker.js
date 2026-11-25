@@ -35,6 +35,8 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   '/site.json': 'site.json', '/site_plus.json': 'site_plus.json', '/editeur.json': 'editeur.json', '/partage.png': 'partage.png',
   // 22/11/2026 (paquet 329) : la page « Comment ça marche »
   '/methode.html': 'methode.html', '/comment-ca-marche': 'methode.html',
+  // 25/11/2026 (paquet 437) : nom du joueur → adresse de sa page (liens depuis la fiche d'un match)
+  '/joueurs_pages.json': 'joueurs_pages.json',
   // 22/11/2026 (paquet 330) : la page « Qui sommes-nous »
   '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html',
   // 23/11/2026 (paquet 391) : le site s'installe comme une appli (manifeste, service worker, icônes)
