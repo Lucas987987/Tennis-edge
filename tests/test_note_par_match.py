@@ -170,3 +170,28 @@ class EnProduction(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class NoteDesJoueurs(unittest.TestCase):
+    def test_seuls_les_matchs_d_avant_comptent(self):
+        enreg = []
+        for i in range(10):                                   # A annoncé à 80 %, perd tout : note basse
+            enreg.append({'home': 'Joueur A', 'away': f'X{i}', 'debut': f'2026-11-{10 + i:02d}T10:00', 'p': 0.8, 'y': 0})
+        idx = NP.index_joueurs(enreg)
+        self.assertEqual(NP.x_joueur(idx, 'Joueur A', 'Inconnu', '2026-11-12'), 0.0)   # 2 matchs avant : pas de note
+        x_tard = NP.x_joueur(idx, 'Joueur A', 'Inconnu', '2026-11-30')
+        self.assertGreater(x_tard, 0.5)
+        self.assertEqual(NP.x_joueur(idx, 'Joueur A', 'Inconnu', '2026-11-15'),
+                         NP.x_joueur(NP.index_joueurs(enreg[:5]), 'Joueur A', 'Inconnu', '2026-11-15'))  # le futur n'entre pas
+
+    def test_critere_continu(self):
+        M = modele()
+        M['effets']['beta'] = {NP.CRITERE_JOUEUR: math.log(0.5)}
+        e = NP.evaluer_match(M, 'CH', 50, {NP.CRITERE_JOUEUR: 0.5})
+        self.assertEqual(e['note'], round(100 * 0.5 ** 0.5))
+        self.assertIn(NP.CRITERE_JOUEUR, NP.noms_criteres())
+
+    def test_enregistrements_portent_les_noms(self):
+        h = FI.enregistrements({'matchs': [{'uid': 'u', 'home': 'A', 'away': 'B', 'debut': '2026-11-20T10:00',
+                                            'p_affiche': .6, 'reel': {'gagnant': 'home'}}]})
+        self.assertEqual((h[0]['home'], h[0]['away'], h[0]['debut']), ('A', 'B', '2026-11-20T10:00'))
