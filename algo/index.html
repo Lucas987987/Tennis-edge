@@ -618,7 +618,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 /* 06/11/2026 (paquet 210) — direct : tableau d'affichage, courbe du %, moments clés, duel de statistiques */
 .lv-top{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--dim);margin-top:8px}
 .lv-on{color:var(--ko);font-weight:700;letter-spacing:.3px}.lv-on:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ko);margin-right:6px;box-shadow:0 0 0 3px rgba(255,107,134,.2);animation:lvp 1.6s ease-in-out infinite}
-@keyframes lvp{50%{box-shadow:0 0 0 6px rgba(255,107,134,0)}}@media (prefers-reduced-motion:reduce){.lv-on:before{animation:none}}
+@keyframes lvp{50%{box-shadow:0 0 0 6px rgba(255,107,134,0)}}.lv-on.pause{color:#FFB020}.lv-on.pause:before{background:#FFB020;box-shadow:none;animation:none}@media (prefers-reduced-motion:reduce){.lv-on:before{animation:none}}
 .lv-fin{color:var(--dim);font-weight:700}
 .lv-sb{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),24px) 40px;gap:2px 6px;align-items:center;margin-top:6px;font-family:var(--cond);font-size:1.15rem;font-variant-numeric:tabular-nums}
 .lv-sb .n{font-family:inherit;font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
@@ -1236,7 +1236,7 @@ const T = {
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
-  live_en_cours:'En direct', live_termine:'Terminé', live_sert:n=>`${n} au service`,
+  live_en_cours:'En direct', live_interrompu:'Interrompu', live_termine:'Terminé', live_sert:n=>`${n} au service`,
   lv_titre:'Le match en direct', lv_titre_fin:'Le match (terminé)', lv_set:n=>`${n}e set`, lv_set1:'1er set', lv_pts:'Points',
   lv_delta:(d)=>`${d>0?'▲ +':'▼ −'}${Math.abs(d)} pts depuis le début`, lv_avant:p=>`avant : ${p}`,
   lv_courbe:n=>`Le % de ${n} jeu après jeu`, lv_courbe_aide:'Calculé par l’algo après chaque jeu, avec la forme du jour lue dans les points déjà joués. Pointillé : le % d’avant match.',
@@ -1608,7 +1608,7 @@ const T = {
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
-  live_en_cours:'Live', live_termine:'Finished', live_sert:n=>`${n} serving`,
+  live_en_cours:'Live', live_interrompu:'Suspended', live_termine:'Finished', live_sert:n=>`${n} serving`,
   lv_titre:'The match, live', lv_titre_fin:'The match (finished)', lv_set:n=>`Set ${n}`, lv_set1:'Set 1', lv_pts:'Points',
   lv_delta:(d)=>`${d>0?'▲ +':'▼ −'}${Math.abs(d)} pts since the start`, lv_avant:p=>`before: ${p}`,
   lv_courbe:n=>`${n}'s % game by game`, lv_courbe_aide:'Computed by the algorithm after each game, with the form of the day read from the points already played. Dotted: the pre-match %.',
@@ -3876,12 +3876,19 @@ const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, at
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
+// 25/11/2026 (paquet 427, Lucas) : un match commencé puis interrompu (pluie, nuit) est souvent republié par la source des
+// matchs à venir avec l'heure de reprise — la fiche prend alors cette nouvelle heure, à plus de 8 h du début réel.
+// Un match déjà commencé (sets au score) ou interrompu est donc relié jusqu'à 40 h d'écart : il reste dans le direct
+// au lieu d'apparaître comme un nouveau match.
+const STATUTS_INTERROMPUS = ['interrupted', 'suspended', 'delayed'];
+function estInterrompu(x){ return !!(x && (x.interrompu || (x.statut && STATUTS_INTERROMPUS.includes(x.statut.type)))); }
 function relierLive(matchs){
   const out = {};
   for (const m of (D && D.matchs) || []) {
     const t0 = utc(m.debut).getTime();
     for (const x of matchs) {
-      if (x.debut && Math.abs(x.debut*1000 - t0) > 8*3600e3) continue;
+      const commence = estInterrompu(x) || ((x.score_home && x.score_home.sets) || []).length > 0;
+      if (x.debut && Math.abs(x.debut*1000 - t0) > (commence ? 40 : 8)*3600e3) continue;
       if (memeJoueur(m.home,x.home) && memeJoueur(m.away,x.away)) { out[m.uid] = {x, inverse:false}; break; }
       if (memeJoueur(m.home,x.away) && memeJoueur(m.away,x.home)) { out[m.uid] = {x, inverse:true}; break; }
     }
@@ -6881,7 +6888,7 @@ function barreLive(m, r, fini, grand){
 }
 function texteLive(m, r, fini){
   const x = r.x, n = (cotesLive(r).h.sets || []).length;
-  const ou = fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}${n ? ' · ' + esc(n===1 ? t('lv_set1') : t('lv_set', n)) : ''}</span>`;
+  const ou = fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on${estInterrompu(r.x) ? ' pause' : ''}">${esc(estInterrompu(r.x) ? t('live_interrompu') : t('live_en_cours'))}${n ? ' · ' + esc(n===1 ? t('lv_set1') : t('lv_set', n)) : ''}</span>`;
   return `<span class="lv-top">${ou}</span>${tableauLive(m, r, fini, false)}${barreLive(m, r, fini)}`;
 }
 // 06/11/2026 — % RECALCULÉ EN DIRECT : le moteur de la page (Moteur + calibre, celui de « Jouer le match »)
@@ -7381,7 +7388,7 @@ function rendMatchLive(){
     return;
   }
   el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
-    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}${fini ? '' : `<button type="button" class="btn lv-plein-b">⛶ ${esc(t('pe_bouton'))}</button>`}<button type="button" class="btn te3d-bascule">${esc(t(vue3dLive() ? 't3_2d' : 't3_3d'))}</button></div>
+    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on${estInterrompu(r.x) ? ' pause' : ''}">${esc(estInterrompu(r.x) ? t('live_interrompu') : t('live_en_cours'))}</span>`}${fini ? '' : `<button type="button" class="btn lv-plein-b">⛶ ${esc(t('pe_bouton'))}</button>`}<button type="button" class="btn te3d-bascule">${esc(t(vue3dLive() ? 't3_2d' : 't3_3d'))}</button></div>
     ${vue3dLive() ? terrain3dHtml() : terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
   const bt = el.querySelector('.lv-btn-tous');
   if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
@@ -7612,8 +7619,12 @@ function liveUtile(){
 }
 // Un seul appel /live à la fois, même si le réseau met plus de 10 secondes à répondre.
 let liveRequeteEnCours = false;
+let liveDernierLent = 0;
 function chargerLive(){
-  if (document.hidden || !liveUtile() || liveRequeteEnCours) return;
+  if (document.hidden || liveRequeteEnCours) return;
+  // 427 : sans match proche, un coup d'œil par minute quand même — un match interrompu republié à l'heure de reprise
+  // (plusieurs heures plus tard) doit rester visible dans le direct avec son score
+  if (!liveUtile()) { if (Date.now() - liveDernierLent < 60e3) return; liveDernierLent = Date.now(); }
   liveRequeteEnCours = true;
   fetch('/live', {cache:'no-store'}).then(r=>r.ok ? r.json() : null).then(o=>{
     if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
