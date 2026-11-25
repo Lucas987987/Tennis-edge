@@ -423,6 +423,8 @@ NAISSANCES = None     # 04/11/2026 : {joueur: date de naissance estimée} (etude
 # 05/11/2026 — MATCHS PEU DOCUMENTÉS (etude_documentation.py) : sous 500 points de service cumulés pour le joueur le
 # moins vu, l'algo était trop prudent (Challenger : pente d'étalonnage 1,84 apprise août–sept, −0,030 de log loss en
 # oct–nov). p' = σ(a · logit p) sur les circuits adoptés (rapport_documentation.json).
+# 25/11/2026 (paquet 453, DÉCISION DE LUCAS après etude_documentation_itf.py) : Challenger 1,844 → 1,11 (avec les
+# résultats ITF hommes dans l'Elo, 1,844 faisait perdre ; 1,11 gagne sur les deux périodes du rejeu comme en production).
 BALLES_CUMULEES = None   # {clé joueur: points de service cumulés jusqu'à aujourd'hui}
 ALIAS_BALLES = {}        # 23/11/2026 (paquet 375) : alias du classement, pour compter un joueur et non une écriture
 

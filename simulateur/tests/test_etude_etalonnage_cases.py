@@ -36,7 +36,7 @@ def rejeu_factice(pentes, n=1500):
     for c in EC.CIRCUITS:
         for nom, lo, hi in EC.FENETRES:
             for i, n_min in enumerate((15, 50, 150, 500)):
-                for z in tirage(pentes[i], n, graine=hash((c, nom, i)) % 1000):
+                for z in tirage(pentes[i], n, graine=sum(map(ord, f'{c}{nom}{i}'))):
                     rows.append((c, lo + dt.timedelta(days=30), n_min, z))
     return rows
 

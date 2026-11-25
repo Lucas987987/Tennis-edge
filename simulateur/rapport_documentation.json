@@ -18,11 +18,15 @@
   "CH": {
    "appris": 325,
    "juges": 156,
-   "pente": 1.844,
+   "pente": 1.11,
    "log_loss_sans": 0.52318,
    "log_loss_avec": 0.49288,
    "gain": 0.0303,
-   "adopte": true
+   "adopte": true,
+   "pente_avant": 1.844,
+   "changee_le": "2026-11-25",
+   "paquet": 453,
+   "pourquoi": "Décision de Lucas du 25/11/2026 après l'étude 452 (simulateur/rapport_documentation_itf.json) : sur le rejeu Challenger comme en production (résultats ITF hommes, départ ITF à 1000), la pente 1,844 fait perdre sur les matchs peu documentés (−0,019 ± 0,010 par match jugé du 01/10/2025 au 31/05/2026, 1 127 matchs ; −0,038 sur janvier–septembre 2025). La pente réapprise sur janvier–septembre 2025, 1,11, fait gagner +0,0037 ± 0,0013 sur la période jugée et +0,0012 sur la période d'apprentissage ; contre 1,844, elle gagne sur les deux périodes. Contrôle dans l'autre sens : la pente apprise sur la période jugée (1,235) appliquée à janvier–septembre 2025 ne gagne rien (−0,0002 ± 0,0029). Retrait : la règle habituelle de fantomes_circuits.py (deux semaines de suite pires)."
   }
  }
 }
