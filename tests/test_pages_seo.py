@@ -95,3 +95,26 @@ def test_437_fiche_relie_les_joueurs():
     assert "/joueur/${encodeURIComponent(s)}" in P
     W = (pathlib.Path(__file__).resolve().parent.parent / 'workers' / 'algo' / 'worker.js').read_text(encoding='utf-8')
     assert "'/joueurs_pages.json': 'joueurs_pages.json'" in W
+
+
+def test_445_pages_des_matchs_a_venir(tmp_path):
+    """Paquet 445 : une page par match à venir, sans rien de réservé (ni %, ni scénario, ni fiabilité du match)."""
+    passes = [_m('2026-11-20_aa_bb', '2026-11-20T10:00', 'Aaa Bbb', 'Ccc Ddd', 0.7),
+              _m('2026-11-21_aa_cc', '2026-11-21T10:00', 'Aaa Bbb', 'Eee Fff', 0.4, g='away', score='4-6 5-7')]
+    venir = {'uid': '2026-11-26_aa_cc', 'debut': '2026-11-26T12:00', 'home': 'Aaa Bbb', 'away': 'Ccc Ddd', 'tournoi': 'ATP Challenger Test',
+             'circuit': 'CH', 'surface': 'Clay', 'meilleur_des': 3, 'p_home': 0.8123, 'fiabilite': {'note': 77},
+             'simulation': {'scenario': {'score': '6-1 6-1'}}, 'cotes_justes': [1.23, 5.32]}
+    itf = dict(venir, uid='2026-11-26_itf_x', circuit='ITF')
+    PS.construire({'matchs': passes}, str(tmp_path), maintenant='2026-11-24T12:00', bilans={}, donnees={'matchs': [venir, itf]})
+    h = (tmp_path / 'match' / '2026-11-26_aa_cc.html').read_text(encoding='utf-8')
+    assert 'Pronostic Aaa Bbb – Ccc Ddd' in h and 'Voir le % et le scénario complet' in h and '#match=2026-11-26_aa_cc' in h
+    for fuite in ('81', '0.8123', '77', '6-1 6-1', '1.23', '5.32'):
+        assert fuite not in h.split('<body>')[1].replace('2026-11-26', ''), fuite
+    assert '"eventStatus": "https://schema.org/EventScheduled"' in h and '"BreadcrumbList"' in h
+    assert not (tmp_path / 'match' / '2026-11-26_itf_x.html').exists()
+    assert (tmp_path / 'en' / 'match' / '2026-11-26_aa_cc.html').exists()
+    assert '/match/2026-11-26_aa_cc' in (tmp_path / 'sitemap.xml').read_text(encoding='utf-8')
+    j = (tmp_path / 'joueur' / 'aaa-bbb.html').read_text(encoding='utf-8')
+    assert 'Prochain match' in j and '/match/2026-11-26_aa_cc' in j and '"BreadcrumbList"' in j
+    assert 'Matchs à venir' in (tmp_path / 'matchs.html').read_text(encoding='utf-8')
+    assert PS.construire.dernier['a_venir'] == 1
