@@ -1,10 +1,11 @@
-name: Étude - étalonnage par case de fiabilité (paquet 447)
+name: Analyse - étalonnage case par case (paquet 448)
 
-# 25/11/2026 — paquet 447 (Lucas : « peut-on trouver d'où viennent les différences pour que l'on soit à l'attendu ? »).
-# Le % étiré ou resserré autour de 50 % selon la case de la note de fiabilité ? Règle écrite dans l'en-tête de
-# simulateur/etude_etalonnage_cases.py (appris 2018–2022, jugé une fois sur 2023 → juin 2026, circuit par circuit).
-# Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit simulateur/rapport_etalonnage_cases.json et
-# l'entrée 447 du journal, avec les résultats. 0 requête d'API. Rien n'entre dans l'algo.
+# 25/11/2026 — paquet 448 (Lucas : « il faut que l'on analyse en détail les résultats de chaque case avant toute
+# modification »). Remplace l'étude 447. Analyse seule : chaque case de la note de fiabilité décrite sur trois sources
+# (rejeu comme en production avec les résultats ITF hommes, même rejeu ATP / WTA sur deux périodes, nos matchs en
+# direct) ; règle de lecture dans l'en-tête de simulateur/etude_etalonnage_cases.py. Se lance tout seul quand le paquet
+# arrive sur main (ou à la main). Écrit simulateur/rapport_etalonnage_cases.json et l'entrée 448 du journal.
+# 0 requête d'API. Rien n'entre dans l'algo.
 on:
   push:
     branches: [main]
@@ -24,7 +25,7 @@ concurrency:
 jobs:
   etude:
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
         with:
@@ -32,7 +33,11 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /simulateur/
-            /scripts/closing_store.py
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+            /feuilles/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
             /Tennis_Edge_Lab/books.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
@@ -44,12 +49,12 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
           cd /tmp/sackmann
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
-      - name: Apprendre sur 2018–2022, juger une fois sur 2023 → juin 2026
+      - name: Décrire chaque case (rejeu comme en production + direct)
         run: |
           set -euo pipefail
           python simulateur/etude_etalonnage_cases.py /tmp/sackmann . | tee /tmp/etalonnage_cases.log
           cp simulateur/rapport_etalonnage_cases.json /tmp/rapport_etalonnage_cases.json
-          echo '### Étalonnage par case de fiabilité (paquet 447)' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Étalonnage case par case (paquet 448, analyse seule)' >> "$GITHUB_STEP_SUMMARY"
           sed 's/^/    /' /tmp/etalonnage_cases.log >> "$GITHUB_STEP_SUMMARY"
       - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
         run: |
@@ -58,14 +63,14 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           for i in 1 2 3 4 5 6; do
             # À chaque essai : main tel qu'il est maintenant, puis NOTRE rapport et NOTRE entrée (l'entrée du
-            # paquet 447 est remplacée si elle existe déjà) : jamais de rebase sur le journal.
+            # paquet 448 est remplacée si elle existe déjà) : jamais de rebase sur le journal.
             git fetch -q origin main
             git reset -q --hard origin/main
             cp /tmp/rapport_etalonnage_cases.json simulateur/rapport_etalonnage_cases.json
             python simulateur/etude_etalonnage_cases.py --journal-depuis-rapport /tmp/rapport_etalonnage_cases.json
             git add -- simulateur/rapport_etalonnage_cases.json simulateur/journal_changements.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
-            git commit -q -m 'Étude 447 : étalonnage par case de fiabilité (rapport et journal)'
+            git commit -q -m 'Analyse 448 : étalonnage case par case (rapport et journal)'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
             sleep $((i * 10))
           done
