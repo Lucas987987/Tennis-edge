@@ -45,3 +45,9 @@ def test_vrais_sons():
 def test_public():
     assert 'c = peau ? peauC : (chev ? chevC : (siege ? aC : aC * aIC));' in BLOC
     assert 'q.x += sin(uT * 0.6 + h * 40.0) * 0.018 * q.y;' in BLOC
+
+
+def test_tension_public_431():
+    assert 'if (nF >= 6) SON.tension(Math.min(1, (nF - 5) / 6));' in BLOC
+    assert 'tension(niv) {' in BLOC and 'relacher() {' in BLOC and 'this.relacher(); this.applaudir(' in BLOC
+    assert "(VIDEO_ICI || ADMIN) ? '<button type=\"button\" class=\"btn\" id=\"b-video\">" in HTML
