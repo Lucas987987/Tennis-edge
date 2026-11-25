@@ -1,72 +1,67 @@
 {
- "genere_le": "2026-11-24T19:04:36+00:00",
+ "genere_le": "2026-11-25T18:10:21+00:00",
  "paquet": 272,
  "fenetre_jours": 30,
  "regle": "résolu                 — présent dans Tennis_Edge_Lab/live/pronostics_resultats.json ;   adversaire fictif      — « R16P3 », « QF7 »… (vainqueur à venir ; filtré depuis le 04/11, restes du journal) ;   doublon reprogrammé    — même paire de joueurs sous un autre uid à moins de 48 h (match déplacé) : une seule fois                            dans les bilans, rien à réparer ;   abandon / forfait      — feuille TennisApi « Retired » / « Walkover » : volontairement non jugés ;   annulé ou reporté      — feuille « Canceled », « Postponed »… ;   feuille terminée non résolue — feuille « Ended » trouvée mais pas de résultat : DÉFAUT à corriger ;   adversaire remplacé    — pas de feuille pour la paire, mais un des joueurs a joué un autre adversaire à ± 3 h de                            l'horaire prévu (repêché, forfait remplacé) : le match annoncé n'a pas eu lieu ;   aucune feuille         — rien du tout : TROU DE COLLECTE (ou match pas encore relevé). Aussi : paires affichées deux fois sur le site (algo/donnees.json) et paires résolues deux fois (bilans faussés). ALERTE (Telegram privé) si, sur la veille, « aucune feuille » + « feuille terminée non résolue » dépassent 10 % des matchs réels (hors adversaires fictifs et doublons), ou si une paire est résolue deux fois.",
- "matchs": 2302,
+ "matchs": 2256,
  "causes": {
-  "résolu": 1539,
+  "résolu": 1533,
   "adversaire fictif": 151,
-  "doublon reprogrammé": 478,
-  "abandon / forfait": 53,
+  "doublon reprogrammé": 446,
+  "abandon / forfait": 55,
   "annulé ou reporté": 0,
   "feuille terminée non résolue": 0,
   "adversaire remplacé": 35,
-  "aucune feuille": 46
+  "aucune feuille": 36
  },
  "par_circuit": {
   "ATP": {
-   "résolu": 184,
+   "résolu": 174,
    "adversaire fictif": 38,
-   "doublon reprogrammé": 82,
-   "abandon / forfait": 5,
+   "doublon reprogrammé": 66,
+   "abandon / forfait": 4,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 6,
-   "aucune feuille": 2
+   "aucune feuille": 0
   },
   "WTA": {
-   "résolu": 150,
+   "résolu": 140,
    "adversaire fictif": 32,
-   "doublon reprogrammé": 46,
+   "doublon reprogrammé": 33,
    "abandon / forfait": 5,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 7,
-   "aucune feuille": 8
+   "aucune feuille": 7
   },
   "CH": {
-   "résolu": 1205,
+   "résolu": 1219,
    "adversaire fictif": 81,
-   "doublon reprogrammé": 350,
-   "abandon / forfait": 43,
+   "doublon reprogrammé": 347,
+   "abandon / forfait": 46,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 22,
-   "aucune feuille": 36
+   "aucune feuille": 29
   }
  },
- "defauts_pct": 2.7,
+ "defauts_pct": 2.2,
  "veille": {
-  "jour": "2026-11-23",
+  "jour": "2026-11-24",
   "causes": {
-   "résolu": 73,
+   "résolu": 65,
    "adversaire fictif": 0,
-   "doublon reprogrammé": 47,
+   "doublon reprogrammé": 30,
    "abandon / forfait": 2,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 0,
-   "aucune feuille": 11
+   "aucune feuille": 1
   },
-  "defauts_pct": 12.8
+  "defauts_pct": 1.5
  },
  "par_jour": {
-  "2026-11-11": {
-   "matchs": 50,
-   "resolus": 39,
-   "defauts_pct": 0.0
-  },
   "2026-11-12": {
    "matchs": 40,
    "resolus": 30,
@@ -124,19 +119,22 @@
   },
   "2026-11-23": {
    "matchs": 133,
-   "resolus": 73,
-   "defauts_pct": 12.8
+   "resolus": 74,
+   "defauts_pct": 3.8
   },
   "2026-11-24": {
-   "matchs": 21,
-   "resolus": 15,
-   "defauts_pct": 6.2
+   "matchs": 98,
+   "resolus": 65,
+   "defauts_pct": 1.5
+  },
+  "2026-11-25": {
+   "matchs": 13,
+   "resolus": 10,
+   "defauts_pct": 8.3
   }
  },
  "paires_resolues_deux_fois": 0,
  "paires_en_double_sur_le_site": 0,
- "alerte": [
-  "veille : 12.8 % de matchs sans résultat exploitable (seuil 10 %)"
- ],
+ "alerte": [],
  "descriptif": "le % de victoire ne change pas"
 }
