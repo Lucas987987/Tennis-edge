@@ -1,0 +1,283 @@
+{
+ "genere_le": "2026-11-25T21:20:35+00:00",
+ "paquet": 449,
+ "regle": "Challenger seul. Pente par classe d'expérience de l'Elo de production seul, rejeu comme en production (ITF hommes compris), apprise du 01/01/2025 au 30/09/2025, jugée une fois du 01/10/2025 au 31/05/2026 contre la note v3 en place (log loss de σ(a · logit p)). Retenue si ≥ 1 000 matchs, gain ≥ 0,001 et même sens sur les deux périodes. Rien en production par ce paquet.",
+ "itf_hommes_dans_le_rejeu": 0,
+ "pentes_en_place": {
+  "_circuit": 0.818,
+  "0": 0.7463,
+  "1": 0.7892,
+  "2": 0.9188,
+  "3": 0.9229
+ },
+ "jugement": {
+  "pentes_candidates": {
+   "_circuit": 0.8914,
+   "0": 0.9588,
+   "1": 0.8831,
+   "2": 0.857,
+   "3": 0.7196
+  },
+  "par_classe": {
+   "0": {
+    "classe": "moins de 30 matchs",
+    "matchs_appris": 2655,
+    "matchs_juges": 2438,
+    "pente_reelle_jugee": 1.141,
+    "en_place": {
+     "pente": 0.7463,
+     "note": 75,
+     "niveau": "fragile"
+    },
+    "candidate": {
+     "pente": 0.9588,
+     "note": 96,
+     "niveau": "solide"
+    },
+    "reapprise_sur_la_periode_jugee": 1.131
+   },
+   "1": {
+    "classe": "30–99 matchs",
+    "matchs_appris": 2814,
+    "matchs_juges": 2232,
+    "pente_reelle_jugee": 1.021,
+    "en_place": {
+     "pente": 0.7892,
+     "note": 79,
+     "niveau": "prudent"
+    },
+    "candidate": {
+     "pente": 0.8831,
+     "note": 88,
+     "niveau": "correct"
+    },
+    "reapprise_sur_la_periode_jugee": 1.0238
+   },
+   "2": {
+    "classe": "100–299 matchs",
+    "matchs_appris": 2613,
+    "matchs_juges": 2272,
+    "pente_reelle_jugee": 0.925,
+    "en_place": {
+     "pente": 0.9188,
+     "note": 92,
+     "niveau": "correct"
+    },
+    "candidate": {
+     "pente": 0.857,
+     "note": 86,
+     "niveau": "correct"
+    },
+    "reapprise_sur_la_periode_jugee": 0.9388
+   },
+   "3": {
+    "classe": "300 matchs et plus",
+    "matchs_appris": 667,
+    "matchs_juges": 500,
+    "pente_reelle_jugee": 1.133,
+    "en_place": {
+     "pente": 0.9229,
+     "note": 92,
+     "niveau": "correct"
+    },
+    "candidate": {
+     "pente": 0.7196,
+     "note": 72,
+     "niveau": "fragile"
+    },
+    "reapprise_sur_la_periode_jugee": 1.0999
+   }
+  },
+  "periode_jugee": {
+   "matchs": 7442,
+   "gain": 0.00321,
+   "erreur_type": 0.00061,
+   "erreurs_types": 5.23,
+   "log_loss_en_place": 0.61477,
+   "log_loss_candidate": 0.61157
+  },
+  "sens_inverse": {
+   "matchs": 8749,
+   "gain": -0.00019,
+   "erreur_type": 0.00106,
+   "erreurs_types": -0.18,
+   "log_loss_en_place": 0.63301,
+   "log_loss_candidate": 0.6332
+  },
+  "promesse_en_place": {
+   "bas": {
+    "matchs": 2480,
+    "notes": [
+     75,
+     79
+    ],
+    "pente": 1.127,
+    "distance_a_1": 0.127,
+    "erreur_etalonnage_pts": 3.5
+   },
+   "haut": {
+    "matchs": 2482,
+    "notes": [
+     92,
+     92
+    ],
+    "pente": 0.98,
+    "distance_a_1": 0.02,
+    "erreur_etalonnage_pts": 2.94
+   },
+   "tient": true,
+   "remarque": null
+  },
+  "promesse_candidate": {
+   "bas": {
+    "matchs": 2480,
+    "notes": [
+     72,
+     86
+    ],
+    "pente": 0.944,
+    "distance_a_1": 0.056,
+    "erreur_etalonnage_pts": 1.49
+   },
+   "haut": {
+    "matchs": 2482,
+    "notes": [
+     88,
+     96
+    ],
+    "pente": 1.145,
+    "distance_a_1": 0.145,
+    "erreur_etalonnage_pts": 3.57
+   },
+   "tient": false,
+   "remarque": null
+  },
+  "retenue": false,
+  "raisons": [
+   "pas le même sens sur les deux périodes"
+  ]
+ },
+ "direct_challenger_note_v3": {
+  "matchs": 918,
+  "niveaux": {
+   "fragile": {
+    "en_place": {
+     "matchs": 360,
+     "favori_annonce_pct": 69.3,
+     "favori_reel_pct": 66.1,
+     "pente": 0.773,
+     "pente_erreur_type": 0.111,
+     "log_loss": 0.5871,
+     "log_loss_attendu": 0.545,
+     "ecart_a_l_attendu": 0.0421,
+     "ecart_erreur_type": 0.0249,
+     "lecture": "tendance seulement (% trop sûrs)"
+    },
+    "candidate": {
+     "matchs": 331,
+     "favori_annonce_pct": 65.5,
+     "favori_reel_pct": 64.0,
+     "pente": 0.845,
+     "pente_erreur_type": 0.142,
+     "log_loss": 0.6115,
+     "log_loss_attendu": 0.5908,
+     "ecart_a_l_attendu": 0.0207,
+     "ecart_erreur_type": 0.0212,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    }
+   },
+   "prudent": {
+    "en_place": {
+     "matchs": 180,
+     "favori_annonce_pct": 71.9,
+     "favori_reel_pct": 69.4,
+     "pente": 1.022,
+     "pente_erreur_type": 0.179,
+     "log_loss": 0.544,
+     "log_loss_attendu": 0.5478,
+     "ecart_a_l_attendu": -0.0038,
+     "ecart_erreur_type": 0.0266,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    },
+    "candidate": {
+     "matchs": 0
+    }
+   },
+   "correct": {
+    "en_place": {
+     "matchs": 213,
+     "favori_annonce_pct": 65.3,
+     "favori_reel_pct": 68.5,
+     "pente": 1.246,
+     "pente_erreur_type": 0.221,
+     "log_loss": 0.6005,
+     "log_loss_attendu": 0.6261,
+     "ecart_a_l_attendu": -0.0256,
+     "ecart_erreur_type": 0.0247,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    },
+    "candidate": {
+     "matchs": 540,
+     "favori_annonce_pct": 68.6,
+     "favori_reel_pct": 68.0,
+     "pente": 1.053,
+     "pente_erreur_type": 0.114,
+     "log_loss": 0.5777,
+     "log_loss_attendu": 0.5854,
+     "ecart_a_l_attendu": -0.0077,
+     "ecart_erreur_type": 0.0159,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    }
+   },
+   "solide": {
+    "en_place": {
+     "matchs": 165,
+     "favori_annonce_pct": 67.2,
+     "favori_reel_pct": 66.7,
+     "pente": 1.104,
+     "pente_erreur_type": 0.219,
+     "log_loss": 0.5803,
+     "log_loss_attendu": 0.5941,
+     "ecart_a_l_attendu": -0.0138,
+     "ecart_erreur_type": 0.0276,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    },
+    "candidate": {
+     "matchs": 47,
+     "favori_annonce_pct": 87.5,
+     "favori_reel_pct": 85.1,
+     "pente": 0.774,
+     "pente_erreur_type": 0.207,
+     "log_loss": 0.3948,
+     "log_loss_attendu": 0.3091,
+     "ecart_a_l_attendu": 0.0857,
+     "ecart_erreur_type": 0.1158,
+     "lecture": "tendance seulement (conforme à l'erreur près)"
+    }
+   }
+  },
+  "changent_de_niveau": 451,
+  "correct_entrent": 347,
+  "correct_sortent": 20,
+  "passages": {
+   "fragile → fragile": 274,
+   "solide → correct": 134,
+   "correct → correct": 193,
+   "fragile → correct": 39,
+   "prudent → correct": 174,
+   "prudent → fragile": 6,
+   "solide → fragile": 31,
+   "correct → fragile": 20,
+   "fragile → solide": 47
+  }
+ },
+ "modele_candidat": null,
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-25",
+  "statut": "etude",
+  "paquet": 449,
+  "quoi": "RÉAPPRENDRE LA NOTE DE FIABILITÉ DU CHALLENGER SUR LE REJEU COMME EN PRODUCTION (paquet 449, accord de Lucas après l'analyse 448). La note v3 donne à chaque match 100 · min(a, 1/a), a = pente de sa case apprise sur l'archive 2016–2022 ; en Challenger, l'archive n'a pas les résultats ITF hommes et ses pentes (0,75 à 0,92) disent « % trop sûrs », alors que le rejeu comme en production trouve l'Elo Challenger un peu trop timide. Nouvelle étude simulateur/etude_note_v3_challenger.py : une pente par classe d'expérience du moins connu (moins de 30, 30–99, 100–299, 300 matchs et plus), apprise du 01/01 au 30/09/2025 sur le rejeu comme en production, jugée une seule fois du 01/10/2025 au 31/05/2026 contre la note en place. Règle écrite dans l'en-tête avant tout essai : retenue si ≥ 1 000 matchs, gain ≥ 0,001 et même sens sur les deux périodes. Déjà vu avant la règle : les pentes de l'analyse 448 sur toute la fenêtre 2025 → mai 2026. RÉSULTAT : jugée sur 7442 matchs Challenger (01/10/2025 → 31/05/2026), gain 0,00321 ± 0,00061 ; sens inverse -0,00019 ; pentes par classe (en place → candidate) : moins de 30 matchs 0,7463 → 0,9588 (fragile → solide), 30–99 matchs 0,7892 → 0,8831 (prudent → correct), 100–299 matchs 0,9188 → 0,857 (correct → correct), 300 matchs et plus 0,9229 → 0,7196 (correct → fragile). NON RETENUE (pas le même sens sur les deux périodes) : la note en place reste. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : la note affichée ne change pas. Retenue, elle est proposée à Lucas pour un paquet suivant, avec la question de la correction Challenger « correct » (pente 1,142, paquet 270), qui dépend du niveau. Limite : l'Elo seul, sans la simulation ni les signaux ; nos matchs en direct ne servent qu'à regarder. 0 requête d'API."
+ }
+}
