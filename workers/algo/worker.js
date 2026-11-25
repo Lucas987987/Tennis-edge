@@ -63,7 +63,7 @@ const SECURITE = {
 };
 // 382 : Cloudflare Turnstile (anti-robots des comptes) — son script et son cadre, rien d'autre
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; "
-  + "font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; "
+  + "font-src 'self'; img-src 'self' data:; connect-src 'self' wss://gamesetalgo.com wss://algo.tennis-edge.workers.dev; frame-src https://challenges.cloudflare.com; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 // 334 : lecture dans R2 (bucket du coffre) ; null si absent, vide ou en erreur (le secours GitHub Pages prend le relais)
@@ -597,6 +597,73 @@ export async function live(req, env, vue = 'direct') {
   return rep(o);
 }
 
+// 7. DIRECT EN CONTINU (25/11/2026, paquet 433, Lucas : « les points en direct comme sur Sofascore », plan Workers Paid
+//    pris le jour même). GET /live/flux (WebSocket) → un seul objet « DirectLive » (Durable Object) garde les téléphones
+//    connectés et leur POUSSE le direct dès qu'il change, au lieu que chaque téléphone redemande /live toutes les 3 s.
+//    · Une seule source : l'objet appelle live() — même cache, même quota TennisApi, même réponse que GET /live.
+//    · Il se réveille juste après la fin de fraîcheur du direct (maj + ttl), au plus tôt 1 s, au plus tard 60 s après.
+//    · Personne de connecté → plus aucun réveil (aucun coût). Les « ping » des téléphones reçoivent « pong » sans
+//      réveiller l'objet (réponse automatique de Cloudflare). Les envois vers les téléphones ne sont pas facturés.
+//    · Garde-fous : 45 000 réveils par jour (UTC) au plus — au-delà, les téléphones repassent d'eux-mêmes à la
+//      redemande toutes les 3 s jusqu'au lendemain — et 5 000 connexions simultanées au plus.
+//    Retrait : supprimer la route /live/flux (la page retombe seule sur /live toutes les 3 s).
+export const FLUX_PAS_MIN_MS = 1000;
+export const FLUX_PAS_MAX_MS = 60 * 1000;
+export const FLUX_MAX_TOURS_JOUR = 45000;
+export const FLUX_MAX_CONNEXIONS = 5000;
+export function prochainTour(o, maintenant = Date.now()) {
+  const fin = o && Number.isFinite(o.maj) ? o.maj + (o.ttl || LIVE_TTL_MS) + 150 : maintenant + LIVE_TTL_MS;
+  return Math.min(maintenant + FLUX_PAS_MAX_MS, Math.max(maintenant + FLUX_PAS_MIN_MS, fin));
+}
+// Ce qui compte pour les téléphones : les matchs (score, serveur, points) — pas l'heure de la mise à jour.
+const empreinte = o => JSON.stringify((o && o.matchs) || []) + '|' + (o && o.ok);
+export class DirectLive {
+  constructor(ctx, env) {
+    this.ctx = ctx; this.env = env; this.dernier = null; this.jour = ''; this.tours = 0;
+    try { ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong')); } catch (e) { /* hors Cloudflare */ }
+  }
+  async instantane() {
+    const r = await live(new Request('https://interne/live'), this.env);
+    const texte = await r.text();
+    return { texte, o: JSON.parse(texte) };
+  }
+  async fetch(req) {
+    if ((req.headers.get('Upgrade') || '').toLowerCase() !== 'websocket') return new Response('WebSocket attendu.', { status: 426, headers: SECURITE });
+    if (this.ctx.getWebSockets().length >= FLUX_MAX_CONNEXIONS || this.tours > FLUX_MAX_TOURS_JOUR)
+      return new Response('Direct en continu complet : redemande classique.', { status: 503, headers: SECURITE });
+    const paire = new WebSocketPair();
+    const [client, serveur] = [paire[0], paire[1]];
+    this.ctx.acceptWebSocket(serveur);
+    try { const { texte } = await this.instantane(); serveur.send(texte); } catch (e) { /* le prochain tour enverra */ }
+    if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + FLUX_PAS_MIN_MS);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async alarm() {
+    const ws = this.ctx.getWebSockets();
+    if (!ws.length) { this.dernier = null; return; }                     // personne n'écoute : on s'arrête là
+    const j = new Date().toISOString().slice(0, 10);
+    if (j !== this.jour) { this.jour = j; this.tours = 0; }
+    if (++this.tours > FLUX_MAX_TOURS_JOUR) {                             // garde-fou : retour à la redemande classique
+      for (const s of ws) { try { s.close(4000, 'pause'); } catch (e) { /* déjà fermée */ } }
+      this.dernier = null; return;
+    }
+    let o = null;
+    try {
+      const x = await this.instantane(); o = x.o;
+      const e = empreinte(o);
+      if (e !== this.dernier) { this.dernier = e; for (const s of ws) { try { s.send(x.texte); } catch (er) { /* fermée */ } } }
+    } catch (e) { /* TennisApi ou R2 en panne : on réessaie au prochain tour */ }
+    await this.ctx.storage.setAlarm(prochainTour(o));
+  }
+  async webSocketMessage() { /* « ping » → « pong » sans réveil ; le reste est ignoré */ }
+  async webSocketClose(ws, code) { try { ws.close(code === 1005 ? 1000 : code, 'fin'); } catch (e) { /* déjà fermée */ } }
+  async webSocketError(ws) { try { ws.close(1011, 'erreur'); } catch (e) { /* déjà fermée */ } }
+}
+async function flux(req, env) {
+  if (!env.DIRECT) return new Response('Direct en continu non configuré.', { status: 503, headers: SECURITE });
+  return env.DIRECT.get(env.DIRECT.idFromName('direct')).fetch(req);
+}
+
 // 5. STATISTIQUES EN DIRECT (06/11/2026) : GET /live/stats?id=<id TennisApi> → la feuille du match en cours
 //    (/api/tennis/event/{id}/statistics, période « ALL »), gardée 60 s par match en mémoire et au coffre : 100 visiteurs
 //    sur la même fiche = 1 requête par minute. La page ne la demande que pour la fiche ouverte d'un match en cours.
@@ -737,6 +804,7 @@ export default {
     if (url.pathname in MODELES) return modele(req, url.pathname, env);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
+    if (url.pathname === '/live/flux') return flux(req, env);              // 433 : direct poussé (WebSocket)
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/live/termines') return live(req, env, 'termines');
     if (url.pathname === '/video') return video(req, env);
