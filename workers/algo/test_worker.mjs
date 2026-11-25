@@ -602,3 +602,16 @@ test('431 : pages de workers.dev redirigées vers gamesetalgo.com, rien d’autr
   assert.equal(versSiteOfficiel(nav(s), new URL(s)), false);
   assert.equal(versSiteOfficiel(nav('https://algo.tennis-edge.workers.dev/'), new URL('https://algo.tennis-edge.workers.dev/')), true);
 });
+
+// 25/11/2026 (paquet 432) — l'administrateur (clé privée) reste sur workers.dev : boutons vidéo et X accessibles
+import { redirigerVersOfficiel } from './worker.js';
+test('432 : avec la clé privée, pas de redirection ; sans, redirection', async () => {
+  const u = 'https://algo.tennis-edge.workers.dev/';
+  const nav = (h = {}) => new Request(u, { headers: { Accept: 'text/html', ...h } });
+  assert.equal(await redirigerVersOfficiel(nav(), new URL(u), { CLE_PRIVEE: CLE }), true);
+  assert.equal(await redirigerVersOfficiel(nav({ 'X-Cle': CLE }), new URL(u), { CLE_PRIVEE: CLE }), false);
+  const r = await worker.fetch(nav({ 'X-Cle': CLE }), { CLE_PRIVEE: CLE, COFFRE: { get: async () => null } });
+  assert.notEqual(r.status, 302);
+  const c = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/connexion?suite=/'), { CLE_PRIVEE: CLE });
+  assert.match(await c.text(), /name="suite" value="\/"/);
+});
