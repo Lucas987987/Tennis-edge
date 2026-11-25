@@ -8241,11 +8241,12 @@ let EDITEUR = null;
 function lireEditeur(){ return EDITEUR ? Promise.resolve(EDITEUR) : lireJson('editeur.json').then(e => (EDITEUR = e || {})).catch(() => (EDITEUR = {})); }
 function texteLegal(page, e){
   const fr = L === 'fr', x = s => esc(String(s || '')), contact = e.email ? `<a href="mailto:${x(e.email)}">${x(e.email)}</a>` : (fr ? 'par message au compte X « Game Set Algo »' : 'by message to the "Game Set Algo" X account');
-  const maj = `<p class="maj">${fr ? 'Mis à jour le 23 novembre 2026.' : 'Updated 23 November 2026.'}</p>`;
+  const maj = `<p class="maj">${fr ? 'Mis à jour le 25 novembre 2026.' : 'Updated 25 November 2026.'}</p>`;
   const pro = !!(e.nom && e.adresse);
   const editeur = pro ? `<p>${x(e.nom)}${e.statut ? ' — ' + x(e.statut) : ''}<br>${x(e.adresse)}${e.siret ? '<br>SIRET : ' + x(e.siret) : ''}${e.ape ? '<br>' + (fr ? 'Code APE : ' : 'APE code: ') + x(e.ape) : ''}${e.tva_franchise ? '<br>' + (fr ? 'TVA non applicable, article 293 B du Code général des impôts.' : 'VAT not applicable (French tax code, art. 293 B).') : (e.tva ? '<br>' + (fr ? 'TVA intracommunautaire : ' : 'VAT number: ') + x(e.tva) : '')}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`
     : `<p>${fr ? "Site édité à titre non professionnel par un particulier. Conformément à l'article 6-III-2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, ses coordonnées ont été communiquées à l'hébergeur." : 'Published on a non-professional basis by a private individual, whose details have been provided to the host (French law no. 2004-575, art. 6-III-2).'}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`;
-  const heb = `<p>GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.<br>${fr ? 'Diffusion et sécurité :' : 'Delivery and security:'} Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.</p>`;
+  // 25/11/2026 (paquet 435) : le site est servi par Cloudflare (Workers et R2) ; GitHub Pages n'est plus qu'une copie de secours
+  const heb = `<p>Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.<br>${fr ? 'Copie de secours :' : 'Backup copy:'} GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.</p>`;
   if (page === 'cgv') return texteCgv(e, fr, x, contact, editeur, pro);
   if (page === 'mentions') return fr ? `<h2>Mentions légales</h2>
     <h3>Éditeur et directeur de la publication</h3>${editeur}<h3>Hébergement</h3>${heb}
