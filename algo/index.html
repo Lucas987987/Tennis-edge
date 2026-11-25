@@ -3551,7 +3551,13 @@ function rendFiabilite(f, detail=false){
       </dl></details>`;
     } else explication = `<p class="aide">${esc(t('fiab_ancienne'))}</p>`;
   }
-  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>${explication}`;
+  // 25/11/2026 (paquet 451) : note mesurée match par match — le sens de l'écart, descriptif (ne change pas le %)
+  const sensTxt = !detail ? '' : f.sens==='prudents'
+    ? (L==='fr' ? 'Sur ce type de match, nos % sont plutôt prudents : le favori gagne un peu plus souvent qu’annoncé. Information descriptive : elle ne change pas le %.' : 'On this kind of match our % tend to be cautious: the favourite wins a little more often than shown. Descriptive only: it does not change the %.')
+    : f.sens==='tranches'
+    ? (L==='fr' ? 'Sur ce type de match, nos % sont plutôt trop tranchés : le favori gagne un peu moins souvent qu’annoncé. Information descriptive : elle ne change pas le %.' : 'On this kind of match our % tend to be too sharp: the favourite wins a little less often than shown. Descriptive only: it does not change the %.')
+    : '';
+  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>${sensTxt?`<p class="aide fiab-sens">${esc(sensTxt)}</p>`:''}${explication}`;
 }
 function styleLib(code){
   const lib = {

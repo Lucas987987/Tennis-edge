@@ -157,14 +157,14 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python simulateur/surveillance_fragilite.py . --telegram
-      # 25/11/2026 (paquet 450) : garde-fou de la note de fiabilité Challenger réapprise (règle dans
-      # simulateur/note_v3_challenger.py) — retirée d'elle-même si ses niveaux font pire que l'ancienne note
-      - name: Note de fiabilité Challenger — garde-fou de la semaine
+      # 25/11/2026 (paquet 451) : note de fiabilité mesurée match par match — garde-fou (jugé sur les matchs notés
+      # avec des effets appris avant eux), puis effets des critères réappris (règle dans simulateur/note_par_match.py)
+      - name: Note de fiabilité par match — garde-fou et réapprentissage
         continue-on-error: true
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python simulateur/note_v3_challenger.py . --telegram
+        run: python simulateur/note_par_match.py . --telegram
       # 05/11/2026 : un seul message pour tout ce qui a été adopté directement (signaux, tie-breaks, recalage) — Telegram privé
       - name: Adoptions directes — état de la semaine
         continue-on-error: true
@@ -281,7 +281,7 @@ jobs:
           if [ -f simulateur/recalage_stats.json ]; then git add -- simulateur/recalage_stats.json; fi
           if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
           if [ -f simulateur/surveillance_fragilite.json ]; then git add -- simulateur/surveillance_fragilite.json; fi
-          if [ -f simulateur/note_v3_challenger.json ]; then git add -- simulateur/note_v3_challenger.json; fi
+          if [ -f simulateur/note_par_match.json ]; then git add -- simulateur/note_par_match.json; fi
           if [ -f simulateur/biais_annexes.json ]; then git add -- simulateur/biais_annexes.json; fi
           if [ -f simulateur/live_reevaluation.json ]; then git add -- simulateur/live_reevaluation.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
