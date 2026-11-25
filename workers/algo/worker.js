@@ -156,6 +156,14 @@ export const MARQUES = new Set(['gamesetalgo.com', 'www.gamesetalgo.com']);
 // Lab) n'est jamais indexée (X-Robots-Tag + robots.txt « Disallow: / »). Sur le site : robots.txt (comptes, direct et
 // données exclus) et sitemap.xml (les trois pages publiques).
 export const SITE_OFFICIEL = 'https://gamesetalgo.com';
+export function versSiteOfficiel(req, url) {
+  if (req.method !== 'GET') return false;
+  if (/[?&](video|export3d)=/.test(url.search)) return false;                      // rendu des vidéos du jour
+  const p = url.pathname;
+  if (/^\/(lab|tableau|connexion|deconnexion|compte|prive|live|video|vendor|modeles|sons)(\/|$)/.test(p)) return false;
+  const page = p === '/' || p.endsWith('.html') || !/\.[a-z0-9]{1,6}$/i.test(p);   // une page, pas un fichier
+  return page && (req.headers.get('Accept') || '').includes('text/html');
+}
 function publiqueOuManifeste(req, url, env) {
   // 24/11/2026 (paquet 415, Lucas : « l'adresse est-elle bonne ? ») : l'appli ne s'installe que depuis gamesetalgo.com.
   // Ailleurs (adresse workers.dev, celle des vidéos et du Lab) pas de manifeste : le navigateur ne propose pas
@@ -750,6 +758,10 @@ export default {
       const o = await depuisR2(env, 'site/algo/sitemap.xml');
       return new Response(o ? o.body : sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
     }
+    // 25/11/2026 (paquet 431, Lucas : « l'adresse n'est pas la bonne, worker dev apparaît encore ») : une PAGE ouverte
+    // sur l'adresse technique part vers gamesetalgo.com. Restent sur workers.dev : le Lab et la connexion (plus haut),
+    // les données lues par les vidéos (donnees.json…), le direct, les fichiers, et le rendu des vidéos (?video=1).
+    if (!officiel && versSiteOfficiel(req, url)) return new Response(null, { status: 302, headers: { ...SECURITE, Location: SITE_OFFICIEL + url.pathname + url.search, 'Cache-Control': 'no-store' } });
     if (!officiel) {                                   // adresse technique : servie, jamais indexée
       const r = await publiqueOuManifeste(req, url, env);
       const h = new Headers(r.headers); h.set('X-Robots-Tag', 'noindex, nofollow');
