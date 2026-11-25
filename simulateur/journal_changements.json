@@ -2354,6 +2354,13 @@
    "paquet": 427,
    "quoi": "MATCH INTERROMPU : IL RESTE DANS LE DIRECT (paquet 427, Lucas : « les matchs live commencés doivent rester dans les lives tant qu'ils ne sont pas finis ; là ça donne comme si c'était un nouveau match », La Serna – De la Fuente, Florianopolis, interrompu à 6-3 5-4 et republié pour 14 h). 1) Le direct garde les matchs interrompus (pluie, nuit) avec leur dernier score et le statut « Interrompu », jusqu'à la reprise, la fin (ils passent alors dans les matchs terminés), l'annulation ou 72 h ; une vérification toutes les 10 minutes. 2) La page relie un match déjà commencé ou interrompu à sa fiche même quand la source l'a republié à l'heure de reprise (jusqu'à 40 h d'écart, 8 h pour un match pas encore commencé), et regarde le direct une fois par minute même sans match proche. 3) Pastille orange « Interrompu » au lieu de « En direct ».",
    "garde_fou": "Aucun % ne change. Requêtes en plus : au plus une toutes les 10 minutes par match interrompu. Tests : tests/test_interrompus.py, workers/algo/test_worker.mjs."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 428,
+   "quoi": "3D, PREMIÈRE PASSE (paquet 428, Lucas : « il faut améliorer la 3D » : joueurs, jeu des points, rendu). 1) Rendu : éclairage en lumière linéaire — les couleurs ne sont plus délavées ni sursaturées (le dur n'est plus cyan, le gazon plus fluo), ombres plus justes, pied des murs et des corps légèrement assombri ; teintes du dur et du gazon revues. 2) Caméra TV plus basse et plus serrée : les joueurs paraissent environ 25 % plus grands (la vidéo verticale ne change pas). 3) Défaut corrigé : la caméra du ralenti se posait parfois dans la chaise de l'arbitre ou dans un juge de ligne assis (gros plan sur des jambes) ; elle s'en écarte, et un officiel collé à l'objectif n'est plus dessiné. Moteur v428.",
+   "garde_fou": "Affichage seulement : aucun % ne change. Tests : tests/test_direct_3d_v428.py et les tests 3D existants."
   }
  ]
 }

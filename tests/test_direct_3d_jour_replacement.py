@@ -68,7 +68,7 @@ class Statique(unittest.TestCase):
     def test_ambiances_et_camera(self):
         self.assertIn('jour: { fond: [0.53, 0.71, 0.92]', BLOC)
         self.assertIn("if (scene.faisceaux && QUALITE === 'haute' && !E.jour)", BLOC)
-        self.assertIn("tv: { yaw: 0, pitch: 0.33, dist: 23.5", BLOC)
+        self.assertIn("tv: { yaw: 0, pitch: 0.31, dist: 21.5", BLOC)
 
 
 if __name__ == '__main__':
