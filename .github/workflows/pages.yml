@@ -327,6 +327,10 @@ jobs:
           mkdir -p _site/algo/modeles
           cp algo/modeles/joueurs3d.bin algo/modeles/LICENCE.txt _site/algo/modeles/
           test -s _site/algo/modeles/joueurs3d.bin
+          # 25/11/2026 (paquet 428 bis) : les vrais sons du direct 3D (CC0), lus seulement quand le son est activé
+          mkdir -p _site/algo/sons
+          cp algo/sons/*.mp3 algo/sons/sons.json algo/sons/SOURCES.md _site/algo/sons/
+          test -s _site/algo/sons/frappes.mp3
 
           # V9.2 : 3D auto-hébergée ; échec explicite si les fichiers sont absents.
           mkdir -p _site/algo/vendor
