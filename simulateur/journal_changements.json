@@ -2431,6 +2431,13 @@
    "paquet": 438,
    "quoi": "PERFORMANCE DES JOUEURS (paquet 438, Lucas : « un espace Performance des joueurs » et « je ne veux pas d'un trait qui souligne le nom »). Sur la page de chaque joueur : sur ses 20 derniers matchs analysés, % moyen annoncé pour lui, victoires réelles, écart (victoires et points de %), FIABILITÉ DU JOUEUR (0-100 : ses résultats suivent-ils nos % ? z = (victoires − attendues) / écart-type attendu, note = 100 × (1 − min(|z|; 2,5) / 2,5), pas de note sous 5 matchs, « provisoire » sous 15) ; aces et breaks prévus contre réels (écart moyen, à côté de celui de l'algo sur tous les joueurs du circuit) ; par surface et contre chaque style d'adversaire (% annoncé contre % réel, « trop peu de matchs » sous 3). La liste des joueurs affiche la fiabilité. Le style de chaque joueur est désormais figé au moment du match dans les fiches et les bilans après match. Dans la fiche d'un match, le nom n'est plus souligné : une petite flèche discrète indique le lien.",
    "garde_fou": "Historique et descriptif : rien n'entre dans le modèle ni ne change un %, et la page le dit. Échantillons d'un joueur petits par nature : la page le dit aussi. Aucune cote ni aucun mot de pari dans le bloc. Les bilans ne sont lus que pour les feuilles prévues/réelles et les styles (rien d'interne). Tests : tests/test_performance_joueurs.py, tests/test_pages_seo.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 439,
+   "quoi": "PERFORMANCE DES JOUEURS, retouche (paquet 439, après l'aperçu de la page de Taylor Fritz) : les matchs dont la surface est inconnue ne font plus une ligne « — » dans le tableau « Par surface ».",
+   "garde_fou": "Affichage seulement. Tests : tests/test_performance_joueurs.py, tests/test_pages_seo.py."
   }
  ]
 }
