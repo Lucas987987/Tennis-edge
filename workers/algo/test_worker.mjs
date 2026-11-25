@@ -724,3 +724,13 @@ test('435 : comptes, codes et factures copiés chaque jour ; au-delà de 14 jour
   assert.ok('sauvegardes/comptes/2026-10-02/comptes/u/a.json' in s);
   assert.equal(s['comptes/u/a.json'], '{"email":"a"}');                            // l'original n'a pas bougé
 });
+
+// 25/11/2026 (paquet 436) — /compte/admin sans clé → connexion qui ramène à l'administration (et non au Lab)
+test('436 : /compte/admin → connexion ?suite=/compte/admin ; la connexion y renvoie', async () => {
+  const r = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/compte/admin'), { CLE_PRIVEE: CLE });
+  assert.equal(r.status, 303); assert.equal(r.headers.get('Location'), '/connexion?suite=%2Fcompte%2Fadmin');
+  const c = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/connexion?suite=/compte/admin'), { CLE_PRIVEE: CLE });
+  assert.match(await c.text(), /name="suite" value="\/compte\/admin"/);
+  const g = await worker.fetch(new Request('https://gamesetalgo.com/compte/admin'), { CLE_PRIVEE: CLE });
+  assert.equal(g.status, 404);
+});

@@ -2410,6 +2410,13 @@
    "paquet": 435,
    "quoi": "AVANT L'OUVERTURE DU SITE (paquet 435, Lucas : « fais 2-3-5-6 »). 1) Mentions légales : l'hébergeur est Cloudflare (le site est servi par le worker et R2) ; GitHub Pages devient « copie de secours ». 2) Surveillance : toutes les 10 minutes, GitHub vérifie que la page d'accueil et le worker répondent ; un message sur le Telegram privé quand le site tombe, un autre quand il revient. 3) Sauvegarde quotidienne des comptes, des codes et des factures dans le coffre (sauvegardes/comptes/<jour>/, 14 jours gardés), pendant la tâche de 7 h 17 UTC.",
    "garde_fou": "Rien ne change dans les % ni dans les données. La surveillance ne lit ni /site.json (fausses visites) ni /live (appels TennisApi) ; le journal public des Actions ne montre que des codes HTTP. Tests : tests/test_surveillance_site.py, workers/algo/test_worker.mjs (435)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 436,
+   "quoi": "ACCÈS À L'ADMINISTRATION (paquet 436, Lucas : « comment je fais pour aller dans le compte admin ? je ne le vois pas »). Sur l'adresse technique, avec la clé privée, un bouton « Admin » apparaît à côté de « Mon compte » et ouvre /compte/admin (comptes, codes, entonnoir, TennisApi). Sans clé, /compte/admin passe par la connexion puis y revient directement (avant : retour au Lab).",
+   "garde_fou": "Jamais sur gamesetalgo.com (la page d'administration y répond « introuvable »). Rien ne change dans les % ni dans les données. Tests : workers/algo/test_worker.mjs (436), tests/test_surveillance_site.py."
   }
  ]
 }
