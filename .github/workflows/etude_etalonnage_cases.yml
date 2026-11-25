@@ -1,0 +1,72 @@
+name: Étude - étalonnage par case de fiabilité (paquet 447)
+
+# 25/11/2026 — paquet 447 (Lucas : « peut-on trouver d'où viennent les différences pour que l'on soit à l'attendu ? »).
+# Le % étiré ou resserré autour de 50 % selon la case de la note de fiabilité ? Règle écrite dans l'en-tête de
+# simulateur/etude_etalonnage_cases.py (appris 2018–2022, jugé une fois sur 2023 → juin 2026, circuit par circuit).
+# Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit simulateur/rapport_etalonnage_cases.json et
+# l'entrée 447 du journal, avec les résultats. 0 requête d'API. Rien n'entre dans l'algo.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_etalonnage_cases.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Apprendre sur 2018–2022, juger une fois sur 2023 → juin 2026
+        run: |
+          set -euo pipefail
+          python simulateur/etude_etalonnage_cases.py /tmp/sackmann . | tee /tmp/etalonnage_cases.log
+          cp simulateur/rapport_etalonnage_cases.json /tmp/rapport_etalonnage_cases.json
+          echo '### Étalonnage par case de fiabilité (paquet 447)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/etalonnage_cases.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            # À chaque essai : main tel qu'il est maintenant, puis NOTRE rapport et NOTRE entrée (l'entrée du
+            # paquet 447 est remplacée si elle existe déjà) : jamais de rebase sur le journal.
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_etalonnage_cases.json simulateur/rapport_etalonnage_cases.json
+            python simulateur/etude_etalonnage_cases.py --journal-depuis-rapport /tmp/rapport_etalonnage_cases.json
+            git add -- simulateur/rapport_etalonnage_cases.json simulateur/journal_changements.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 447 : étalonnage par case de fiabilité (rapport et journal)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1

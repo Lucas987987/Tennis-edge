@@ -13,10 +13,12 @@ def test_bouton_post_x_present_et_branche():
     assert 'id="b-post"' in HTML and 'id="post-zone"' in HTML and 'ouvrirPost(m)' in HTML
 
 
-def test_post_x_sans_adresse_ni_cote_ni_marche():
-    # règles : jamais d'adresse de site dans un post, aucune cote de bookmaker, pas le mot « marché »
+def test_post_x_adresse_officielle_seulement_ni_cote_ni_marche():
+    # règles : aucune cote de bookmaker, pas le mot « marché » ; depuis le paquet 446 (25/11/2026, Lucas : « on va pouvoir
+    # communiquer sur le site sur X »), l'adresse gamesetalgo.com en fin de post — jamais l'adresse technique
     f = _fonction('postX')
-    assert not re.search(r'https?://|workers\.dev|github\.io|\.com', f)
+    assert not re.search(r'https?://|workers\.dev|github\.io', f) and f.count('gamesetalgo.com') == 2
+    assert '#GameSetAlgo' in f and '#TennisEdge' not in f
     assert 'cotes_justes' not in f and 'odds(' not in f
     assert not re.search(r'march[ée]', f, re.I)
     assert "L = 'fr'" in f and 'finally { L = Ls; }' in f      # toujours en français, langue du site rendue
@@ -33,7 +35,7 @@ def test_desaccord_des_deux_modeles_explique():
 def test_post_resultat_regles():
     # 08/11/2026 (paquet 218) : post du résultat — mêmes interdits que le post d'avant match, titre neutre si le favori perd
     f = _fonction('postResultat')
-    assert not re.search(r'https?://|workers\.dev|github\.io|\.com', f)
+    assert not re.search(r'https?://|workers\.dev|github\.io', f) and f.count('gamesetalgo.com') == 2
     assert not re.search(r'march[ée]', f, re.I)
     assert "L = 'fr'" in f and 'finally { L = Ls; }' in f
     assert 'LE BILAN DU MATCH' in f and 'NOUVELLE VICTOIRE' in f
