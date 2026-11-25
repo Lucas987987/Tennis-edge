@@ -81,8 +81,12 @@ def modele_par_match():
     return _MODELE_PM['m']
 
 
-def note_du_match(match, p, p_elo, p_sim):
-    """Paquet 451 : la note mesurée de CE match (note, pente, sens, effets), ou None."""
+_INDEX_JOUEURS = {}
+
+
+def note_du_match(match, p, p_elo, p_sim, historique=None):
+    """Paquet 451 : la note mesurée de CE match (note, pente, sens, effets), ou None. Paquet 452 : avec la note de
+    fiabilité des deux joueurs, tirée de leurs seuls matchs publiés d'avant le jour du match (historique)."""
     M = modele_par_match()
     c = match.get('circuit')
     mj = [x for x in (match.get('matchs_joues') or []) if x is not None]
@@ -91,7 +95,19 @@ def note_du_match(match, p, p_elo, p_sim):
     import note_par_match as NP
     r = {'p': float(p), 'pe': p_elo, 'ps': p_sim, 'xp': min(mj), 'tour': match.get('tour'),
          'p0': match.get('p_premier'), 'p1': (match.get('combinaison') or {}).get('p_home')}
-    return NP.evaluer_match(M, c, min(mj), NP.criteres_du_match(r))
+    xj = 0.0
+    if historique:
+        try:
+            if _INDEX_JOUEURS.get('id') != id(historique):
+                _INDEX_JOUEURS.update(id=id(historique), idx=NP.index_joueurs(historique))
+            jour = str(match.get('debut') or '')[:10] or '9999'
+            xj = NP.x_joueur(_INDEX_JOUEURS['idx'], match.get('home'), match.get('away'), jour)
+        except Exception:  # noqa: BLE001 — la note des joueurs ne doit jamais bloquer la fiabilité
+            xj = 0.0
+    out = NP.evaluer_match(M, c, min(mj), NP.criteres_du_match(r, xj))
+    if out is not None:
+        out['joueur_peu_fiable'] = round(xj, 3)
+    return out
 
 
 def niveau_v3(note):
@@ -184,7 +200,8 @@ def enregistrements(doc):
         if p is None:
             continue
         out.append({'uid': m.get('uid'), 'p': float(p), 'y': int(reel['gagnant'] == 'home'),
-                    'circuit': m.get('circuit'), 'surface': m.get('surface')})
+                    'circuit': m.get('circuit'), 'surface': m.get('surface'),
+                    'home': m.get('home'), 'away': m.get('away'), 'debut': m.get('debut')})   # paquet 452 : note des joueurs
     return out
 
 
@@ -317,7 +334,7 @@ def evaluer(match, historique):
             na = min(v3a, SEUILS_V3['prudent'] - 1) if criteres else v3a
             ancien = {'note_v3_ancienne': v3a, 'note_ancienne': na, 'niveau_ancien': niveau_v3(na), 'niveau_correction': niveau_v3(na),
                       'note_v3_challenger': 'comme_en_production_450'}
-    nm = note_du_match(match, p, p_elo, p_sim) if v3 is not None else None
+    nm = note_du_match(match, p, p_elo, p_sim, historique) if v3 is not None else None
     if nm:
         # paquet 451 : la note mesurée match par match remplace la note v3 plafonnée, gardée à côté (garde-fou et
         # correction Challenger « correct », qui vise toujours les mêmes matchs : aucun % ne change)
@@ -326,6 +343,7 @@ def evaluer(match, historique):
         ancien = {'note_ancienne': note, 'niveau_ancien': niveau_v3(note), 'niveau_correction': niveau_v3(note),
                   'pente_ancienne': round(a_anc, 4), 'note_par_match': nm['note'], 'pente_du_match': nm['pente_du_match'],
                   'pente_de_base': nm['pente_de_base'], 'effets_criteres': nm['effets_criteres'], 'sens': nm['sens'],
+                  'joueur_peu_fiable': nm.get('joueur_peu_fiable'),
                   'methode': 'par_match_451'}
         note = nm['note']
     return {**ancien, 'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
