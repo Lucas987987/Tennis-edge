@@ -2368,6 +2368,27 @@
    "paquet": 429,
    "quoi": "3D : VRAIS SONS ET PUBLIC (paquet 429, Lucas, vidéos du direct : « améliorer le bruit de frappe en prenant un vrai bruit de frappe, améliorer le public »). 1) Le direct 3D joue maintenant les vrais sons enregistrés déjà utilisés par la vidéo du jour (licence CC0, freesound.org) : 24 frappes, 19 services, 20 rebonds (plus graves sur terre battue), une tribune en boucle sans couture, des applaudissements et deux clameurs pour les grands points ; une réverbération de stade les relie. Fichiers légers (≈ 860 Ko au total), chargés seulement quand le son est activé ; synthèse refaite (cordage et balle qui résonnent) en secours. 2) Public : seuls les vêtements prennent la couleur du spectateur (les visages et les cheveux étaient teintés en vert, orange, rose), peaux et cheveux variés, sièges de la couleur des gradins, léger balancement. 3) Grand écran à l'horizontale : plus de place pour le terrain. Contient aussi le paquet 428 (rendu, caméra, ralenti). Moteur v429.",
    "garde_fou": "Affichage et son seulement : aucun % ne change. Sons : scripts/sons_site.py (découpe et conversion seulement), sources et licences dans algo/sons/SOURCES.md. Tests : tests/test_direct_3d_v428.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 430,
+   "quoi": "« DEMANDE À L'ALGO » MISE EN AVANT, JEUX DU MATCH PLUS PRÉCIS (paquet 430, Lucas : « Demande à l'algo doit être plus mis en valeur dans les fiches », « 21 jeux, entre 16 et 32 : on ne se mouille pas »). 1) « Demande à l'algo » n'est plus rangée en bas parmi les tiroirs : elle s'affiche sous l'en-tête du match et les cartes des joueurs (après le direct et ses statistiques une fois le match commencé), encadrée, avec des choix plus grands et une réponse en gros. 2) Jeux dans le match : la fourchette large venait surtout du 3e set. La fiche donne maintenant la fourchette de chaque cas avec sa probabilité, par exemple « en 2 sets (64 %) : 18 à 23, le plus souvent 20 · en 3 sets (36 %) : 27 à 33, le plus souvent 29 ». Mêmes simulations, rien d'inventé.",
+   "garde_fou": "Aucun % ne change ; la fourchette d'ensemble reste calculée comme avant. Tests : tests/test_demande_jeux.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 431,
+   "quoi": "ADRESSE DU SITE ET PUBLIC DU DIRECT 3D (paquet 431, Lucas : « l'adresse n'est pas la bonne, worker dev apparaît encore », « on continue sur la 3D »). 1) Toute page ouverte sur l'adresse technique (algo.tennis-edge.workers.dev) part vers gamesetalgo.com, au même chemin. Restent sur l'adresse technique : le Lab et sa connexion, l'administration des comptes, les données lues par les vidéos du jour, le direct, les fichiers (modèles 3D, sons) et le rendu des vidéos. Les boutons « Générer la vidéo » et « Résumé 3D du match » s'affichent aussi sur gamesetalgo.com pour le compte administrateur (la clé privée reste demandée). 2) Direct 3D : à partir de la 6e frappe d'un échange, le public retient son souffle — une rumeur qui monte peu à peu (la vraie clameur, très bas), relâchée au point dans les applaudissements.",
+   "garde_fou": "Rien ne change dans les % ni dans les données. Redirection temporaire (302) des seules pages : les fichiers et les données ne bougent pas. Tests : workers/algo/test_worker.mjs, tests/test_direct_3d_v428.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 432,
+   "quoi": "TABLEAU DU SCORE EN PLEIN ÉCRAN (paquet 432, Lucas : « les noms des joueurs et la balle jaune sont coupés au fur et à mesure que le match avance »). En plein écran, le tableau n'affiche plus que les sets joués (plus de « · » pour les sets à venir), avec des colonnes plus serrées ; la colonne de côté passe de 27 % à 30 % de l'écran (250 px au moins). Le nom est coupé seul (« … ») et la balle du serveur reste toujours visible à côté. Au 5e set, le tableau se resserre encore. ACCÈS ADMINISTRATEUR (Lucas : « je n'ai plus accès au compte admin, je ne peux plus faire de demande pour les vidéos ») : depuis le paquet 431, les pages de l'adresse technique partaient vers gamesetalgo.com, où la session du Lab (clé privée) n'existe pas. Avec la clé privée, on reste désormais sur l'adresse technique, boutons vidéo et X compris ; la connexion accepte d'y renvoyer directement vers le site (suite=/).",
+   "garde_fou": "Rien ne change dans les % ni dans les données. Vérifié en paysage (844×390, 740×360) et en portrait avec 4 et 5 sets. Tests : tests/test_tableau_plein.py, tests/test_grand_ecran.py. Sans la clé privée, la redirection vers gamesetalgo.com est inchangée. Test : workers/algo/test_worker.mjs (432)."
   }
  ]
 }

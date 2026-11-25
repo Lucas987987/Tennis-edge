@@ -151,14 +151,15 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 /* 426 : libellé à côté du choix, même hauteur que la recherche et les circuits ; seul sur sa ligne au téléphone */
 .live-match.plein{position:fixed;inset:0;z-index:9999;margin:0;border-radius:0;border:0;background:#0E0A24;color:#F4F1FF;overflow:hidden;padding:0}
 .lv-pe{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));box-sizing:border-box}
-.lv-pe-haut .lv-sb{margin:0}.lv-pe-3d{min-height:0;display:flex;flex-direction:column}.lv-pe-3d .te3d{flex:1;min-height:0;display:flex;flex-direction:column;margin:0}
+.lv-pe .lv-pe-haut .lv-sb{margin:0;grid-template-columns:minmax(64px,1fr) repeat(var(--ns,3),minmax(20px,26px)) 42px;gap:4px 5px;font-size:1.15rem}.lv-pe .lv-pe-haut .lv-sb .n{font-size:.92rem;gap:5px}.lv-pe .lv-pe-haut .lv-pt{font-size:1rem}
+.lv-pe .lv-pe-haut .lv-sb.ns5{grid-template-columns:minmax(64px,1fr) repeat(5,20px) 38px;gap:4px 3px;font-size:1rem}.lv-pe .lv-pe-haut .lv-sb.ns5 .n{font-size:.82rem}.lv-pe-3d{min-height:0;display:flex;flex-direction:column}.lv-pe-3d .te3d{flex:1;min-height:0;display:flex;flex-direction:column;margin:0}
 .lv-pe-3d .te3d-hote,.lv-pe-3d .g3d{flex:1;min-height:0;height:100%}.lv-pe-3d .g3d-cv,.lv-pe-3d .te3d-cv{aspect-ratio:auto;max-height:none;height:100%}
 .lv-pe-3d .te3d-note,.lv-pe .g3d-tab{display:none}.lv-pe-3d .lv-terrain{max-height:100%}
 .lv-pe-stats{max-height:34vh;overflow:auto}.pe-tete{display:flex;justify-content:space-between;font-weight:700;font-size:.85rem}.pe-tete .a,.pe-l b.a{color:#2EE6FF}.pe-tete .b,.pe-l b.b{color:#FF4FAE}
 .pe-l{display:grid;grid-template-columns:60px 1fr 60px;align-items:center;column-gap:8px;margin:4px 0;font-size:.84rem}.pe-l b{font-family:var(--cond);font-size:1.05rem}.pe-l b.b{text-align:right}.pe-l .k{text-align:center;color:#ABA3D6}
 .pe-bb{grid-column:1/-1;display:flex;height:4px;border-radius:2px;overflow:hidden;background:#FF4FAE}.pe-bb i.a{background:#2EE6FF}.pe-bb i.b{flex:1}.pe-vide{color:#ABA3D6;font-size:.85rem;margin:4px 0}
 .lv-pe-3d{position:relative}.lv-pe-x{position:absolute;left:8px;top:8px;z-index:2;background:rgba(10,8,30,.85);min-height:40px}
-@media (orientation:landscape) and (min-aspect-ratio:4/3){.lv-pe{grid-template-columns:minmax(0,1fr) minmax(230px,27%);grid-template-rows:auto minmax(0,1fr)}.lv-pe-3d{grid-column:1;grid-row:1/3}.lv-pe-haut{grid-column:2;grid-row:1}.lv-pe-stats{grid-column:2;grid-row:2;max-height:none}}
+@media (orientation:landscape) and (min-aspect-ratio:4/3){.lv-pe{grid-template-columns:minmax(0,1fr) minmax(250px,30%);grid-template-rows:auto minmax(0,1fr)}.lv-pe-3d{grid-column:1;grid-row:1/3}.lv-pe-haut{grid-column:2;grid-row:1}.lv-pe-stats{grid-column:2;grid-row:2;max-height:none}}
 html.pe-ouvert,html.pe-ouvert body{overflow:hidden}
 .fiab-bloc{display:flex;align-items:center;gap:10px;max-width:100%}.fiab-lab{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
 @media (max-width:560px){.fiab-bloc{flex-direction:column;align-items:flex-start;gap:4px}.fiab-lab{padding-left:4px}}.fiab-filtre{max-width:100%;overflow-x:auto;scrollbar-width:none;width:max-content}.fiab-filtre button{white-space:nowrap}
@@ -502,6 +503,11 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .panel.qa select,.panel.qa input{background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
+/* 430 : mise en valeur (hors tiroir, sous l'en-tête du match) */
+.panel.qa{border:1.5px solid rgba(212,255,58,.55);background:linear-gradient(180deg,rgba(212,255,58,.07),rgba(212,255,58,.015));box-shadow:0 0 0 4px rgba(212,255,58,.05)}
+.panel.qa h3{font-size:1.15rem}.panel.qa select,.panel.qa input{min-height:44px;font-size:1rem}
+.panel.qa .qa-r{font-size:1.1rem;padding:10px 14px;border-radius:12px;background:rgba(var(--wv),.04)}.panel.qa .qa-r b{font-size:2.1rem;font-family:var(--cond)}
+html[data-theme="light"] .panel.qa{border-color:rgba(111,149,0,.55);background:linear-gradient(180deg,rgba(111,149,0,.08),rgba(111,149,0,.02))}
 /* carte de la semaine (?semaine=1, 05/11/2026) */
 .ca .sm{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:4px 16px;align-items:baseline;font-variant-numeric:tabular-nums}
 .ca .sm .h{font-size:23px;color:#ABA3D6;font-weight:600} .ca .sm .c{font-family:var(--disp);font-size:34px}
@@ -624,6 +630,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-sb .n{font-family:inherit;font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .lv-sb .n.a{color:var(--p1)}.lv-sb .n.b{color:var(--p2)}
 .lv-srv{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ball);box-shadow:0 0 7px var(--ball)}
+.lv-sb .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lv-s{text-align:center;color:var(--dim)}.lv-s.w{color:var(--ink);font-weight:700}.lv-s.cur{color:var(--ball);font-weight:700}.lv-s sup{font-size:.6em;color:var(--dim);margin-left:1px}
 .lv-pt{justify-self:end;min-width:38px;text-align:center;border-radius:7px;background:rgba(212,255,58,.12);color:var(--ball);font-weight:700}
 .lv-hd{font-size:.68rem;color:var(--dim);text-align:center;font-family:var(--cond)}
@@ -1839,7 +1846,7 @@ function rendScenarios(m, sc){
     <div class="es-tuiles sc-tu">${[
       [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
       [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
-      J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), fr ? `${J.p10} à ${J.p90} dans 8 cas sur 10` : `${J.p10} to ${J.p90} 8 times out of 10`] : null
+      J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), jeuxParSets(J, fr)] : null
     ].filter(Boolean).map(([k,v,e])=>`<div class="es-t"><small>${esc(k)}</small><b>${esc(v)}</b>${e ? `<em>${esc(e)}</em>` : ''}</div>`).join('')}</div>
     ${rendApresSet1(m)}
     ${sc ? `<details class="sc-ex"><summary>${esc(fr?'Scores exacts les plus probables':'Likeliest exact scores')}</summary><div class="bars">${sc}</div><p class="styles-note">${esc(fr?'Chaque score exact reste rare, même le plus probable : c’est pourquoi les scénarios ci-dessus les regroupent.':'Each exact score stays rare, even the likeliest: that is why the scenarios above group them.')}</p></details>` : ''}
@@ -2011,6 +2018,17 @@ function rendVitesse(m){
     <div class="jauge" aria-hidden="true"><i style="left:${pos(v).toFixed(1)}%"></i></div>
     <div class="echelle">${t('vit_echelle').map(x=>`<span>${esc(x)}</span>`).join('')}</div>
     ${svg}<p class="aide">${esc(t('vit_note'))}</p></div></div>`;
+}
+// 25/11/2026 (paquet 430, Lucas : « 21 jeux, entre 16 et 32 : on ne se mouille pas ») — la fourchette large vient
+// surtout du 3e set : un match en 2 sets et un match en 3 sets n'ont pas le même nombre de jeux. On donne donc la
+// fourchette de chacun, avec sa probabilité (mêmes simulations, aucune précision inventée).
+function jeuxParSets(J, fr){
+  const P = J.par_sets;
+  if (!P || !P['2'] || !P['3']) return fr ? `${J.p10} à ${J.p90} dans 8 cas sur 10` : `${J.p10} to ${J.p90} 8 times out of 10`;
+  const l = (k, n) => { const x = P[k]; if (!x) return '';
+    return fr ? `en ${n} sets (${pc0(x.p)}) : ${x.p10 === x.p90 ? x.p10 : `${x.p10} à ${x.p90}`}, le plus souvent ${x.mode}`
+              : `in ${n} sets (${pc0(x.p)}): ${x.p10 === x.p90 ? x.p10 : `${x.p10} to ${x.p90}`}, most often ${x.mode}`; };
+  return [l('2', 2), l('3', 3), l('4', 4), l('5', 5)].filter(Boolean).join(' · ') + (fr ? ' (8 cas sur 10)' : ' (8 times out of 10)');
 }
 function rendQuestion(m){
   if (!m.questions) return '';
@@ -3754,7 +3772,7 @@ function rendMdj(){
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendReussite(m)}
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${(VIDEO_ICI || ADMIN) ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${(VIDEO_ICI || ADMIN) && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <section id="te-resume-match" hidden aria-live="polite" style="margin-top:10px"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
@@ -3829,6 +3847,7 @@ function tiroirsFiche(m){
   const faits = {};
   [...f.children].forEach(el => {
     if (el.classList.contains('duelx') || el.classList.contains('cartes') || el.id === 'post-zone' || el.classList.contains('tiroir') || el.tagName === 'DETAILS') return;
+    if (el.classList.contains('qa')) { faits.qa = el; return; }                   // 430 : « Demande à l'algo » hors des tiroirs
     if (el.hasAttribute('data-live-match')) { faits.match = enveloppe(el, 'match', t('tr_match')); return; }
     if (el.hasAttribute('data-live-stats')) { faits.stats = enveloppe(el, 'stats', t('tr_stats')); return; }
     if (el.classList.contains('duo')) { enveloppe(el, 'sets', t('tr_sets')); return; }
@@ -3846,7 +3865,12 @@ function tiroirsFiche(m){
   const barre = document.createElement('p'); barre.className = 'tir-tout';
   barre.innerHTML = '<button type="button" class="btn" id="tir-tout"></button>';
   let cur = f.querySelector(':scope > .cartes') || f.querySelector('.duelx');
-  [document.getElementById('post-zone'), barre, faits.match, faits.stats].filter(Boolean).forEach(x => { if (cur) { cur.after(x); cur = x; } });
+  // 25/11/2026 (paquet 430, Lucas : « Demande à l'algo doit être plus mis en valeur dans les fiches ») : juste sous
+  // l'en-tête et les cartes avant le match ; une fois le match commencé, juste après le direct et ses statistiques
+  const commence = utc(m.debut).getTime() <= Date.now();
+  const ordre = commence ? [document.getElementById('post-zone'), barre, faits.match, faits.stats, faits.qa]
+                         : [document.getElementById('post-zone'), faits.qa, barre, faits.match, faits.stats];
+  ordre.filter(Boolean).forEach(x => { if (cur) { cur.after(x); cur = x; } });
   barre.querySelector('button').onclick = () => {
     const tous = [...f.querySelectorAll(':scope > .tiroir')].filter(d => d.offsetParent !== null || !d.querySelector(':scope > [hidden]'));
     const ouvrir = tous.some(d => !d.open);
@@ -3903,9 +3927,13 @@ function cotesLive(r){
   const srv = x.serveur ? (((x.serveur==='home') !== r.inverse) ? 0 : 1) : null;
   return {h, a, srv};
 }
-function tableauLive(m, r, fini, grand){
+// 25/11/2026 (paquet 432) — En plein écran, la colonne de côté est étroite : on n'affiche que les sets joués (pas les
+// « · » des sets à venir), le nom est dans son propre <span class="nm"> qui se coupe en « … », et la balle du serveur
+// reste à côté, hors de la partie coupée — elle ne disparaît plus quand les sets s'ajoutent.
+function tableauLive(m, r, fini, grand, plein){
   const {h, a, srv} = cotesLive(r);
-  const SH = h.sets || [], SA = a.sets || [], ns = Math.max(SH.length, (m.simulation && m.simulation.sets_gagnants === 3) ? 5 : 3);
+  const SH = h.sets || [], SA = a.sets || [];
+  const ns = plein ? Math.max(SH.length, 1) : Math.max(SH.length, (m.simulation && m.simulation.sets_gagnants === 3) ? 5 : 3);
   const cur = fini ? -1 : SH.length - 1;
   const cell = (i, mine, autre, tb) => {
     if (i >= SH.length) return `<span class="lv-s">·</span>`;
@@ -3913,11 +3941,11 @@ function tableauLive(m, r, fini, grand){
     const w = i !== cur && g > o, sup = tb && tb[i] != null && (g === 6 || g === 7) && (o === 6 || o === 7) ? `<sup>${esc(tb[i])}</sup>` : '';
     return `<span class="lv-s${i===cur?' cur':(w?' w':'')}">${g}${sup}</span>`;
   };
-  const ligne = (k, nom, mine, autre, tb, pt) => `<span class="n ${k===0?'a':'b'}">${esc(court(nom))}${!fini && srv===k ? '<span class="lv-srv" aria-label="au service"></span>' : ''}</span>`
+  const ligne = (k, nom, mine, autre, tb, pt) => `<span class="n ${k===0?'a':'b'}"><span class="nm">${esc(court(nom))}</span>${!fini && srv===k ? '<span class="lv-srv" aria-label="au service"></span>' : ''}</span>`
     + Array.from({length: ns}, (_, i) => cell(i, mine, autre, tb)).join('')
     + (fini ? '<span></span>' : `<span class="lv-pt">${esc(pt ?? '0')}</span>`);
   const tete = grand ? `<span></span>${Array.from({length: ns}, (_, i) => `<span class="lv-hd">${i+1}</span>`).join('')}<span class="lv-hd">${esc(t('lv_pts'))}</span>` : '';
-  return `<div class="lv-sb" style="--ns:${ns}">${tete}${ligne(0, m.home, SH, SA, h.tb, h.point)}${ligne(1, m.away, SA, SH, a.tb, a.point)}</div>`;
+  return `<div class="lv-sb${plein && ns >= 5 ? ' ns5' : ''}" style="--ns:${ns}">${tete}${ligne(0, m.home, SH, SA, h.tb, h.point)}${ligne(1, m.away, SA, SH, a.tb, a.point)}</div>`;
 }
 // 06/11/2026 (paquet 213) — LE TERRAIN : vue de dessus, home à gauche (cyan), away à droite (rose). Au centre, les jeux
 // du set en cours ; sur chaque moitié, le nom et les points du joueur ; la balle jaune chez le serveur, du côté où il
@@ -6212,7 +6240,7 @@ const G3D = (() => {
         try { localStorage.setItem(LS, actif ? '1' : '0'); } catch (e) {}
         if (actif && init()) { ac.resume(); choisirVoix(); chargerReels();
           if (murmureG) murmureG.gain.setTargetAtTime(0.55, ac.currentTime, 0.5); else rumeur.gain.setTargetAtTime(0.035, ac.currentTime, 0.5); }
-        else if (ac) { rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); if (murmureG) murmureG.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
+        else if (ac) { if (this.relacher) this.relacher(); rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); if (murmureG) murmureG.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
         return actif;
       },
       voulu() { try { return localStorage.getItem(LS) === '1'; } catch (e) { return false; } },
@@ -6237,8 +6265,15 @@ const G3D = (() => {
           g.gain.setTargetAtTime(0, t0 + D, 0.45); s.stop(t0 + D + 2.5); }
         rumeur.gain.cancelScheduledValues(t0); rumeur.gain.setTargetAtTime(0.035 + 0.09 * force, t0, 0.15); rumeur.gain.setTargetAtTime(0.035, t0 + D, 0.8); },
       annonce: dire,
+      // paquet 431 : la tension d'un long échange — une rumeur qui monte (la vraie clameur, très bas, filtrée), relâchée au point
+      tension(niv) { if (!prets() || !REEL.ovation) return; const t0 = ac.currentTime;
+        if (!this._tn) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900;
+          const { s, g } = jouer(REEL.ovation, 0, 0, 0.3, t0); s.disconnect(); s.connect(f); f.connect(g); s.loop = true;
+          this._tn = { s, g, f }; }
+        this._tn.g.gain.setTargetAtTime(0.06 + 0.22 * niv, t0, 0.6); this._tn.f.frequency.setTargetAtTime(700 + 1500 * niv, t0, 0.6); },
+      relacher() { if (!this._tn) return; const { s, g } = this._tn, t0 = ac.currentTime; g.gain.setTargetAtTime(0, t0, 0.25); s.stop(t0 + 1.5); this._tn = null; },
       // à la fin d'un vrai point : applaudissements, puis le score par l'arbitre
-      point(Rf, grand) { if (!prets()) return; this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.6 : 1.8); },
+      point(Rf, grand) { if (!prets()) return; this.relacher(); this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.6 : 1.8); },
     };
   })();
   // le score annoncé (en anglais, comme sur le circuit) : serveur d'abord ; rien au jeu décisif
@@ -6260,7 +6295,9 @@ const G3D = (() => {
     if (!SON.actif || !R || R.ralenti || RAL.actif || t <= t0 || t - t0 > 0.5) return;
     const pan = x => cl(x / 9, -1, 1), dedans = v => Math.abs(v.b.x) <= S / 2 + 0.05 && Math.abs(v.b.z) <= (v.type === 'service' ? SL : HL) + 0.05;
     R.vols.forEach((v, k) => {
-      if (v.qui >= 0 && t0 < v.t && v.t <= t) SON.frappe(v.type === 'service' ? 1 : 0.8, pan(v.a.x));
+      if (v.qui >= 0 && t0 < v.t && v.t <= t) { SON.frappe(v.type === 'service' ? 1 : 0.8, pan(v.a.x));
+        // paquet 431 : le public retient son souffle à partir de la 6e frappe d'un échange, de plus en plus fort
+        const nF = R.vols.slice(0, k + 1).filter(x => x.qui >= 0).length; if (nF >= 6) SON.tension(Math.min(1, (nF - 5) / 6)); }
       const ta = v.t + v.d;
       if (t0 < ta && ta <= t) {
         if (v.b.y > 0.3 && Math.abs(v.b.z) < 0.5) SON.filet(pan(v.b.x));
@@ -7493,14 +7530,14 @@ function rendMatchLive(){
     // plus entre deux rafraîchissements), seuls le tableau, le % et les stats changent
     const deja = el.querySelector('.lv-pe');
     if (deja && deja.dataset.vue === String(vue3dLive())) {
-      deja.querySelector('.lv-pe-haut').innerHTML = tableauLive(m, r, fini, true) + barreLive(m, r, fini, true);
+      deja.querySelector('.lv-pe-haut').innerHTML = tableauLive(m, r, fini, true, true) + barreLive(m, r, fini, true);
       deja.querySelector('.lv-pe-stats').innerHTML = statsPlein(m, r);
       const h0 = deja.querySelector('.te3d-hote');
       if (h0) { G3D.monter(h0, m, r, fini) || T3D.monter(h0, m, r, fini); }
       else { const z = deja.querySelector('.lv-pe-3d'); const x = z.querySelector('.lv-pe-x'); z.innerHTML = terrainLive(m, r, fini); z.appendChild(x); }
       return;
     }
-    el.innerHTML = `<div class="lv-pe" data-vue="${vue3dLive()}"><div class="lv-pe-haut">${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}</div>
+    el.innerHTML = `<div class="lv-pe" data-vue="${vue3dLive()}"><div class="lv-pe-haut">${tableauLive(m, r, fini, true, true)}${barreLive(m, r, fini, true)}</div>
       <div class="lv-pe-3d">${vue3dLive() ? terrain3dHtml() : terrainLive(m, r, fini)}<button type="button" class="btn lv-pe-x">✕ ${esc(t('pe_quitter'))}</button></div>
       <div class="lv-pe-stats">${statsPlein(m, r)}</div></div>`;
     el.querySelector('.lv-pe-x').onclick = () => quitterPlein();

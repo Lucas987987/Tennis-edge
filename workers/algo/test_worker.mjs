@@ -585,3 +585,33 @@ test('427 : /live renvoie les interrompus avec les matchs en cours', async () =>
   assert.equal(o.matchs[0].interrompu, true);
   assert.equal(o.interrompus, undefined);
 });
+
+// 25/11/2026 (paquet 431) — une page ouverte sur workers.dev part vers gamesetalgo.com
+import { versSiteOfficiel } from './worker.js';
+test('431 : pages de workers.dev redirigées vers gamesetalgo.com, rien d’autre', async () => {
+  const nav = (u, accept = 'text/html,application/xhtml+xml') => new Request(u, { headers: { Accept: accept } });
+  const r = await worker.fetch(nav('https://algo.tennis-edge.workers.dev/matchs?x=1'), {});
+  assert.equal(r.status, 302);
+  assert.equal(r.headers.get('Location'), 'https://gamesetalgo.com/matchs?x=1');
+  for (const u of ['https://algo.tennis-edge.workers.dev/?video=1', 'https://algo.tennis-edge.workers.dev/lab/',
+    'https://algo.tennis-edge.workers.dev/connexion', 'https://algo.tennis-edge.workers.dev/compte/admin'])
+    assert.equal(versSiteOfficiel(nav(u), new URL(u)), false, u);
+  const j = 'https://algo.tennis-edge.workers.dev/donnees.json';
+  assert.equal(versSiteOfficiel(nav(j, '*/*'), new URL(j)), false);
+  const s = 'https://algo.tennis-edge.workers.dev/sons/frappes.mp3';
+  assert.equal(versSiteOfficiel(nav(s), new URL(s)), false);
+  assert.equal(versSiteOfficiel(nav('https://algo.tennis-edge.workers.dev/'), new URL('https://algo.tennis-edge.workers.dev/')), true);
+});
+
+// 25/11/2026 (paquet 432) — l'administrateur (clé privée) reste sur workers.dev : boutons vidéo et X accessibles
+import { redirigerVersOfficiel } from './worker.js';
+test('432 : avec la clé privée, pas de redirection ; sans, redirection', async () => {
+  const u = 'https://algo.tennis-edge.workers.dev/';
+  const nav = (h = {}) => new Request(u, { headers: { Accept: 'text/html', ...h } });
+  assert.equal(await redirigerVersOfficiel(nav(), new URL(u), { CLE_PRIVEE: CLE }), true);
+  assert.equal(await redirigerVersOfficiel(nav({ 'X-Cle': CLE }), new URL(u), { CLE_PRIVEE: CLE }), false);
+  const r = await worker.fetch(nav({ 'X-Cle': CLE }), { CLE_PRIVEE: CLE, COFFRE: { get: async () => null } });
+  assert.notEqual(r.status, 302);
+  const c = await worker.fetch(new Request('https://algo.tennis-edge.workers.dev/connexion?suite=/'), { CLE_PRIVEE: CLE });
+  assert.match(await c.text(), /name="suite" value="\/"/);
+});
