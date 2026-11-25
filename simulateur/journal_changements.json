@@ -2375,6 +2375,13 @@
    "paquet": 430,
    "quoi": "« DEMANDE À L'ALGO » MISE EN AVANT, JEUX DU MATCH PLUS PRÉCIS (paquet 430, Lucas : « Demande à l'algo doit être plus mis en valeur dans les fiches », « 21 jeux, entre 16 et 32 : on ne se mouille pas »). 1) « Demande à l'algo » n'est plus rangée en bas parmi les tiroirs : elle s'affiche sous l'en-tête du match et les cartes des joueurs (après le direct et ses statistiques une fois le match commencé), encadrée, avec des choix plus grands et une réponse en gros. 2) Jeux dans le match : la fourchette large venait surtout du 3e set. La fiche donne maintenant la fourchette de chaque cas avec sa probabilité, par exemple « en 2 sets (64 %) : 18 à 23, le plus souvent 20 · en 3 sets (36 %) : 27 à 33, le plus souvent 29 ». Mêmes simulations, rien d'inventé.",
    "garde_fou": "Aucun % ne change ; la fourchette d'ensemble reste calculée comme avant. Tests : tests/test_demande_jeux.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 431,
+   "quoi": "ADRESSE DU SITE ET PUBLIC DU DIRECT 3D (paquet 431, Lucas : « l'adresse n'est pas la bonne, worker dev apparaît encore », « on continue sur la 3D »). 1) Toute page ouverte sur l'adresse technique (algo.tennis-edge.workers.dev) part vers gamesetalgo.com, au même chemin. Restent sur l'adresse technique : le Lab et sa connexion, l'administration des comptes, les données lues par les vidéos du jour, le direct, les fichiers (modèles 3D, sons) et le rendu des vidéos. Les boutons « Générer la vidéo » et « Résumé 3D du match » s'affichent aussi sur gamesetalgo.com pour le compte administrateur (la clé privée reste demandée). 2) Direct 3D : à partir de la 6e frappe d'un échange, le public retient son souffle — une rumeur qui monte peu à peu (la vraie clameur, très bas), relâchée au point dans les applaudissements.",
+   "garde_fou": "Rien ne change dans les % ni dans les données. Redirection temporaire (302) des seules pages : les fichiers et les données ne bougent pas. Tests : workers/algo/test_worker.mjs, tests/test_direct_3d_v428.py."
   }
  ]
 }
