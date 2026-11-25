@@ -62,6 +62,27 @@ export async function compacterVisites(env) {
     } catch (e) { /* objet illisible : laissé */ }
   }
 }
+// 25/11/2026 (paquet 434) : ce que le worker reçoit de TennisApi, par jour — direct (live/en_cours.json pour le jour
+// en cours, prive/tennisapi_conso.json pour les jours passés) et fiches (live/compteur/<jour>.json : requêtes, octets).
+export async function consoTennisApi(env) {
+  const lire = async (k) => { try { const o = await env.COFFRE.get(k); return o ? JSON.parse(await o.text()) : null; } catch (e) { return null; } };
+  const jours = {};
+  const ajout = (jour, cle, req, oct) => { if (!jour) return; const j = jours[jour] || (jours[jour] = { jour, direct_req: 0, direct_octets: 0, fiches_req: 0, fiches_octets: 0 });
+    j[cle + '_req'] += req || 0; j[cle + '_octets'] += oct || 0; };
+  const h = await lire('prive/tennisapi_conso.json');
+  for (const d of (h && h.direct) || []) ajout(d.jour, 'direct', d.requetes, d.octets);
+  const enCours = await lire('live/en_cours.json');
+  if (enCours && enCours.conso && !(h && (h.direct || []).some(d => d.jour === enCours.conso.jour)))
+    ajout(enCours.conso.jour, 'direct', enCours.conso.requetes, enCours.conso.octets);
+  try {
+    const l = await env.COFFRE.list({ prefix: 'live/compteur/' });
+    for (const o of (l.objects || []).slice(-60)) {
+      const x = await lire(o.key); const jour = o.key.slice('live/compteur/'.length, -5);
+      if (x) ajout(jour, 'fiches', x.n, x.o);
+    }
+  } catch (e) { /* rien */ }
+  return Object.values(jours).sort((a, b) => (a.jour < b.jour ? -1 : 1)).slice(-30);
+}
 export async function entonnoir(env, maintenant = Date.now()) {
   const comptes = await listeComptes(env);
   const fenetre = (j) => {
@@ -83,7 +104,7 @@ export async function entonnoir(env, maintenant = Date.now()) {
     const v = Object.entries(visites).filter(([d]) => d >= f.depuis);
     out[j] = { ...f, visiteurs: v.reduce((a, [, x]) => a + x.uniques, 0), vues: v.reduce((a, [, x]) => a + x.vues, 0) };
   }
-  return { fenetres: out, total: { comptes: comptes.length, confirmes: comptes.filter((c) => c.verifie).length,
+  return { fenetres: out, tennisapi: await consoTennisApi(env), total: { comptes: comptes.length, confirmes: comptes.filter((c) => c.verifie).length,
     fondateurs: comptes.filter((c) => c.fondateur).length, plus_payes: comptes.filter((c) => c.abonne && c.paye).length,
     plus_tous: comptes.filter((c) => c.abonne && !c.admin).length },
   jours: Object.entries(visites).sort().slice(-30).map(([jour, x]) => ({ jour, ...x })) };

@@ -63,7 +63,7 @@ const SECURITE = {
 };
 // 382 : Cloudflare Turnstile (anti-robots des comptes) — son script et son cadre, rien d'autre
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; "
-  + "font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; "
+  + "font-src 'self'; img-src 'self' data:; connect-src 'self' wss://gamesetalgo.com wss://algo.tennis-edge.workers.dev; frame-src https://challenges.cloudflare.com; "
   + "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 // 334 : lecture dans R2 (bucket du coffre) ; null si absent, vide ou en erreur (le secours GitHub Pages prend le relais)
@@ -543,12 +543,34 @@ export async function suivreTermines(env, avant, apres, demander) {
   return doc;
 }
 
+// 25/11/2026 (paquet 434, Lucas : « je ne vois pas la bande passante » sur RapidAPI) — MESURE PRIVÉE de ce que le worker
+//    reçoit de TennisApi : requêtes et octets par jour (UTC), pour le direct (liste des matchs + vérifications des
+//    matchs finis) et pour les fiches (statistiques, point par point). Taille du texte reçu, décompressé : c'est un
+//    plafond (RapidAPI compte peut-être moins s'il compte la version compressée). Lecture : /compte/admin, carte
+//    « TennisApi ». Rien n'est renvoyé aux visiteurs. La collecte des données (GitHub Actions) n'est pas comptée ici.
+export const tailleOctets = t => (t ? new TextEncoder().encode(t).length : 0);
+export const CONSO_R2 = 'prive/tennisapi_conso.json';
+export function cumulerConso(avant, appels, octets, jour = new Date().toISOString().slice(0, 10)) {
+  const b = avant && avant.jour === jour ? avant : { jour, requetes: 0, octets: 0 };
+  return { jour, requetes: (b.requetes || 0) + appels, octets: (b.octets || 0) + octets };
+}
+async function archiverConso(env, c) {
+  if (!env.COFFRE || !c || !c.jour) return;
+  try {
+    let h = { direct: [] };
+    const x = await env.COFFRE.get(CONSO_R2);
+    if (x) { try { h = JSON.parse(await x.text()) || h; } catch (e) { /* repart à vide */ } }
+    h.direct = (h.direct || []).filter(d => d.jour !== c.jour).concat([{ jour: c.jour, requetes: c.requetes, octets: c.octets }]).slice(-60);
+    await env.COFFRE.put(CONSO_R2, JSON.stringify(h));
+  } catch (e) { /* la mesure ne bloque jamais le direct */ }
+}
+
 // /live : le direct seul (appelé toutes les 3 s) ; /live/termines : les matchs terminés seuls (la page les lit à
 // l'ouverture puis toutes les 30 s) — la liste des terminés ne pèse pas sur chaque rafraîchissement du direct.
 export async function live(req, env, vue = 'direct') {
   const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': `public, max-age=${vue === 'termines' ? 20 : 2}` };
   const rep = o => new Response(JSON.stringify(vue === 'termines' ? { ok: o.ok, maj: o.maj, termines: o.termines || [] }
-    : { ...o, matchs: [...(o.matchs || []), ...(o.interrompus || [])], termines: undefined, a_verifier: undefined, interrompus: undefined }), { headers: h });
+    : { ...o, matchs: [...(o.matchs || []), ...(o.interrompus || [])], termines: undefined, a_verifier: undefined, interrompus: undefined, conso: undefined }), { headers: h });
   const frais = o => o && Date.now() - (o.maj || 0) < (o.ttl || LIVE_TTL_MS);
   if (frais(LIVE_MEMOIRE)) return rep(LIVE_MEMOIRE);
   if (vue === 'termines') {                       // jamais de requête TennisApi : la liste tenue par le direct
@@ -563,14 +585,16 @@ export async function live(req, env, vue = 'direct') {
       if (obj) { const o = JSON.parse(await obj.text()); if (frais(o)) { LIVE_MEMOIRE = o; return rep(o); } if (!avant || (o.maj || 0) > (avant.maj || 0)) avant = o; }
     } catch (e) { /* on interroge TennisApi */ }
   }
-  let o;
+  let o, octets = 0, appels = 0;
   if (!env.RAPIDAPI_KEY) o = { ok: false, maj: Date.now(), message: 'Scores en direct : clé TennisApi du worker absente.', matchs: [] };
   else {
     try {
       const r = await fetch(`https://${HOTE_TENNIS}/api/tennis/events/live`, {
         headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
       // brut : nombre de matchs reçus de TennisApi avant le filtre (simples seulement) — pour vérifier d'un coup d'œil
-      const doc = r.ok ? await r.json() : null;
+      const texte = r.ok ? await r.text() : '';
+      octets = tailleOctets(texte); appels = 1;
+      const doc = r.ok ? JSON.parse(texte) : null;
       const ev = doc ? (doc.events || []) : [];
       const en = k => { const v = r.headers && r.headers.get(k); return v == null || v === '' ? NaN : Number(v); };
       lireQuota(r);
@@ -581,8 +605,10 @@ export async function live(req, env, vue = 'direct') {
         const demander = async (id) => {
           const rr = await fetch(`https://${HOTE_TENNIS}/api/tennis/event/${id}`, {
             headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
-          lireQuota(rr);
-          return rr.ok ? ((await rr.json()) || {}).event || null : null;
+          lireQuota(rr); appels++;
+          if (!rr.ok) return null;
+          const t = await rr.text(); octets += tailleOctets(t);
+          return (JSON.parse(t) || {}).event || null;
         };
         Object.assign(o, await suivreTermines(env, avant, o, demander));
       }
@@ -592,9 +618,78 @@ export async function live(req, env, vue = 'direct') {
   }
   if (!o.termines && avant) { o.termines = avant.termines || []; o.a_verifier = avant.a_verifier || []; o.interrompus = avant.interrompus || []; }   // panne : rien de perdu
   o.termines = o.termines || [];
+  o.conso = cumulerConso(avant && avant.conso, appels, octets);               // 434 : mesure privée (jamais renvoyée)
+  if (avant && avant.conso && avant.conso.jour !== o.conso.jour) await archiverConso(env, avant.conso);
   LIVE_MEMOIRE = o;
   if (env.COFFRE) { try { await env.COFFRE.put(LIVE_R2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
   return rep(o);
+}
+
+// 7. DIRECT EN CONTINU (25/11/2026, paquet 433, Lucas : « les points en direct comme sur Sofascore », plan Workers Paid
+//    pris le jour même). GET /live/flux (WebSocket) → un seul objet « DirectLive » (Durable Object) garde les téléphones
+//    connectés et leur POUSSE le direct dès qu'il change, au lieu que chaque téléphone redemande /live toutes les 3 s.
+//    · Une seule source : l'objet appelle live() — même cache, même quota TennisApi, même réponse que GET /live.
+//    · Il se réveille juste après la fin de fraîcheur du direct (maj + ttl), au plus tôt 1 s, au plus tard 60 s après.
+//    · Personne de connecté → plus aucun réveil (aucun coût). Les « ping » des téléphones reçoivent « pong » sans
+//      réveiller l'objet (réponse automatique de Cloudflare). Les envois vers les téléphones ne sont pas facturés.
+//    · Garde-fous : 45 000 réveils par jour (UTC) au plus — au-delà, les téléphones repassent d'eux-mêmes à la
+//      redemande toutes les 3 s jusqu'au lendemain — et 5 000 connexions simultanées au plus.
+//    Retrait : supprimer la route /live/flux (la page retombe seule sur /live toutes les 3 s).
+export const FLUX_PAS_MIN_MS = 1000;
+export const FLUX_PAS_MAX_MS = 60 * 1000;
+export const FLUX_MAX_TOURS_JOUR = 45000;
+export const FLUX_MAX_CONNEXIONS = 5000;
+export function prochainTour(o, maintenant = Date.now()) {
+  const fin = o && Number.isFinite(o.maj) ? o.maj + (o.ttl || LIVE_TTL_MS) + 150 : maintenant + LIVE_TTL_MS;
+  return Math.min(maintenant + FLUX_PAS_MAX_MS, Math.max(maintenant + FLUX_PAS_MIN_MS, fin));
+}
+// Ce qui compte pour les téléphones : les matchs (score, serveur, points) — pas l'heure de la mise à jour.
+const empreinte = o => JSON.stringify((o && o.matchs) || []) + '|' + (o && o.ok);
+export class DirectLive {
+  constructor(ctx, env) {
+    this.ctx = ctx; this.env = env; this.dernier = null; this.jour = ''; this.tours = 0;
+    try { ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong')); } catch (e) { /* hors Cloudflare */ }
+  }
+  async instantane() {
+    const r = await live(new Request('https://interne/live'), this.env);
+    const texte = await r.text();
+    return { texte, o: JSON.parse(texte) };
+  }
+  async fetch(req) {
+    if ((req.headers.get('Upgrade') || '').toLowerCase() !== 'websocket') return new Response('WebSocket attendu.', { status: 426, headers: SECURITE });
+    if (this.ctx.getWebSockets().length >= FLUX_MAX_CONNEXIONS || this.tours > FLUX_MAX_TOURS_JOUR)
+      return new Response('Direct en continu complet : redemande classique.', { status: 503, headers: SECURITE });
+    const paire = new WebSocketPair();
+    const [client, serveur] = [paire[0], paire[1]];
+    this.ctx.acceptWebSocket(serveur);
+    try { const { texte } = await this.instantane(); serveur.send(texte); } catch (e) { /* le prochain tour enverra */ }
+    if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + FLUX_PAS_MIN_MS);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async alarm() {
+    const ws = this.ctx.getWebSockets();
+    if (!ws.length) { this.dernier = null; return; }                     // personne n'écoute : on s'arrête là
+    const j = new Date().toISOString().slice(0, 10);
+    if (j !== this.jour) { this.jour = j; this.tours = 0; }
+    if (++this.tours > FLUX_MAX_TOURS_JOUR) {                             // garde-fou : retour à la redemande classique
+      for (const s of ws) { try { s.close(4000, 'pause'); } catch (e) { /* déjà fermée */ } }
+      this.dernier = null; return;
+    }
+    let o = null;
+    try {
+      const x = await this.instantane(); o = x.o;
+      const e = empreinte(o);
+      if (e !== this.dernier) { this.dernier = e; for (const s of ws) { try { s.send(x.texte); } catch (er) { /* fermée */ } } }
+    } catch (e) { /* TennisApi ou R2 en panne : on réessaie au prochain tour */ }
+    await this.ctx.storage.setAlarm(prochainTour(o));
+  }
+  async webSocketMessage() { /* « ping » → « pong » sans réveil ; le reste est ignoré */ }
+  async webSocketClose(ws, code) { try { ws.close(code === 1005 ? 1000 : code, 'fin'); } catch (e) { /* déjà fermée */ } }
+  async webSocketError(ws) { try { ws.close(1011, 'erreur'); } catch (e) { /* déjà fermée */ } }
+}
+async function flux(req, env) {
+  if (!env.DIRECT) return new Response('Direct en continu non configuré.', { status: 503, headers: SECURITE });
+  return env.DIRECT.get(env.DIRECT.idFromName('direct')).fetch(req);
 }
 
 // 5. STATISTIQUES EN DIRECT (06/11/2026) : GET /live/stats?id=<id TennisApi> → la feuille du match en cours
@@ -604,7 +699,7 @@ export async function live(req, env, vue = 'direct') {
 //    au-delà, la dernière feuille connue est renvoyée avec plafond: true jusqu'au lendemain (les scores continuent).
 export const STATS_TTL_MS = 60 * 1000;
 const STATS_MEMOIRE = new Map();
-const COMPTEUR = { jour: null, n: 0 };
+const COMPTEUR = { jour: null, n: 0, o: 0 };
 
 export function compacterStats(doc) {
   for (const p of (doc && doc.statistics) || []) {
@@ -622,8 +717,8 @@ export function compacterStats(doc) {
 async function compter(env) {
   const jour = new Date().toISOString().slice(0, 10), cle = `live/compteur/${jour}.json`;
   if (COMPTEUR.jour !== jour) {
-    COMPTEUR.jour = jour; COMPTEUR.n = 0;
-    if (env.COFFRE) { try { const o = await env.COFFRE.get(cle); if (o) COMPTEUR.n = JSON.parse(await o.text()).n || 0; } catch (e) { /* 0 */ } }
+    COMPTEUR.jour = jour; COMPTEUR.n = 0; COMPTEUR.o = 0;
+    if (env.COFFRE) { try { const o = await env.COFFRE.get(cle); if (o) { const x = JSON.parse(await o.text()); COMPTEUR.n = x.n || 0; COMPTEUR.o = x.o || 0; } } catch (e) { /* 0 */ } }
   }
   return { jour, cle };
 }
@@ -705,11 +800,13 @@ async function liveDetail(req, env, url, genre) {
   let o;
   try {
     COMPTEUR.n++;
-    if (env.COFFRE) { try { await env.COFFRE.put(cle, JSON.stringify({ n: COMPTEUR.n })); } catch (e) { /* mémoire seule */ } }
     const r = await fetch(`https://${HOTE_TENNIS}${D.chemin(id)}`, {
       headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
     lireQuota(r);
-    o = r.ok ? { ok: true, id: +id, maj: Date.now(), [D.champ]: D.compacter(await r.json()) }
+    const texte = r.ok ? await r.text() : '';
+    COMPTEUR.o += tailleOctets(texte);                                         // 434 : octets reçus (fiches)
+    if (env.COFFRE) { try { await env.COFFRE.put(cle, JSON.stringify({ n: COMPTEUR.n, o: COMPTEUR.o })); } catch (e) { /* mémoire seule */ } }
+    o = r.ok ? { ok: true, id: +id, maj: Date.now(), [D.champ]: D.compacter(JSON.parse(texte)) }
       // 404 = pas encore de données (début de match) : on le garde 60 s comme une réponse normale
              : { ok: r.status === 404, id: +id, maj: Date.now(), [D.champ]: connu ? connu[D.champ] : null, message: `TennisApi : HTTP ${r.status}` };
   } catch (e) {
@@ -737,6 +834,7 @@ export default {
     if (url.pathname in MODELES) return modele(req, url.pathname, env);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
+    if (url.pathname === '/live/flux') return flux(req, env);              // 433 : direct poussé (WebSocket)
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/live/termines') return live(req, env, 'termines');
     if (url.pathname === '/video') return video(req, env);
