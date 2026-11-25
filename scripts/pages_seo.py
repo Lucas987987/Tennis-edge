@@ -177,7 +177,7 @@ T['fr']['perf'] = dict(
     fiab_aide="Fiabilité du joueur : ses résultats suivent-ils nos % ? 100 : il gagne exactement aussi souvent qu'annoncé ; "
               "plus la note baisse, plus il gagne (ou perd) souvent à rebours de nos %. Calculée sur ses {k} derniers matchs analysés.",
     fiab_absente='Fiabilité du joueur : pas encore de note (au moins {m} matchs analysés).',
-    barre="Trait blanc : {a} annoncé · Barre : {r} réalisé", stats='Statistiques : prévu contre réel', stat='', prevu='Prévu',
+    barre="Trait : {a} annoncé · Barre : {r} réalisé", stats='Statistiques : prévu contre réel', stat='', prevu='Prévu',
     reel='Réel', ecart_moyen='Écart moyen', repere='Tous joueurs', par_match='par match',
     stats_aide="Moyennes par match sur ses {n} derniers matchs dont la feuille est connue. « Tous joueurs » : l'écart moyen de "
                "l'algorithme sur tous les joueurs du circuit — plus l'écart du joueur est petit, plus nos prévisions sont précises pour lui.",
@@ -199,7 +199,7 @@ T['en']['perf'] = dict(
     fiab_aide="Player reliability: do his results follow our %? 100: he wins exactly as often as announced; the lower the score, "
               "the more often he wins (or loses) against our %. Based on his last {k} analysed matches.",
     fiab_absente='Player reliability: no score yet (at least {m} analysed matches).',
-    barre="White mark: {a} announced · Bar: {r} actual", stats='Stats: predicted vs actual', stat='', prevu='Predicted',
+    barre="Mark: {a} announced · Bar: {r} actual", stats='Stats: predicted vs actual', stat='', prevu='Predicted',
     reel='Actual', ecart_moyen='Average gap', repere='All players', par_match='per match',
     stats_aide="Per-match averages over his last {n} matches with a known match sheet. \"All players\": the algorithm's average gap "
                "over every player on the tour — the smaller his gap, the more accurate our predictions are for him.",
@@ -282,7 +282,9 @@ def semaine(m):
 
 
 # ------------------------------------------------------------------------------------------------ gabarit commun
-CSS = """:root{--bg:#0E0A24;--panel:#191338;--ink:#F4F1FF;--dim:#A9A2CC;--p1:#2EE6FF;--p2:#FF4FAE;--ok:#3ee08a;--ko:#ff6b7d;--ball:#D4FF3A;--line:rgba(255,255,255,.12)}
+CSS = """:root{--bg:#0E0A24;--panel:#191338;--ink:#F4F1FF;--dim:#A9A2CC;--p1:#2EE6FF;--p2:#FF4FAE;--ok:#3ee08a;--ko:#ff6b7d;--ball:#D4FF3A;--line:rgba(255,255,255,.12);--chip:rgba(255,255,255,.04);--piste:rgba(255,255,255,.08);--trait:#fff;--cta-txt:#141225;color-scheme:dark}
+html[data-theme="light"]{--bg:#F4F2FB;--panel:#FFFFFF;--ink:#1B1640;--dim:#5C5788;--p1:#0A7FA3;--p2:#C21F78;--ok:#0E8A57;--ko:#C92A4D;--ball:#6F9500;--line:rgba(30,20,80,.14);--chip:rgba(30,20,80,.04);--piste:rgba(30,20,80,.10);--trait:#1B1640;--cta-txt:#fff;color-scheme:light}
+html[data-theme="light"] .panel{box-shadow:0 6px 22px rgba(40,20,120,.08)}html[data-theme="light"] header .b{box-shadow:none}
 @font-face{font-family:"Bungee";font-display:swap;src:url(/polices/bungee-400.woff2) format("woff2")}
 @font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(/polices/barlow-400.woff2) format("woff2")}
 @font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(/polices/barlow-600.woff2) format("woff2")}
@@ -295,22 +297,47 @@ h1{font-family:Bungee,system-ui;font-weight:400;font-size:1.7rem;line-height:1.1
 .a{color:var(--p1)}.b2{color:var(--p2)}.ok{color:var(--ok)}.ko{color:var(--ko)}
 table{width:100%;border-collapse:collapse;font-size:.95rem}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center}
 th:first-child,td:first-child{text-align:left}small{color:var(--dim)}ul.l{list-style:none;padding:0;margin:0}ul.l li{padding:7px 0;border-bottom:1px solid var(--line)}
-.cta{display:inline-block;margin-top:10px;background:var(--ball);color:#141225;font-weight:600;padding:10px 16px;border-radius:999px;text-decoration:none}
+.cta{display:inline-block;margin-top:10px;background:var(--ball);color:var(--cta-txt);font-weight:600;padding:10px 16px;border-radius:999px;text-decoration:none}
 footer{margin-top:34px;color:var(--dim);font-size:.85rem}footer a{color:var(--dim)}
 h3{font-size:1rem;margin:18px 0 6px}.jaune{color:var(--ball)}.aide{color:var(--dim);font-size:.85rem;margin:6px 0 0}
 .pf .note{color:var(--dim);font-size:.85rem;margin:14px 0 0;padding-top:10px;border-top:1px solid var(--line)}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(min-width:640px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.k{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.k{background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .kv{font-family:Bungee,system-ui;font-size:1.45rem;line-height:1.1}.kv small{font:600 .85rem Barlow,system-ui;color:var(--dim);margin-left:2px}
 .kl{color:var(--dim);font-size:.82rem;line-height:1.3}
-.cmp{position:relative;height:10px;border-radius:999px;background:rgba(255,255,255,.08);margin:16px 0 4px}
+.cmp{position:relative;height:10px;border-radius:999px;background:var(--piste);margin:16px 0 4px}
 .cmp i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--p1),var(--p2))}
-.cmp b{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
-.fj{font-size:.8rem;color:var(--dim);margin-left:6px}"""
+.cmp b{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;border-radius:2px;background:var(--trait);box-shadow:0 0 6px rgba(0,0,0,.6)}
+.fj{font-size:.8rem;color:var(--dim);margin-left:6px}
+header{flex-wrap:wrap;row-gap:8px}header>a:first-of-type{white-space:nowrap}
+.th{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:auto}
+.th button{background:transparent;color:var(--dim);border:0;font:600 .78rem Barlow,system-ui;padding:6px 9px;cursor:pointer;min-height:32px}
+.th button[aria-pressed="true"]{background:var(--ball);color:var(--cta-txt)}"""
 
 
 def pre(L):
     return '' if L == 'fr' else '/en'
+
+
+# 25/11/2026 (paquet 441, Lucas : « la fiche des joueurs est sombre, on devrait pouvoir choisir clair ou sombre ») —
+# mêmes réglages que la page d'accueil (Auto, Clair, Sombre ; sombre par défaut), même mémoire sur l'appareil (te_theme) :
+# un choix fait sur l'accueil vaut pour les pages des joueurs, des matchs, des tournois et des bilans, et inversement.
+THEME_TETE = ("(function(){try{var v=localStorage.getItem('te_theme')||'dark';var d=v==='auto'?(matchMedia('(prefers-color-scheme: dark)')"
+              ".matches?'dark':'light'):v;document.documentElement.setAttribute('data-theme',d==='light'?'light':'dark');}catch(e){}})();")
+THEME_BASCULE = ("(function(){var b=document.querySelectorAll('.th button');function app(v){var d=v==='auto'?(window.matchMedia&&matchMedia("
+                 "'(prefers-color-scheme: dark)').matches?'dark':'light'):v;document.documentElement.setAttribute('data-theme',d==='light'?'light':'dark');"
+                 "var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d==='light'?'#F4F2FB':'#0E0A24');"
+                 "for(var i=0;i<b.length;i++)b[i].setAttribute('aria-pressed',String(b[i].getAttribute('data-th')===v));}"
+                 "var v='dark';try{v=localStorage.getItem('te_theme')||'dark';}catch(e){}app(v);"
+                 "for(var i=0;i<b.length;i++)b[i].addEventListener('click',function(){v=this.getAttribute('data-th');"
+                 "try{localStorage.setItem('te_theme',v);}catch(e){}app(v);});"
+                 "if(window.matchMedia){var q=matchMedia('(prefers-color-scheme: dark)');if(q.addEventListener)q.addEventListener('change',function(){if(v==='auto')app(v);});}})();")
+
+
+def bascule_theme(L):
+    lib = [('auto', 'Auto'), ('light', 'Clair' if L == 'fr' else 'Light'), ('dark', 'Sombre' if L == 'fr' else 'Dark')]
+    return ('<span class="th" role="group" aria-label="' + ('Thème' if L == 'fr' else 'Theme') + '">'
+            + ''.join(f'<button type="button" data-th="{k}" aria-pressed="{str(k == "dark").lower()}">{e(v)}</button>' for k, v in lib) + '</span>')
 
 
 def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=True):
@@ -325,17 +352,18 @@ def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=Tr
     p = pre(L)
     return f"""<!doctype html>
 <html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script>{THEME_TETE}</script>
 <title>{e(titre)}</title><meta name="description" content="{e(description)}">
 <link rel="canonical" href="{e(url)}">{alt}{'' if indexer else '<meta name="robots" content="noindex, follow">'}<meta name="theme-color" content="#0E0A24">
 <meta property="og:title" content="{e(titre)}"><meta property="og:description" content="{e(description)}">
 <meta property="og:url" content="{e(url)}"><meta property="og:type" content="{og}"><meta property="og:site_name" content="Game Set Algo">
 <meta property="og:locale" content="{'fr_FR' if L == 'fr' else 'en_GB'}"><meta property="og:image" content="{SITE}/partage.png"><link rel="icon" href="/icone-192.png">{lds}
 <style>{CSS}</style></head><body><div class="w">
-<header><span class="b" aria-hidden="true"></span><a href="{accueil}">Game Set Algo</a><a class="lg" href="{e(pre(autre) + chemin)}" hreflang="{autre}">{e(t['autre_langue'])}</a></header>
+<header><span class="b" aria-hidden="true"></span><a href="{accueil}">Game Set Algo</a><a class="lg" href="{e(pre(autre) + chemin)}" hreflang="{autre}">{e(t['autre_langue'])}</a>{bascule_theme(L)}</header>
 {corps}
 <footer><p><a href="{accueil}">{e(t['accueil'])}</a> · <a href="{p}/matchs">{e(t['matchs'])}</a> · <a href="{p}/joueurs">{e(t['joueurs'])}</a> · <a href="{p}/tournois">{e(t['tournois'])}</a> · <a href="{p}/bilans">{e(t['bilans'])}</a> · <a href="/methode.html{'' if L == 'fr' else '?lang=en'}">{e(t['methode'])}</a> · <a href="/#mentions">{e(t['mentions'])}</a> · <a href="/#cgv">{e(t['cgv'])}</a></p>
 <p>{e(t['pied'])}</p></footer>
-</div></body></html>
+</div><script>{THEME_BASCULE}</script></body></html>
 """
 
 
