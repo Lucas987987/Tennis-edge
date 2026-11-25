@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """24/11/2026 (paquets 418-419) — une page par match terminé, par joueur, par tournoi et par semaine, en français et en anglais :
 passé seulement, jamais de cote ni d'ITF."""
+import json
 import os
 import pathlib
 import re
@@ -69,3 +70,28 @@ def test_tournoi_semaine_et_anglais(tmp_path):
     tout = ''.join(p.read_text(encoding='utf-8') for p in tmp_path.rglob('*.html'))
     for mot in ('cote', 'marché', 'Pinnacle', 'odds', '7.77', 'Elo', 'calibr', 'value'):
         assert mot not in tout, mot
+
+
+def test_437_page_pour_chaque_joueur_et_index_nom_adresse(tmp_path):
+    """Paquet 437 : un joueur d'un seul match a sa page (cliquable depuis la fiche), hors des moteurs de recherche."""
+    doc = {'matchs': [_m('2026-11-20_aa_bb', '2026-11-20T10:00', 'Aaa Bbb', 'Ccc Ddd', 0.7),
+                      _m('2026-11-21_aa_cc', '2026-11-21T10:00', 'Aaa Bbb', 'Eee Fff', 0.4, g='away', score='4-6 5-7')]}
+    PS.construire(doc, str(tmp_path), maintenant='2026-11-24T12:00')
+    J = json.loads((tmp_path / 'joueurs_pages.json').read_text(encoding='utf-8'))
+    assert J == {'Aaa Bbb': 'aaa-bbb', 'Ccc Ddd': 'ccc-ddd', 'Eee Fff': 'eee-fff'}
+    mince = (tmp_path / 'joueur' / 'ccc-ddd.html').read_text(encoding='utf-8')
+    assert '<meta name="robots" content="noindex, follow">' in mince
+    assert 'noindex' not in (tmp_path / 'joueur' / 'aaa-bbb.html').read_text(encoding='utf-8')
+    sm = (tmp_path / 'sitemap.xml').read_text(encoding='utf-8')
+    assert '/joueur/aaa-bbb' in sm and '/joueur/ccc-ddd' not in sm
+    assert '/joueur/ccc-ddd' not in (tmp_path / 'joueurs.html').read_text(encoding='utf-8')
+    assert (tmp_path / 'en' / 'joueur' / 'ccc-ddd.html').exists()
+
+
+def test_437_fiche_relie_les_joueurs():
+    P = (pathlib.Path(__file__).resolve().parent.parent / 'algo' / 'index.html').read_text(encoding='utf-8')
+    assert '<span class="nm" data-joueur="${esc(m.home)}">' in P and '<span class="nm" data-joueur="${esc(m.away)}">' in P
+    assert "lierJoueurs(zone);" in P and "lireJson('joueurs_pages.json')" in P
+    assert "/joueur/${encodeURIComponent(s)}" in P
+    W = (pathlib.Path(__file__).resolve().parent.parent / 'workers' / 'algo' / 'worker.js').read_text(encoding='utf-8')
+    assert "'/joueurs_pages.json': 'joueurs_pages.json'" in W
