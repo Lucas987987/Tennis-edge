@@ -85,7 +85,7 @@ TACHES = 16           # 424 : envois en parallèle (un par un : ~10 000 fichiers
 POINT = 400           # 424 : manifeste réécrit tous les 400 envois : un run annulé ne fait pas tout repartir
 
 
-def envoyer(r2, site, journal=print, taches=TACHES, point=POINT):
+def envoyer(r2, site, journal=print, taches=TACHES, point=POINT, urls_indexnow=None):
     """24/11/2026 (paquet 424, Lucas : « déploy page ko, le site n'est toujours pas revenu »). Avec les ~5 000 pages de
     référencement (×2 langues), l'envoi un par un durait plus de 20 minutes ; la publication suivante l'annulait
     (pages.yml, cancel-in-progress) AVANT l'écriture du manifeste, si bien que tout repartait à chaque fois et que la
@@ -136,6 +136,11 @@ def envoyer(r2, site, journal=print, taches=TACHES, point=POINT):
                     ecrire_manifeste(faits)
                     depuis_point = 0
     ecrire_manifeste({p: m for p, m in nouveaux.items() if m != anciens[p] or faits[p] != anciens[p]})
+    if urls_indexnow:                                        # 444 : pages publiques envoyées → IndexNow (scripts/indexnow.py)
+        import indexnow
+        envoyees = [t[0] for v in vagues.values() for t in v if t[2] == PREFIXE_PUBLIC]
+        with open(urls_indexnow, 'w', encoding='utf-8') as f:
+            f.write(''.join(u + '\n' for u in sorted({indexnow.url_de(r) for r in envoyees} - {None})))
     journal(f"R2 : {len(rels)} fichiers · public envoyés {n['public'][0]} ({n['public'][1] // 1024} Ko) · "
             f"privés envoyés {n['prive'][0]} ({n['prive'][1] // 1024} Ko) · inchangés {n['inchanges']}")
     return n
@@ -165,6 +170,7 @@ def main(argv=None):
     ap.add_argument('--site', default='_site')
     ap.add_argument('--prefixe', default='')
     ap.add_argument('--vers', default='')
+    ap.add_argument('--urls-indexnow', default='')
     a = ap.parse_args(argv)
     import r2_io
     r2 = r2_io.client()
@@ -172,7 +178,7 @@ def main(argv=None):
         print('::warning::R2 indisponible : rien envoyé (GitHub Pages garde tout le site, comme avant).')
         return 2
     if a.action == 'envoyer':
-        envoyer(r2, a.site)
+        envoyer(r2, a.site, urls_indexnow=a.urls_indexnow or None)
         return 0
     if not a.prefixe.startswith(PREFIXE_PRIVE) and not a.prefixe.startswith(PREFIXE_PUBLIC):
         print('::error::préfixe hors du site')

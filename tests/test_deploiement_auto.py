@@ -56,6 +56,6 @@ def test_referencement_page():
     ld = json.loads(tete[tete.index('>', i) + 1:tete.index('</script>', i)])
     noms = [x.get('name') for x in ld['@graph']]
     assert noms == ['Game Set Algo', 'Game Set Algo'] and 'GameSetAlgo' in ld['@graph'][0]['alternateName']
-    assert '<h1 class="logo">' in p and 'Chaque match est simulé 20 000 fois' in p[p.index('class="lede"'):][:300]
+    assert '<div class="logo">' in p and '<h1 class="titre-seo"' in p and 'Chaque match est simulé 20 000 fois' in p[p.index('class="lede"'):][:300]
     for f, u in (('methode.html', 'methode.html'), ('apropos.html', 'apropos.html')):
         assert f'<link rel="canonical" href="https://gamesetalgo.com/{u}">' in (R / 'algo' / f).read_text(encoding='utf-8')

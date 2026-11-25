@@ -137,6 +137,7 @@ jobs:
             scripts/performance_joueurs.py
             simulateur/journal_pronostics/apres_match
             scripts/publier_r2.py
+            scripts/indexnow.py
             scripts/r2_io.py
             scripts/coffre.py
             scripts/pronostics_prives.py
@@ -396,7 +397,12 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-        run: python scripts/publier_r2.py envoyer --site _site
+        run: python scripts/publier_r2.py envoyer --site _site --urls-indexnow /tmp/indexnow.txt
+      # 25/11/2026 (paquet 444) : signaler à Bing les pages nouvelles ou modifiées (IndexNow) ; jamais bloquant
+      - name: IndexNow (Bing)
+        if: steps.r2.outcome == 'success'
+        continue-on-error: true
+        run: python scripts/indexnow.py /tmp/indexnow.txt
       - name: Ne garder sur GitHub Pages que le site public (algo/ et arena/)
         if: steps.r2.outcome == 'success'
         run: |

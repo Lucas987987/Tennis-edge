@@ -160,6 +160,7 @@ export const MARQUES = new Set(['gamesetalgo.com', 'www.gamesetalgo.com']);
 // Lab) n'est jamais indexée (X-Robots-Tag + robots.txt « Disallow: / »). Sur le site : robots.txt (comptes, direct et
 // données exclus) et sitemap.xml (les trois pages publiques).
 export const SITE_OFFICIEL = 'https://gamesetalgo.com';
+export const INDEXNOW_CLE = '46bbd636fd3b0fc7e291244e36a79d7b';   // 444 : même clé que scripts/indexnow.py
 export function versSiteOfficiel(req, url) {
   if (req.method !== 'GET') return false;
   if (/[?&](video|export3d)=/.test(url.search)) return false;                      // rendu des vidéos du jour
@@ -839,6 +840,8 @@ export default {
     if (url.pathname in MODELES) return modele(req, url.pathname, env);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
+    // 444 : clé IndexNow (publique par nature : le protocole demande qu'elle soit lisible sur le site)
+    if (url.pathname === '/' + INDEXNOW_CLE + '.txt') return new Response(INDEXNOW_CLE, { headers: { ...SECURITE, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=86400' } });
     if (url.pathname === '/live/flux') return flux(req, env);              // 433 : direct poussé (WebSocket)
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/live/termines') return live(req, env, 'termines');

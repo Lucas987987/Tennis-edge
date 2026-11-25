@@ -309,6 +309,12 @@ h3{font-size:1rem;margin:18px 0 6px}.jaune{color:var(--ball)}.aide{color:var(--d
 .cmp i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--p1),var(--p2))}
 .cmp b{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;border-radius:2px;background:var(--trait);box-shadow:0 0 6px rgba(0,0,0,.6)}
 .fj{font-size:.8rem;color:var(--dim);margin-left:6px}
+/* 25/11/2026 (paquet 444) : liens au style du site — noms en clair, sans soulignement, petite flèche discrète */
+ul.l a,.panel a:not(.cta),p a,td a{color:var(--ink);text-decoration:none;font-weight:600}
+ul.l a:first-of-type::after{content:" ›";color:var(--dim);font-weight:400}
+ul.l a+a,ul.l li>a~a{color:var(--dim);font-weight:400}ul.l a+a::after{content:""}
+ul.l a:hover,p a:hover,td a:hover{color:var(--p1)}
+footer a,footer p a{color:var(--dim);font-weight:400;text-decoration:none}footer p a:hover{color:var(--ink)}
 header{flex-wrap:wrap;row-gap:8px}header>a:first-of-type{white-space:nowrap}
 .th{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:auto}
 .th button{background:transparent;color:var(--dim);border:0;font:600 .78rem Barlow,system-ui;padding:6px 9px;cursor:pointer;min-height:32px}
