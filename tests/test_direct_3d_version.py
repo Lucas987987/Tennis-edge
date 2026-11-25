@@ -17,7 +17,7 @@ class VersionEtModeles(unittest.TestCase):
         self.assertIn("MOD.etat = 'absent'; MOD.erreur", BLOC)
 
     def test_etiquette(self):
-        self.assertIn("const VERSION_3D = 'v428';", BLOC)
+        self.assertIn("const VERSION_3D = 'v429';", BLOC)
         self.assertIn('stop.abort(), 25000', BLOC)                                # un essai bloqué abandonne
         self.assertIn("MOD.etat === 'absent' && MOD.erreur ?", BLOC)            # la cause s'affiche
         self.assertIn("verEl.className = 'g3d-ver'", BLOC)
@@ -28,7 +28,7 @@ class VersionEtModeles(unittest.TestCase):
 
     def test_rapport(self):
         d = json.loads((RACINE / 'simulateur' / 'rapport_3d_site.json').read_text(encoding='utf-8'))
-        self.assertGreaterEqual(d['paquet'], 281); self.assertEqual(d['version_3d'], 'v428')
+        self.assertGreaterEqual(d['paquet'], 281); self.assertEqual(d['version_3d'], 'v429')
 
 
 if __name__ == '__main__':

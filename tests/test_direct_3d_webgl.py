@@ -144,7 +144,8 @@ class MoteurWebGL(unittest.TestCase):
     def test_rien_ne_vient_d_ailleurs(self):
         for motif in ('http', 'import(', 'XMLHttpRequest', '.glb', 'new Image', 'src='):
             self.assertNotIn(motif, BLOC)
-        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=326'])   # seul fichier lu : sur le site
+        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=326', 'sons/sons.json?v=428'])   # fichiers lus : sur le site
+        self.assertIn("fetch(`sons/${nom}.mp3?v=428`)", BLOC)                       # 429 : les vrais sons, sur le site aussi
         for mot in ('marché', 'pinnacle'):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
