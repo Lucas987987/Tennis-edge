@@ -138,7 +138,13 @@ class Publication(unittest.TestCase):
             res('nouveau_juste', '2026-11-06', 'pente_v3', '2026-11-06'),
             res('nouveau_faux', '2026-11-07', 'pente_v3', '2026-11-07', gagnant='away'),
         ]
-        out = V.validation_fiabilite({'matchs': rows})
+        import fiabilite as FI_                                       # paquet 451 : version selon le modèle en place
+        ancien = (FI_.VERSION_FIABILITE, FI_.ACTIVE_LE)
+        FI_.VERSION_FIABILITE, FI_.ACTIVE_LE = 'pente_v3', '2026-11-05'
+        try:
+            out = V.validation_fiabilite({'matchs': rows})
+        finally:
+            FI_.VERSION_FIABILITE, FI_.ACTIVE_LE = ancien
         self.assertEqual(out['global']['n'], 2)
         self.assertEqual(out['global']['vainqueurs'], 1)
         self.assertEqual(out['global']['pct'], 50.0)
