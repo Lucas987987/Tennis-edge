@@ -707,3 +707,20 @@ test('434 : au changement de jour, la veille est archivée (60 jours gardés)', 
   assert.equal(JSON.parse(stock['live/en_cours.json']).conso.requetes, 1);
   viderLive433();
 });
+
+// 25/11/2026 (paquet 435) — sauvegarde quotidienne des comptes, codes et factures (14 jours gardés)
+import { sauvegarderComptes, JOURS_SAUVES } from './ventes.js';
+test('435 : comptes, codes et factures copiés chaque jour ; au-delà de 14 jours, les plus anciens partent', async () => {
+  const s = { 'comptes/u/a.json': '{"email":"a"}', 'comptes/codes/x.json': '{"c":1}', 'factures/F1.json': '{"n":1}', 'live/en_cours.json': '{}' };
+  for (let i = 1; i <= JOURS_SAUVES; i++) s[`sauvegardes/comptes/2026-10-${String(i).padStart(2, '0')}/comptes/u/a.json`] = 'vieux';
+  const C = { get: async k => (k in s ? { text: async () => s[k] } : null), put: async (k, v) => { s[k] = v; }, delete: async k => { delete s[k]; },
+    list: async ({ prefix, cursor }) => { const t = Object.keys(s).filter(k => k.startsWith(prefix)).sort(); const d = cursor ? +cursor : 0;
+      return { objects: t.slice(d, d + 2).map(key => ({ key })), truncated: d + 2 < t.length, cursor: String(d + 2) }; } };
+  assert.equal(await sauvegarderComptes({ COFFRE: C }, '2026-11-25'), 3);
+  assert.equal(s['sauvegardes/comptes/2026-11-25/comptes/u/a.json'], '{"email":"a"}');
+  assert.equal(s['sauvegardes/comptes/2026-11-25/factures/F1.json'], '{"n":1}');
+  assert.ok(!('sauvegardes/comptes/2026-11-25/live/en_cours.json' in s));
+  assert.ok(!('sauvegardes/comptes/2026-10-01/comptes/u/a.json' in s));           // le plus ancien est parti
+  assert.ok('sauvegardes/comptes/2026-10-02/comptes/u/a.json' in s);
+  assert.equal(s['comptes/u/a.json'], '{"email":"a"}');                            // l'original n'a pas bougé
+});

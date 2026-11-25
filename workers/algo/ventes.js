@@ -461,4 +461,36 @@ export async function quotidien(env) {
   if (!env.COFFRE) return;
   try { await compacterVisites(env); } catch (e) { /* le lendemain */ }
   try { await rappels(env); } catch (e) { /* le lendemain */ }
+  try { await sauvegarderComptes(env); } catch (e) { /* le lendemain */ }
+}
+
+// 25/11/2026 (paquet 435, avant l'ouverture du site) — SAUVEGARDE QUOTIDIENNE des comptes, des codes et des factures :
+// chaque jour (7 h 17 UTC), copie de comptes/u/, comptes/codes/ et factures/ sous sauvegardes/comptes/<jour>/ ; les
+// 14 derniers jours sont gardés. Protège d'un effacement ou d'une écriture ratée (bug, fausse manœuvre) ; le même
+// coffre R2, donc pas d'une suppression du coffre entier. Restaurer : recopier les fichiers d'un jour à leur place.
+export const PREFIXES_SAUVES = ['comptes/u/', 'comptes/codes/', 'factures/'];
+export const JOURS_SAUVES = 14;
+async function lister(env, prefix) {
+  const cles = []; let cursor;
+  do {
+    const l = await env.COFFRE.list({ prefix, cursor });
+    for (const o of l.objects || []) cles.push(o.key);
+    cursor = l.truncated ? l.cursor : undefined;
+  } while (cursor);
+  return cles;
+}
+export async function sauvegarderComptes(env, jour = jourUtc()) {
+  let n = 0;
+  for (const p of PREFIXES_SAUVES) {
+    for (const k of await lister(env, p)) {
+      const o = await env.COFFRE.get(k);
+      if (!o) continue;
+      await env.COFFRE.put(`sauvegardes/comptes/${jour}/${k}`, await o.text());
+      n++;
+    }
+  }
+  const jours = [...new Set((await lister(env, 'sauvegardes/comptes/')).map(k => k.split('/')[2]))].sort();
+  const vieux = new Set(jours.slice(0, Math.max(0, jours.length - JOURS_SAUVES)));
+  if (vieux.size) for (const k of await lister(env, 'sauvegardes/comptes/')) if (vieux.has(k.split('/')[2])) await env.COFFRE.delete(k);
+  return n;
 }
