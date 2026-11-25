@@ -3770,7 +3770,7 @@ function rendMdj(){
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendReussite(m)}
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${(VIDEO_ICI || ADMIN) ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${(VIDEO_ICI || ADMIN) && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <section id="te-resume-match" hidden aria-live="polite" style="margin-top:10px"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
@@ -6234,7 +6234,7 @@ const G3D = (() => {
         try { localStorage.setItem(LS, actif ? '1' : '0'); } catch (e) {}
         if (actif && init()) { ac.resume(); choisirVoix(); chargerReels();
           if (murmureG) murmureG.gain.setTargetAtTime(0.55, ac.currentTime, 0.5); else rumeur.gain.setTargetAtTime(0.035, ac.currentTime, 0.5); }
-        else if (ac) { rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); if (murmureG) murmureG.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
+        else if (ac) { if (this.relacher) this.relacher(); rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); if (murmureG) murmureG.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
         return actif;
       },
       voulu() { try { return localStorage.getItem(LS) === '1'; } catch (e) { return false; } },
@@ -6259,8 +6259,15 @@ const G3D = (() => {
           g.gain.setTargetAtTime(0, t0 + D, 0.45); s.stop(t0 + D + 2.5); }
         rumeur.gain.cancelScheduledValues(t0); rumeur.gain.setTargetAtTime(0.035 + 0.09 * force, t0, 0.15); rumeur.gain.setTargetAtTime(0.035, t0 + D, 0.8); },
       annonce: dire,
+      // paquet 431 : la tension d'un long échange — une rumeur qui monte (la vraie clameur, très bas, filtrée), relâchée au point
+      tension(niv) { if (!prets() || !REEL.ovation) return; const t0 = ac.currentTime;
+        if (!this._tn) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900;
+          const { s, g } = jouer(REEL.ovation, 0, 0, 0.3, t0); s.disconnect(); s.connect(f); f.connect(g); s.loop = true;
+          this._tn = { s, g, f }; }
+        this._tn.g.gain.setTargetAtTime(0.06 + 0.22 * niv, t0, 0.6); this._tn.f.frequency.setTargetAtTime(700 + 1500 * niv, t0, 0.6); },
+      relacher() { if (!this._tn) return; const { s, g } = this._tn, t0 = ac.currentTime; g.gain.setTargetAtTime(0, t0, 0.25); s.stop(t0 + 1.5); this._tn = null; },
       // à la fin d'un vrai point : applaudissements, puis le score par l'arbitre
-      point(Rf, grand) { if (!prets()) return; this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.6 : 1.8); },
+      point(Rf, grand) { if (!prets()) return; this.relacher(); this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.6 : 1.8); },
     };
   })();
   // le score annoncé (en anglais, comme sur le circuit) : serveur d'abord ; rien au jeu décisif
@@ -6282,7 +6289,9 @@ const G3D = (() => {
     if (!SON.actif || !R || R.ralenti || RAL.actif || t <= t0 || t - t0 > 0.5) return;
     const pan = x => cl(x / 9, -1, 1), dedans = v => Math.abs(v.b.x) <= S / 2 + 0.05 && Math.abs(v.b.z) <= (v.type === 'service' ? SL : HL) + 0.05;
     R.vols.forEach((v, k) => {
-      if (v.qui >= 0 && t0 < v.t && v.t <= t) SON.frappe(v.type === 'service' ? 1 : 0.8, pan(v.a.x));
+      if (v.qui >= 0 && t0 < v.t && v.t <= t) { SON.frappe(v.type === 'service' ? 1 : 0.8, pan(v.a.x));
+        // paquet 431 : le public retient son souffle à partir de la 6e frappe d'un échange, de plus en plus fort
+        const nF = R.vols.slice(0, k + 1).filter(x => x.qui >= 0).length; if (nF >= 6) SON.tension(Math.min(1, (nF - 5) / 6)); }
       const ta = v.t + v.d;
       if (t0 < ta && ta <= t) {
         if (v.b.y > 0.3 && Math.abs(v.b.z) < 0.5) SON.filet(pan(v.b.x));
