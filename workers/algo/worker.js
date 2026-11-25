@@ -40,7 +40,7 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   // 25/11/2026 (paquet 440) : l'algo sur chaque joueur (Demande à l'algo)
   '/joueurs_perf.json': 'joueurs_perf.json',
   // 22/11/2026 (paquet 330) : la page « Qui sommes-nous »
-  '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html',
+  '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html', '/notre-projet': 'apropos.html',   // 442 : « Notre projet »
   // 23/11/2026 (paquet 391) : le site s'installe comme une appli (manifeste, service worker, icônes)
   '/manifest.webmanifest': 'manifest.webmanifest', '/sw.js': 'sw.js', '/icone-192.png': 'icone-192.png',
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
