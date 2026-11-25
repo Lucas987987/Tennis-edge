@@ -262,6 +262,7 @@ svg.curve{width:100%;height:auto;display:block}
 .fd-pay{margin-top:14px}.fd-pay .iban{font-family:ui-monospace,Menlo,monospace;background:rgba(var(--wv),.06);border-radius:8px;padding:10px 12px;margin:8px 0 0;line-height:1.6;user-select:all;word-break:break-all}
 /* 23/11/2026 (paquet 377) — comptes et accès Plus */
 a.compte-b{color:inherit;text-decoration:none}
+.lien-joueur{color:inherit;text-decoration:underline;text-decoration-color:rgba(var(--wv),.35);text-decoration-thickness:1px;text-underline-offset:3px}.lien-joueur:hover{text-decoration-color:currentColor}
 .compte-b{border:1px solid var(--line2);background:rgba(var(--wv),.06);border-radius:999px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
 .compte-b.plus{border-color:var(--ball)}
 .compte-fond{position:fixed;inset:0;background:rgba(5,3,18,.72);display:grid;place-items:center;z-index:9000;padding:16px}
@@ -3763,9 +3764,9 @@ function rendMdj(){
     <div class="fiche">
       <div class="panel duelx">
         <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(jourCourt(m.debut))} ${esc(heure(m.debut))}</p>
-        <div class="ligne l1"><span class="nm">${esc(m.home)}</span><span class="pc">${pc0(p)}</span></div>
+        <div class="ligne l1"><span class="nm" data-joueur="${esc(m.home)}">${esc(m.home)}</span><span class="pc">${pc0(p)}</span></div>
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
-        <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
+        <div class="ligne l2"><span class="nm" data-joueur="${esc(m.away)}">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
 
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
@@ -3804,6 +3805,7 @@ function rendMdj(){
       ${rendMarches(m.lignes_algo,m)}
       ${rendRythme(m.rythme,m)}
     </div></div>`;
+  lierJoueurs(zone);                                              // 437 : noms → page du joueur
   const cartesPleineLargeur = zone.querySelector('.duelx .cartes');
   const fichePleineLargeur = zone.querySelector('.mdj > .fiche');
   if (cartesPleineLargeur && fichePleineLargeur) fichePleineLargeur.querySelector('.duelx').after(cartesPleineLargeur);
@@ -8239,6 +8241,18 @@ function ouvrirMatch(uid, aller=true){
 // l'éditeur non professionnel s'applique (LCEN, art. 6-III-2 : identité communiquée à l'hébergeur). Avant toute offre
 // payante, editeur.json doit être rempli (nom, adresse, courriel, SIRET) et des conditions générales de vente publiées.
 let EDITEUR = null;
+// 25/11/2026 (paquet 437, Lucas : « accéder à la fiche du joueur en cliquant dessus ») — dans la fiche d'un match, le nom
+// de chaque joueur qui a sa page (/joueur/<adresse> : bilan, forme, surfaces, ses matchs) devient un lien vers elle.
+// joueurs_pages.json (nom → adresse) est lu une fois, à la première fiche ouverte ; sans page, le nom reste du texte.
+let PAGES_J = null;
+function pagesJoueurs(){ return PAGES_J || (PAGES_J = lireJson('joueurs_pages.json').catch(() => ({}))); }
+function lierJoueurs(racine){
+  if (!racine || !racine.querySelector('[data-joueur]')) return;
+  pagesJoueurs().then(J => racine.querySelectorAll('[data-joueur]').forEach(el => {
+    const s = J && J[el.dataset.joueur]; if (!s || el.querySelector('a')) return;
+    el.innerHTML = `<a class="lien-joueur" href="${L === 'en' ? '/en' : ''}/joueur/${encodeURIComponent(s)}">${esc(el.dataset.joueur)}</a>`;
+  }));
+}
 function lireEditeur(){ return EDITEUR ? Promise.resolve(EDITEUR) : lireJson('editeur.json').then(e => (EDITEUR = e || {})).catch(() => (EDITEUR = {})); }
 function texteLegal(page, e){
   const fr = L === 'fr', x = s => esc(String(s || '')), contact = e.email ? `<a href="mailto:${x(e.email)}">${x(e.email)}</a>` : (fr ? 'par message au compte X « Game Set Algo »' : 'by message to the "Game Set Algo" X account');
