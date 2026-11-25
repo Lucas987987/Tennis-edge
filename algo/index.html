@@ -7784,17 +7784,52 @@ function chargerLive(){
   // 427 : sans match proche, un coup d'œil par minute quand même — un match interrompu republié à l'heure de reprise
   // (plusieurs heures plus tard) doit rester visible dans le direct avec son score
   if (!liveUtile()) { if (Date.now() - liveDernierLent < 60e3) return; liveDernierLent = Date.now(); }
+  if (fluxActif()) return;                                   // 433 : le direct arrive déjà tout seul
+  if (FLUX.ws && FLUX.ok) { try { FLUX.ws.close(); } catch (e) { /* déjà fermée */ } }   // muette depuis 45 s : on la relance
   liveRequeteEnCours = true;
-  fetch('/live', {cache:'no-store'}).then(r=>r.ok ? r.json() : null).then(o=>{
-    if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
-    const nouveau = relierLive(o.matchs);
-    for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
-    const avant = Object.keys(LIVE.par_uid).sort().join('|');
-    LIVE.par_uid = nouveau;
-    const apres = Object.keys(nouveau).sort().join('|');
-    if (avant !== apres) rendListe(); else majLive();
-  }).catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
+  fetch('/live', {cache:'no-store'}).then(r=>r.ok ? r.json() : null).then(traiterLive)
+    .catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
 }
+function traiterLive(o){
+  if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
+  if (o.maj && LIVE.majVu && o.maj < LIVE.majVu) return;   // 433 : une réponse plus ancienne que la dernière poussée
+  if (o.maj) LIVE.majVu = o.maj;
+  const nouveau = relierLive(o.matchs);
+  for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
+  const avant = Object.keys(LIVE.par_uid).sort().join('|');
+  LIVE.par_uid = nouveau;
+  const apres = Object.keys(nouveau).sort().join('|');
+  if (avant !== apres) rendListe(); else majLive();
+}
+// 25/11/2026 (paquet 433, Lucas : « les points en direct comme sur Sofascore ») — DIRECT POUSSÉ : une connexion ouverte
+// (WebSocket /live/flux) sur laquelle le serveur envoie le direct dès qu'il change. Tant qu'elle marche, plus de
+// redemande toutes les 3 s. Un « ping » toutes les 20 s la garde en vie. Si elle tombe (réseau, veille, serveur), on
+// la rouvre après 2 s, 5 s, 15 s puis 60 s, et en attendant la redemande classique de /live reprend toute seule.
+// Page cachée → connexion fermée ; page revenue → rouverte. Code 4000 = garde-fou du serveur : retour dans 1 h.
+const FLUX = { ws: null, ok: false, essais: 0, minuterie: null, ping: null, vu: 0 };
+function fluxActif(){ return !!(FLUX.ok && FLUX.ws && FLUX.ws.readyState === 1 && Date.now() - FLUX.vu < 45e3); }
+function ouvrirFlux(){
+  if (FLUX.ws || document.hidden || typeof WebSocket === 'undefined' || location.protocol !== 'https:') return;
+  clearTimeout(FLUX.minuterie);
+  let ws; try { ws = new WebSocket('wss://' + location.host + '/live/flux'); } catch (e) { return; }
+  FLUX.ws = ws;
+  ws.onopen = () => { FLUX.vu = Date.now(); FLUX.ping = setInterval(() => { try { ws.send('ping'); } catch (e) { /* fermée */ } }, 20e3); };
+  ws.onmessage = ev => {
+    FLUX.vu = Date.now();
+    if (ev.data === 'pong') return;
+    let o; try { o = JSON.parse(ev.data); } catch (e) { return; }
+    FLUX.ok = true; FLUX.essais = 0; traiterLive(o);
+  };
+  ws.onclose = ev => {
+    clearInterval(FLUX.ping); if (FLUX.ws === ws) { FLUX.ws = null; FLUX.ok = false; }
+    if (document.hidden) return;
+    const d = ev.code === 4000 ? 3600e3 : [2e3, 5e3, 15e3, 60e3][Math.min(FLUX.essais++, 3)];
+    clearTimeout(FLUX.minuterie); FLUX.minuterie = setTimeout(ouvrirFlux, d);
+    chargerLive();                                            // pas de trou pendant l'attente
+  };
+  ws.onerror = () => { try { ws.close(); } catch (e) { /* déjà fermée */ } };
+}
+function fermerFlux(){ clearTimeout(FLUX.minuterie); if (FLUX.ws) { try { FLUX.ws.close(1000, 'cachee'); } catch (e) { /* déjà fermée */ } } }
 // 23/11/2026 (paquet 388, Lucas : « trouver les résultats dès la fin du match ») — /live/termines : score final et
 // vainqueur de chaque match sorti du direct depuis 36 h (vérifiés par le worker). Lu à l'ouverture puis toutes les 30 s :
 // un match fini passe aussitôt dans « Matchs terminés » avec son score, même après un rechargement de la page.
@@ -7818,10 +7853,10 @@ function chargerTermines(){
 }
 function demarrerLive(){
   // /live n'existe que derrière le worker « algo » : ailleurs (GitHub Pages) la requête échoue sans rien afficher.
-  chargerLive(); chargerTermines();
-  LIVE.minuterie = setInterval(chargerLive, 3000);
+  chargerLive(); chargerTermines(); ouvrirFlux();
+  LIVE.minuterie = setInterval(chargerLive, 3000);           // secours : ne fait rien tant que le direct poussé marche
   setInterval(chargerTermines, 30000);
-  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) { chargerLive(); chargerTermines(); } });
+  document.addEventListener('visibilitychange', ()=>{ if (document.hidden) fermerFlux(); else { ouvrirFlux(); chargerLive(); chargerTermines(); } });
 }
 // 23/11/2026 (paquet 377) — match réservé à l'accès Plus : l'affiche seulement, aucun pourcentage
 function ligneVerrou(m){
