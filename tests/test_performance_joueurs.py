@@ -78,3 +78,10 @@ def test_lien_joueur_sans_soulignement():
     P = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
     i = P.index('.lien-joueur{'); css = P[i:P.index('\n', i)]
     assert 'text-decoration:none' in css and 'underline' not in css
+
+
+def test_439_pas_de_ligne_surface_inconnue():
+    ms = [_m(f'2026-11-{20 - i:02d}_aa_x{i}', f'2026-11-{20 - i:02d}T10:00', 'Aaa', f'X{i}', 0.6, surface=None if i == 0 else 'Hard')
+          for i in range(6)]
+    x = PJ.performance('Aaa', ms, lambda m: PS.p_annonce(m), {}, {}, {})
+    assert list(x['surfaces']) == ['Hard'] and x['n'] == 6
