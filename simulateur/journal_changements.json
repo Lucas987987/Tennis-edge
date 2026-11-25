@@ -2438,6 +2438,13 @@
    "paquet": 439,
    "quoi": "PERFORMANCE DES JOUEURS, retouche (paquet 439, après l'aperçu de la page de Taylor Fritz) : les matchs dont la surface est inconnue ne font plus une ligne « — » dans le tableau « Par surface ».",
    "garde_fou": "Affichage seulement. Tests : tests/test_performance_joueurs.py, tests/test_pages_seo.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 440,
+   "quoi": "DEMANDE À L'ALGO COMPLÈTE (paquet 440, Lucas : « améliore Demande à l'algo pour que ce soit plus complet sur l'ensemble de nos données »). Quatre thèmes (Match, Jeux, Stats, Historique) et une trentaine de questions par match au lieu de 7. Match : gagne, sans perdre de set, au moins un set, 1er set, 1er set et match, perd le 1er set mais gagne quand même, chaque score en sets, match en 3 (5) sets, tie-break. Jeux : plus de … jeux, gagne plus de … jeux, écart, combien de jeux (par nombre de sets), durée. Stats prévues avec la fourchette 8 cas sur 10 : aces, doubles fautes, breaks, % de 1res balles, balles de break, points gagnés derrière la 1re et la 2e balle, jeux de service gagnés, points gagnés. Historique : forme contre l'attendu et série en cours, après le 1er set, dans ce pays, contre le style de l'adversaire, ce que donne d'habitude ce % de l'algo, et l'algo sur ce joueur (fiabilité du joueur, depuis joueurs_perf.json publié avec les pages des joueurs).",
+   "garde_fou": "Rien n'est calculé de nouveau : tout vient du match (simulation, feuille prévue, avant-match, styles) ou des pages des joueurs. Chaque réponse d'historique dit qu'elle ne change pas le % du match. Aucun mot de pari. Tests : tests/test_demande_algo_complete.py ; essai navigateur des 30 questions en français et en anglais."
   }
  ]
 }

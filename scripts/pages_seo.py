@@ -186,7 +186,7 @@ T['fr']['perf'] = dict(
     styles_aide="Style de l'adversaire : nos catégories internes, mesurées sur ses feuilles de match (style au moment du match, "
                 "sinon le dernier connu).", peu='trop peu de matchs',
     style_noms={'grand_serveur': 'Grands serveurs', 'serveur_attaquant': 'Serveurs attaquants',
-                'retourneur_pressant': 'Retourneurs pressants', 'contreur': 'Contreurs', 'equilibre': 'Joueurs équilibrés'},
+                'retourneur_pressant': 'Retourneurs pressants', 'contreur': 'Contreurs', 'equilibre': 'Profils équilibrés'},
     rien='Pas encore assez de matchs analysés pour ce joueur.',
     note="Historique de l'algorithme : il ne change pas le % de ses prochains matchs. Sur quelques dizaines de matchs, ces "
          "chiffres bougent vite : à lire comme une tendance, pas comme une règle.",
@@ -208,7 +208,7 @@ T['en']['perf'] = dict(
     styles_aide="Opponent style: our own categories, measured from match sheets (style at the time of the match, otherwise the "
                 "latest known).", peu='too few matches',
     style_noms={'grand_serveur': 'Big servers', 'serveur_attaquant': 'Attacking servers',
-                'retourneur_pressant': 'Pressing returners', 'contreur': 'Counterpunchers', 'equilibre': 'All-round players'},
+                'retourneur_pressant': 'Pressing returners', 'contreur': 'Counterpunchers', 'equilibre': 'Balanced profiles'},
     rien='Not enough analysed matches for this player yet.',
     note="Algorithm history: it does not change the % of his next matches. Over a few dozen matches these figures move fast: "
          "read them as a trend, not a rule.",
@@ -708,6 +708,14 @@ def construire(doc, dossier, maintenant=None, bilans=None, donnees=None):
     # 25/11/2026 (paquet 437, Lucas : « accéder à la fiche du joueur en cliquant dessus ») : nom → adresse de sa page,
     # pour que la fiche d'un match relie chaque joueur qui a une page (au moins MIN_MATCHS_JOUEUR matchs publiés).
     _ecrire(dossier, 'joueurs_pages.json', json.dumps(S.slugs_j, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
+    # 25/11/2026 (paquet 440) : « L'algo voit-il juste sur ce joueur ? » dans Demande à l'algo — nom → [matchs, % moyen
+    # annoncé, victoires, fiabilité du joueur] (les mêmes chiffres que sa page)
+    perf = {}
+    for n in S.slugs_j:
+        x = _perf(S, n)
+        if x:
+            perf[n] = [x['n'], x['annonce_moyen'], x['victoires'], x['fiabilite']]
+    _ecrire(dossier, 'joueurs_perf.json', json.dumps(perf, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
     construire.dernier = {'matchs': len(S.matchs), 'joueurs': sum(1 for n in S.slugs_j if S.indexable(n)), 'tournois': len(S.editions),
                           'semaines': len(S.semaines), 'adresses': len(entrees)}
     return len(S.matchs), construire.dernier['joueurs']
