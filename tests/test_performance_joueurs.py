@@ -85,3 +85,17 @@ def test_439_pas_de_ligne_surface_inconnue():
           for i in range(6)]
     x = PJ.performance('Aaa', ms, lambda m: PS.p_annonce(m), {}, {}, {})
     assert list(x['surfaces']) == ['Hard'] and x['n'] == 6
+
+
+def test_441_theme_clair_ou_sombre_sur_les_pages(tmp_path):
+    ms = [_m(f'2026-11-{20 - i:02d}_aa_x{i}', f'2026-11-{20 - i:02d}T10:00', 'Aaa Bbb', f'Xx{i}', 0.6) for i in range(3)]
+    PS.construire({'matchs': ms}, str(tmp_path), maintenant='2026-11-24T12:00', bilans={}, donnees={})
+    for rel in ('joueur/aaa-bbb.html', 'match/2026-11-20_aa_x0.html', 'joueurs.html', 'en/joueur/aaa-bbb.html'):
+        h = (tmp_path / rel).read_text(encoding='utf-8')
+        assert h.index("localStorage.getItem('te_theme')") < h.index('<style>')          # appliqué avant l'affichage
+        assert 'html[data-theme="light"]{' in h and 'data-th="light"' in h and 'data-th="auto"' in h
+        assert "localStorage.setItem('te_theme',v)" in h                                  # même mémoire que l'accueil
+    assert '>Clair<' in (tmp_path / 'joueur/aaa-bbb.html').read_text(encoding='utf-8')
+    assert '>Light<' in (tmp_path / 'en/joueur/aaa-bbb.html').read_text(encoding='utf-8')
+    P = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
+    assert "localStorage.getItem('te_theme')" in P
