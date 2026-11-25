@@ -734,3 +734,11 @@ test('436 : /compte/admin → connexion ?suite=/compte/admin ; la connexion y re
   const g = await worker.fetch(new Request('https://gamesetalgo.com/compte/admin'), { CLE_PRIVEE: CLE });
   assert.equal(g.status, 404);
 });
+
+// 25/11/2026 (paquet 444) — clé IndexNow servie par le site
+import { INDEXNOW_CLE } from './worker.js';
+test('444 : /<clé>.txt renvoie la clé IndexNow', async () => {
+  const r = await worker.fetch(new Request(`https://gamesetalgo.com/${INDEXNOW_CLE}.txt`), {});
+  assert.equal(r.status, 200); assert.equal(await r.text(), INDEXNOW_CLE);
+  assert.match(INDEXNOW_CLE, /^[0-9a-f]{32}$/);
+});

@@ -88,6 +88,14 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .ico{border:1px solid var(--line2);background:none;border-radius:999px;width:36px;height:34px;cursor:pointer;display:grid;place-items:center}
 .ico svg{width:18px;height:18px}
 .lede{font-size:1.06rem;color:var(--dim);max-width:62ch;margin:6px 0 26px}
+/* 25/11/2026 (paquet 444) — vrai titre H1 (référencement) et réglages (son, langue, thème) regroupés derrière ⚙️ */
+.titre-seo{font-family:var(--cond);font-weight:700;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.2;margin:10px 0 0;max-width:30ch;letter-spacing:.005em}
+.titre-seo+.lede{margin-top:8px}
+.reglages{position:relative}
+.menu-regl{position:absolute;right:0;top:calc(100% + 8px);z-index:60;display:grid;gap:10px;min-width:240px;padding:12px 14px;background:var(--panel);border:1px solid var(--line2);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.menu-regl[hidden]{display:none}
+.menu-regl .mr-l{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--cond);font-weight:600;color:var(--dim)}
+html[data-theme="light"] .menu-regl{box-shadow:0 14px 40px rgba(40,20,120,.16)}
 .lede-lien{margin:-16px 0 26px;font-family:var(--cond);font-weight:600;font-size:1.02rem}.lede-lien a{color:var(--p1);text-decoration:none}.lede-lien a:hover{text-decoration:underline}
 
 /* sections */
@@ -800,22 +808,26 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
 <div class="page">
 <div class="wrap">
   <header class="top">
-    <h1 class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></h1>
+    <div class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></div>
     <div class="reglages">
       <button type="button" class="compte-b" id="b-compte" hidden></button>
       <span class="arena-w"><button type="button" class="arena-nav" id="b-arena" aria-expanded="false" aria-controls="arena-bulle" data-t="arena_btn"></button><span class="arena-bulle" id="arena-bulle" role="status" hidden data-t="arena_msg"></span></span>
-      <button type="button" class="ico" id="b-son" aria-pressed="false"></button>
-      <div class="seg" role="group" aria-label="Langue / Language">
+      <button type="button" class="ico" id="b-regl" aria-expanded="false" aria-controls="menu-regl" aria-label="Réglages / Settings">⚙️</button>
+      <div class="menu-regl" id="menu-regl" hidden>
+      <div class="mr-l"><span data-t="mr_son"></span><button type="button" class="ico" id="b-son" aria-pressed="false"></button></div>
+      <div class="mr-l"><span data-t="mr_langue"></span><div class="seg" role="group" aria-label="Langue / Language">
         <button type="button" data-lang="fr" aria-pressed="true">FR</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
-      </div>
-      <div class="seg" role="group" aria-label="Thème / Theme" id="seg-theme">
+      </div></div>
+      <div class="mr-l"><span data-t="mr_theme"></span><div class="seg" role="group" aria-label="Thème / Theme" id="seg-theme">
         <button type="button" data-theme-v="auto" data-t="th_auto" aria-pressed="false"></button>
         <button type="button" data-theme-v="light" data-t="th_clair" aria-pressed="false"></button>
         <button type="button" data-theme-v="dark" data-t="th_sombre" aria-pressed="true"></button>
+      </div></div>
       </div>
     </div>
   </header>
+  <h1 class="titre-seo" data-t="h1_titre">Pronostics tennis par algorithme : le % de victoire et le scénario complet de chaque match</h1>
   <p class="lede" data-t="lede">Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.</p>
   <p class="lede-lien"><a href="methode.html" data-t="cm_lien" class="lien-methode"></a></p>
 
@@ -953,7 +965,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
 /* ───────────── textes FR / EN ───────────── */
 const T = {
  fr:{
-  marque:'tennis', html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
+  marque:'tennis', html_lang:'fr', h1_titre:'Pronostics tennis par algorithme : le % de victoire et le scénario complet de chaque match', mr_son:'Son', mr_langue:'Langue', mr_theme:'Thème', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
   cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche', qs_court:'Notre projet',
   lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme indépendant. On publie son % de victoire et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
@@ -1325,7 +1337,7 @@ const T = {
   c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune donnée de bookmaker`, c_victoire:'de chances de gagner'
  },
  en:{
-  marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
+  marque:'tennis', html_lang:'en', h1_titre:'Tennis predictions by algorithm: the win % and full scenario of every match', mr_son:'Sound', mr_langue:'Language', mr_theme:'Theme', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
   lede:"Every match is simulated 20,000 times, point by point, by an independent algorithm. We publish its win probability and every result — including when it gets it wrong.",
   cm_lien:'How the algorithm gets its % →', cm_court:'How it works', qs_court:'Our project',
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
@@ -8521,20 +8533,23 @@ function rendAtouts(){
   const fr = L === 'fr', g = D && D.bilan && D.bilan.global, suf = fr ? '' : '?lang=en';
   if (Q.get('video') || Q.get('carte') || Q.get('bilan') || Q.get('semaine') || Q.get('projections')) { band.hidden = true; sec.hidden = true; return; }
   const sim = (D && D.simulations) || 20000;
-  const items = [`🎾 <b>${fmt(sim)}</b> ${esc(fr ? 'simulations par match' : 'simulations per match')}`,
+  const items = [`🎬 <b>${esc(fr ? 'Le scénario complet' : 'The full scenario')}</b> ${esc(fr ? 'de chaque match' : 'of every match')}`,
+    `🎾 <b>${fmt(sim)}</b> ${esc(fr ? 'simulations par match' : 'simulations per match')}`,
     `🔒 ${esc(fr ? 'Publié avant le match, jamais retouché' : 'Published before the match, never edited')}`];
   if (g && g.n) items.push(`🎯 <b>${esc(dec(g.pct, 1) + (fr ? ' %' : '%'))}</b> ${esc(fr ? `de favoris trouvés sur ${fmt(g.n)} matchs` : `favourites found over ${fmt(g.n)} matches`)}`);
   items.push(`📊 ${esc(fr ? '≈ 30 questions par match' : '≈ 30 questions per match')}`);
   band.innerHTML = items.map(x => `<span>${x}</span>`).join('') + `<span class="fin">${esc(fr ? 'Notre projet →' : 'Our project →')}</span>`;
   band.href = 'apropos.html' + suf; band.hidden = false;
   document.getElementById('pourquoi-h').textContent = fr ? 'Pourquoi Game Set Algo' : 'Why Game Set Algo';
-  const cartes = fr ? [['Simulé, pas deviné', `Chaque % sort de ${fmt(sim)} matchs joués point par point, avec le niveau au service et au retour de chaque joueur sur cette surface.`, 'var(--p1)'],
+  const cartes = fr ? [['Le scénario complet du match', 'Pas seulement un vainqueur : le score set par set, les jeux, les tie-breaks, la durée et la feuille de match de chaque joueur (aces, doubles fautes, 1res balles, balles de break, breaks), avant le match.', 'var(--ball)'],
+      ['Simulé, pas deviné', `Chaque % sort de ${fmt(sim)} matchs joués point par point, avec le niveau au service et au retour de chaque joueur sur cette surface.`, 'var(--p1)'],
       ['Publié avant, jugé après', 'Le premier % est horodaté et figé. Après le match, il entre dans le bilan public, juste ou faux.', 'var(--p2)'],
-      ['Tout le match', 'Sets, jeux, tie-breaks, aces, breaks, durée : une trentaine de projections par match, et une note de fiabilité qui dit quand l’algo doute.', 'var(--ball)'],
+      ['Il dit quand il doute', 'Une note de fiabilité pour chaque match et chaque joueur, et une trentaine de questions par match dans « Demande à l’algo ».', 'var(--p1)'],
       ['Les Challengers aussi', 'Même simulation, mêmes projections, même bilan que l’ATP et la WTA, sur des tournois rarement suivis de si près.', 'var(--ok)']]
-    : [['Simulated, not guessed', `Every % comes from ${fmt(sim)} matches played point by point, using each player’s serve and return level on that surface.`, 'var(--p1)'],
+    : [['The full scenario of the match', 'Not just a winner: the score set by set, games, tie-breaks, duration and each player’s match sheet (aces, double faults, first serves, break points, breaks), before the match.', 'var(--ball)'],
+      ['Simulated, not guessed', `Every % comes from ${fmt(sim)} matches played point by point, using each player’s serve and return level on that surface.`, 'var(--p1)'],
       ['Published before, judged after', 'The first % is time-stamped and frozen. After the match it goes into the public record, right or wrong.', 'var(--p2)'],
-      ['The whole match', 'Sets, games, tie-breaks, aces, breaks, duration: about thirty projections per match, and a reliability score that says when the algorithm is unsure.', 'var(--ball)'],
+      ['It tells you when it is unsure', 'A reliability score for every match and every player, and about thirty questions per match in “Ask the algorithm”.', 'var(--p1)'],
       ['Challengers too', 'Same simulation, same projections, same record as ATP and WTA, on events rarely covered this closely.', 'var(--ok)']];
   document.getElementById('pq-grille').innerHTML = cartes.map(([a, b, c]) => `<div class="pq" style="--c:${c}"><b>${esc(a)}</b><p>${esc(b)}</p></div>`).join('');
   const l = document.getElementById('pq-lien'); l.textContent = fr ? 'Découvrir notre projet →' : 'Discover our project →'; l.href = 'apropos.html' + suf;
@@ -8562,6 +8577,14 @@ document.querySelectorAll('.seg button[data-theme-v]').forEach(b => b.addEventLi
 if (MQ_SOMBRE && MQ_SOMBRE.addEventListener) MQ_SOMBRE.addEventListener('change', () => { if (TH === 'auto') appliqueTheme(); });
 appliqueTheme();
 document.getElementById('b-son').addEventListener('click', () => { Bruit.basculer(); boutonSon(); });
+// 444 : le menu des réglages (⚙️) — s'ouvre au toucher, se ferme en touchant ailleurs ou avec Échap
+(function(){
+  const b = document.getElementById('b-regl'), m = document.getElementById('menu-regl'); if (!b || !m) return;
+  const fermer = () => { m.hidden = true; b.setAttribute('aria-expanded', 'false'); };
+  b.addEventListener('click', e => { e.stopPropagation(); m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); });
+  document.addEventListener('click', e => { if (!m.hidden && !m.contains(e.target) && e.target !== b) fermer(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fermer(); });
+})();
 document.getElementById('list').addEventListener('click', e=>{
   const a = e.target.closest('a[data-uid]');
   if (!a || e.button!==0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
