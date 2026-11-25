@@ -502,6 +502,11 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .panel.qa select,.panel.qa input{background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
+/* 430 : mise en valeur (hors tiroir, sous l'en-tête du match) */
+.panel.qa{border:1.5px solid rgba(212,255,58,.55);background:linear-gradient(180deg,rgba(212,255,58,.07),rgba(212,255,58,.015));box-shadow:0 0 0 4px rgba(212,255,58,.05)}
+.panel.qa h3{font-size:1.15rem}.panel.qa select,.panel.qa input{min-height:44px;font-size:1rem}
+.panel.qa .qa-r{font-size:1.1rem;padding:10px 14px;border-radius:12px;background:rgba(var(--wv),.04)}.panel.qa .qa-r b{font-size:2.1rem;font-family:var(--cond)}
+html[data-theme="light"] .panel.qa{border-color:rgba(111,149,0,.55);background:linear-gradient(180deg,rgba(111,149,0,.08),rgba(111,149,0,.02))}
 /* carte de la semaine (?semaine=1, 05/11/2026) */
 .ca .sm{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:4px 16px;align-items:baseline;font-variant-numeric:tabular-nums}
 .ca .sm .h{font-size:23px;color:#ABA3D6;font-weight:600} .ca .sm .c{font-family:var(--disp);font-size:34px}
@@ -1839,7 +1844,7 @@ function rendScenarios(m, sc){
     <div class="es-tuiles sc-tu">${[
       [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
       [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
-      J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), fr ? `${J.p10} à ${J.p90} dans 8 cas sur 10` : `${J.p10} to ${J.p90} 8 times out of 10`] : null
+      J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), jeuxParSets(J, fr)] : null
     ].filter(Boolean).map(([k,v,e])=>`<div class="es-t"><small>${esc(k)}</small><b>${esc(v)}</b>${e ? `<em>${esc(e)}</em>` : ''}</div>`).join('')}</div>
     ${rendApresSet1(m)}
     ${sc ? `<details class="sc-ex"><summary>${esc(fr?'Scores exacts les plus probables':'Likeliest exact scores')}</summary><div class="bars">${sc}</div><p class="styles-note">${esc(fr?'Chaque score exact reste rare, même le plus probable : c’est pourquoi les scénarios ci-dessus les regroupent.':'Each exact score stays rare, even the likeliest: that is why the scenarios above group them.')}</p></details>` : ''}
@@ -2011,6 +2016,17 @@ function rendVitesse(m){
     <div class="jauge" aria-hidden="true"><i style="left:${pos(v).toFixed(1)}%"></i></div>
     <div class="echelle">${t('vit_echelle').map(x=>`<span>${esc(x)}</span>`).join('')}</div>
     ${svg}<p class="aide">${esc(t('vit_note'))}</p></div></div>`;
+}
+// 25/11/2026 (paquet 430, Lucas : « 21 jeux, entre 16 et 32 : on ne se mouille pas ») — la fourchette large vient
+// surtout du 3e set : un match en 2 sets et un match en 3 sets n'ont pas le même nombre de jeux. On donne donc la
+// fourchette de chacun, avec sa probabilité (mêmes simulations, aucune précision inventée).
+function jeuxParSets(J, fr){
+  const P = J.par_sets;
+  if (!P || !P['2'] || !P['3']) return fr ? `${J.p10} à ${J.p90} dans 8 cas sur 10` : `${J.p10} to ${J.p90} 8 times out of 10`;
+  const l = (k, n) => { const x = P[k]; if (!x) return '';
+    return fr ? `en ${n} sets (${pc0(x.p)}) : ${x.p10 === x.p90 ? x.p10 : `${x.p10} à ${x.p90}`}, le plus souvent ${x.mode}`
+              : `in ${n} sets (${pc0(x.p)}): ${x.p10 === x.p90 ? x.p10 : `${x.p10} to ${x.p90}`}, most often ${x.mode}`; };
+  return [l('2', 2), l('3', 3), l('4', 4), l('5', 5)].filter(Boolean).join(' · ') + (fr ? ' (8 cas sur 10)' : ' (8 times out of 10)');
 }
 function rendQuestion(m){
   if (!m.questions) return '';
@@ -3829,6 +3845,7 @@ function tiroirsFiche(m){
   const faits = {};
   [...f.children].forEach(el => {
     if (el.classList.contains('duelx') || el.classList.contains('cartes') || el.id === 'post-zone' || el.classList.contains('tiroir') || el.tagName === 'DETAILS') return;
+    if (el.classList.contains('qa')) { faits.qa = el; return; }                   // 430 : « Demande à l'algo » hors des tiroirs
     if (el.hasAttribute('data-live-match')) { faits.match = enveloppe(el, 'match', t('tr_match')); return; }
     if (el.hasAttribute('data-live-stats')) { faits.stats = enveloppe(el, 'stats', t('tr_stats')); return; }
     if (el.classList.contains('duo')) { enveloppe(el, 'sets', t('tr_sets')); return; }
@@ -3846,7 +3863,12 @@ function tiroirsFiche(m){
   const barre = document.createElement('p'); barre.className = 'tir-tout';
   barre.innerHTML = '<button type="button" class="btn" id="tir-tout"></button>';
   let cur = f.querySelector(':scope > .cartes') || f.querySelector('.duelx');
-  [document.getElementById('post-zone'), barre, faits.match, faits.stats].filter(Boolean).forEach(x => { if (cur) { cur.after(x); cur = x; } });
+  // 25/11/2026 (paquet 430, Lucas : « Demande à l'algo doit être plus mis en valeur dans les fiches ») : juste sous
+  // l'en-tête et les cartes avant le match ; une fois le match commencé, juste après le direct et ses statistiques
+  const commence = utc(m.debut).getTime() <= Date.now();
+  const ordre = commence ? [document.getElementById('post-zone'), barre, faits.match, faits.stats, faits.qa]
+                         : [document.getElementById('post-zone'), faits.qa, barre, faits.match, faits.stats];
+  ordre.filter(Boolean).forEach(x => { if (cur) { cur.after(x); cur = x; } });
   barre.querySelector('button').onclick = () => {
     const tous = [...f.querySelectorAll(':scope > .tiroir')].filter(d => d.offsetParent !== null || !d.querySelector(':scope > [hidden]'));
     const ouvrir = tous.some(d => !d.open);

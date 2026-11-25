@@ -2368,6 +2368,13 @@
    "paquet": 429,
    "quoi": "3D : VRAIS SONS ET PUBLIC (paquet 429, Lucas, vidéos du direct : « améliorer le bruit de frappe en prenant un vrai bruit de frappe, améliorer le public »). 1) Le direct 3D joue maintenant les vrais sons enregistrés déjà utilisés par la vidéo du jour (licence CC0, freesound.org) : 24 frappes, 19 services, 20 rebonds (plus graves sur terre battue), une tribune en boucle sans couture, des applaudissements et deux clameurs pour les grands points ; une réverbération de stade les relie. Fichiers légers (≈ 860 Ko au total), chargés seulement quand le son est activé ; synthèse refaite (cordage et balle qui résonnent) en secours. 2) Public : seuls les vêtements prennent la couleur du spectateur (les visages et les cheveux étaient teintés en vert, orange, rose), peaux et cheveux variés, sièges de la couleur des gradins, léger balancement. 3) Grand écran à l'horizontale : plus de place pour le terrain. Contient aussi le paquet 428 (rendu, caméra, ralenti). Moteur v429.",
    "garde_fou": "Affichage et son seulement : aucun % ne change. Sons : scripts/sons_site.py (découpe et conversion seulement), sources et licences dans algo/sons/SOURCES.md. Tests : tests/test_direct_3d_v428.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 430,
+   "quoi": "« DEMANDE À L'ALGO » MISE EN AVANT, JEUX DU MATCH PLUS PRÉCIS (paquet 430, Lucas : « Demande à l'algo doit être plus mis en valeur dans les fiches », « 21 jeux, entre 16 et 32 : on ne se mouille pas »). 1) « Demande à l'algo » n'est plus rangée en bas parmi les tiroirs : elle s'affiche sous l'en-tête du match et les cartes des joueurs (après le direct et ses statistiques une fois le match commencé), encadrée, avec des choix plus grands et une réponse en gros. 2) Jeux dans le match : la fourchette large venait surtout du 3e set. La fiche donne maintenant la fourchette de chaque cas avec sa probabilité, par exemple « en 2 sets (64 %) : 18 à 23, le plus souvent 20 · en 3 sets (36 %) : 27 à 33, le plus souvent 29 ». Mêmes simulations, rien d'inventé.",
+   "garde_fou": "Aucun % ne change ; la fourchette d'ensemble reste calculée comme avant. Tests : tests/test_demande_jeux.py."
   }
  ]
 }

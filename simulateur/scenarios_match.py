@@ -65,6 +65,7 @@ def scenarios(D_, sets=None):
     J = [{'net': 0.0, 'accroche': 0.0, 'long': 0.0, 'remontee': 0.0} for _ in (0, 1)]
     tb = sec = 0.0
     jeux = {}
+    jeux_sets = {}                                                   # paquet 430 : jeux selon le nombre de sets joués
     s1 = [[0.0, 0.0], [0.0, 0.0]]
     for r in D_:
         q, sc, v = float(r['probabilite']) / tot, [tuple(x) for x in r['score']], r.get('vainqueur')
@@ -76,6 +77,8 @@ def scenarios(D_, sets=None):
             sec += q
         n = sum(a + b for a, b in sc)
         jeux[n] = jeux.get(n, 0.0) + q
+        js = jeux_sets.setdefault(len(sc), {})
+        js[n] = js.get(n, 0.0) + q
         w1 = 0 if sc[0][0] > sc[0][1] else 1
         s1[w1][0] += q
         s1[w1][1] += q if v == w1 else 0.0
@@ -84,20 +87,26 @@ def scenarios(D_, sets=None):
         if rem:
             J[v]['remontee'] += q
 
-    def centile(c):
+    def centile(c, dist=None):
+        dist = jeux if dist is None else dist
+        tot_d = sum(dist.values()) or 1.0
         acc = 0.0
-        for k in sorted(jeux):
-            acc += jeux[k]
+        for k in sorted(dist):
+            acc += dist[k] / tot_d
             if acc >= c - 1e-9:
                 return k
-        return max(jeux) if jeux else None
+        return max(dist) if dist else None
     for j in (0, 1):
         o = 1 - j
         J[j]['si_set1_gagne'] = s1[j][1] / s1[j][0] if s1[j][0] > 0 else None
         J[j]['si_set1_perdu'] = (s1[o][0] - s1[o][1]) / s1[o][0] if s1[o][0] > 0 else None
     r4 = lambda x: round(x, 4) if x is not None else None  # noqa: E731
     return {'definition': DEFINITION, 'j': [{k: r4(v) for k, v in o.items()} for o in J], 'tiebreak': r4(tb), 'set_sec': r4(sec),
-            'jeux': {'p10': centile(0.10), 'mediane': centile(0.50), 'p90': centile(0.90)}}
+            'jeux': {'p10': centile(0.10), 'mediane': centile(0.50), 'p90': centile(0.90),
+                     # 25/11/2026 (paquet 430) : la fourchette par nombre de sets (2 sets / 3 sets…), avec sa probabilité
+                     'par_sets': {str(ns): {'p': r4(sum(d.values())), 'p10': centile(0.10, d), 'mediane': centile(0.50, d),
+                                            'p90': centile(0.90, d), 'mode': max(d, key=d.get)}
+                                  for ns, d in sorted(jeux_sets.items()) if sum(d.values()) >= 0.02}}}
 
 
 def issue(sc, v):
