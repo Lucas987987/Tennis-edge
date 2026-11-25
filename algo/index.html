@@ -261,6 +261,7 @@ svg.curve{width:100%;height:auto;display:block}
 .plus .lien.plus-ex{background:none;border:0;color:var(--p1);cursor:pointer;padding:6px 0;font:inherit;font-size:.92rem;text-decoration:underline}
 .fd-pay{margin-top:14px}.fd-pay .iban{font-family:ui-monospace,Menlo,monospace;background:rgba(var(--wv),.06);border-radius:8px;padding:10px 12px;margin:8px 0 0;line-height:1.6;user-select:all;word-break:break-all}
 /* 23/11/2026 (paquet 377) — comptes et accès Plus */
+a.compte-b{color:inherit;text-decoration:none}
 .compte-b{border:1px solid var(--line2);background:rgba(var(--wv),.06);border-radius:999px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
 .compte-b.plus{border-color:var(--ball)}
 .compte-fond{position:fixed;inset:0;background:rgba(5,3,18,.72);display:grid;place-items:center;z-index:9000;padding:16px}
@@ -8788,6 +8789,14 @@ function apiCompte(chemin, corps){
   return fetch('/compte/api/' + chemin, o).then(r => r.json().catch(() => ({ ok:false, erreur:'defaut' }))).catch(() => ({ ok:false, erreur:'defaut' }));
 }
 function erreurCompte(e){ const E = t('cp_err'); return (E && E[e]) || (E && E.defaut) || ''; }
+// 25/11/2026 (paquet 436, Lucas : « comment je vais dans le compte admin ? je ne le vois pas ») — administrateur sur
+// l'adresse technique : un bouton « Admin » à côté du compte, vers /compte/admin (comptes, codes, entonnoir, TennisApi).
+// Jamais sur gamesetalgo.com (la page d'administration n'y existe pas).
+function lienAdmin(){
+  if (/(^|\.)gamesetalgo\.com$/.test(location.hostname) || document.getElementById('b-admin')) return;
+  const b = document.getElementById('b-compte'); if (!b) return;
+  b.insertAdjacentHTML('beforebegin', '<a class="compte-b" id="b-admin" href="/compte/admin">Admin</a>');
+}
 function majBoutonCompte(){
   const b = document.getElementById('b-compte'); if (!b) return;
   b.textContent = COMPTE ? (COMPTE.abonne ? '★ ' : '') + t('cp_btn_moi') : t('cp_btn');
@@ -9046,7 +9055,7 @@ function brancherCompte(){
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
     COMPTE = o.compte || null; ADMIN = !!o.admin; PAIEMENT = o.paiement || null; TARIFS_SITE = o.tarifs || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
     if (D) { rendMdj(); rendListe(); }
-    if (o.admin) chargerInterne();
+    if (o.admin) { chargerInterne(); lienAdmin(); }
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
     else if (Q.get('reinit')) ouvrirCompte('reinit', '', false, Q.get('reinit'));
     else if (Q.get('bienvenue')) { const bv = Q.get('bienvenue'); ouvrirCompte('message', t(bv === 'reinit' ? 'cp_reinit_ok' : bv === 'code' ? 'cp_code_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
