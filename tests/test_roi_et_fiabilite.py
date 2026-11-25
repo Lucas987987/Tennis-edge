@@ -94,7 +94,15 @@ class FragileDesaccord(unittest.TestCase):
         opp = FI_.evaluer(dict(base, combinaison={'p_home': .55}, stats={'p_home': .58}, simulation={'p_home': .45}), [])
         acc = FI_.evaluer(dict(base, combinaison={'p_home': .55}, stats={'p_home': .58}, simulation={'p_home': .56}), [])
         if acc['note_v3'] is not None:                      # modèle v3 présent
-            self.assertEqual(opp['niveau'], 'fragile')
             self.assertTrue(opp['fragile_desaccord_modeles'])
             self.assertFalse(acc['fragile_desaccord_modeles'])
+            if opp.get('methode') == 'par_match_451':
+                # 25/11/2026 (paquet 451) : plus de « fragile » d'office — la note est mesurée, l'effet du critère
+                # « favoris opposés » est appliqué, l'ancienne note (plafonnée) reste à côté
+                self.assertEqual(opp['note'], opp['note_par_match'])
+                self.assertIn('favoris_opposes', opp['effets_criteres'])
+                self.assertEqual(opp['niveau_ancien'], 'fragile')
+                self.assertLessEqual(opp['note_ancienne'], 77)
+            else:
+                self.assertEqual(opp['niveau'], 'fragile')
 

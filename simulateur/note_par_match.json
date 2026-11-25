@@ -1,0 +1,109 @@
+{
+ "paquet": 451,
+ "decision": "Lucas, 25/11/2026 : « chaque match est indépendant et doit être analysé indépendamment […] un match peut être fiable de 0 à 100 % et non limité à quelques notes » ; « il ne faut pas de plafond, il faut la réalité ». La note de fiabilité est mesurée match par match (simulateur/note_par_match.py) : pente de base de la classe d'expérience × effet mesuré de chaque critère du match ; plus de plafond. Remplace la note v3 par classe et le plafond à 77 (gardés à côté pour le garde-fou et pour la correction Challenger « correct », qui vise toujours les mêmes matchs : aucun % ne change).",
+ "regle_retrait": "simulateur/note_par_match.py, chaque lundi avant le réapprentissage : dès 200 matchs terminés notés depuis l'activation (sans abandon ; chaque note calculée avec des effets appris avant le match), log loss moyenne de σ(a · logit p) avec la pente annoncée par la nouvelle note, contre la même avec la pente de l'ancienne (v3 de l'archive, ramenée à 0,77 quand le plafond jouait). Si la nouvelle fait pire, « retire » passe à true et l'ancienne revient au passage suivant.",
+ "active_le": "2026-11-25",
+ "retire": false,
+ "pentes_base": {
+  "ATP": {
+   "_circuit": 0.898,
+   "0": 0.8205,
+   "1": 0.8849,
+   "2": 0.8791,
+   "3": 0.9477
+  },
+  "WTA": {
+   "_circuit": 1.0367,
+   "0": 1.0129,
+   "1": 1.0407,
+   "2": 1.0288,
+   "3": 1.0518
+  },
+  "CH": {
+   "_circuit": 1.005,
+   "0": 1.0308,
+   "1": 1.0337,
+   "2": 1.005,
+   "3": 1.005
+  }
+ },
+ "origine_pentes_base": "ATP / WTA : note v3 en place (archive 2016–2022), moyenne des cases de chaque classe d'expérience. Challenger : rejeu comme en production (étude 449) ; la classe « 300 matchs et plus » change de sens entre les deux périodes (0,78 puis 1,25) : elle prend la pente du circuit.",
+ "effets": {
+  "beta": {
+   "favoris_opposes": -0.0888,
+   "ecart_modeles_10": 0.1193,
+   "experience_30": -0.2207,
+   "experience_60": -0.0416,
+   "match_serre": -0.131,
+   "gros_favori": 0.1567,
+   "huitiemes": -0.2026,
+   "pronostic_bouge": -0.1992
+  },
+  "facteurs": {
+   "favoris_opposes": 0.915,
+   "ecart_modeles_10": 1.127,
+   "experience_30": 0.802,
+   "experience_60": 0.959,
+   "match_serre": 0.877,
+   "gros_favori": 1.17,
+   "huitiemes": 0.817,
+   "pronostic_bouge": 0.819
+  },
+  "gamma": {
+   "ATP|0": -0.002,
+   "ATP|1": 0.0132,
+   "ATP|2": -0.1096,
+   "ATP|3": 0.0947,
+   "WTA|0": 0.0523,
+   "WTA|1": -0.0545,
+   "WTA|2": 0.2961,
+   "WTA|3": -0.0457,
+   "CH|0": -0.271,
+   "CH|1": -0.0818,
+   "CH|2": 0.1827,
+   "CH|3": 0.2498
+  },
+  "pentes_base_ajustees": {
+   "ATP|0": 0.819,
+   "ATP|1": 0.897,
+   "ATP|2": 0.788,
+   "ATP|3": 1.042,
+   "WTA|0": 1.067,
+   "WTA|1": 0.985,
+   "WTA|2": 1.383,
+   "WTA|3": 1.005,
+   "CH|0": 0.786,
+   "CH|1": 0.953,
+   "CH|2": 1.206,
+   "CH|3": 1.29
+  },
+  "matchs_par_critere": {
+   "favoris_opposes": 216,
+   "ecart_modeles_10": 324,
+   "experience_30": 103,
+   "experience_60": 207,
+   "match_serre": 381,
+   "gros_favori": 180,
+   "huitiemes": 233,
+   "pronostic_bouge": 43
+  },
+  "matchs_par_classe": {
+   "ATP|0": 7,
+   "ATP|1": 1,
+   "ATP|2": 50,
+   "ATP|3": 99,
+   "WTA|0": 3,
+   "WTA|1": 14,
+   "WTA|2": 54,
+   "WTA|3": 52,
+   "CH|0": 93,
+   "CH|1": 229,
+   "CH|2": 564,
+   "CH|3": 80
+  },
+  "matchs": 1246,
+  "a_priori": "chaque ajustement ~ N(0, 0.3²) sur le log de la pente",
+  "appris_le": "2026-11-25"
+ },
+ "dernier_controle": null
+}
