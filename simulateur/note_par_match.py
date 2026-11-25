@@ -18,7 +18,10 @@ réalité ; a < 1 : trop tranchés ; a > 1 : trop prudents) :
     nombreux ;
   — β_k : l'effet de chaque critère mesuré sur nos matchs en direct (surveillance_fragilite.CRITERES : favoris opposés,
     écart Elo / simulation ≥ 10 points, joueur à moins de 30 et de 60 matchs, match serré, gros favori, huitièmes,
-    pronostic qui a bougé), appris ENSEMBLE (un match qui remplit deux critères n'est pas compté deux fois), ramené vers
+    pronostic qui a bougé) et, depuis le paquet 452, la NOTE DE FIABILITÉ DES JOUEURS (scripts/performance_joueurs.py :
+    nos % annoncés pour lui sur ses 20 derniers matchs publiés contre ses victoires ; au moins 5 matchs ; calculée
+    avec ses seuls matchs ANTÉRIEURS au jour du match) : critère continu « joueur_peu_fiable » = (100 − la plus basse
+    des deux notes) / 100, 0 si aucune note ; appris ENSEMBLE (un match qui remplit deux critères n'est pas compté deux fois), ramené vers
     « aucun effet » par un a priori (effet de l'ordre de ± 30 % sur la pente) tant que les matchs sont peu nombreux.
     Réappris chaque lundi sur tous nos matchs terminés jusqu'à la veille.
   — Catégories, pour lire vite : fragile < 78, prudent < 85, correct < 93, solide (seuils de simulateur/fiabilite.py).
@@ -91,10 +94,57 @@ def charger(racine=None):
         return None
 
 
-def criteres_du_match(r):
-    """{critère: 0/1} pour TOUS les critères de surveillance_fragilite.CRITERES (r : p, pe, ps, xp, tour, p0, p1)."""
+CRITERE_JOUEUR = 'joueur_peu_fiable'
+
+
+def noms_criteres():
     import surveillance_fragilite as SF
-    return {k: int(bool(f(r))) for k, (_, f) in SF.CRITERES.items()}
+    return list(SF.CRITERES) + [CRITERE_JOUEUR]
+
+
+def criteres_du_match(r, x_joueur=0.0):
+    """{critère: valeur} : 0/1 pour les critères de surveillance_fragilite.CRITERES (r : p, pe, ps, xp, tour, p0, p1),
+    et le critère continu joueur_peu_fiable (0 à 1)."""
+    import surveillance_fragilite as SF
+    out = {k: int(bool(f(r))) for k, (_, f) in SF.CRITERES.items()}
+    out[CRITERE_JOUEUR] = round(float(x_joueur or 0.0), 4)
+    return out
+
+
+# ------------------------------------------------------------------ note de fiabilité des joueurs (au jour du match)
+def _note_joueur_fn():
+    sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
+    import performance_joueurs as PJ
+    return PJ.note_fiabilite, PJ.FENETRE
+
+
+def index_joueurs(enreg):
+    """{clé joueur: [(jour, p annoncé pour lui, 1 si victoire)] triés} — enreg : matchs publiés terminés
+    (home, away, debut, p = % home, y = 1 si home gagne)."""
+    import elo as E
+    idx = {}
+    for r in enreg:
+        if not r.get('home') or not r.get('away') or r.get('p') is None:
+            continue
+        j = str(r.get('debut') or '')[:10]
+        idx.setdefault(E.cle(r['home']), []).append((j, float(r['p']), int(r['y'])))
+        idx.setdefault(E.cle(r['away']), []).append((j, 1 - float(r['p']), 1 - int(r['y'])))
+    for v in idx.values():
+        v.sort()
+    return idx
+
+
+def x_joueur(idx, home, away, jour):
+    """(100 − la plus basse des notes des deux joueurs) / 100, avec leurs seuls matchs d'avant ce jour ; 0 sinon."""
+    import elo as E
+    note_f, fen = _note_joueur_fn()
+    notes = []
+    for nom in (home, away):
+        L = [(p, y) for j, p, y in (idx.get(E.cle(nom)) if nom else None) or [] if j < jour][-fen:]
+        n, _ = note_f(L)
+        if n is not None:
+            notes.append(n)
+    return (100 - min(notes)) / 100 if notes else 0.0
 
 
 def pente_du_match(M, circuit, n_min, crit):
@@ -107,8 +157,8 @@ def pente_du_match(M, circuit, n_min, crit):
     E = (M or {}).get('effets') or {}
     a0 = float(a0) * math.exp((E.get('gamma') or {}).get(f'{circuit}|{i}', 0.0))
     eff = E.get('beta') or {}
-    appl = {k: round(math.exp(eff[k]), 3) for k, v in crit.items() if v and k in eff}
-    a = a0 * math.exp(sum(eff[k] for k, v in crit.items() if v and k in eff))
+    appl = {k: round(math.exp(eff[k] * float(v)), 3) for k, v in crit.items() if v and k in eff}
+    a = a0 * math.exp(sum(eff[k] * float(v) for k, v in crit.items() if v and k in eff))
     return a, a0, appl
 
 
@@ -124,20 +174,36 @@ def evaluer_match(M, circuit, n_min, crit):
 
 # ------------------------------------------------------------------ apprentissage des effets (nos matchs en direct)
 def lignes(racine, aujourdhui):
-    """Nos matchs terminés avant aujourd'hui : z vu du vainqueur, circuit, expérience, critères."""
+    """Nos matchs terminés avant aujourd'hui, dans l'ordre : z vu du vainqueur, circuit, expérience, critères (la note
+    des joueurs calculée avec leurs seuls matchs d'avant le jour du match)."""
     import surveillance_fragilite as SF
+    with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
+        doc = json.load(f)
     ancien = SF.SEMAINES
     try:
         SF.SEMAINES = 520
-        R = SF.lignes(racine, aujourdhui)
+        R = SF.lignes(racine, aujourdhui)           # mêmes critères que la production (tour du tableau compris)
     finally:
         SF.SEMAINES = ancien
+    M = []
+    for m in doc.get('matchs') or []:
+        reel = m.get('reel') or {}
+        if (m.get('p_affiche') is None or reel.get('gagnant') not in ('home', 'away') or reel.get('interrompu')
+                or not str(m.get('debut') or '')[:10] or str(m['debut'])[:10] >= aujourdhui.isoformat()):
+            continue
+        M.append(m)
+    if len(M) != len(R):                              # même filtre que SF.lignes : sinon, pas de note des joueurs
+        M = [None] * len(R)
+    enreg = [{'home': m['home'], 'away': m['away'], 'debut': m['debut'], 'p': m['p_affiche'],
+              'y': int(m['reel']['gagnant'] == 'home')} for m in M if m]
+    idx = index_joueurs(enreg)
     out = []
-    for r in R:
+    for r, m in zip(R, M):
         if r.get('c') not in CIRCUITS or r.get('xp') is None:
             continue
         z = _lg(r['p'])
-        out.append({'c': r['c'], 'n': r['xp'], 'z': z if r['y'] else -z, 'crit': criteres_du_match(r)})
+        xj = x_joueur(idx, m['home'], m['away'], str(m['debut'])[:10]) if m else 0.0
+        out.append({'c': r['c'], 'n': r['xp'], 'z': z if r['y'] else -z, 'crit': criteres_du_match(r, xj)})
     return out
 
 
@@ -161,8 +227,7 @@ def apprendre_effets(L, M):
     """Appris ENSEMBLE sur nos matchs en direct (le % publié, celui que la note décrit), Newton (Fisher) :
     log a = log a_rejeu(circuit, classe) + gamma(circuit, classe) + Σ β_k · critère_k ;
     a priori N(0, SD_A_PRIORI²) sur chaque gamma (ramené vers la pente du rejeu) et chaque β (ramené vers « aucun effet »)."""
-    import surveillance_fragilite as SF
-    K = list(SF.CRITERES)
+    K = noms_criteres()
     G = [f'{c}|{i}' for c in CIRCUITS for i in range(4)]
     noms = G + K
     lam = 1 / SD_A_PRIORI ** 2
@@ -170,21 +235,21 @@ def apprendre_effets(L, M):
     for r in L:
         x0 = pente_du_match({'pentes_base': M['pentes_base']}, r['c'], r['n'], {})
         if x0:
-            x = [1 if g == f"{r['c']}|{classe(r['n'])}" else 0 for g in G] + [r['crit'].get(k, 0) for k in K]
-            D.append(([j for j, v in enumerate(x) if v], r['z'], x0[1]))
+            x = [1.0 if g == f"{r['c']}|{classe(r['n'])}" else 0.0 for g in G] + [float(r['crit'].get(k, 0)) for k in K]
+            D.append(([(j, v) for j, v in enumerate(x) if v], r['z'], x0[1]))
     m = len(noms)
     b = [0.0] * m
     for _ in range(100):
         g = [lam * v for v in b]
         H = [[lam if i == j else 0.0 for j in range(m)] for i in range(m)]
         for idx, z, a0 in D:
-            u = a0 * math.exp(sum(b[j] for j in idx)) * z
+            u = a0 * math.exp(sum(b[j] * v for j, v in idx)) * z
             q = _sg(u)
             w, gr = q * (1 - q) * u * u, -(1 - q) * u
-            for i in idx:
-                g[i] += gr
-                for j in idx:
-                    H[i][j] += w
+            for i, vi in idx:
+                g[i] += gr * vi
+                for j, vj in idx:
+                    H[i][j] += w * vi * vj
         d = _resoudre(H, g)
         d = [max(min(v, 1.0), -1.0) for v in d]
         b = [bi - di for bi, di in zip(b, d)]
@@ -192,7 +257,7 @@ def apprendre_effets(L, M):
             break
     cnt = [0] * m
     for idx, _, _ in D:
-        for j in idx:
+        for j, _ in idx:
             cnt[j] += 1
     return {'beta': {k: round(b[m - len(K) + i], 4) for i, k in enumerate(K)},
             'facteurs': {k: round(math.exp(b[m - len(K) + i]), 3) for i, k in enumerate(K)},
