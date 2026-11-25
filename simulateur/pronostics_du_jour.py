@@ -2737,8 +2737,11 @@ def pente_cases_actives(racine):
 def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, construire_=None):
     """Refait les matchs concernés avec leur pente ; garde la fiabilité du pronostic SANS correction (paquet 270)."""
     C = corrections_niveaux(racine)
-    viser = {m['uid']: C[m.get('circuit')][(m.get('fiabilite') or {}).get('niveau')] for m in doc['matchs']
-             if m.get('combinaison') and (m.get('fiabilite') or {}).get('niveau') in C.get(m.get('circuit'), {})}
+    # 25/11/2026 (paquet 450) : le niveau qui décide de la correction est celui de l'ANCIENNE note quand la note
+    # Challenger réapprise est en place (niveau_correction) — la correction 1,142 vise les mêmes matchs qu'avant.
+    nc_ = lambda m: (m.get('fiabilite') or {}).get('niveau_correction') or (m.get('fiabilite') or {}).get('niveau')  # noqa: E731
+    viser = {m['uid']: C[m.get('circuit')][nc_(m)] for m in doc['matchs']
+             if m.get('combinaison') and nc_(m) in C.get(m.get('circuit'), {})}
     cases = {}                                   # paquet 318 : pente de la case, là où aucune correction n'est déjà en place
     circuits_cases = pente_cases_actives(racine)
     for m in doc['matchs']:
@@ -2765,7 +2768,8 @@ def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, co
         if not m2 or not m2.get('combinaison'):
             continue
         f = dict(m['fiabilite'])
-        f['correction_niveau'] = {'pente': viser[m['uid']], 'niveau': f.get('niveau'), 'circuit': m.get('circuit'),
+        f['correction_niveau'] = {'pente': viser[m['uid']], 'niveau': f.get('niveau_correction') or f.get('niveau'),
+                                  'circuit': m.get('circuit'),
                                   'p_home_sans_correction': (m.get('combinaison') or {}).get('p_home'),
                                   'p_home_avec_correction': m2['combinaison'].get('p_home'),
                                   'source': (CC.SOURCE if m['uid'] in chercheur else
