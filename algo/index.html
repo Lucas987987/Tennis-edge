@@ -4553,11 +4553,16 @@ const G3D = (() => {
     vec3 amb = mix(uSol, uCiel, n.y * 0.5 + 0.5);
     vec3 v = normalize(uEye - vW), h = normalize(uSun + v);
     float sp = pow(max(dot(n, h), 0.0), 48.0) * uSpec * sh;
-    vec3 col = base * (amb * 0.85 + d * sh * uLum) + sp + base * uEmis;
-    if (uRim > 0.0) col += vec3(0.62, 0.78, 1.0) * pow(1.0 - max(dot(n, v), 0.0), 3.0) * uRim;      // contre-jour des projecteurs (paquet 277)
+    // paquet 428 (Lucas : « améliorer la 3D », le rendu) : éclairage en lumière LINÉAIRE — les couleurs (sRGB) sont
+    // converties avant d'être éclairées, puis exposées. Avant, la lumière était appliquée aux couleurs d'écran puis le
+    // tout élevé à la puissance 2,2 : couleurs délavées et sursaturées (court cyan, contours fluo), ombres bouchées.
+    vec3 lin = pow(max(base, vec3(0.0)), vec3(2.2));
+    float ao = mix(0.78, 1.0, smoothstep(0.0, 0.6, vW.y + 0.15 * n.y));                    // pied des murs et des corps un peu plus sombre
+    vec3 col = lin * (amb * 0.62 * ao + d * sh * uLum * 1.15) + sp * 0.6 + lin * uEmis * 1.6;
+    if (uRim > 0.0) col += vec3(0.38, 0.55, 1.0) * pow(1.0 - max(dot(n, v), 0.0), 3.0) * uRim * 0.6;   // contre-jour des projecteurs (paquet 277)
     float f = clamp((length(uEye - vW) - 38.0) / 70.0, 0.0, 0.55);
-    col = mix(col, uBrume, f);
-    col = pow(col, vec3(2.2)) * 1.08;
+    col = mix(col, pow(uBrume, vec3(2.2)), f);
+    col *= 1.25;                                                                           // exposition
     col = clamp((col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14), 0.0, 1.0);
     // paquet 290 : objets opaques — l'alpha garde la distance (mise au point du film) ; transparents — leur opacité
     o = vec4(pow(col, vec3(1.0 / 2.2)), uProf == 1 ? clamp(length(uEye - vW) / 80.0, 0.0, 1.0) : a);
@@ -4652,8 +4657,9 @@ const G3D = (() => {
 
   // ── textures dessinées par le code ────────────────────────────────────────────────────────────────────────
   const SURFACES = {
-    Hard: { in: '#2a5ea8', out: '#3a7a5c', bruit: 9, use: 'rgba(255,255,255,.05)' }, Clay: { in: '#b4562f', out: '#9a4627', bruit: 20, use: 'rgba(230,170,120,.10)' },
-    Grass: { in: '#5a9a4c', out: '#4b8740', bruit: 14, bandes: true, use: 'rgba(170,140,80,.28)' }, Carpet: { in: '#3f6f8a', out: '#2b4f66', bruit: 8, use: 'rgba(255,255,255,.04)' },
+    // paquet 428 : teintes de dur plus proches des vrais courts (bleu profond, contour vert sourd) avec l'éclairage linéaire
+    Hard: { in: '#2d5f9a', out: '#46705f', bruit: 9, use: 'rgba(255,255,255,.05)' }, Clay: { in: '#b4562f', out: '#9a4627', bruit: 20, use: 'rgba(230,170,120,.10)' },
+    Grass: { in: '#4b8443', out: '#41753a', bruit: 14, bandes: true, use: 'rgba(170,140,80,.28)' }, Carpet: { in: '#3f6f8a', out: '#2b4f66', bruit: 8, use: 'rgba(255,255,255,.04)' },
   };
   function texSol(surface) {
     const s = SURFACES[surface] || SURFACES.Hard, PX = 40;                       // 40 px par mètre
@@ -6251,7 +6257,8 @@ const G3D = (() => {
   }
 
   // ── caméra et rendu ───────────────────────────────────────────────────────────────────────────────────────
-  const VUES = { tv: { yaw: 0, pitch: 0.33, dist: 23.5, fov: 0.62, suivre: true, real: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false, real: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false, real: false },
+  // paquet 428 : vue TV plus basse et plus serrée (joueurs ~25 % plus grands), comme une caméra de retransmission
+  const VUES = { tv: { yaw: 0, pitch: 0.31, dist: 21.5, fov: 0.58, suivre: true, real: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false, real: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false, real: false },
     joueur: { yaw: 0, pitch: 0.22, dist: 9.5, fov: 0.75, suivre: false, focus: 0, real: false } };
   const cam = { ...VUES.tv };
   const COULEURS = [{ maillot: '#22c8e0', short: '#14234f', cheveux: '#3a2a20', peau: '#d09a78' }, { maillot: '#e2449a', short: '#ececf2', cheveux: '#1d1712', peau: '#b07850' }];
@@ -6311,7 +6318,12 @@ const G3D = (() => {
     if (cam.vise) cible = [J[cam.vise[0]].x, cam.vise[1], J[cam.vise[0]].z];        // (tests) caméra sur un joueur
     if (cam.balle) cible = [cam.bx || 0, 0.7, cam.bz || 0];                              // ralenti : la caméra suit la balle
     let eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
-    if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];
+    if (cam.balle) { let ez = cl((cam.bz || 0) * 0.45, -7, 7);
+      // paquet 428 : la caméra du ralenti se posait parfois DANS la chaise de l'arbitre (x = −8 m, z = 0) ou dans un juge
+      // de ligne assis (x = ±8,1 m) — l'image montrait des jambes en gros plan. On s'écarte de la chaise ; les officiels
+      // trop près de l'objectif ne sont plus dessinés (masque, plus bas).
+      if (cam.cote < 0 && Math.abs(ez) < 2.2) ez = ez < 0 ? -2.2 : 2.2;
+      eye = [cam.cote * 8.4, Math.max(cam.haut, 1.7), ez]; }
     if (cam.dos2) { const b = posBalle(t), x = b ? cl(b.x * 0.6, -3.5, 3.5) : 0, s = cam.dos2; FILM.rx = lerp(FILM.rx || 0, x, 0.07);
       FILM.focale = 0; return projeter(w, h, [FILM.rx * 0.5, 2.0, s * (HL + 7)], [FILM.rx, 0.9, -s * 3], 0.56); }
     if (cam.araignee) { const b = posBalle(t), s = cam.araignee, bx = b ? b.x : 0, bz = b ? b.z : s * HL * 0.8;
@@ -6380,7 +6392,8 @@ const G3D = (() => {
     // caméra (sur un téléphone, elle disparaissait au fond du court) ; en gros plan, sa vraie taille
     const kB = b ? cl(0.14 * Math.hypot(b.x - eye[0], b.y - eye[1], b.z - eye[2]) * Math.tan((CAPT.fov || 0.6) / 2), 1, 2.6) : 1;
     // paquet 288 : film — un officiel posé entre la caméra (à moins de 8 m) et ce qu'elle filme n'est pas dessiné (gros plans masqués)
-    const masque = (x, z) => { if (!FILM.actif) return false; const dx = visee[0] - eye[0], dz = visee[2] - eye[2], L2 = dx * dx + dz * dz; if (L2 < 1) return false;
+    const masque = (x, z) => { const ex = x - eye[0], ez = z - eye[2]; if (ex * ex + ez * ez < 1.7) return true;   // paquet 428 : collé à l'objectif
+      if (!FILM.actif) return false; const dx = visee[0] - eye[0], dz = visee[2] - eye[2], L2 = dx * dx + dz * dz; if (L2 < 1) return false;
       const u = ((x - eye[0]) * dx + (z - eye[2]) * dz) / L2; if (u <= 0 || u >= 0.9 || u * Math.sqrt(L2) > 8) return false;
       const px = eye[0] + u * dx - x, pz = eye[2] + u * dz - z; return px * px + pz * pz < 0.81; };
     // ce qui bouge : les deux joueurs, la balle
@@ -6683,7 +6696,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v327';
+  const VERSION_3D = 'v428';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };

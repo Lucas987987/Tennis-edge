@@ -113,7 +113,7 @@ class Statique(unittest.TestCase):
         self.assertIn('function poseChasse(', BLOC)
 
     def test_camera_tv_plus_basse(self):
-        self.assertIn('tv: { yaw: 0, pitch: 0.33, dist: 23.5', BLOC)   # paquet 285 : un peu plus près
+        self.assertIn('tv: { yaw: 0, pitch: 0.31, dist: 21.5', BLOC)   # paquet 285 : un peu plus près
 
     def test_sol_hors_court_distinct(self):
         import re

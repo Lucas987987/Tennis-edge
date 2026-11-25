@@ -1,6 +1,6 @@
 {
- "paquet": 327,
- "version_3d": "v327",
+ "paquet": 428,
+ "version_3d": "v428",
  "essais_de_chargement_des_modeles": 3,
  "attentes_s": [
   1.5,
@@ -20,8 +20,9 @@
   "nuit": "salle ou soir"
  },
  "camera_tv": {
-  "tangage_rad": 0.33,
-  "distance_m": 23.5
+  "tangage_rad": 0.31,
+  "distance_m": 21.5,
+  "champ_rad": 0.58
  },
  "replacement": "entre deux frappes, retour vers le milieu jusqu'à la frappe adverse",
  "ramasseurs_du_fond": "aux coins du fond du court, hors du cadre de la caméra télé",
@@ -143,5 +144,7 @@
   "transitions": "mesurées image par image (rotation de chaque os d'une image à la suivante, 25 i/s, 45 s de vidéo) : jambes au-delà de 40° par image 21 → 5, dos au-delà de 25° 16 → 6, bras gauche au début du service 150° → supprimé",
   "nettete": "vidéos 3D calculées à 0,85 au lieu de 0,67 (environ +23 % de temps de calcul mesuré) ; 1 (pleine) possible à la demande",
   "note": "Affichage seulement : le % ne change pas."
- }
+ },
+ "eclairage": "linéaire (couleurs converties avant l'éclairage, puis exposées) — paquet 428",
+ "ralenti": "caméra écartée de la chaise de l'arbitre ; officiels à moins de 1,3 m de l'objectif non dessinés — paquet 428"
 }
