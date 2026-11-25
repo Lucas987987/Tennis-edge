@@ -29,3 +29,12 @@ def test_accueil_bandeau_et_pourquoi():
     for mot in ('marché', 'Pinnacle', 'cote', 'value', 'pari'):
         assert mot not in f, mot
     assert "qs_court:'Notre projet'" in P and "'/notre-projet': 'apropos.html'" in W
+
+
+def test_443_scenario_complet_mis_en_avant():
+    assert 'Le <em>scénario complet</em> de chaque match' in A and 'The <em>full scenario</em> of every match' in A
+    assert A.index('class="scen"') < A.index('${T.diff_t}')                                   # avant les différenciants
+    for c in ('Score set par set', 'Aces', 'Doubles fautes', 'Balles de break', 'Breaks', 'Durée', 'Jeux de service gagnés'):
+        assert f"'{c}'" in A, c
+    assert "lire('site.json')" in A and 'm.simulation.scenario' in A and 'pas une certitude' in A   # exemple réel, honnête
+    assert '🎬 <b>${esc(fr ? \'Le scénario complet\'' in P and "['Le scénario complet du match'," in P

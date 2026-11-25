@@ -79,11 +79,14 @@ html[data-theme="light"] .principe,html[data-theme="light"] .atout,html[data-the
 .th{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
 .th button{background:transparent;color:var(--dim);border:0;font:600 .78rem "Barlow",system-ui;padding:6px 9px;cursor:pointer;min-height:32px}
 .th button[aria-pressed="true"]{background:var(--ball);color:var(--bg)}
-.atouts{display:grid;gap:12px;margin:8px 0 6px}@media(min-width:620px){.atouts{grid-template-columns:1fr 1fr}}
-.atout{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.atouts{display:grid;gap:10px;margin:8px 0 6px;grid-template-columns:1fr 1fr;align-items:stretch}
+.atout summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:4px}.atout summary::-webkit-details-marker{display:none}
+.atout .acc{color:var(--dim);font-size:.88rem;line-height:1.3}.atout[open]{grid-column:1/-1}.atout[open] .acc{display:none}.atout p{margin-top:8px}
+.atout summary::after{content:'+';position:absolute;right:12px;top:10px;color:var(--dim);font-family:var(--cond);font-weight:600;font-size:1.1rem}.atout[open] summary::after{content:'−'}
+.atout{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 12px 12px 14px;position:relative;overflow:hidden}
 .atout:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--p1))}
-.atout .ic{font-size:1.2rem;line-height:1;margin-right:8px}
-.atout b{display:block;font-family:var(--cond);font-weight:700;font-size:1.25rem;margin-bottom:4px;color:var(--c,var(--p1))}
+.atout .ic{display:block;font-size:1.25rem;line-height:1;margin-bottom:6px}
+.atout b{display:block;font-family:var(--cond);font-weight:700;font-size:1.08rem;line-height:1.2;color:var(--c,var(--p1))}
 .atout p{margin:0;color:var(--ink);font-size:.98rem}.atout small{display:block;margin-top:8px;color:var(--dim);font-family:var(--cond);font-size:.95rem}
 .savoir{counter-reset:s;display:grid;gap:10px;margin:6px 0}
 .savoir div{counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px 14px 56px;position:relative}
@@ -94,6 +97,21 @@ html[data-theme="light"] .principe,html[data-theme="light"] .atout,html[data-the
 .cmp th{font-family:var(--cond);font-weight:700;font-size:1rem}.cmp td:first-child{font-family:var(--cond);font-weight:600;color:var(--dim);width:30%}
 .cmp td:nth-child(2){color:var(--dim)}.cmp td:nth-child(3){font-weight:600}.cmp th:nth-child(3){color:var(--ball)}
 .chiffre b.v{color:var(--p1)}
+/* 25/11/2026 (paquet 443) — le scénario complet du match, mis en avant */
+.scen{background:linear-gradient(160deg,rgba(46,230,255,.10),rgba(255,79,174,.08)) var(--panel);border:1.5px solid var(--p1);border-radius:20px;padding:18px 18px 16px;margin:8px 0 6px}
+html[data-theme="light"] .scen{background:linear-gradient(160deg,rgba(10,127,163,.08),rgba(194,31,120,.05)) var(--panel);box-shadow:0 8px 26px rgba(40,20,120,.08)}
+.scen h2{font-family:var(--disp);font-weight:400;font-size:1.25rem;line-height:1.2;margin:0 0 8px}.scen h2 em{font-style:normal;color:var(--p1)}
+.scen>p{margin:0 0 12px}
+.crit{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:0;list-style:none}
+.crit li{border:1px solid var(--line);background:rgba(127,127,127,.06);border-radius:999px;padding:4px 10px;font-family:var(--cond);font-weight:600;font-size:.92rem}
+.ex{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
+html[data-theme="light"] .ex{background:#F8F6FE}
+.ex .lab{font-family:var(--cond);font-weight:600;color:var(--dim);font-size:.92rem;margin:0 0 4px}
+.ex .res{font-family:var(--cond);font-weight:700;font-size:1.35rem;line-height:1.25;margin:0 0 2px}.ex .res b{color:var(--ball)}
+.ex .sous{color:var(--dim);font-size:.92rem;margin:0 0 10px}
+.ex table{width:100%;border-collapse:collapse;font-size:.92rem}.ex th,.ex td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:center}
+.ex th:first-child,.ex td:first-child{text-align:left;color:var(--dim);font-family:var(--cond);font-weight:600}.ex th{font-family:var(--cond);font-weight:700}
+.ex .note{color:var(--dim);font-size:.85rem;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -115,6 +133,7 @@ const loc = L === 'fr' ? 'fr-FR' : 'en-GB';
 const fmt = n => Number(n).toLocaleString(loc);
 const dec = (x, d) => Number(x).toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d });
 const pc0 = x => Math.round(x) + (L === 'fr' ? ' %' : '%');
+const n_pct = p => Math.round(100 * p) + (L === 'fr' ? ' %' : '%');
 const T = {
  fr: {
   titre: 'Notre projet — Game Set Algo', retour: '← Les matchs du jour', theme: ['Auto', 'Clair', 'Sombre'],
@@ -122,16 +141,23 @@ const T = {
   chapo: 'Game Set Algo est un projet indépendant né en France. Pour chaque match ATP, WTA et Challenger, un algorithme joue la rencontre 20 000 fois avant qu’elle commence, publie ses pourcentages, puis les confronte au résultat, devant tout le monde.',
   chiffres: { n: 'matchs annoncés puis jugés', pct: 'favori de l’algo vainqueur', sim: 'simulations par match', q: 'questions par match' },
   chiffres_note: d => `Bilan public depuis le ${d}, mis à jour après chaque match, erreurs comprises.`,
-  diff_t: 'Ce qui nous rend différents',
+  scen_t: 'Le <em>scénario complet</em> de chaque match',
+  scen_p: 'Là où un pronostic s’arrête à un nom, l’algo raconte tout le match avant qu’il commence : qui gagne et avec quelle probabilité, le score set par set, le nombre de jeux, les tie-breaks, la durée, et la feuille de match complète de chaque joueur. Le tout sort des mêmes 20 000 simulations, donc tout est cohérent. C’est ce qui nous distingue.',
+  crit: ['Vainqueur et %', 'Score set par set', 'Nombre de jeux', 'Tie-breaks', 'Match en 3 ou 5 sets', 'Durée', 'Aces', 'Doubles fautes', '% de 1res balles', 'Points gagnés sur 1re et 2e balle', 'Balles de break', 'Breaks', 'Jeux de service gagnés', 'Points gagnés', 'Scénarios possibles'],
+  ex_lab: (t, h, a) => `Exemple réel · ${t} · ${h} – ${a}`, ex_gagne: (n, s) => `<b>${n}</b> gagne ${s}`,
+  ex_sous: (p, d, l) => `${n_pct(p)} de victoire${d ? ` · durée prévue ${d}` : ''}${l != null ? ` · ${n_pct(l)} de chances d’aller au set décisif` : ''}`,
+  ex_lignes: { aces: 'Aces', doubles_fautes: 'Doubles fautes', premiere_pct: '1res balles', gagnes_1re_pct: 'Points gagnés sur 1re', gagnes_2e_pct: 'Points gagnés sur 2e', balles_break_obtenues: 'Balles de break obtenues', breaks: 'Breaks réussis', jeux_service_gagnes_pct: 'Jeux de service gagnés', points_gagnes: 'Points gagnés' },
+  ex_note: 'Le scénario le plus représentatif parmi les 20 000 simulations de ce match, pas une certitude : sur la fiche du match, chaque critère a aussi sa probabilité.',
+  diff_t: 'Ce qui nous rend différents', diff_aide: 'Touchez une carte pour le détail.',
   diff: [
-   ['🎾', 'Simulé, pas deviné', 'Chaque % sort de 20 000 matchs joués par l’ordinateur, point par point, avec le niveau au service et au retour de chaque joueur sur cette surface. Pas un avis, pas une intuition : un calcul que l’on peut refaire.', null, 'var(--p1)'],
-   ['📊', 'Tout le match, pas seulement le vainqueur', 'La même simulation donne les sets, les jeux, les tie-breaks, les aces, les breaks, la durée et les scénarios possibles. Une trentaine de questions par match dans « Demande à l’algo ».', null, 'var(--ball)'],
-   ['🔒', 'Publié avant, jamais retouché', 'Le premier % de chaque match est horodaté et figé. Après le match, il entre dans le bilan public, juste ou faux. Aucune mauvaise semaine n’est effacée.', null, 'var(--p2)'],
-   ['🎯', 'Des % qui tiennent parole', 'Quand l’algo annonce 70 %, le joueur doit gagner environ 7 fois sur 10. C’est vérifié tranche par tranche, circuit par circuit, et affiché sur chaque fiche de match.', 'calib', 'var(--ok)'],
-   ['🧭', 'Il dit quand il doute', 'Chaque match reçoit une note de fiabilité, chaque joueur aussi. Quand les données manquent ou que les modèles ne sont pas d’accord, vous le savez avant le match.', null, 'var(--p1)'],
-   ['🌍', 'Les Challengers aussi', 'Les tournois Challenger, rarement suivis avec ce niveau de détail, sont traités comme l’ATP et la WTA : même simulation, mêmes projections, même bilan.', 'ch', 'var(--ball)'],
-   ['⚡', 'Le direct, point par point', 'Le score arrive en continu, avec les statistiques du match et la rencontre rejouée en 3D.', null, 'var(--p2)'],
-   ['👤', 'La performance de chaque joueur', 'Sur la page de chaque joueur : ce que l’algo annonçait pour lui, ce qui est arrivé, la précision des prévisions d’aces et de breaks, par surface et contre chaque style de jeu.', null, 'var(--ok)']
+   ['🎾', 'Simulé, pas deviné', 'Chaque % sort de 20 000 matchs joués par l’ordinateur, point par point, avec le niveau au service et au retour de chaque joueur sur cette surface. Pas un avis, pas une intuition : un calcul que l’on peut refaire.', null, 'var(--p1)', '20 000 matchs joués point par point'],
+   ['🎬', 'Le scénario complet, pas seulement le vainqueur', 'La même simulation donne le score set par set, les jeux, les tie-breaks, la durée et toute la feuille de match : aces, doubles fautes, 1res balles, balles de break, breaks. Une trentaine de questions par match dans « Demande à l’algo ».', null, 'var(--ball)', 'Score, jeux, durée, feuille de match'],
+   ['🔒', 'Publié avant, jamais retouché', 'Le premier % de chaque match est horodaté et figé. Après le match, il entre dans le bilan public, juste ou faux. Aucune mauvaise semaine n’est effacée.', null, 'var(--p2)', 'Horodaté, figé, jugé après'],
+   ['🎯', 'Des % qui tiennent parole', 'Quand l’algo annonce 70 %, le joueur doit gagner environ 7 fois sur 10. C’est vérifié tranche par tranche, circuit par circuit, et affiché sur chaque fiche de match.', 'calib', 'var(--ok)', 'Vérifié tranche par tranche'],
+   ['🧭', 'Il dit quand il doute', 'Chaque match reçoit une note de fiabilité, chaque joueur aussi. Quand les données manquent ou que les modèles ne sont pas d’accord, vous le savez avant le match.', null, 'var(--p1)', 'Une note de fiabilité partout'],
+   ['🌍', 'Les Challengers aussi', 'Les tournois Challenger, rarement suivis avec ce niveau de détail, sont traités comme l’ATP et la WTA : même simulation, mêmes projections, même bilan.', 'ch', 'var(--ball)', 'Même exigence que l’ATP et la WTA'],
+   ['⚡', 'Le direct, point par point', 'Le score arrive en continu, avec les statistiques du match et la rencontre rejouée en 3D.', null, 'var(--p2)', 'Score continu, stats, 3D'],
+   ['👤', 'La performance de chaque joueur', 'Sur la page de chaque joueur : ce que l’algo annonçait pour lui, ce qui est arrivé, la précision des prévisions d’aces et de breaks, par surface et contre chaque style de jeu.', null, 'var(--ok)', 'Annoncé contre réel, joueur par joueur']
   ],
   calib: (a, r, n) => `Vérifié : quand l’algo donnait un joueur à ${a}, ce joueur a gagné ${r} des fois (${n} matchs).`,
   ch: p => `${p} des matchs analysés sont des Challengers.`,
@@ -147,7 +173,7 @@ const T = {
   cmp: [['D’où vient le % ?', 'Une impression, rarement chiffrée', '20 000 simulations du match'],
         ['Quand est-il publié ?', 'Souvent sans heure', 'Avant le match, horodaté, figé'],
         ['Que devient une erreur ?', 'Elle disparaît', 'Elle reste dans le bilan public'],
-        ['Ce que vous apprenez', 'Un nom', 'Une trentaine de projections chiffrées'],
+        ['Ce que vous apprenez', 'Un nom', 'Le scénario complet : score set par set, jeux, durée, aces, breaks… et une trentaine de projections chiffrées'],
         ['L’incertitude', 'Rarement dite', 'Une note de fiabilité par match et par joueur']],
   principes_t: 'Nos quatre principes',
   principes: [['Indépendant', 'L’algorithme ne s’appuie que sur les matchs joués. Le match du jour est choisi par une règle fixe, jamais selon ce qui arrange.'],
@@ -168,16 +194,23 @@ const T = {
   chapo: 'Game Set Algo is an independent project born in France. For every ATP, WTA and Challenger match, an algorithm plays the match 20,000 times before it starts, publishes its percentages, then checks them against the result, in public.',
   chiffres: { n: 'matches forecast then settled', pct: 'algorithm’s favourite won', sim: 'simulations per match', q: 'questions per match' },
   chiffres_note: d => `Public record since ${d}, updated after every match, misses included.`,
-  diff_t: 'What makes us different',
+  scen_t: 'The <em>full scenario</em> of every match',
+  scen_p: 'Where a tip stops at a name, the algorithm tells the whole match before it starts: who wins and how likely, the score set by set, the number of games, tie-breaks, duration, and each player’s full match sheet. It all comes from the same 20,000 simulations, so everything fits together. That is what sets us apart.',
+  crit: ['Winner and %', 'Score set by set', 'Number of games', 'Tie-breaks', 'Deciding set', 'Duration', 'Aces', 'Double faults', '1st-serve %', 'Points won on 1st and 2nd serve', 'Break points', 'Breaks', 'Service games won', 'Points won', 'Possible scenarios'],
+  ex_lab: (t, h, a) => `Real example · ${t} · ${h} – ${a}`, ex_gagne: (n, s) => `<b>${n}</b> wins ${s}`,
+  ex_sous: (p, d, l) => `${n_pct(p)} to win${d ? ` · expected duration ${d}` : ''}${l != null ? ` · ${n_pct(l)} chance of a deciding set` : ''}`,
+  ex_lignes: { aces: 'Aces', doubles_fautes: 'Double faults', premiere_pct: '1st serves in', gagnes_1re_pct: 'Points won on 1st', gagnes_2e_pct: 'Points won on 2nd', balles_break_obtenues: 'Break points earned', breaks: 'Breaks', jeux_service_gagnes_pct: 'Service games won', points_gagnes: 'Points won' },
+  ex_note: 'The most representative scenario among this match’s 20,000 simulations, not a certainty: on the match page, every criterion also has its probability.',
+  diff_t: 'What makes us different', diff_aide: 'Tap a card for details.',
   diff: [
-   ['🎾', 'Simulated, not guessed', 'Every % comes from 20,000 matches played by the computer, point by point, using each player’s serve and return level on that surface. Not an opinion, not a hunch: a calculation anyone could redo.', null, 'var(--p1)'],
-   ['📊', 'The whole match, not just the winner', 'The same simulation gives sets, games, tie-breaks, aces, breaks, duration and the ways the match can go. About thirty questions per match in “Ask the algorithm”.', null, 'var(--ball)'],
-   ['🔒', 'Published before, never edited', 'The first % of every match is time-stamped and frozen. After the match it goes into the public record, right or wrong. No bad week is ever erased.', null, 'var(--p2)'],
-   ['🎯', 'Percentages that keep their word', 'When the algorithm says 70%, the player should win about 7 times out of 10. This is checked band by band, tour by tour, and shown on every match page.', 'calib', 'var(--ok)'],
-   ['🧭', 'It tells you when it is unsure', 'Every match gets a reliability score, and so does every player. When data is thin or the models disagree, you know before the match.', null, 'var(--p1)'],
-   ['🌍', 'Challengers too', 'Challenger events, rarely covered in this much detail, get the same treatment as ATP and WTA: same simulation, same projections, same record.', 'ch', 'var(--ball)'],
-   ['⚡', 'Live, point by point', 'The score is pushed continuously, with live match stats and the match replayed in 3D.', null, 'var(--p2)'],
-   ['👤', 'Every player’s performance', 'On every player page: what the algorithm gave the player, what happened, how accurate the ace and break forecasts were, by surface and against each playing style.', null, 'var(--ok)']
+   ['🎾', 'Simulated, not guessed', 'Every % comes from 20,000 matches played by the computer, point by point, using each player’s serve and return level on that surface. Not an opinion, not a hunch: a calculation anyone could redo.', null, 'var(--p1)', '20,000 matches played point by point'],
+   ['🎬', 'The full scenario, not just the winner', 'The same simulation gives the score set by set, games, tie-breaks, duration and the full match sheet: aces, double faults, first serves, break points, breaks. About thirty questions per match in “Ask the algorithm”.', null, 'var(--ball)', 'Score, games, duration, match sheet'],
+   ['🔒', 'Published before, never edited', 'The first % of every match is time-stamped and frozen. After the match it goes into the public record, right or wrong. No bad week is ever erased.', null, 'var(--p2)', 'Time-stamped, frozen, judged after'],
+   ['🎯', 'Percentages that keep their word', 'When the algorithm says 70%, the player should win about 7 times out of 10. This is checked band by band, tour by tour, and shown on every match page.', 'calib', 'var(--ok)', 'Checked band by band'],
+   ['🧭', 'It tells you when it is unsure', 'Every match gets a reliability score, and so does every player. When data is thin or the models disagree, you know before the match.', null, 'var(--p1)', 'A reliability score everywhere'],
+   ['🌍', 'Challengers too', 'Challenger events, rarely covered in this much detail, get the same treatment as ATP and WTA: same simulation, same projections, same record.', 'ch', 'var(--ball)', 'Same standard as ATP and WTA'],
+   ['⚡', 'Live, point by point', 'The score is pushed continuously, with live match stats and the match replayed in 3D.', null, 'var(--p2)', 'Continuous score, stats, 3D'],
+   ['👤', 'Every player’s performance', 'On every player page: what the algorithm gave the player, what happened, how accurate the ace and break forecasts were, by surface and against each playing style.', null, 'var(--ok)', 'Announced vs actual, player by player']
   ],
   calib: (a, r, n) => `Checked: when the algorithm gave a player ${a}, that player won ${r} of the time (${n} matches).`,
   ch: p => `${p} of analysed matches are Challengers.`,
@@ -193,7 +226,7 @@ const T = {
   cmp: [['Where does the % come from?', 'A feeling, rarely quantified', '20,000 simulations of the match'],
         ['When is it published?', 'Often with no time stamp', 'Before the match, time-stamped, frozen'],
         ['What happens to a miss?', 'It disappears', 'It stays in the public record'],
-        ['What you learn', 'A name', 'About thirty quantified projections'],
+        ['What you learn', 'A name', 'The full scenario: score set by set, games, duration, aces, breaks… and about thirty quantified projections'],
         ['Uncertainty', 'Rarely stated', 'A reliability score per match and per player']],
   principes_t: 'Our four principles',
   principes: [['Independent', 'The algorithm relies only on matches played. The match of the day is picked by a fixed rule, never by convenience.'],
@@ -221,7 +254,8 @@ document.getElementById('page').innerHTML = `
   <div class="chiffre"><b class="v">${fmt(20000)}</b><span>${T.chiffres.sim}</span></div>
   <div class="chiffre"><b>≈ 30</b><span>${T.chiffres.q}</span></div>
  </div><p class="dim" id="c-note" style="font-size:.92rem"></p>
- <h3>${T.diff_t}</h3><div class="atouts">${T.diff.map(d => `<div class="atout" style="--c:${d[4]}"><b><span class="ic" aria-hidden="true">${d[0]}</span>${d[1]}</b><p>${d[2]}</p>${d[3] ? `<small id="x-${d[3]}"></small>` : ''}</div>`).join('')}</div>
+ <section class="scen"><h2>${T.scen_t}</h2><p>${T.scen_p}</p><ul class="crit">${T.crit.map(c => `<li>${c}</li>`).join('')}</ul><div id="exemple"></div></section>
+ <h3>${T.diff_t}</h3><p class="dim" style="font-size:.92rem;margin:-4px 0 10px">${T.diff_aide}</p><div class="atouts">${T.diff.map(d => `<details class="atout" style="--c:${d[4]}"><summary><b><span class="ic" aria-hidden="true">${d[0]}</span>${d[1]}</b><span class="acc">${d[5]}</span></summary><p>${d[2]}</p>${d[3] ? `<small id="x-${d[3]}"></small>` : ''}</details>`).join('')}</div>
  <h3>${T.savoir_t}</h3><div class="savoir">${T.savoir.map(x => `<div><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
  <p style="margin-top:12px"><a href="methode.html${suf}">${T.methode}</a></p>
  <h3>${T.cmp_t}</h3><table class="cmp"><tr>${T.cmp_h.map(h => `<th>${h}</th>`).join('')}</tr>${T.cmp.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>
@@ -255,6 +289,23 @@ lire('site_plus.json').catch(() => lire('donnees.json')).then(d => {
   const cal = (b.calibration || []).find(c => c.n >= 100 && Math.abs(c.de - .7) < 1e-6), xk = document.getElementById('x-calib');
   const P = L === 'fr' ? ' %' : '%';
   if (cal && xk) xk.textContent = T.calib(`${Math.round(cal.de * 100)}–${Math.round(cal.a * 100)}${P}`, dec(cal.reel, 1) + P, fmt(cal.n));
+}).catch(() => {});
+// 443 : le scénario complet du match du jour, en exemple réel (site.json : le match du jour est ouvert à tous)
+const court = n => { const p = String(n || '').trim().split(/\s+/); return p.length > 1 ? p.slice(1).join(' ') : n; };
+const hm = mn => { const h = Math.floor(mn / 60), m = Math.round(mn % 60); return L === 'fr' ? `${h} h ${String(m).padStart(2, '0')}` : `${h}h ${String(m).padStart(2, '0')}m`; };
+lire('site.json').catch(() => lire('donnees.json')).then(d => {
+  const id = d && d.match_du_jour && d.match_du_jour.uid, m = id && (d.matchs || []).find(x => x.uid === id);
+  const sc = m && m.simulation && m.simulation.scenario; if (!sc || !Array.isArray(sc.sets) || !Array.isArray(sc.feuille) || m.p_home == null) return;
+  const v = sc.vainqueur === 1 ? 1 : 0, N = [court(m.home), court(m.away)];
+  const score = sc.sets.map(([a, b]) => v === 0 ? `${a}-${b}` : `${b}-${a}`).join(' ');
+  const rp = m.rythme && m.rythme.prevision, deci = m.lignes_algo && m.lignes_algo.set_decisif;
+  const P = L === 'fr' ? ' %' : '%', val = (k, x) => x == null ? '—' : /_pct$/.test(k) ? Math.round(x) + P : fmt(Math.round(x));
+  const lignes = Object.entries(T.ex_lignes).filter(([k]) => sc.feuille[0][k] != null)
+    .map(([k, lib]) => `<tr><td>${lib}</td><td>${val(k, sc.feuille[0][k])}</td><td>${val(k, sc.feuille[1][k])}</td></tr>`).join('');
+  document.getElementById('exemple').innerHTML = `<div class="ex"><p class="lab">${esc(T.ex_lab(m.tournoi || '', m.home, m.away))}</p>
+    <p class="res">${T.ex_gagne(esc(N[v]), esc(score))}</p>
+    <p class="sous">${esc(T.ex_sous(v === 0 ? m.p_home : 1 - m.p_home, rp && rp.minutes ? hm(rp.minutes) : '', deci))}</p>
+    <table><tr><th></th><th>${esc(N[0])}</th><th>${esc(N[1])}</th></tr>${lignes}</table><p class="note">${T.ex_note}</p></div>`;
 }).catch(() => {});
 fetch('editeur.json?v=' + cle).then(r => r.ok ? r.json() : {}).then(e => {
   if (e && e.email) document.getElementById('contact').innerHTML = T.contact(`<a href="mailto:${esc(e.email)}">${esc(e.email)}</a>`);
