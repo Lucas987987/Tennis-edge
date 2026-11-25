@@ -2382,6 +2382,13 @@
    "paquet": 431,
    "quoi": "ADRESSE DU SITE ET PUBLIC DU DIRECT 3D (paquet 431, Lucas : « l'adresse n'est pas la bonne, worker dev apparaît encore », « on continue sur la 3D »). 1) Toute page ouverte sur l'adresse technique (algo.tennis-edge.workers.dev) part vers gamesetalgo.com, au même chemin. Restent sur l'adresse technique : le Lab et sa connexion, l'administration des comptes, les données lues par les vidéos du jour, le direct, les fichiers (modèles 3D, sons) et le rendu des vidéos. Les boutons « Générer la vidéo » et « Résumé 3D du match » s'affichent aussi sur gamesetalgo.com pour le compte administrateur (la clé privée reste demandée). 2) Direct 3D : à partir de la 6e frappe d'un échange, le public retient son souffle — une rumeur qui monte peu à peu (la vraie clameur, très bas), relâchée au point dans les applaudissements.",
    "garde_fou": "Rien ne change dans les % ni dans les données. Redirection temporaire (302) des seules pages : les fichiers et les données ne bougent pas. Tests : workers/algo/test_worker.mjs, tests/test_direct_3d_v428.py."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 432,
+   "quoi": "TABLEAU DU SCORE EN PLEIN ÉCRAN (paquet 432, Lucas : « les noms des joueurs et la balle jaune sont coupés au fur et à mesure que le match avance »). En plein écran, le tableau n'affiche plus que les sets joués (plus de « · » pour les sets à venir), avec des colonnes plus serrées ; la colonne de côté passe de 27 % à 30 % de l'écran (250 px au moins). Le nom est coupé seul (« … ») et la balle du serveur reste toujours visible à côté. Au 5e set, le tableau se resserre encore. ACCÈS ADMINISTRATEUR (Lucas : « je n'ai plus accès au compte admin, je ne peux plus faire de demande pour les vidéos ») : depuis le paquet 431, les pages de l'adresse technique partaient vers gamesetalgo.com, où la session du Lab (clé privée) n'existe pas. Avec la clé privée, on reste désormais sur l'adresse technique, boutons vidéo et X compris ; la connexion accepte d'y renvoyer directement vers le site (suite=/).",
+   "garde_fou": "Rien ne change dans les % ni dans les données. Vérifié en paysage (844×390, 740×360) et en portrait avec 4 et 5 sets. Tests : tests/test_tableau_plein.py, tests/test_grand_ecran.py. Sans la clé privée, la redirection vers gamesetalgo.com est inchangée. Test : workers/algo/test_worker.mjs (432)."
   }
  ]
 }
