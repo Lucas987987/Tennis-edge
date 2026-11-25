@@ -669,3 +669,41 @@ test('433 : la page ouvre le direct poussé et ne redemande /live que s’il ne 
   assert.match(page, /if \(document\.hidden\) fermerFlux\(\); else \{ ouvrirFlux\(\);/);
   assert.match(page, /ws\.send\('ping'\)/);
 });
+
+// 25/11/2026 (paquet 434) — mesure privée de ce que le site reçoit de TennisApi (requêtes, octets par jour)
+import { cumulerConso, tailleOctets, CONSO_R2 } from './worker.js';
+import { consoTennisApi } from './ventes.js';
+test('434 : cumul par jour, remis à zéro le lendemain ; octets en UTF-8', () => {
+  assert.equal(tailleOctets('é'), 2);
+  const a = cumulerConso(null, 1, 100, '2026-11-25');
+  assert.deepEqual(cumulerConso(a, 2, 50, '2026-11-25'), { jour: '2026-11-25', requetes: 3, octets: 150 });
+  assert.deepEqual(cumulerConso(a, 1, 10, '2026-11-26'), { jour: '2026-11-26', requetes: 1, octets: 10 });
+});
+test('434 : /live mesure sans rien montrer ; la carte admin lit direct et fiches', async () => {
+  viderLive433();
+  const stock = { 'live/compteur/2026-11-24.json': JSON.stringify({ n: 7, o: 7000 }),
+    [CONSO_R2]: JSON.stringify({ direct: [{ jour: '2026-11-24', requetes: 100, octets: 5e6 }] }) };
+  const envL = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null),
+    put: async (k, v) => { stock[k] = v; }, list: async ({ prefix }) => ({ objects: Object.keys(stock).filter(k => k.startsWith(prefix)).sort().map(key => ({ key })) }) } };
+  const corps = JSON.stringify({ events: [EV] });
+  globalThis.fetch = async () => new Response(corps, { status: 200 });
+  const t = await (await worker.fetch(req('/live'), envL)).text();
+  assert.ok(!t.includes('conso') && !t.includes('octets'));
+  const doc = JSON.parse(stock['live/en_cours.json']);
+  assert.equal(doc.conso.requetes, 1); assert.equal(doc.conso.octets, tailleOctets(corps));
+  const J = await consoTennisApi(envL);
+  const hier = J.find(j => j.jour === '2026-11-24');
+  assert.equal(hier.direct_req, 100); assert.equal(hier.fiches_req, 7); assert.equal(hier.fiches_octets, 7000);
+  assert.ok(J.find(j => j.jour === doc.conso.jour).direct_octets > 0);
+  viderLive433();
+});
+test('434 : au changement de jour, la veille est archivée (60 jours gardés)', async () => {
+  viderLive433();
+  const stock = { 'live/en_cours.json': JSON.stringify({ ok: true, maj: 1, ttl: 3000, matchs: [], termines: [], conso: { jour: '2000-01-01', requetes: 9, octets: 900 } }) };
+  const envL = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  globalThis.fetch = async () => new Response(JSON.stringify({ events: [] }), { status: 200 });
+  await worker.fetch(req('/live'), envL);
+  assert.deepEqual(JSON.parse(stock[CONSO_R2]).direct, [{ jour: '2000-01-01', requetes: 9, octets: 900 }]);
+  assert.equal(JSON.parse(stock['live/en_cours.json']).conso.requetes, 1);
+  viderLive433();
+});
