@@ -2473,6 +2473,13 @@
    "paquet": 444,
    "quoi": "MISE EN PAGE ET RÉFÉRENCEMENT (paquet 444, Lucas : « fais-le »). 1) Vrai titre H1 sous le logo : « Pronostics tennis par algorithme : le % de victoire et le scénario complet de chaque match » (Bing signalait « H1 manquant ») ; le logo n'est plus un titre. 2) Son, langue et thème regroupés derrière un bouton ⚙️ : une rangée de boutons en moins en haut de l'accueil. 3) « Notre projet » : les 8 différenciants en tuiles compactes, deux par ligne, avec une accroche ; le détail s'ouvre au toucher. 4) Pages des joueurs, matchs, tournois, bilans : liens au style du site (noms en clair, sans soulignement, petite flèche). 5) IndexNow : à chaque publication, les pages nouvelles ou modifiées sont signalées à Bing (clé servie par le site).",
    "garde_fou": "Rien ne change dans les % ni dans les données. IndexNow ne signale que les pages HTML publiques réellement envoyées et ne bloque jamais la publication ; le journal public ne montre que des nombres. Tests : tests/test_indexnow_mise_en_page.py, workers/algo/test_worker.mjs (444)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 445,
+   "quoi": "RÉFÉRENCEMENT : PAGES DES MATCHS À VENIR (paquet 445, Lucas : « on doit encore améliorer le référencement », choix « affiche + teaser Plus »). Chaque match ATP, WTA ou Challenger à venir a sa page « Pronostic A – B » (titre et description pour Google, données d'événement prévu) : tournoi, surface, date, la liste des critères calculés par l'algo (verrouillés) avec le bouton « Voir le % et le scénario complet » vers la fiche du site, la forme et la performance publique de chaque joueur et leurs matchs déjà analysés. Après le match, la même adresse devient la page du match terminé. Les pages des joueurs montrent leur prochain match ; la liste /matchs commence par « Matchs à venir » ; le plan du site les inclut (et IndexNow les signale à Bing). Fil d'Ariane (données structurées) sur les pages des matchs et des joueurs ; titres des joueurs « pronostics, forme et statistiques ».",
+   "garde_fou": "Rien de réservé sur ces pages : ni le %, ni le scénario, ni la fiabilité du match, ni les cotes justes (test dédié). ITF exclu. Tests : tests/test_pages_seo.py (445)."
   }
  ]
 }
