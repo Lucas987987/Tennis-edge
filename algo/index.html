@@ -417,7 +417,7 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .film .f3-haut .f3-tn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .film .f3-haut span{background:rgba(7,6,26,.72);border:1px solid rgba(255,255,255,.14);border-radius:1.4cqw;padding:1cqw 2cqw;backdrop-filter:blur(4px)}
 .film .f3-sim b{color:#D4FF3A}
-/* paquet 310 : signature des vidéos et des cartes (le nom seul, jamais l'adresse du site) */
+/* paquet 310 : signature des vidéos et des cartes — paquet 446 : l'adresse du site gamesetalgo.com */
 .te-signe{display:inline-flex;align-items:center;gap:.45em;font-family:var(--disp);letter-spacing:.06em;color:#F4F1FF;opacity:.82;white-space:nowrap;pointer-events:none}
 .te-signe i{width:.62em;height:.62em;border-radius:50%;background:#D4FF3A;box-shadow:0 0 .6em #D4FF3A;flex:none}
 .film .te-signe{position:absolute;right:3cqw;top:calc(var(--haut) + var(--vue) - 7.2cqw);z-index:6;font-size:3.1cqw;background:rgba(7,6,26,.55);border:1px solid rgba(255,255,255,.12);border-radius:1.2cqw;padding:.8cqw 1.6cqw}
@@ -2524,7 +2524,7 @@ function essentielListe(m){
   return L_;
 }
 // 04/11/2026 — POST X généré depuis les données de CE match (demande de Lucas) : uniquement des faits de l'algo,
-// aucune adresse de site, aucune cote de bookmaker, aucun conseil. Toujours en français (les posts le sont).
+// aucune cote de bookmaker, aucun conseil ; depuis le paquet 446, l’adresse gamesetalgo.com en fin de post. Toujours en français (les posts le sont).
 // 04/11/2026 — drapeau du joueur (code ISO alpha-3 des fiches) ; Russie et Biélorussie : aucun drapeau (joueurs
 // neutres sur les circuits). Code inconnu : rien.
 const PAYS2 = Object.fromEntries("AGOAO ALBAL ANDAD ARGAR ARMAM ATGAG AUSAU AUTAT AZEAZ BDIBI BELBE BGRBG BHSBS BIHBA BMUBM BOLBO BRABR BRBBB BWABW CANCA CHECH CHLCL CHNCN CIVCI CODCD COLCO CRICR CUBCU CYPCY CZECZ DEUDE DNKDK DOMDO DZADZ ECUEC EGYEG ESPES ESTEE FINFI FRAFR GBRGB GEOGE GHAGH GRCGR HKGHK HRVHR HUNHU IDNID INDIN IRLIE IRNIR ISLIS ISRIL ITAIT JAMJM JORJO JPNJP KAZKZ KENKE KGZKG KORKR LAOLA LBNLB LIELI LKALK LTULT LUXLU LVALV MARMA MCOMC MDAMD MEXMX MKDMK MLTMT MNEME MNPMP MOZMZ MYSMY NCLNC NGANG NLDNL NORNO NPLNP NZLNZ PANPA PERPE PHLPH PNGPG POLPL PRTPT PRYPY ROURO SAUSA SGPSG SLVSV SMRSM SRBRS SURSR SVKSK SVNSI SWESE THATH TTOTT TUNTN TURTR TWNTW UKRUA URYUY USAUS UZBUZ VENVE VNMVN XKXXK ZAFZA ZWEZW QATQA AREAE PRIPR BENBJ TGOTG SENSN CMRCM MNGMN PAKPK BGDBD KWTKW MUSMU MDGMG UGAUG ZMBZM GTMGT HNDHN NICNI HTIHT BRNBN KHMKH FJIFJ LBYLY IRQIQ OMNOM BHRBH TJKTJ TKMTM MACMO".split(' ').map(x=>[x.slice(0,3), x.slice(3)]));
@@ -2563,7 +2563,7 @@ function postX(m, court_){
         `🎯 ${H} ${pct(p)} – ${pct(1-p)} ${A}`];
       if (principal) l.push(`📊 Scénario principal : ${vainqDe(principal[0])} ${setsTxt(principal[0])} (${pct(principal[1])})`);
       if (k.set_decisif != null) l.push(`⚖️ Set décisif : ${pct(k.set_decisif)}`);
-      l.push(`#TennisEdge ${tag}`);
+      l.push('👉 gamesetalgo.com', `#GameSetAlgo ${tag}`);
       return l.join('\n');
     }
     const L2 = [];
@@ -2594,7 +2594,8 @@ function postX(m, court_){
     L2.push(`🎥 Un scénario simulé point par point parmi les ${nf} réalisés, en vidéo.`);
     L2.push('🔬 Résultat et statistiques comparés après le match pour mesurer la fiabilité des prédictions.');
     L2.push('📊 Des probabilités calculées sans aucune cote de bookmaker.', '');
-    L2.push(`${tag} #TennisEdge #Tennis #Prediction`);
+    L2.push('👉 Le scénario complet du match : gamesetalgo.com', '');
+    L2.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return L2.join('\n');
   } finally { L = Ls; }
 }
@@ -2655,7 +2656,7 @@ function postResultat(m, court_){
         `🏆 ${W} gagne ${R.score}`,
         `🎯 Prévu par l'algo : ${W} ${pct(pW)} ${favGagne ? '✅' : '❌'}`];
       if (exact) l.push(`🔥 Score exact dans le top 3 de l'algo (${pct1(exact[1])})`);
-      l.push(`🧠 ${nf} simulations, sans aucune cote`, `#TennisEdge ${tag}`);
+      l.push(`🧠 ${nf} simulations, sans aucune cote`, '👉 gamesetalgo.com', `#GameSetAlgo ${tag}`);
       return l.join('\n');
     }
     // fourchettes : feuille_fourchette (aces, breaks, premiere_pct) ou feuille_plus
@@ -2699,7 +2700,7 @@ function postResultat(m, court_){
     ST.filter(x => x.dedans === false && x.sens).forEach(x =>
       L2.push(`🔬 ${x.cle === 'aces' ? 'Les aces' : x.cle === 'breaks' ? 'Les breaks' : 'Les premières balles'} ont été ${x.sens === 'sur' ? 'surestimés' : 'sous-estimés'}.`));
     L2.push('', '📊 Chaque match permet de confronter les probabilités annoncées aux résultats réels, réussites comme erreurs.', '');
-    L2.push(`🎾 Toujours ${nf} simulations indépendantes des cotes des bookmakers !`, '', `${tag} #TennisEdge #Tennis #Prediction`);
+    L2.push(`🎾 Toujours ${nf} simulations indépendantes des cotes des bookmakers !`, '', '👉 Tout le bilan, erreurs comprises : gamesetalgo.com', '', `${tag} #GameSetAlgo #Tennis #Prediction`);
     return L2.join('\n').replace(/\n{3,}/g, '\n\n');
   } finally { L = Ls; }
 }
@@ -2737,7 +2738,7 @@ function brancherVideo(m){
   };
 }
 // 11/11/2026 (paquet 224) — ANALYSE COMPLÈTE pour X : tout ce que la fiche sait du match, en un texte à copier.
-// Règles : aucune adresse du site, aucune cote, jamais « value » ni conseil de pari ; les blocs descriptifs disent
+// Règles : aucune cote (adresse gamesetalgo.com en fin de post depuis le paquet 446), jamais « value » ni conseil de pari ; les blocs descriptifs disent
 // qu'ils ne changent pas le % ; un bloc sans donnée n'est pas écrit ; un bilan sous 15 matchs n'est pas chiffré.
 function analyseComplete(m, court_){
   const Ls = L; L = 'fr';
@@ -2878,7 +2879,8 @@ function analyseComplete(m, court_){
     T.push(`🎥 Un scénario simulé point par point parmi les ${nf} réalisés, en vidéo.`);
     T.push('📊 Après le match, nous comparerons les projections aux statistiques réelles.', '');
     T.push(`🧠 ${nf} simulations indépendantes des cotes des bookmakers.`, '');
-    T.push(`${tag} #TennisEdge #Tennis #Prediction`);
+    T.push('👉 gamesetalgo.com', '');
+    T.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return T.join('\n').replace(/\n{3,}/g, '\n\n');
   } finally { L = Ls; }
 }
@@ -8855,8 +8857,10 @@ async function filmDuJour(V, m, son){
 }
 
 /* ───────────── carte de stats (?carte=1) : image 1080×1350 pour X, capturée par scripts/video_simulation.py ───────────── */
-// paquet 310 : la signature (le nom seul : jamais l'adresse du site dans les vidéos et les images pour X)
-const SIGNE = '<div class="te-signe" aria-hidden="true"><i></i>GAME SET ALGO</div>';   // paquet 311 : nouveau nom
+// paquet 310 : la signature des vidéos et des images pour X.
+// 25/11/2026 (paquet 446, Lucas : « maintenant on va pouvoir communiquer sur le site sur X et dans les vidéos ») : la
+// signature devient l'adresse du site (le nom y est déjà) — vidéos 2D et 3D, résumé, cartes de stats, bilan, semaine.
+const SIGNE = '<div class="te-signe" aria-hidden="true"><i></i>GAMESETALGO.COM</div>';
 function modeCarte(){
   document.body.classList.add('carte');
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);

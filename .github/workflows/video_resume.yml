@@ -5,7 +5,7 @@ name: Vidéo — résumé 3D d'un match terminé
 # Le déroulé (qui gagne chaque point, qui sert) vient de la feuille et du point par point TennisApi déjà stockés
 # (feuilles/, feuilles_points/) : 0 requête d'API. Seuls les échanges (trajectoires, coups) sont reconstitués.
 # Lancement À LA MAIN : bouton « 🎞️ Résumé 3D du match » de la fiche (worker algo, mode « resume »), ou Run workflow
-# avec l'uid du site. Jamais d'ITF. Jamais l'adresse du site dans la vidéo. Les vidéos arrivent sur le Telegram PRIVÉ
+# avec l'uid du site. Jamais d'ITF. Depuis le paquet 446, la signature de la vidéo est l'adresse gamesetalgo.com. Les vidéos arrivent sur le Telegram PRIVÉ
 # (TELEGRAM_CHAT_ID) et nulle part ailleurs : pas d'artefact, rien de commité.
 # La feuille et le point par point arrivent quelques heures après la fin du match (feuilles_match.yml, toutes les 2 h),
 # parfois le lendemain : avant, le résumé est refusé et un message le dit sur le Telegram privé.
