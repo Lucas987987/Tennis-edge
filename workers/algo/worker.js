@@ -25,7 +25,7 @@
 //    /donnees.json ne sont servis complets qu'à un abonné (ou avec la clé privée) ; les autres reçoivent
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
 import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
-import { compterVisite, quotidien } from './ventes.js';
+import { compterVisite, quotidien, poulsVisites } from './ventes.js';
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -829,7 +829,8 @@ export const livePoints = (req, env, url) => liveDetail(req, env, url, 'points')
 
 export default {
   // 386 : chaque jour (wrangler.toml, [triggers]) : rappels de fin d'accès payé, totaux des visites de la veille
-  async scheduled(event, env, ctx) { ctx.waitUntil(quotidien(env)); },
+  // 478 : chaque heure (« 7 * * * * ») le pouls des visites ; chaque matin (« 17 7 * * * ») le reste, dont le bilan
+  async scheduled(event, env, ctx) { ctx.waitUntil(event && event.cron === '7 * * * *' ? poulsVisites(env) : quotidien(env)); },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     // 386 : entonnoir privé — une ouverture de la page publique (site.json) sur gamesetalgo.com, sans cookie
