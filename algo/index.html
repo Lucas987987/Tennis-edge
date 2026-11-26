@@ -124,6 +124,10 @@ h2{font-family:var(--disp);font-weight:400;font-size:1.45rem;line-height:1.15;ma
 .duelx .ctx{color:var(--dim);font-size:.92rem;margin:0 0 10px}
 .duelx .ligne{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px}
 .duelx .nm{font-weight:600;font-size:1.08rem}
+.fav{border:0;background:transparent;color:var(--dim);font-size:1.15rem;line-height:1;cursor:pointer;padding:6px;min-width:36px;min-height:36px;border-radius:8px}.fav.on{color:var(--ball)}.fav:hover{background:rgba(var(--wv),.06)}
+.nm-w{display:inline-flex;align-items:center;gap:2px;min-width:0}.list li{position:relative}.list li > .fav-m{position:absolute;top:4px;right:4px;z-index:2}
+.fav-j{color:var(--ball);font-size:.85em}.list li.fav-l{box-shadow:inset 3px 0 0 var(--ball)}
+.fav-filtre{border:1px solid var(--line2);background:transparent;color:inherit;border-radius:999px;padding:8px 14px;min-height:44px;font:inherit;font-weight:600;cursor:pointer}.fav-filtre[aria-pressed="true"]{background:var(--ball);color:#141225;border-color:transparent}
 .duelx .pc{font-family:var(--disp);font-size:2.2rem;line-height:1.1;font-variant-numeric:tabular-nums}
 .duelx .l1 .pc{color:var(--p1);text-shadow:0 0 18px rgba(46,230,255,.45)} .duelx .l2 .pc{color:var(--p2);text-shadow:0 0 18px rgba(255,79,174,.45)}
 .duelx .cj{color:var(--dim);font-size:.9rem;font-family:var(--cond);font-variant-numeric:tabular-nums}
@@ -852,6 +856,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
         <button type="button" data-circuit="CH" aria-pressed="false">CH</button>
         <button type="button" data-circuit="LIVE" aria-pressed="false">🔴 LIVE</button>
       </div>
+      <button type="button" class="fav-filtre" id="fav-filtre" aria-pressed="false" hidden data-t="fav_filtre"></button>
       <div class="fiab-bloc"><span class="fiab-lab" data-t="fiab" aria-hidden="true"></span>
       <div class="seg fiab-filtre" role="group" data-t-aria="fiab_filtre_label">
         <button type="button" data-fniv="TOUS" aria-pressed="true" data-t="fiab_toutes"></button>
@@ -1206,6 +1211,9 @@ const T = {
   fd_pay_cgv:'Conditions de vente', fd_pay_avant:"Commence par cocher l'accès immédiat ci-dessus.",
   verrou_commence:"Le match a commencé : le % de l'algo d'avant match est affiché. Le détail (sets, scores, scénarios, statistiques) reste réservé à l'accès Plus.",
   fd_titre:'Offre fondateurs',
+  fav_filtre:'⭐ Mes favoris', fav_ajouter:n=>`Ajouter ${n} aux favoris`, fav_retirer:n=>`Retirer ${n} des favoris`,
+  fav_compte:'Crée ton compte (gratuit) pour garder tes joueurs et tes matchs favoris.',
+  fav_vide:'Aucun match de tes favoris pour l’instant : touche ☆ à côté d’un joueur (dans la fiche d’un match) ou d’un match.',
   fd_texte:"Les 100 premiers comptes confirmés sont fondateurs, automatiquement : l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Rien à réserver : crée ton compte et confirme ton adresse.",
   fd_complet:"Les 100 places fondateurs sont attribuées : ton accès Plus est au tarif normal.",
   fd_reserver:'Réserver ma place', fd_compte:'Créer mon compte', fd_cx:'Se connecter',
@@ -1575,6 +1583,9 @@ const T = {
   fd_pay_cgv:'Terms of sale', fd_pay_avant:'Start by ticking immediate access above.',
   verrou_commence:"The match has started: the algo's pre-match % is shown. The details (sets, scores, scenarios, stats) stay reserved for Plus access.",
   fd_titre:'Founders offer',
+  fav_filtre:'⭐ My favourites', fav_ajouter:n=>`Add ${n} to favourites`, fav_retirer:n=>`Remove ${n} from favourites`,
+  fav_compte:'Create your (free) account to keep your favourite players and matches.',
+  fav_vide:'No match from your favourites yet: tap ☆ next to a player (on a match page) or a match.',
   fd_texte:"The first 100 confirmed accounts are founders, automatically: Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Nothing to reserve: create your account and confirm your address.",
   fd_complet:'All 100 founder spots are taken: your Plus access is at the regular price.',
   fd_reserver:'Reserve my spot', fd_compte:'Create my account', fd_cx:'Log in',
@@ -4096,10 +4107,10 @@ function rendMdj(){
       <p class="aide">${esc(t('jouer_aide', nSim))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
     <div class="fiche">
       <div class="panel duelx">
-        <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(jourCourt(m.debut))} ${esc(heure(m.debut))}</p>
-        <div class="ligne l1"><span class="nm" data-joueur="${esc(m.home)}">${esc(m.home)}</span><span class="pc">${pc0(p)}</span></div>
+        <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(jourCourt(m.debut))} ${esc(heure(m.debut))}${etoile('match', m.uid, `${m.home} – ${m.away}`)}</p>
+        <div class="ligne l1"><span class="nm-w"><span class="nm" data-joueur="${esc(m.home)}">${esc(m.home)}</span>${etoile('joueur', m.home, m.home)}</span><span class="pc">${pc0(p)}</span></div>
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
-        <div class="ligne l2"><span class="nm" data-joueur="${esc(m.away)}">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
+        <div class="ligne l2"><span class="nm-w"><span class="nm" data-joueur="${esc(m.away)}">${esc(m.away)}</span>${etoile('joueur', m.away, m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
 
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
@@ -4221,12 +4232,46 @@ function majBoutonTiroirs(){
   const tous = [...f.querySelectorAll(':scope > .tiroir')];
   b.textContent = t(tous.some(d => !d.open) ? 'tr_ouvrir' : 'tr_replier');
 }
+// 26/11/2026 (paquet 476, Lucas) — FAVORIS : joueurs et matchs, gardés sur le compte (gratuit compris). Ne donne
+// accès à rien de réservé au Plus : un favori ne fait que trier, filtrer et marquer. Sans système de comptes (copie
+// GitHub Pages), aucune étoile n'est montrée.
+let filtreFav = false, COMPTES_DISPO = false;
+const FAVS = () => (typeof COMPTE !== 'undefined' && COMPTE && COMPTE.favoris) || { joueurs: [], matchs: [] };
+const estFavJ = n => (FAVS().joueurs || []).includes(n);
+const estFavM = uid => (FAVS().matchs || []).includes(uid);
+const estFavMatch = m => !!m && (estFavM(m.uid) || estFavJ(m.home) || estFavJ(m.away));
+const favJ = n => estFavJ(n) ? '<span class="fav-j" aria-hidden="true">★ </span>' : '';
+function etoile(type, cle, nom, cl){
+  if (!COMPTES_DISPO) return '';
+  const on = type === 'joueur' ? estFavJ(cle) : estFavM(cle);
+  return `<button type="button" class="fav${on ? ' on' : ''}${cl ? ' ' + cl : ''}" data-fav="${type}" data-cle="${esc(cle)}" data-nom="${esc(nom || cle)}" aria-pressed="${on}" aria-label="${esc(t(on ? 'fav_retirer' : 'fav_ajouter', nom || cle))}" title="${esc(t(on ? 'fav_retirer' : 'fav_ajouter', nom || cle))}">${on ? '★' : '☆'}</button>`;
+}
+function majEtoiles(){
+  document.querySelectorAll('[data-fav]').forEach(b => { const on = b.dataset.fav === 'joueur' ? estFavJ(b.dataset.cle) : estFavM(b.dataset.cle);
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '★' : '☆';
+    const l = t(on ? 'fav_retirer' : 'fav_ajouter', b.dataset.nom || b.dataset.cle); b.setAttribute('aria-label', l); b.title = l; });
+  const f = document.getElementById('fav-filtre'); if (f) { f.hidden = !COMPTES_DISPO; f.setAttribute('aria-pressed', String(filtreFav)); }
+}
+function favoriAction(b){
+  if (!COMPTE) return ouvrirCompte('inscription', t('fav_compte'), true);
+  const type = b.dataset.fav, cle = b.dataset.cle, actif = b.getAttribute('aria-pressed') !== 'true', k = type === 'joueur' ? 'joueurs' : 'matchs';
+  const avant = JSON.parse(JSON.stringify(FAVS())), F = JSON.parse(JSON.stringify(avant));
+  F[k] = actif ? [cle, ...(F[k] || []).filter(x => x !== cle)] : (F[k] || []).filter(x => x !== cle);
+  COMPTE.favoris = F; majEtoiles(); if (D) rendListe();
+  apiCompte('favoris', { type, cle, actif }).then(o => { if (o && o.ok && o.favoris) COMPTE.favoris = o.favoris; else COMPTE.favoris = avant; majEtoiles(); if (D) rendListe(); });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-fav]'); if (b) { e.preventDefault(); e.stopPropagation(); return favoriAction(b); }
+  const f = e.target.closest('#fav-filtre'); if (f) { if (!COMPTE) return ouvrirCompte('inscription', t('fav_compte'), true);
+    filtreFav = !filtreFav; nListe = 30; majEtoiles(); if (D) rendListe(); }
+}, true);
 function matchsFiltres(){
   const q = recherche.trim().toLocaleLowerCase(loc());
   return D.matchs.filter(m=>(m.verrou || (m.simulation && m.simulation_disponible !== false)) &&
     (circuit==='TOUS' || (circuit==='LIVE' ? !!LIVE.par_uid[m.uid] : m.circuit===circuit)) &&
     (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)) &&
-    (fiabNiv==='TOUS' || (m.fiabilite||{}).niveau===fiabNiv));   // 420 : filtre par niveau de fiabilité
+    (fiabNiv==='TOUS' || (m.fiabilite||{}).niveau===fiabNiv) &&   // 420 : filtre par niveau de fiabilité
+    (!filtreFav || estFavMatch(m)));                                 // 476 : « Mes favoris »
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, TennisApi) tant qu'un match de la liste peut être
 // en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
@@ -8198,11 +8243,11 @@ function demarrerLive(){
 // 23/11/2026 (paquet 377) — match réservé à l'accès Plus : l'affiche seulement, aucun pourcentage
 function ligneVerrou(m){
   const selection = m.uid === selectionId;
-  return `<li class="${selection?'selectionne':''}"><a class="match-open" href="#match=${encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}">
+  return `<li class="${selection?'selectionne':''}${estFavMatch(m)?' fav-l':''}">${etoile('match', m.uid, `${m.home} – ${m.away}`, 'fav-m')}<a class="match-open" href="#match=${encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}">
       <span class="time">${quand(m.debut)}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}</span>
-      <span class="pl a"><span>${esc(m.home)}</span><b>${m.p_home != null ? pc0(m.p_home) : '🔒'}</b></span>
-      <span class="pl b"><span>${esc(m.away)}</span><b>${m.p_home != null ? pc0(1 - m.p_home) : ''}</b></span>
+      <span class="pl a"><span>${favJ(m.home)}${esc(m.home)}</span><b>${m.p_home != null ? pc0(m.p_home) : '🔒'}</b></span>
+      <span class="pl b"><span>${favJ(m.away)}${esc(m.away)}</span><b>${m.p_home != null ? pc0(1 - m.p_home) : ''}</b></span>
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span class="verrou-b">🔒 Plus</span><span class="ouvrir">${esc(t('verrou_titre'))}</span></span>
     </span></a></li>`;
@@ -8213,7 +8258,7 @@ function panneauVerrou(m){
   const actions = COMPTE ? `<p class="sub" style="margin:10px 0 0">${esc(t(abo ? 'verrou_libre_abo' : 'verrou_libre'))}</p><div class="actions">${abo ? `<button type="button" class="btn go" data-plus="abo">${esc(t('ab_cta'))}</button>` : ''}<button type="button" class="btn" data-compte="moi">${esc(t('verrou_code'))}</button></div>`
     : `<div class="actions"><button type="button" class="btn go" data-compte="inscription">${esc(t('verrou_cta_compte'))}</button><button type="button" class="btn" data-compte="connexion">${esc(t('verrou_cta_cx'))}</button></div>`;
   return `<div class="panel verrou-p"><span class="verrou-b">🔒 ${esc(t('verrou_titre'))}</span>
-    <p class="vs">${esc(m.home)} – ${esc(m.away)}</p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}</p>
+    <p class="vs"><span class="nm-w">${esc(m.home)}${etoile('joueur', m.home, m.home)}</span> – <span class="nm-w">${esc(m.away)}${etoile('joueur', m.away, m.away)}</span></p><p class="sub" style="margin:0">${esc(m.tournoi)} · ${quand(m.debut)}${etoile('match', m.uid, `${m.home} – ${m.away}`)}</p>
     ${m.p_home != null ? `<p class="vs" style="margin:10px 0 0"><span style="color:var(--p1)">${pc0(m.p_home)}</span> – <span style="color:var(--p2)">${pc0(1 - m.p_home)}</span></p><p style="margin:8px 0 0">${esc(t('verrou_commence'))}</p>` : `<p style="margin:12px 0 0">${esc(t('verrou_texte'))}</p>`}${actions}</div>`;
 }
 function rendListe(){
@@ -8226,7 +8271,8 @@ function rendListe(){
   const estTermine = m => !!(D.apres_match && D.apres_match[m.uid] && D.apres_match[m.uid].reel)
     || (!!LIVE.vus[m.uid] && !LIVE.par_uid[m.uid])
     || (!LIVE.par_uid[m.uid] && Date.now() - utc(m.debut).getTime() > 3 * 3600e3);
-  const enCours = tous.filter(m => !estTermine(m));
+  // 476 : les matchs des favoris (joueur ou match épinglé) remontent en tête, dans l'ordre de l'heure
+  const enCours = tous.filter(m => !estTermine(m)).map((m, i) => [m, i]).sort((a, b) => (estFavMatch(b[0]) - estFavMatch(a[0])) || (a[1] - b[1])).map(x => x[0]);
   const termines = tous.filter(estTermine);
   const visibles = enCours.slice(0,nListe);
   // 23/11/2026 (paquet 388) : le groupe « Matchs terminés » s'ouvrait VIDE dès qu'il y avait 30 matchs à venir (il ne
@@ -8239,16 +8285,16 @@ function rendListe(){
   const notePlus = sansFiab ? `<li class="empty" style="display:block">${esc(t('fiab_filtre_plus'))}</li>` : '';
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
-    ul.innerHTML = `<li class="empty" style="display:block">${esc(circuit==='LIVE' ? (L==='fr'?'Aucun match en direct actuellement.':'No live matches at the moment.') : fiabNiv!=='TOUS' ? t(sansFiab?'fiab_filtre_plus':'fiab_filtre_vide') : t('liste_vide'))}</li>`;
+    ul.innerHTML = `<li class="empty" style="display:block">${esc(filtreFav ? t('fav_vide') : circuit==='LIVE' ? (L==='fr'?'Aucun match en direct actuellement.':'No live matches at the moment.') : fiabNiv!=='TOUS' ? t(sansFiab?'fiab_filtre_plus':'fiab_filtre_vide') : t('liste_vide'))}</li>`;
     document.getElementById('liste-more').hidden = true;
     return;
   }
   const ligneMatch = m=>{ if (m.verrou) return ligneVerrou(m); const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
-    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
+    return `<li class="${star?'star ':''}${selection?'selectionne':''}${estFavMatch(m)?' fav-l':''}">${etoile('match', m.uid, `${m.home} – ${m.away}`, 'fav-m')}<a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${quand(m.debut)}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
-      <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
-      <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
+      <span class="pl a"><span>${favJ(m.home)}${esc(m.home)}</span><b>${pc0(p)}</b></span>
+      <span class="pl b"><span>${favJ(m.away)}${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
@@ -8612,7 +8658,7 @@ function texteLegal(page, e){
     <h3>Intellectual property</h3><p>© Game Set Algo unless stated otherwise. 3D characters: Quaternius (CC0); motion data: Mixamo (Adobe), embedded; fonts: SIL Open Font License.</p>${maj}`;
   if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
     <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, pas de mesure d'audience, aucun traceur publicitaire.</p>
-    <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
+    <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé), ainsi que les joueurs et matchs que vous mettez en favoris (pour trier et filtrer la liste). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
     <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord. Si votre compte reçoit une place fondateur (les 100 premiers comptes confirmés), nous gardons son numéro et sa date d'attribution, et pouvons vous écrire à l'ouverture du paiement.</p>
     <h3>Mesure d'audience</h3><p>Pour savoir combien de personnes ouvrent le site, notre serveur compte les ouvertures de la page, sans cookie ni traceur : une empreinte du jour, calculée à partir de l'adresse IP et du navigateur avec une clé qui change chaque jour, évite de compter deux fois la même visite. Ces empreintes sont effacées le lendemain ; seuls les totaux par jour sont gardés.</p>
     <h3>Paiements et factures</h3><p>Quand vous payez par virement, nous gardons le montant, la date, la formule et la facture émise. Les factures sont conservées 10 ans, comme l'impose la loi, même si le compte est supprimé. Quelques jours avant la fin d'un accès payé, un e-mail de rappel vous est envoyé.</p>
@@ -8624,7 +8670,7 @@ function texteLegal(page, e){
     <h3>Polices et contenus</h3><p>Les polices de caractères et les modèles 3D sont servis par le site lui-même : aucune requête n'est faite à Google ou à un autre tiers pendant votre visite. Les scores en direct passent par notre serveur, pas par votre navigateur.</p>
     <h3>Vos droits</h3><p>Vous pouvez accéder à vos données, les rectifier, les effacer ou les emporter (« Mon compte » → « Télécharger mes données »), ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
     : `<h2>Privacy</h2><p>An optional account, a single cookie (to keep you logged in), no advertising cookie, no analytics, no advertising tracker.</p>
-    <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, and the state of your Plus access (plan, dates, code used). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
+    <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, the state of your Plus access (plan, dates, code used), and the players and matches you mark as favourites (to sort and filter the list). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
     <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent. If you reserve a founders spot, we keep the reservation date and email you to confirm it, then when payment opens; cancelling the reservation in the Plus section stops these emails.</p>
     <h3>Audience measurement</h3><p>To know how many people open the site, our server counts page openings, with no cookie or tracker: a daily fingerprint computed from the IP address and browser with a key that changes every day avoids counting the same visit twice. Fingerprints are erased the next day; only daily totals are kept.</p>
     <h3>Payments and invoices</h3><p>When you pay by bank transfer, we keep the amount, date, plan and invoice. Invoices are kept for 10 years as required by law, even if the account is deleted. A few days before a paid access ends, a reminder email is sent.</p>
@@ -9192,6 +9238,7 @@ function majBoutonCompte(){
   const b = document.getElementById('b-compte'); if (!b) return;
   b.textContent = COMPTE ? (COMPTE.abonne ? '★ ' : '') + t('cp_btn_moi') : t('cp_btn');
   b.classList.toggle('plus', !!(COMPTE && COMPTE.abonne));
+  majEtoiles();                                                         // 476 : favoris du compte
 }
 // 24/11/2026 (paquet 405, Lucas : « fais 1-2-3 ») — section Plus lisible en 10 secondes : gratuit contre Plus (tableau),
 // le nombre de matchs du jour et le bilan des 30 derniers jours (public, erreurs comprises), un lien vers l'exemple
@@ -9456,6 +9503,7 @@ function brancherCompte(){
   apiCompte('moi').then(o => {
     if (!o || o.erreur === 'defaut' || o.erreur === 'ferme') return;             // pas de worker (GitHub Pages) : rien
     COMPTE = o.compte || null; ADMIN = !!o.admin; PAIEMENT = o.paiement || null; TARIFS_SITE = o.tarifs || null; TS_CLE = o.turnstile || null; b.hidden = false; majBoutonCompte(); rendFondateurs();
+    COMPTES_DISPO = true; majEtoiles();                                     // 476 : favoris
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) { chargerInterne(); lienAdmin(); }
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
