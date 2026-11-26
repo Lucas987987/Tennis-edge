@@ -1239,6 +1239,11 @@ const T = {
     connexion:'Connecte-toi d’abord.', mdp_faux:'Mot de passe actuel incorrect.', robot:'Vérification anti-robots non passée : réessaie.'},
   cp_t_mdp:'Changer de mot de passe', cp_mdp_ancien:'Mot de passe actuel', cp_mdp_nouveau:'Nouveau mot de passe (8 caractères minimum)',
   cp_go_mdp:'Enregistrer', cp_mdp_ok:'Mot de passe changé. Tes autres appareils sont déconnectés.', cp_l_mdp:'Changer de mot de passe',
+  nt_titre:'🔔 Notifications des favoris', nt_txt:'Sur ce téléphone : le matin quand tes favoris jouent, le début du match, chaque break, chaque set et le résultat (avec ce que l\'algo avait annoncé).',
+  nt_activer:'Activer les notifications', nt_ok:'Activées sur cet appareil.', nt_tester:'Envoyer un test', nt_desactiver:'Désactiver sur cet appareil',
+  nt_plus:'Réservé aux abonnés Plus.', nt_ios:'Sur iPhone : ajoute d\'abord le site à l\'écran d\'accueil (Partager → Sur l\'écran d\'accueil), puis ouvre-le depuis son icône.',
+  nt_non:'Ce navigateur ne gère pas les notifications.', nt_bloque:'Notifications bloquées : autorise-les pour ce site dans les réglages du navigateur.',
+  nt_essai_ok:'Test envoyé : la notification arrive dans quelques secondes.', nt_err:'Activation impossible, réessaie dans un instant.', nt_off:'Notifications coupées sur cet appareil.',
   cp_l_export:'Télécharger mes données', cp_l_suppr:'Supprimer mon compte', cp_t_suppr:'Supprimer mon compte',
   cp_suppr_txt:'Ton compte et tout ce qui s’y rattache (e-mail, accès Plus, historique) sont effacés tout de suite et pour de bon. Seules tes factures éventuelles sont gardées 10 ans, comme la loi l’impose.',
   cp_go_suppr:'Supprimer définitivement', cp_suppr_ok:'Ton compte a été supprimé.',
@@ -1611,6 +1616,11 @@ const T = {
     connexion:'Log in first.', mdp_faux:'Current password is incorrect.', robot:'Anti-bot check failed: please try again.'},
   cp_t_mdp:'Change password', cp_mdp_ancien:'Current password', cp_mdp_nouveau:'New password (at least 8 characters)',
   cp_go_mdp:'Save', cp_mdp_ok:'Password changed. Your other devices have been logged out.', cp_l_mdp:'Change password',
+  nt_titre:'🔔 Favourites notifications', nt_txt:'On this phone: in the morning when your favourites play, the start of the match, every break, every set and the result (with what the algo had said).',
+  nt_activer:'Turn on notifications', nt_ok:'On for this device.', nt_tester:'Send a test', nt_desactiver:'Turn off on this device',
+  nt_plus:'For Plus members.', nt_ios:'On iPhone: first add the site to your Home Screen (Share → Add to Home Screen), then open it from its icon.',
+  nt_non:'This browser does not support notifications.', nt_bloque:'Notifications are blocked: allow them for this site in your browser settings.',
+  nt_essai_ok:'Test sent: the notification arrives in a few seconds.', nt_err:'Could not turn on, try again in a moment.', nt_off:'Notifications off on this device.',
   cp_l_export:'Download my data', cp_l_suppr:'Delete my account', cp_t_suppr:'Delete my account',
   cp_suppr_txt:'Your account and everything linked to it (email, Plus access, history) are erased immediately and for good. Only any invoices are kept for 10 years, as required by law.',
   cp_go_suppr:'Delete permanently', cp_suppr_ok:'Your account has been deleted.',
@@ -8687,7 +8697,7 @@ function texteLegal(page, e){
     <h3>Intellectual property</h3><p>© Game Set Algo unless stated otherwise. 3D characters: Quaternius (CC0); motion data: Mixamo (Adobe), embedded; fonts: SIL Open Font License.</p>${maj}`;
   if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
     <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, une mesure d'audience anonyme (des totaux par jour, sans cookie), aucun traceur publicitaire.</p>
-    <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé), ainsi que les joueurs et matchs que vous mettez en favoris (pour trier et filtrer la liste). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
+    <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé), ainsi que les joueurs et matchs que vous mettez en favoris (pour trier et filtrer la liste) et, si vous activez les notifications (abonnés Plus), l'adresse d'envoi technique de chaque appareil fournie par votre navigateur (pour vous prévenir des matchs de vos favoris ; vous pouvez les couper à tout moment depuis « Mon compte »). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
     <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord. Si votre compte reçoit une place fondateur (les 100 premiers comptes confirmés), nous gardons son numéro et sa date d'attribution, et pouvons vous écrire à l'ouverture du paiement.</p>
     <h3>Mesure d'audience</h3><p>Pour savoir combien de personnes ouvrent le site, notre serveur compte les ouvertures de la page, sans cookie ni traceur : une empreinte du jour, calculée à partir de l'adresse IP et du navigateur avec une clé qui change chaque jour, évite de compter deux fois la même visite. Pour savoir ce qui intéresse, la page envoie aussi, au plus une fois par minute, de simples compteurs : fiches de matchs ouvertes, simulations lancées, direct 3D, questions à l'algo, favoris ajoutés, minutes passées sur la page quand elle est affichée. Le serveur y ajoute, une fois par visiteur et par jour, le type d'appareil (mobile ou ordinateur), le pays déduit par notre hébergeur, la langue du site et le nom du site d'où vous arrivez (jamais l'adresse complète). Rien n'est rattaché à votre compte ni à votre personne. Les empreintes sont effacées le lendemain ; seuls les totaux par jour sont gardés.</p>
     <h3>Paiements et factures</h3><p>Quand vous payez par virement, nous gardons le montant, la date, la formule et la facture émise. Les factures sont conservées 10 ans, comme l'impose la loi, même si le compte est supprimé. Quelques jours avant la fin d'un accès payé, un e-mail de rappel vous est envoyé.</p>
@@ -8699,7 +8709,7 @@ function texteLegal(page, e){
     <h3>Polices et contenus</h3><p>Les polices de caractères et les modèles 3D sont servis par le site lui-même : aucune requête n'est faite à Google ou à un autre tiers pendant votre visite. Les scores en direct passent par notre serveur, pas par votre navigateur.</p>
     <h3>Vos droits</h3><p>Vous pouvez accéder à vos données, les rectifier, les effacer ou les emporter (« Mon compte » → « Télécharger mes données »), ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
     : `<h2>Privacy</h2><p>An optional account, a single cookie (to keep you logged in), no advertising cookie, no analytics, no advertising tracker.</p>
-    <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, the state of your Plus access (plan, dates, code used), and the players and matches you mark as favourites (to sort and filter the list). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
+    <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, the state of your Plus access (plan, dates, code used), the players and matches you mark as favourites (to sort and filter the list) and, if you turn on notifications (Plus members), the technical delivery address your browser gives for each device (to alert you about your favourites' matches; you can turn them off any time from "My account"). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
     <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent. If you reserve a founders spot, we keep the reservation date and email you to confirm it, then when payment opens; cancelling the reservation in the Plus section stops these emails.</p>
     <h3>Audience measurement</h3><p>To know how many people open the site, our server counts page openings, with no cookie or tracker: a daily fingerprint computed from the IP address and browser with a key that changes every day avoids counting the same visit twice. To know what people find useful, the page also sends, at most once a minute, plain counters: match pages opened, simulations started, 3D live, questions to the algorithm, favourites added, minutes spent on the page while it is shown. Once per visitor and per day, the server adds the device type (mobile or desktop), the country inferred by our host, the site language and the name of the site you came from (never the full address). Nothing is linked to your account or to you. Fingerprints are erased the next day; only daily totals are kept.</p>
     <h3>Payments and invoices</h3><p>When you pay by bank transfer, we keep the amount, date, plan and invoice. Invoices are kept for 10 years as required by law, even if the account is deleted. A few days before a paid access ends, a reminder email is sent.</p>
@@ -9400,6 +9410,52 @@ function blocMonAbonnement(){
   return `<div style="margin:12px 0 0"><p style="margin:0 0 4px"><b>${esc(t('cp_abo_titre'))}</b></p>${L2.map(x => `<p style="margin:2px 0">${esc(x)}</p>`).join('')}
     ${COMPTE.demande && TARIFS_SITE ? `<button type="button" class="lien" data-plus="abo">${esc(t('cp_abo_voir'))}</button>` : ''}</div>`;
 }
+// 26/11/2026 (paquet 483, Lucas) — NOTIFICATIONS DES FAVORIS (abonnés Plus) : notification du téléphone (Web Push) le
+// matin quand un favori joue, au début du match, à chaque break, à chaque set et au résultat. Rien n'est demandé au
+// navigateur tant que l'abonné n'appuie pas sur « Activer ». Le worker envoie ; sw.js affiche.
+const NT_OK = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const NT_IOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && !(window.navigator.standalone || matchMedia('(display-mode: standalone)').matches);
+function cleOctets(b){ b = b.replace(/-/g,'+').replace(/_/g,'/'); const s = atob(b + '='.repeat((4 - b.length % 4) % 4)); return Uint8Array.from(s, c => c.charCodeAt(0)); }
+async function abonnementNavigateur(){ try { const r = await navigator.serviceWorker.getRegistration(); return r ? await r.pushManager.getSubscription() : null; } catch(e) { return null; } }
+async function majNotifs(msg, ok){
+  const z = document.getElementById('cp-notifs'); if (!z || !COMPTE) return;
+  const tete = `<p style="margin:0 0 4px"><b>${esc(t('nt_titre'))}</b></p>`, note = msg ? `<p class="msg ${ok?'ok':'ko'}" role="status">${esc(msg)}</p>` : '';
+  if (!COMPTE.abonne) { z.innerHTML = tete + `<p style="margin:0"><small>${esc(t('nt_plus'))}</small></p>`; return; }
+  if (!NT_OK()) { z.innerHTML = tete + `<p style="margin:0"><small>${esc(t(NT_IOS() ? 'nt_ios' : 'nt_non'))}</small></p>`; return; }
+  const sub = await abonnementNavigateur(), actif = !!sub && Notification.permission === 'granted' && (COMPTE.appareils || 0) > 0;
+  z.innerHTML = tete + `<p style="margin:0 0 6px"><small>${esc(t('nt_txt'))}</small></p>` + (actif
+    ? `<p class="msg ok" style="margin:0 0 6px">${esc(t('nt_ok'))}</p><button type="button" class="btn" data-nt="essai">${esc(t('nt_tester'))}</button> <button type="button" class="lien" data-nt="off">${esc(t('nt_desactiver'))}</button>`
+    : Notification.permission === 'denied' ? `<p style="margin:0"><small>${esc(t('nt_bloque'))}</small></p>`
+    : `<button type="button" class="btn go" data-nt="on">${esc(t('nt_activer'))}</button>`) + note;
+}
+async function actionNotifs(k, b){
+  if (b) b.disabled = true;
+  try {
+    if (k === 'on') {
+      stat('notifs_activees');
+      if (await Notification.requestPermission() !== 'granted') return majNotifs(t('nt_bloque'), false);
+      const reg = await navigator.serviceWorker.ready, o = await (await fetch('/compte/api/push/cle', { cache:'no-store' })).json();
+      if (!o || !o.ok || !o.cle) return majNotifs(t('nt_err'), false);
+      const cle = cleOctets(o.cle);
+      let sub = await reg.pushManager.getSubscription();
+      const meme = sub && sub.options && sub.options.applicationServerKey && new Uint8Array(sub.options.applicationServerKey).join() === cle.join();
+      if (sub && !meme) { await sub.unsubscribe(); sub = null; }
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: cle });
+      const j = sub.toJSON(), r = await apiCompte('push', { appareil: { endpoint: j.endpoint, keys: j.keys } });
+      if (!r.ok) return majNotifs(t('nt_err'), false);
+      COMPTE.appareils = r.appareils; return majNotifs(t('nt_ok'), true);
+    }
+    if (k === 'essai') { const r = await apiCompte('push', { essai: true }); return majNotifs(r.ok && r.envoyes ? t('nt_essai_ok') : t('nt_err'), !!(r.ok && r.envoyes)); }
+    if (k === 'off') {
+      const sub = await abonnementNavigateur(), e = sub && sub.endpoint;
+      if (sub) await sub.unsubscribe().catch(() => {});
+      const r = e ? await apiCompte('push', { retirer: e }) : { ok: true, appareils: 0 };
+      COMPTE.appareils = r.appareils || 0; return majNotifs(t('nt_off'), true);
+    }
+  } catch(e) { return majNotifs(t('nt_err'), false); }
+  finally { if (b) b.disabled = false; }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-nt]'); if (b) { e.preventDefault(); actionNotifs(b.dataset.nt, b); } });
 function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
 function ouvrirCompte(vue, msg, ok, jeton){
   if (vue === 'inscription') stat('inscription_ouverte');           // 479
@@ -9413,6 +9469,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
       <form data-form="code"><label for="cp-c">${esc(t('cp_code'))}</label><input id="cp-c" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="GSA-XXXX-XXXX-XXXX" required>
       <button type="submit" class="btn go">${esc(t('cp_go_code'))}</button></form>${m}
       ${blocMonAbonnement()}
+      <div id="cp-notifs" style="margin:12px 0 0"></div>
       ${(COMPTE.factures||[]).length ? `<p style="margin:12px 0 4px"><b>${esc(t('cp_factures'))}</b></p>` + COMPTE.factures.map(n => `<a class="lien" target="_blank" rel="noopener" href="/compte/api/facture?n=${encodeURIComponent(n)}">${esc(n)}</a>`).join('') : ''}
       <button type="button" class="btn" data-cp="deco">${esc(t('cp_deco'))}</button>
       <button type="button" class="lien" data-cp="mdp">${esc(t('cp_l_mdp'))}</button>
@@ -9441,6 +9498,7 @@ function ouvrirCompte(vue, msg, ok, jeton){
       <button type="button" class="lien" data-cp="inscription">${esc(t('cp_vers_ins'))}</button>`;
   }
   boite.innerHTML = h; fond.hidden = false;
+  if (vue === 'moi' && COMPTE) majNotifs();                          // 483
   const f = boite.querySelector('input'); if (f) f.focus();
   const zt = boite.querySelector('.cp-ts'); if (zt) montrerTurnstile(zt);
 }

@@ -5,7 +5,7 @@
 //  • TOUT LE RESTE passe sans être touché : données (site*.json, donnees.json), direct (/live…), comptes (/compte/…),
 //    vidéo, Lab. Rien de personnel ni de réservé n'est jamais mis en cache ici.
 // Arrêt d'urgence : publier un sw.js qui contient seulement « self.registration.unregister() ».
-const CACHE = 'gsa-v1';
+const CACHE = 'gsa-v1';   // 483 : + notifications (push), en bas du fichier
 const FIXES = /\/(app-[0-9a-f]{12}\.js|style-[0-9a-f]{12}\.css|polices\/[a-z0-9-]+\.woff2|icone-[a-z0-9-]+\.png|apple-touch-icon\.png|manifest\.webmanifest)$/;
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -55,4 +55,23 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   if (FIXES.test(url.pathname)) e.respondWith(fixe(req));
+});
+
+// 26/11/2026 (paquet 483, Lucas) — NOTIFICATIONS DES FAVORIS (abonnés Plus). Le worker envoie un message chiffré
+// { titre, texte, url, tag } ; on l'affiche, et un appui ouvre (ou ramène) le site sur la fiche du match.
+self.addEventListener('push', (e) => {
+  let m = {};
+  try { m = e.data ? e.data.json() : {}; } catch (x) { m = { texte: e.data ? e.data.text() : '' }; }
+  const titre = String(m.titre || 'Game Set Algo').slice(0, 120);
+  e.waitUntil(self.registration.showNotification(titre, {
+    body: String(m.texte || '').slice(0, 300), icon: 'icone-192.png', badge: 'icone-192.png',
+    tag: m.tag || 'gsa', renotify: true, data: { url: typeof m.url === 'string' && m.url.startsWith('/') ? m.url : '/' } }));
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const cible = new URL((e.notification.data && e.notification.data.url) || '/', self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((L) => {
+    for (const c of L) if (new URL(c.url).origin === self.location.origin && 'focus' in c) { c.navigate(cible).catch(() => {}); return c.focus(); }
+    return self.clients.openWindow(cible);
+  }));
 });

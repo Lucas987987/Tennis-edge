@@ -369,9 +369,11 @@ test('478 : canal Telegram du site, pouls horaire des visites (seulement s’il 
 
 test('478 : la tâche planifiée choisit le pouls ou le quotidien selon le cron', async () => {
   const src = (await import('node:fs')).readFileSync(new URL('./worker.js', import.meta.url), 'utf8');
-  assert.match(src, /event\.cron === '7 \* \* \* \*' \? poulsVisites\(env\) : quotidien\(env\)/);
+  // 483 : + « * * * * * » (notifications des favoris) ; le quotidien reste le cas par défaut
+  assert.match(src, /if \(c === '7 \* \* \* \*'\) return ctx\.waitUntil\(poulsVisites\(env\)\);/);
+  assert.match(src, /ctx\.waitUntil\(Promise\.all\(\[quotidien\(env\), notifsMatin\(env\)/);
   const w = (await import('node:fs')).readFileSync(new URL('./wrangler.toml', import.meta.url), 'utf8');
-  assert.match(w, /crons = \["17 7 \* \* \*", "7 \* \* \* \*"\]/);
+  assert.match(w, /crons = \["17 7 \* \* \*", "7 \* \* \* \*", "\* \* \* \* \*"\]/);
 });
 
 test('479 : compteurs anonymes — liste fermée, bornes, une fois par visiteur pour appareil/pays/provenance, compactés le lendemain', async () => {
