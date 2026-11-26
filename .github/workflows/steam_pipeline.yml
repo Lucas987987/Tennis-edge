@@ -54,7 +54,10 @@ jobs:
     # run tourne 12-13 min ; 45 laisse toute la marge nécessaire et évite
     # qu'un blocage réseau consomme des heures de runner sans que personne
     # ne le remarque (l'observateur externe ne le verrait qu'après 30h).
-    timeout-minutes: 90
+    # 26/11/2026 (paquet 477) : 90 -> 150. Le run du 26/11 a été coupé à 90 min (historique qui grossit :
+    # validation_report.py seul a pris 46 min), en pleine étape canal_clv. 150 laisse la marge sans laisser un
+    # blocage réseau tourner des heures.
+    timeout-minutes: 150
     env:
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
