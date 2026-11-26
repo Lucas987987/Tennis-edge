@@ -44,6 +44,7 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   '/apropos.html': 'apropos.html', '/qui-sommes-nous': 'apropos.html', '/notre-projet': 'apropos.html',   // 442 : « Notre projet »
   // 23/11/2026 (paquet 391) : le site s'installe comme une appli (manifeste, service worker, icônes)
   '/manifest.webmanifest': 'manifest.webmanifest', '/sw.js': 'sw.js', '/icone-192.png': 'icone-192.png', '/badge-96.png': 'badge-96.png',   // 484 : icône des notifications
+  '/profils_saison.json': 'profils_saison.json',   // 487 : profil de la saison (descriptif)
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
 // 24/11/2026 (paquet 418) : une page par match terminé et par joueur (scripts/pages_seo.py, publiées par pages.yml)
