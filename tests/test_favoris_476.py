@@ -20,7 +20,7 @@ class Favoris(unittest.TestCase):
     def test_serveur(self):
         c = open(os.path.join(R, 'workers', 'algo', 'comptes.js'), encoding='utf-8').read()
         self.assertIn("if (p === 'favoris') return favoris(req, env, b);", c)
-        self.assertIn("'demande', 'favoris'];", c)                     # dans l'export des données
+        self.assertIn("'demande', 'favoris', 'push'];", c)           # dans l'export des données (483 : + appareils)
 
 
 if __name__ == '__main__':

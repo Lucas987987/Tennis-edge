@@ -26,6 +26,7 @@
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
 import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
 import { compterVisite, quotidien, poulsVisites, compterEvenements } from './ventes.js';
+import { notifsDirect, notifsMatin } from './notifs.js';   // 483
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -693,6 +694,12 @@ export class DirectLive {
   async webSocketClose(ws, code) { try { ws.close(code === 1005 ? 1000 : code, 'fin'); } catch (e) { /* déjà fermée */ } }
   async webSocketError(ws) { try { ws.close(1011, 'erreur'); } catch (e) { /* déjà fermée */ } }
 }
+// 483 : le direct tel que le voient les visiteurs (même cache, même quota), avec les matchs terminés, pour les notifications
+export async function directPourNotifs(env) {
+  const d = await (await live(new Request('https://interne/live'), env)).json();
+  const t = await (await live(new Request('https://interne/live/termines'), env, 'termines')).json();
+  return { ok: !!d.ok, matchs: d.matchs || [], termines: t.termines || [] };
+}
 async function flux(req, env) {
   if (!env.DIRECT) return new Response('Direct en continu non configuré.', { status: 503, headers: SECURITE });
   return env.DIRECT.get(env.DIRECT.idFromName('direct')).fetch(req);
@@ -830,7 +837,13 @@ export const livePoints = (req, env, url) => liveDetail(req, env, url, 'points')
 export default {
   // 386 : chaque jour (wrangler.toml, [triggers]) : rappels de fin d'accès payé, totaux des visites de la veille
   // 478 : chaque heure (« 7 * * * * ») le pouls des visites ; chaque matin (« 17 7 * * * ») le reste, dont le bilan
-  async scheduled(event, env, ctx) { ctx.waitUntil(event && event.cron === '7 * * * *' ? poulsVisites(env) : quotidien(env)); },
+  // 483 : « * * * * * » = notifications des favoris (direct) ; « 17 7 * * * » = quotidien + « tes favoris jouent aujourd'hui »
+  async scheduled(event, env, ctx) {
+    const c = event && event.cron;
+    if (c === '* * * * *') return ctx.waitUntil(notifsDirect(env, () => directPourNotifs(env)).catch(() => null));
+    if (c === '7 * * * *') return ctx.waitUntil(poulsVisites(env));
+    ctx.waitUntil(Promise.all([quotidien(env), notifsMatin(env).catch(() => null)]));
+  },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     // 386 : entonnoir privé — une ouverture de la page publique (site.json) sur gamesetalgo.com, sans cookie
