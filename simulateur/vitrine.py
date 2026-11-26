@@ -583,7 +583,7 @@ def rejoue(racine):
     return {'du': min(jours), 'au': max(jours), 'global': _mesures(points), 'calibration': calibration(points)}
 
 
-NIVEAUX_FIABILITE = ('fragile', 'prudent', 'correct', 'solide')
+NIVEAUX_FIABILITE = ('fragile', 'normal', 'prudent', 'correct', 'solide')   # 464 : « normal » (deux niveaux mesurés)
 
 
 def perte_attendue(p):
