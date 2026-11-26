@@ -1449,7 +1449,7 @@ def impact_facteurs(cH, cA, sg, fct):
     return out
 
 
-SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme)
+SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme) — plus utilisé par la vidéo depuis le paquet 488 (scénario le plus probable), gardé pour mémoire
 
 
 def seuils_forme(racine, jours=60, minimum=50, aujourdhui=None):
