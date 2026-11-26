@@ -14,7 +14,7 @@
 // 3. RAPPEL (tous les jours à 7 h 17 UTC) : un accès PAYÉ qui finit dans 3 jours ou moins reçoit un e-mail, une seule
 //    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
 import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
-  referenceVirement, idCompte, normaliser, ESC, abonne, base, estAdmin, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
+  referenceVirement, idCompte, normaliser, ESC, abonne, base, estAdmin, telegramSite, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
 // coordonnees(), PLACES_FONDATEUR et PRIX_FONDATEUR sont définis plus bas (fonctions et constantes du module)
 
 const PAYANTES = { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' };
@@ -530,8 +530,39 @@ export async function demandeAbonnement(req, env, b) {
   return rep({ ok: true, mail: !!mail.ok });
 }
 
+// 26/11/2026 (paquet 478, Lucas : « recevoir sur Telegram le nombre de visites ») — POULS : chaque heure, seulement s'il
+// y a de nouveaux visiteurs (uniques, sans cookie, robots exclus) depuis le dernier message ; BILAN : chaque matin, la
+// veille (visiteurs, pages vues, comptes créés et confirmés, fondateurs, Plus payés). Dans le canal du site s'il existe.
+const lireJson_ = async (env, k) => { try { const o = await env.COFFRE.get(k); return o ? JSON.parse(await o.text()) : null; } catch (e) { return null; } };
+export async function poulsVisites(env, maintenant = Date.now()) {
+  if (!env.COFFRE) return null;
+  const jour = jourUtc(maintenant), x = (await lireJson_(env, `stats/visites/${jour}.json`)) || { vues: 0, u: [] };
+  const uniques = x.uniques ?? (x.u || []).length, vues = x.vues || 0;
+  const avant = (await lireJson_(env, 'stats/pouls.json')) || {};
+  const base = avant.jour === jour ? avant.uniques || 0 : 0;
+  const nouveaux = uniques - base;
+  if (nouveaux <= 0) return { envoye: false, uniques };
+  const h = new Date(maintenant).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
+  const ok = await telegramSite(env, `👀 Game Set Algo · +${nouveaux} visiteur${nouveaux > 1 ? 's' : ''} (à ${h}) · aujourd'hui : ${uniques} visiteur${uniques > 1 ? 's' : ''}, ${vues} ouverture${vues > 1 ? 's' : ''} de page`);
+  if (ok) await env.COFFRE.put('stats/pouls.json', JSON.stringify({ jour, uniques, le: new Date(maintenant).toISOString() }));
+  return { envoye: ok, nouveaux, uniques };
+}
+export async function bilanVeille(env, maintenant = Date.now()) {
+  const hier = jourUtc(maintenant - 86400e3), v = (await lireJson_(env, `stats/visites/${hier}.json`)) || {};
+  const uniques = v.uniques ?? (v.u || []).length ?? 0, vues = v.vues || 0;
+  let sept = 0;
+  for (let i = 1; i <= 7; i++) { const y = await lireJson_(env, `stats/visites/${jourUtc(maintenant - i * 86400e3)}.json`); if (y) sept += y.uniques ?? (y.u || []).length ?? 0; }
+  const C = await listeComptes(env), de = (d) => !!d && String(d).slice(0, 10) === hier;
+  const fond = C.filter((c) => c.fondateur).length;
+  const txt = [`📊 Game Set Algo · bilan d'hier (${hier.split('-').reverse().slice(0, 2).join('/')})`,
+    `Visiteurs : ${uniques} (${vues} ouvertures de page) · 7 jours : ${sept}`,
+    `Comptes : +${C.filter((c) => de(c.cree)).length} créés, +${C.filter((c) => de(c.cree) && c.verifie).length} confirmés · total ${C.length} (${C.filter((c) => c.verifie).length} confirmés)`,
+    `Fondateurs : ${fond} / ${PLACES_FONDATEUR} · Plus payés : ${C.filter((c) => c.abonne && c.paye).length} · demandes en attente : ${C.filter((c) => c.demande).length}`].join('\n');
+  return telegramSite(env, txt);
+}
 export async function quotidien(env) {
   if (!env.COFFRE) return;
+  try { await bilanVeille(env); } catch (e) { /* le lendemain */ }      // 478 : avant le compactage (les totaux restent)
   try { await compacterVisites(env); } catch (e) { /* le lendemain */ }
   try { await rappels(env); } catch (e) { /* le lendemain */ }
   try { await sauvegarderComptes(env); } catch (e) { /* le lendemain */ }

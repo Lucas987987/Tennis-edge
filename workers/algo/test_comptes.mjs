@@ -323,6 +323,57 @@ test('476 : favoris — compte requis, joueurs et matchs, retrait, bornes, dans 
   assert.ok(ex.favoris && ex.favoris.matchs.length === 60);
 });
 
+test('478 : canal Telegram du site, pouls horaire des visites (seulement s’il y a du nouveau), bilan de la veille', async () => {
+  const { env, mails, C } = monde();
+  const V = await import('./ventes.js');
+  const tg = [], brevo = globalThis.fetch;
+  globalThis.fetch = async (u, o) => {
+    if (String(u).includes('/sendMessage')) { tg.push(JSON.parse(o.body)); return new Response('{"ok":true}'); }
+    if (String(u).includes('/getUpdates')) return new Response(JSON.stringify({ ok: true, result: [
+      { update_id: 1, my_chat_member: { chat: { id: -1001234, title: 'GSA site', type: 'channel' } } },
+      { update_id: 2, message: { chat: { id: 42, type: 'private' } } }] }));
+    return brevo(u, o);
+  };
+  env.TELEGRAM_TOKEN = 't'; env.TELEGRAM_CHAT_ID = '42';
+  // sans canal du site : comme avant, dans le Telegram privé
+  await worker.fetch(post('/compte/api/inscription', { email: 'p1@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(tg.at(-1).chat_id, '42');
+  env.TELEGRAM_SITE_CHAT_ID = '-1001234';
+  await worker.fetch(post('/compte/api/inscription', { email: 'p2@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.equal(tg.at(-1).chat_id, '-1001234');
+  // l'administration trouve le canal, sans renvoyer le jeton
+  const o = await (await worker.fetch(get('/compte/admin/api/telegram', { 'X-Cle': CLE }, DEV), env)).json();
+  assert.deepEqual(o.chats.map((c) => c.id), ['-1001234']);
+  assert.ok(!JSON.stringify(o).includes('"t"'));
+  // pouls : rien s'il n'y a personne ; un message dès qu'il y a de nouveaux visiteurs ; pas deux fois les mêmes
+  const now = Date.parse('2026-11-27T15:10:00Z'), n0 = tg.length;
+  assert.equal((await V.poulsVisites(env, now)).envoye, false);
+  C.m.set('stats/visites/2026-11-27.json', JSON.stringify({ jour: '2026-11-27', vues: 9, u: ['a', 'b', 'c'] }));
+  let r = await V.poulsVisites(env, now);
+  assert.equal(r.nouveaux, 3);
+  assert.match(tg.at(-1).text, /\+3 visiteurs \(à 16:10\) · aujourd'hui : 3 visiteurs, 9 ouvertures de page/);
+  assert.equal((await V.poulsVisites(env, now + 3600e3)).envoye, false);
+  C.m.set('stats/visites/2026-11-27.json', JSON.stringify({ jour: '2026-11-27', vues: 12, u: ['a', 'b', 'c', 'd'] }));
+  r = await V.poulsVisites(env, now + 7200e3);
+  assert.equal(r.nouveaux, 1);
+  assert.match(tg.at(-1).text, /\+1 visiteur \(/);
+  assert.equal(tg.length, n0 + 2);
+  // bilan de la veille
+  C.m.set('stats/visites/2026-11-26.json', JSON.stringify({ jour: '2026-11-26', vues: 30, uniques: 11 }));
+  await V.bilanVeille(env, now);
+  assert.match(tg.at(-1).text, /bilan d'hier \(26\/11\)/);
+  assert.match(tg.at(-1).text, /Visiteurs : 11 \(30 ouvertures de page\)/);
+  assert.match(tg.at(-1).text, /Fondateurs : \d+ \/ 100/);
+  void mails;
+});
+
+test('478 : la tâche planifiée choisit le pouls ou le quotidien selon le cron', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('./worker.js', import.meta.url), 'utf8');
+  assert.match(src, /event\.cron === '7 \* \* \* \*' \? poulsVisites\(env\) : quotidien\(env\)/);
+  const w = (await import('node:fs')).readFileSync(new URL('./wrangler.toml', import.meta.url), 'utf8');
+  assert.match(w, /crons = \["17 7 \* \* \*", "7 \* \* \* \*"\]/);
+});
+
 test('384 : le script de la page d’administration est du JavaScript valide', async () => {
   const { pageAdmin } = await import('./comptes.js');
   const s = pageAdmin().split('<script>')[1].split('</script>')[0];

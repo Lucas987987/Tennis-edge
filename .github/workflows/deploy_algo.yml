@@ -94,6 +94,7 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_SITE_CHAT_ID: ${{ secrets.TELEGRAM_SITE_CHAT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         working-directory: workers/algo
@@ -101,6 +102,8 @@ jobs:
           if [ -z "$TELEGRAM_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then echo "::warning::Telegram absent, pas d'alerte de compte."; exit 0; fi
           printf '%s' "$TELEGRAM_TOKEN" | npx --yes wrangler@4 secret put TELEGRAM_TOKEN > /dev/null
           printf '%s' "$TELEGRAM_CHAT_ID" | npx --yes wrangler@4 secret put TELEGRAM_CHAT_ID > /dev/null && echo "Alertes Telegram posées."
+          # 478 : canal privé du site (facultatif) ; absent, tout reste dans TELEGRAM_CHAT_ID
+          if [ -n "$TELEGRAM_SITE_CHAT_ID" ]; then printf '%s' "$TELEGRAM_SITE_CHAT_ID" | npx --yes wrangler@4 secret put TELEGRAM_SITE_CHAT_ID > /dev/null && echo "Canal du site posé."; fi
 
       # 23/11/2026 (paquet 386) : factures et rappels de fin d'accès. Secrets GitHub (facultatifs, jamais dans le dépôt) :
       # FACTURE_VENDEUR = {"nom":"…","adresse":"…","siret":"…","mention_tva":"TVA non applicable, art. 293 B du CGI"}
