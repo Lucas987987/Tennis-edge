@@ -36,6 +36,9 @@ import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import performance_joueurs as PJ  # noqa: E402
+import profils_saison as PSA  # noqa: E402  (487 : profil de la saison, descriptif)
+
+PROFILS = {}   # 487 : {clé du nom: profil de la saison}, rempli par main()
 
 SITE = 'https://gamesetalgo.com'
 LANGUES = ('fr', 'en')
@@ -692,6 +695,55 @@ def _fil(L, etapes):
     return {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': el}
 
 
+# 26/11/2026 (paquet 487) — PROFIL DE LA SAISON (descriptif : ne change pas le % de l'algo) : statistiques de l'année
+# par surface (scripts/profils_saison.py), une colonne « toutes surfaces » et une par surface d'au moins 3 matchs.
+PS_TXT = {'fr': {'titre': 'Profil de la saison {an}', 'sous': "Statistiques de l'année {an}. Information descriptive : elle ne change pas le % de l'algo.",
+                 'tout': 'Toutes surfaces', 'Clay': 'Terre battue', 'Hard': 'Dur', 'Grass': 'Gazon', 'Carpet': 'Moquette',
+                 'lignes': [('m', 'Matchs avec statistiques (V – D)'), ('ps', 'Points gagnés au service'), ('p1', 'Derrière la 1re balle'),
+                            ('p2', 'Derrière la 2e balle'), ('pr', '1res balles'), ('ac', 'Aces par match'), ('df', 'Doubles fautes par match'),
+                            ('bs', 'Balles de break sauvées'), ('bc', 'Balles de break converties'), ('tb', 'Jeux décisifs (gagnés – perdus)')],
+                 'rang': 'Classement : {r}{b}', 'meilleur': ' (meilleur : {b})', 'utr': 'Classement UTR : {u}'},
+          'en': {'titre': '{an} season profile', 'sous': '{an} season statistics. Descriptive only: it does not change the algo\'s %.',
+                 'tout': 'All surfaces', 'Clay': 'Clay', 'Hard': 'Hard', 'Grass': 'Grass', 'Carpet': 'Carpet',
+                 'lignes': [('m', 'Matches with statistics (W – L)'), ('ps', 'Service points won'), ('p1', '1st-serve points won'),
+                            ('p2', '2nd-serve points won'), ('pr', '1st serves in'), ('ac', 'Aces per match'), ('df', 'Double faults per match'),
+                            ('bs', 'Break points saved'), ('bc', 'Break points converted'), ('tb', 'Tie-breaks (won – lost)')],
+                 'rang': 'Ranking: {r}{b}', 'meilleur': ' (career high: {b})', 'utr': 'UTR ranking: {u}'}}
+
+
+def _val_ps(k, b, L):
+    if k == 'm':
+        return f"{b['m']} ({b.get('v', 0)} – {b['m'] - b.get('v', 0)})"
+    if k == 'tb':
+        g, p = (b.get('tb') or [0, 0])[:2]
+        return f"{g} – {p}" if g or p else '—'
+    v = b.get(k)
+    if v is None:
+        return '—'
+    if k in ('ac', 'df'):
+        return f"{v:.1f}".replace('.', ',') if L == 'fr' else f"{v:.1f}"
+    return (f"{v:.0f} %" if L == 'fr' else f"{v:.0f}%")
+
+
+def bloc_profil_saison(nom, L, profils=None):
+    p = (profils if profils is not None else PROFILS).get(PSA.cle(nom))
+    if not p or not p.get('tout'):
+        return ''
+    t = PS_TXT[L]
+    cols = [('tout', p['tout'])] + [(k, p[k]) for k in ('Hard', 'Clay', 'Grass', 'Carpet') if (p.get(k) or {}).get('m', 0) >= 3]
+    tete = ''.join(f'<th>{e(t[k])}</th>' for k, _ in cols)
+    corps = ''.join(f"<tr><td>{e(lib)}</td>{''.join(f'<td>{e(_val_ps(k, b, L))}</td>' for _, b in cols)}</tr>" for k, lib in t['lignes'])
+    cl = p.get('cl') or {}
+    rang = ''
+    if cl.get('rang'):
+        rang += e(t['rang'].format(r=cl['rang'], b=t['meilleur'].format(b=cl['meilleur']) if cl.get('meilleur') else ''))
+    if cl.get('utr'):
+        rang += (' · ' if rang else '') + e(t['utr'].format(u=cl['utr']))
+    return (f"<h2>{e(t['titre'].format(an=p['an']))}</h2><p class=\"sub\">{e(t['sous'].format(an=p['an']))}</p>"
+            f"<div class=\"panel\"><table><thead><tr><th></th>{tete}</tr></thead><tbody>{corps}</tbody></table>"
+            + (f"<p><small>{rang}</small></p>" if rang else '') + "</div>")
+
+
 def page_joueur(nom, S, L):
     t = T[L]
     ms = S.par_joueur[nom]
@@ -716,6 +768,7 @@ def page_joueur(nom, S, L):
 <div class="panel"><p><b>{e(t['vd'].format(v=v, d=d, sv=('s' if v > 1 else ''), sd=(('s' if d > 1 else '') if L == 'fr' else ('es' if d > 1 else ''))))}</b> {e(t['sur'])}</p>
 <p>{e(t['forme'])} : <b>{e(forme) or '—'}</b></p>{_prochain(nom, S, L)}</div>
 {bloc_performance(nom, S, L)}
+{bloc_profil_saison(nom, L)}
 <h2>{e(t['ses_matchs'])}</h2><ul class="l">{''.join(li)}</ul>
 <div class="panel"><p>{e(t['cta_joueur'])}</p><a class="cta" href="{'/' if L == 'fr' else '/?lang=en'}">{e(t['cta'])}</a></div>
 <p><a href="{pre(L)}/joueurs">{e(t['retour_joueurs'])}</a></p>"""
@@ -897,6 +950,10 @@ def main(argv):
     except (OSError, ValueError):
         print('Pages de référencement : résultats absents, rien de construit.')
         return 0
+    try:                                                     # 487 : profil de la saison (descriptif)
+        PROFILS.update(PSA.profils(racine))
+    except Exception as x:  # noqa: BLE001 — jamais bloquant
+        print(f'::warning::profils de la saison non lus : {type(x).__name__}')
     construire(doc, dossier, bilans=PJ.lire_bilans(racine), donnees=PJ.lire_donnees(racine))
     x = construire.dernier
     print(f"Pages de référencement : {x['a_venir']} matchs à venir, {x['matchs']} matchs, {x['joueurs']} joueurs, {x['tournois']} tournois, "
