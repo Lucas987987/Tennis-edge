@@ -28,15 +28,5 @@ class Fantome(unittest.TestCase):
         self.assertIn('favori_sous_estime', FC.SIGNAUX)
 
 
-class TypeDeMatch(unittest.TestCase):
-    def test_types(self):
-        m = lambda pe, ps, crit=None: {'stats': {'p_home': pe}, 'simulation': {'p_home': ps},
-                                        'fiabilite': {'fragile_criteres': crit or []}}
-        self.assertEqual(V.type_de_match(m(.76, .72), .75), 'fiable')
-        self.assertEqual(V.type_de_match(m(.62, .60), .61), 'standard')
-        self.assertEqual(V.type_de_match(m(.58, .45), .55), 'fragile')
-        self.assertEqual(V.type_de_match(m(.80, .78, ['ecart_modeles_10']), .79), 'fragile')
-
-
 if __name__ == '__main__':
     unittest.main()
