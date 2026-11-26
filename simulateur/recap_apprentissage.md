@@ -1,6 +1,6 @@
 # Récapitulatif de l’apprentissage — 2026-W48
 
-Généré le 2026-11-26T14:11:58+00:00 · état **a_verifier**.
+Généré le 2026-11-26T14:40:11+00:00 · état **a_verifier**.
 
 > Lecture seule des rapports hebdomadaires. Les populations restent séparées ; aucune adoption nouvelle n’est déclenchée par ce document et aucun gain de ROI n’est déduit.
 
@@ -57,7 +57,7 @@ Direct : **1592** pronostics sur **6** semaine(s). Rejoué : **6650** pronostics
 - **Promotions retenues** : aucune.
 - **Promotions différées** : aucune.
 - **Dérive** : surveillance, sur 1588 matchs ; alertes : aucune.
-- **Empreinte du champion** : `457ccb2e4a7ff1d1ede15a2598cd494d4718d4be860c65737d5f015832fb9ebe`.
+- **Empreinte du champion** : `47e0d166fb677ee18fda1c8417b3c05c33626dddb6d62e7dc39aed24a87b6eb2`.
 - **Sources manquantes** : aucune.
 
 Ce récapitulatif décrit l’apprentissage et ses contrôles. Il ne constitue ni une preuve prospective supplémentaire ni une promesse d’amélioration future des vainqueurs, des scores ou du ROI.
