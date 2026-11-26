@@ -6,6 +6,8 @@ name: Étude - styles de jeu, profil continu et rencontres deux à deux (paquet 
 # apprise 2018–2022, jugée une fois 2023 → 05/2026 ; Challenger : apprise 01–09/2025, jugée une fois 10/2025 →
 # 05/2026). Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit
 # simulateur/rapport_styles_approfondie.json et l'entrée 457 du journal. 0 requête d'API. Rien n'entre dans l'algo.
+# 26/11/2026 (paquet 485) : lecture de /feuilles/, /Tennis_Edge_Lab/live/pronostics_resultats.json et /Tennis_Edge_Lab/books.py
+# ajoutée, comme l'étude 456 (backtest_pronostic → nos_resultats lit books.py ; run rouge du 26/11 sans lui).
 on:
   push:
     branches: [main]
@@ -37,6 +39,9 @@ jobs:
             /resultats_itf_femmes/
             /scripts/resultats_itf.py
             /scripts/feuilles_match.py
+            /feuilles/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /Tennis_Edge_Lab/books.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
