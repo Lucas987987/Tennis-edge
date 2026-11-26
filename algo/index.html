@@ -521,6 +521,7 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .pq b{display:block;font-family:var(--cond);font-size:1.15rem;margin-bottom:4px;color:var(--c,var(--p1))}.pq p{margin:0;font-size:.95rem;color:var(--dim)}
 html[data-theme="light"] .pq{box-shadow:0 6px 22px rgba(40,20,120,.07)}#pq-lien{text-decoration:none;display:inline-block}
 .panel.qa .qa-th{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:10px}.panel.qa .qa-t{border:1px solid var(--line2);background:transparent;color:inherit;border-radius:999px;padding:7px 4px;font-weight:600;font-size:.88rem;cursor:pointer;min-height:40px;white-space:nowrap}.panel.qa .qa-t.on{background:var(--ball,#D4FF3A);color:#141225;border-color:transparent}
+.panel.qa .qa-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}.panel.qa .qa-m{border:1px solid var(--line2);background:transparent;color:inherit;border-radius:10px;padding:8px 6px;font-weight:600;font-size:.86rem;cursor:pointer;min-height:40px}.panel.qa .qa-m.on{background:var(--ink,#141225);color:var(--bg,#fff);border-color:transparent}.panel.qa .qa-live-etat{margin-top:8px;font-size:.84rem;color:var(--dim)}
 .panel.qa .qa-r small{color:var(--dim);font-size:.9rem}.panel.qa .qa-note{margin:8px 0 0;font-size:.82rem;color:var(--dim)}.panel.qa #qa-q{max-width:100%}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
 /* 430 : mise en valeur (hors tiroir, sous l'en-tête du match) */
@@ -2174,6 +2175,8 @@ function rendQuestion(m){
   return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><div class="pad"><p class="aide">${esc(fr
       ? `${fmt(Q.length)} questions sur ce match : ses ${fmt(nSim)} simulations, les statistiques prévues et l’historique des joueurs.`
       : `${fmt(Q.length)} questions on this match: its ${fmt(nSim)} simulations, predicted stats and the players’ history.`)}</p>
+    <div class="qa-mode" hidden><button type="button" class="qa-m on" data-qa-mode="avant" aria-pressed="true">${esc(fr ? 'Avant le match' : 'Before the match')}</button><button type="button" class="qa-m" data-qa-mode="live" aria-pressed="false">🔴 ${esc(fr ? 'Depuis le score actuel' : 'From the current score')}</button></div>
+    <div class="qa-live-etat" hidden></div>
     <div class="qa-th" role="tablist">${themes.map(([id, lib], i) => `<button type="button" role="tab" class="qa-t${i ? '' : ' on'}" data-qa-theme="${id}" aria-selected="${i ? 'false' : 'true'}">${esc(tx(lib))}</button>`).join('')}</div>
     <div class="qa-l"><select id="qa-j" aria-label="${esc(t('qa_joueur'))}"><option value="0">${esc(court(m.home))}</option><option value="1">${esc(court(m.away))}</option></select>
       <select id="qa-q" aria-label="Question"></select>
@@ -2182,16 +2185,21 @@ function rendQuestion(m){
 }
 function brancherQuestion(m){
   const q = document.getElementById('qa-q'); if (!q) return;
-  const Q = qaCatalogue(m), fr = L === 'fr', par = Object.fromEntries(Q.map(x => [x.id, x]));
+  const fr = L === 'fr', avantMatch = qaCatalogue(m);
+  let Q = avantMatch, par = Object.fromEntries(Q.map(x => [x.id, x])), mode = 'avant', cleLive = null;
   const j = document.getElementById('qa-j'), n = document.getElementById('qa-n'), r = document.getElementById('qa-r');
-  const panneau = q.closest('.qa');
-  const remplir = theme => { q.innerHTML = Q.filter(x => x.theme === theme).map(x => `<option value="${x.id}">${esc(tx(x.lib))}</option>`).join(''); };
+  const panneau = q.closest('.qa'), boutons = panneau.querySelector('.qa-mode'), etatEl = panneau.querySelector('.qa-live-etat');
+  const themeActif = () => { const b = panneau.querySelector('[data-qa-theme].on'); return b ? b.dataset.qaTheme : 'match'; };
+  const remplir = theme => { const v = q.value; q.innerHTML = Q.filter(x => x.theme === theme).map(x => `<option value="${x.id}">${esc(tx(x.lib))}</option>`).join('');
+    if (v && par[v] && par[v].theme === theme) q.value = v; };
   let jeton = 0;
   const afficher = (o, x) => {
     if (!o) { r.innerHTML = '—'; return; }
-    const note = o.histo ? `<p class="qa-note">${esc(fr ? 'Historique : il ne change pas le % de ce match.' : 'History: it does not change this match’s %.')}</p>` : '';
-    if (o.p != null) { const v = o.p; r.innerHTML = t('qa_rep', pc0(v), odds(v > .001 ? Math.round(100 / v) / 100 : null))
-      + (o.si ? `<p class="qa-note">${esc(fr ? `Parmi les simulations où ${o.il} perd le 1er set.` : `Among simulations where ${o.he} loses the 1st set.`)}</p>` : ''); return; }
+    const note = (o.histo ? `<p class="qa-note">${esc(fr ? 'Historique : il ne change pas le % de ce match.' : 'History: it does not change this match’s %.')}</p>` : '')
+      + (x && x.avant ? `<p class="qa-note">${esc(fr ? 'Réponse d’avant le match : elle n’est pas recalculée en direct.' : 'Pre-match answer: not recomputed live.')}</p>` : '')
+      + (o.live ? `<p class="qa-note">${esc(fr ? `Depuis le score actuel : ${fmt(o.live)} fins de match rejouées avec le même moteur que le % en direct.` : `From the current score: ${fmt(o.live)} match endings replayed with the same engine as the live %.`)}</p>` : '');
+    if (o.p != null) { const v = o.p; r.innerHTML = (o.connu ? `<b>${esc(o.connu)}</b>` : t('qa_rep', pc0(v), odds(v > .001 ? Math.round(100 / v) / 100 : null)))
+      + (o.si ? `<p class="qa-note">${esc(fr ? `Parmi les simulations où ${o.il} perd le 1er set.` : `Among simulations where ${o.he} loses the 1st set.`)}</p>` : '') + note; return; }
     r.innerHTML = (o.txt || '—') + note;
   };
   const maj = () => {
@@ -2210,6 +2218,117 @@ function brancherQuestion(m){
   const premier = panneau.querySelector('[data-qa-theme]');
   remplir(premier ? premier.dataset.qaTheme : 'match');
   [q, j, n].forEach(x => x.addEventListener('input', maj)); maj();
+  // 26/11/2026 (paquet 470, Lucas : « demander une information en live, recalculée par rapport au vrai déroulé du
+  // match ») — en direct, les thèmes Match et Jeux sont recalculés depuis le score réel (qaLive) ; Stats et Historique
+  // restent ceux d'avant le match et le disent. Le % publié avant le match ne change pas.
+  const basculer = md => {
+    mode = md; boutons.querySelectorAll('[data-qa-mode]').forEach(b => { const on = b.dataset.qaMode === md; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+    rafraichir(true);
+  };
+  const rafraichir = force => {
+    const L_ = qaLive(m);
+    boutons.hidden = !L_; if (!L_ && mode === 'live') mode = 'avant';
+    if (mode === 'live' && L_) {
+      if (!force && L_.cle === cleLive) return;
+      cleLive = L_.cle;
+      Q = qaCatalogueLive(m, L_).concat(avantMatch.filter(x => x.theme === 'stats' || x.theme === 'histo').map(x => Object.assign({}, x, { avant: true })));
+      etatEl.hidden = false; etatEl.textContent = L_.texte;
+    } else {
+      if (!force && Q === avantMatch) return;
+      Q = avantMatch; cleLive = null; etatEl.hidden = true;
+    }
+    par = Object.fromEntries(Q.map(x => [x.id, x])); remplir(themeActif()); maj();
+  };
+  boutons.querySelectorAll('[data-qa-mode]').forEach(b => b.addEventListener('click', () => basculer(b.dataset.qaMode)));
+  QA_LIVE.maj = () => { if (!document.body.contains(panneau)) { QA_LIVE.maj = null; return; } rafraichir(false); };
+  rafraichir(false);
+}
+// 26/11/2026 (paquet 470) — « Demande à l'algo » EN DIRECT : depuis le score réel (sets, jeux, points, serveur), la fin
+// du match est rejouée QA_LIVE_N fois avec le même moteur que le % en direct (pctLive : forme du jour lue dans les
+// points de service joués quand elle est suivie, sinon le moteur calé sur le % publié). Les sets déjà joués comptent
+// (jeux, tie-breaks, 1er set). Rien n'est envoyé au serveur : aucun appel de plus.
+const QA_LIVE = { maj: null, cache: {} };
+const QA_LIVE_N = 4000;
+function moteursLive(m, r){
+  const sigma = sigmaLive(m), pts = sigma > 0 ? pointsServiceLive(m.uid, r.inverse) : null;
+  if (pts){
+    const F = formesLive(m, sigma), [A, B] = pts;
+    const lw = F.map(f => Math.log(f.w) + A.w*Math.log(f.a) + (A.n-A.w)*Math.log(1-f.a) + B.w*Math.log(f.b) + (B.n-B.w)*Math.log(1-f.b));
+    const mx = Math.max(...lw), w = lw.map(x => Math.exp(x - mx)), tot = w.reduce((a, b) => a + b, 0);
+    return F.map((f, i) => ({ M: f.M, w: w[i] / tot }));
+  }
+  return [{ M: LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home))), w: 1 }];
+}
+function qaLive(m){
+  try {
+    const r = LIVE && LIVE.par_uid && LIVE.par_uid[m.uid]; if (!r || !m.simulation) return null;
+    const e = etatLive(m, r); if (!e) return null;
+    const x = r.x, h = r.inverse ? x.score_away : x.score_home, a = r.inverse ? x.score_home : x.score_away;
+    const SH = h.sets || [], SA = a.sets || [], passes = [];
+    for (let i = 0; i < SH.length; i++) { const gh = +SH[i] || 0, ga = +(SA[i] ?? 0) || 0; if (setFini(gh, ga) || setFini(ga, gh)) passes.push([gh, ga]); }
+    const st = LIVE.stats[m.uid], nst = st && st.o && st.o.stats ? JSON.stringify(pointsServiceLive(m.uid, r.inverse)) : '';
+    const cle = JSON.stringify([passes, e.S.jeux, e.S.pts, e.sv, e.S.tb, nst, sigmaLive(m)]);
+    if (QA_LIVE.cache[m.uid] && QA_LIVE.cache[m.uid].cle === cle) return QA_LIVE.cache[m.uid];
+    const MS = moteursLive(m, r), N = m.simulation.sets_gagnants || 2;
+    let graine = 0; for (const c of cle) graine = (graine * 31 + c.charCodeAt(0)) >>> 0;
+    const rnd = rng(graine || 1);
+    const Z = { n: 0, gagne: [0, 0], deux: [0, 0], un_set: [0, 0], s1: [0, 0], s1m: [0, 0], s1perdu: [0, 0], s1perdu_gagne: [0, 0],
+      sets: {}, decisif: 0, tb: 0, total: {}, jeux_j: [{}, {}], ecart: [{}, {}], totaux: [] };
+    for (let k = 0; k < QA_LIVE_N; k++) {
+      let u = rnd(), M = MS[MS.length - 1].M; for (const f of MS) { if (u < f.w) { M = f.M; break; } u -= f.w; }
+      const S = { ...e.S, sets: [...e.S.sets], jeux: [...e.S.jeux], pts: [...e.S.pts], histo: passes.map(z => [...z]), fini: false, vainqueur: null };
+      const s0 = e.sv == null ? (rnd() < .5 ? 0 : 1) : e.sv;
+      S.srv = s0; if (S.tb) { const kk = S.pts[0] + S.pts[1]; S.tbS0 = kk === 0 ? s0 : ((((kk - 1) >> 1) % 2) === 0 ? 1 - s0 : s0); }
+      let garde = 0; while (!S.fini && garde++ < 3000) M.point(S, rnd());
+      if (!S.fini) continue;
+      const v = S.vainqueur, H = S.histo, jeux = [0, 1].map(i => H.reduce((t_, z) => t_ + z[i], 0)), tot = jeux[0] + jeux[1];
+      Z.n++; Z.gagne[v]++;
+      const sw = [0, 1].map(i => H.filter(z => z[i] > z[1 - i]).length);
+      for (const i of [0, 1]) { if (sw[i] >= 1) Z.un_set[i]++; }
+      if (sw[1 - v] === 0) Z.deux[v]++;
+      const p1 = H[0][0] > H[0][1] ? 0 : 1; Z.s1[p1]++; if (p1 === v) Z.s1m[v]++;
+      Z.s1perdu[1 - p1]++; if (v !== p1) Z.s1perdu_gagne[v]++;
+      const cs = `${sw[0]}-${sw[1]}`; Z.sets[cs] = (Z.sets[cs] || 0) + 1;
+      if (H.length === 2 * N - 1) Z.decisif++;
+      if (H.some(z => Math.max(...z) === 7 && Math.min(...z) === 6)) Z.tb++;
+      Z.total[tot] = (Z.total[tot] || 0) + 1; Z.totaux.push(tot);
+      for (const i of [0, 1]) { Z.jeux_j[i][jeux[i]] = (Z.jeux_j[i][jeux[i]] || 0) + 1; if (v === i) { const d = jeux[i] - jeux[1 - i]; Z.ecart[i][d] = (Z.ecart[i][d] || 0) + 1; } }
+    }
+    if (!Z.n) return null;
+    Z.totaux.sort((a_, b_) => a_ - b_); Z.mediane = Z.totaux[Math.floor(Z.totaux.length / 2)]; Z.totaux = null;
+    const fr = L === 'fr', sc = passes.map(z => `${z[0]}-${z[1]}`).concat(e.S.jeux[0] + e.S.jeux[1] ? [`${e.S.jeux[0]}-${e.S.jeux[1]}`] : []).join(' ');
+    const texte = (fr ? `Score pris en compte : ${sc || '0-0'} (${court(m.home)} en premier). Recalculé à chaque mise à jour du score.`
+      : `Score used: ${sc || '0-0'} (${court(m.home)} first). Recomputed at each score update.`);
+    return (QA_LIVE.cache[m.uid] = { cle, Z, passes, texte, N });
+  } catch (err) { return null; }
+}
+function qaCatalogueLive(m, Lv){
+  const Z = Lv.Z, n_ = Z.n, fr = L === 'fr', N = Lv.N, bo5 = N === 3, P1 = Lv.passes[0];
+  const W = m.circuit === 'WTA', il = W ? 'elle' : 'il', he = W ? 'she' : 'he';
+  const Q = [], add = (id, theme, lib, rep, o) => Q.push(Object.assign({ id, theme, lib, rep }, o || {}));
+  const fq = x => (x || 0) / n_, live = o => Object.assign({ live: n_ }, o);
+  const au_moins = (H, k) => Object.entries(H).reduce((t_, [v, c]) => t_ + (Number(v) > k ? c : 0), 0) / n_;
+  add('gagne', 'match', {fr:'gagne le match', en:'wins the match'}, j => live({ p: fq(Z.gagne[j]) }));
+  add('deux', 'match', {fr:'gagne sans perdre de set', en:'wins without dropping a set'}, j => live({ p: fq(Z.deux[j]) }));
+  add('un_set', 'match', {fr:'gagne au moins un set', en:'wins at least one set'}, j => live({ p: fq(Z.un_set[j]) }));
+  add('set1', 'match', {fr:'gagne le 1er set', en:'wins the 1st set'}, j => P1
+    ? live({ p: (P1[j] > P1[1 - j]) ? 1 : 0, connu: (P1[j] > P1[1 - j]) ? (fr ? 'Oui : déjà fait' : 'Yes: already done') : (fr ? 'Non : 1er set déjà perdu' : 'No: 1st set already lost') })
+    : live({ p: fq(Z.s1[j]) }));
+  add('s1m', 'match', {fr:'gagne le 1er set et le match', en:'wins the 1st set and the match'}, j => live({ p: fq(Z.s1m[j]) }));
+  add('remonte', 'match', {fr:'perd le 1er set mais gagne quand même', en:'loses the 1st set but still wins'}, j =>
+    Z.s1perdu[j] ? live({ p: Z.s1perdu_gagne[j] / Z.s1perdu[j], si: !P1, il, he }) : { txt: esc(fr ? 'Ne peut plus arriver : 1er set gagné.' : 'Can no longer happen: 1st set won.') });
+  const cles = Object.keys(Z.sets).map(x => x.split('-').map(Number)).filter(([h, a]) => h > a).sort((x, y) => x[1] - y[1]);
+  const vus = new Set();
+  for (const [h, a] of cles) { if (vus.has(`${h}${a}`)) continue; vus.add(`${h}${a}`);
+    add(`sets_${h}${a}`, 'match', {fr:`gagne ${h} sets à ${a}`, en:`wins ${h} sets to ${a}`}, j => live({ p: fq(Z.sets[j === 0 ? `${h}-${a}` : `${a}-${h}`]) })); }
+  add('decisif', 'match', {fr:`Match en ${bo5 ? 5 : 3} sets`, en:`Match goes to ${bo5 ? 5 : 3} sets`}, () => live({ p: fq(Z.decisif) }), { sansJ: true });
+  add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => live({ p: fq(Z.tb) }), { sansJ: true });
+  add('total', 'jeux', {fr:'Plus de … jeux dans le match', en:'Over … games in the match'}, (j, k) => live({ p: au_moins(Z.total, k) }), { sansJ: true, n: [12, 65, Math.max(12, Z.mediane)] });
+  add('jeux_j', 'jeux', {fr:'gagne plus de … jeux', en:'wins more than … games'}, (j, k) => live({ p: au_moins(Z.jeux_j[j], k) }), { n: [0, 40, 10] });
+  add('ecart', 'jeux', {fr:'gagne avec plus de … jeux d’écart', en:'wins by more than … games'}, (j, k) => live({ p: au_moins(Z.ecart[j], k) }), { n: [0, 15, 3] });
+  add('nb_jeux', 'jeux', {fr:'Combien de jeux dans le match ?', en:'How many games in the match?'},
+    () => live({ txt: `<b>${Z.mediane}</b> ${esc(fr ? 'jeux le plus souvent (médiane)' : 'games most often (median)')}` }), { sansJ: true });
+  return Q;
 }
 // 341 — la courbe « plus de X jeux » : plus la ligne monte, moins c'est probable ; le point où la courbe croise 50 %
 // est le total « une chance sur deux » de ce match.
@@ -7983,6 +8102,7 @@ function majLive(){
       : (!LIVE.par_uid[uid] ? `<span class="lv-top"><span class="lv-fin">${esc(t('live_termine'))}</span></span>${tableauLive(m, r, true, false)}` : '');
   });
   rendStatsLive(); rendMatchLive(); statsFiche(); chargerPoints();
+  if (QA_LIVE.maj) QA_LIVE.maj();          // 470 : « Demande à l'algo » en direct suit le score
 }
 function liveUtile(){
   const now = Date.now();
