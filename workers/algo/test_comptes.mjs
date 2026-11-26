@@ -690,8 +690,20 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
   moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
   assert.equal(moi.compte.demande.montant, 9.99);
   assert.equal(moi.compte.demande.fondateur, true);
-  assert.equal(moi.paiement.iban, 'FR76 0000');
+  // 484 : le RIB n'est jamais renvoyé au navigateur, seulement par e-mail
+  assert.equal(moi.paiement.iban, null);
+  assert.equal(moi.paiement.demande, true);
+  assert.doesNotMatch(JSON.stringify(moi), /FR76|TESTFRPP|Lucas Test/);
   assert.match(mails.at(-1).htmlContent, /IBAN : FR76 0000/);
+  // « Renvoyer l'e-mail » : la même demande, une fois toutes les 10 minutes au plus
+  n0 = mails.length;
+  r = await worker.fetch(post('/compte/api/rib', {}, { Cookie: cA }), env);
+  assert.equal(r.status, 200);
+  assert.equal(mails.length, n0 + 1);
+  assert.match(mails.at(-1).htmlContent, /IBAN : FR76 0000/);
+  r = await worker.fetch(post('/compte/api/rib', {}, { Cookie: cA }), env);
+  assert.equal(r.status, 429);
+  assert.equal(mails.length, n0 + 1);
   assert.match(mails.at(-1).htmlContent, /tarif fondateur/);
   // le même fondateur à l'année : prix normal
   await worker.fetch(post('/compte/api/abonnement', { formule: 'annee' }, { Cookie: cA }), env);
