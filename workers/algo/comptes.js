@@ -11,7 +11,7 @@
 // CLE_PRIVEE), HttpOnly, Secure, SameSite=Lax, 90 jours ; un changement de mot de passe ferme toutes les sessions.
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
-import { adminVentes, factureClient, demandeAbonnement, TARIFS } from './ventes.js';
+import { adminVentes, factureClient, demandeAbonnement, TARIFS, attribuerFondateur } from './ventes.js';
 
 export const COOKIE_COMPTE = 'gsa_compte';
 export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null,
@@ -79,7 +79,7 @@ function vueCompte(u) {
   return { email: u.email, verifie: !!u.verifie, abonne: abonne(u), admin: estAdmin(u), formule: (u.acces || {}).formule || null,
     jusqu_au: (u.acces || {}).jusqu_au || null, cree: u.cree, fondateur: (u.fondateur || {}).le || null,
     reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
-    acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.ouverture_envoyee ? u.fondateur_place || null : null,
+    acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.fondateur_place || null,   // 474 : toujours visible
     fondateur_perdu: !!u.fondateur_perdu, fondateur_tarif: !!(u.acces || {}).fondateur_tarif,
     demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null };
 }
@@ -88,7 +88,7 @@ export const PRIX_FONDATEUR_SITE = 9.99;
 // 407 : ou à tout compte qui a une demande d'abonnement en cours (montant de la demande)
 function paiementDe(u, env) {
   if (!u || !u.verifie) return null;
-  const montant = u.demande ? u.demande.montant : (u.ouverture_envoyee && u.fondateur_place ? PRIX_FONDATEUR_SITE : null);
+  const montant = u.demande ? u.demande.montant : (u.fondateur_place && !u.fondateur_perdu ? PRIX_FONDATEUR_SITE : null);   // 474
   if (montant == null) return null;
   let c = null;
   try { c = JSON.parse(env.VIREMENT || 'null'); } catch (e) { c = null; }
@@ -308,7 +308,11 @@ async function verifier(req, env, b) {
   if (!u.verifie) { u.verifie = true; u.verifie_le = new Date().toISOString(); }
   u.v = (u.v || 0) + 1;                                         // le lien ne sert qu'une fois
   await ecrire(env, u);
-  if (nouveau) await alerte(env, `adresse confirmée : ${masquer(u.email)}`);
+  if (nouveau) {
+    // 474 : les 100 premiers comptes confirmés sont fondateurs, automatiquement (place figée à la confirmation)
+    try { if (await attribuerFondateur(env, u)) await ecrire(env, u); } catch (e) { /* recalculé à la prochaine visite */ }
+    await alerte(env, `adresse confirmée : ${masquer(u.email)}${u.fondateur_place ? ' · fondateur n° ' + u.fondateur_place : ''}`);
+  }
   return rep({ ok: true, compte: vueCompte(u) }, 200, { 'Set-Cookie': await cookieSession(env, u) });
 }
 async function oubli(req, env, b) {
@@ -372,6 +376,8 @@ export async function apiCompte(req, env, url, cle = false) {
   if (!env.COFFRE || !env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep({ ok: false, erreur: 'ferme' }, 503);
   if (p === 'moi' && req.method === 'GET') {
     const u = await utilisateur(req, env);
+    // 474 : comptes confirmés avant les places automatiques : place calculée une seule fois, puis gardée
+    if (u && u.verifie && !u.fondateur_calcule && !u.fondateur_place) { try { if (await attribuerFondateur(env, u)) await ecrire(env, u); } catch (e) { /* plus tard */ } }
     return rep({ ok: true, compte: u ? vueCompte(u) : null, admin: !!cle || estAdmin(u), paiement: paiementDe(u, env), tarifs: TARIFS,
       turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
@@ -620,7 +626,13 @@ function tapi(J){if(!J.length)return '<p><b>TennisApi</b> <small>(reçu par le s
 return '<p style="margin:12px 0 4px"><b>TennisApi</b> <small>(reçu par le site, par jour, collecte non comptée)</small></p><table style="width:100%;font-size:13px"><tr><td>Jour</td><td>Direct</td><td>Fiches</td><td>Total</td></tr>'+J.slice(-10).reverse().map(j=>'<tr><td>'+j.jour.slice(5)+'</td><td>'+j.direct_req+' · '+mo(j.direct_octets)+'</td><td>'+j.fiches_req+' · '+mo(j.fiches_octets)+'</td><td>'+mo(j.direct_octets+j.fiches_octets)+'</td></tr>').join('')+'</table><small>'+J.length+' jour(s) mesuré(s) : '+mo(m30)+' en tout. Forfait : 10 240 Mo/mois inclus. Taille décompressée : un plafond.</small>';}
 function factures(){fetch('/compte/admin/api/factures',{cache:'no-store'}).then(r=>r.json()).then(o=>{const e=s=>String(s||'').replace(/</g,'&lt;');$('lfa').innerHTML=(o.vendeur?'':'<p class="non"><small>Secret FACTURE_VENDEUR absent : aucune facture possible.</small></p>')+(o.factures.length?o.factures.map(f=>'<div><a style="color:#2ee6ff" target="_blank" href="/compte/admin/facture?n='+e(f.numero)+'">'+e(f.numero)+'</a> · '+e(f.email)+' · '+String(f.total.toFixed(2)).replace('.',',')+' € · '+String(f.emise_le).slice(0,10)+'</div>').join(''):'<small>Aucune facture.</small>');});}
 $('vd').value=new Date().toISOString().slice(0,10);
-$('vb').onclick=()=>{$('vb').disabled=true;fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked,sans_renonciation:$('vsr').checked,test_sans_facture:$('vtf').checked})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vr').textContent=o.ok?'Fait : '+(o.sans_facture?'SANS facture (test)':'facture '+o.numero)+', accès jusqu’au '+String(o.jusqu_au).slice(0,10)+(o.mail?', e-mail envoyé.':', e-mail NON envoyé.')+(o.renonciation?'':' Sans renonciation : 14 jours de rétractation.'):'Refusé : '+(ERR_V[o.erreur]||o.erreur);charger();factures();entonnoir();});};
+// 474 : validation en deux temps (récapitulatif puis « Confirmer »), résultat bien visible, doublon signalé
+let vbArme=null;const vrBox=(ok,t)=>{const e=$('vr');e.textContent=t;e.style.cssText='margin:10px 0 0;padding:10px 12px;border-radius:10px;font-weight:bold;'+(ok?'background:#D4FF3A;color:#141225':'background:#FF6B86;color:#fff');e.scrollIntoView({block:'center'});};
+const vbEnvoi=(doublon)=>{$('vb').disabled=true;$('vb').textContent='Envoi…';fetch('/compte/admin/api/virement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({compte:$('vc').value,formule:$('vf').value,montant:$('vm').value,date:$('vd').value,fondateur:$('vfo').checked,sans_renonciation:$('vsr').checked,test_sans_facture:$('vtf').checked,confirmer_doublon:!!doublon})}).then(r=>r.json()).then(o=>{$('vb').disabled=false;$('vb').textContent='Valider le virement';$('vb').style.background='';vbArme=null;
+if(o.ok){vrBox(true,'✅ Virement validé : '+(o.sans_facture?'SANS facture (test)':'facture '+o.numero)+' · accès jusqu’au '+String(o.jusqu_au).slice(0,10).split('-').reverse().join('/')+(o.mail?' · e-mail envoyé.':' · e-mail NON envoyé.')+(o.renonciation?'':' Sans renonciation : 14 jours de rétractation.'));}
+else if(o.erreur==='doublon'){vrBox(false,'⚠️ Un virement a déjà été validé pour ce compte à '+String(o.le||'').slice(11,16)+' UTC. Rien n’a été fait.');const b=document.createElement('button');b.textContent='Valider quand même (2e mois)';b.style.marginTop='8px';b.onclick=()=>vbEnvoi(true);$('vr').appendChild(document.createElement('br'));$('vr').appendChild(b);}
+else vrBox(false,'❌ Refusé : '+(ERR_V[o.erreur]||o.erreur));charger();factures();entonnoir();}).catch(()=>{$('vb').disabled=false;$('vb').textContent='Valider le virement';vrBox(false,'❌ Erreur réseau : rien n’a été validé.');});};
+$('vb').onclick=()=>{if(!vbArme){const f=$('vf').options[$('vf').selectedIndex].text;vbArme=setTimeout(()=>{vbArme=null;$('vb').textContent='Valider le virement';$('vb').style.background='';},10000);$('vb').textContent='Confirmer : '+f+' · '+($('vm').value||'?')+' € · '+($('vc').value||'?')+($('vtf').checked?' · sans facture':'');$('vb').style.background='#FF9A3D';return;}clearTimeout(vbArme);vbEnvoi(false);};
 const ERR_V={vendeur_absent:'secret FACTURE_VENDEUR absent : coche « test sans facture » pour tester, ou pose le secret',fondateur_perdu:'tarif fondateur perdu (dernier mois fondateur fini depuis plus de 7 jours) : décoche « tarif fondateur »',sans_renonciation:'ce client n’a pas coché l’accès immédiat (section Plus). Demande-lui de le faire, ou coche « sans renonciation ».'};
 const ERR_O={vendeur_absent:'secret FACTURE_VENDEUR absent',coordonnees_absentes:'secret VIREMENT absent (titulaire, iban, bic)',aucun_fondateur:'aucun fondateur confirmé'};
 function ouv(mode){$('or').textContent='…';fetch('/compte/admin/api/ouverture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode})}).then(r=>r.json()).then(o=>{if(!o.ok){$('or').textContent='Refusé : '+(ERR_O[o.erreur]||o.erreur);return;}
