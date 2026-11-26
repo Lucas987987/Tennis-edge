@@ -2881,10 +2881,11 @@ function analyseComplete(m, court_){
     const re = [0,1].map(i => (av[i?'away':'home']||{}).reussite);
     if (re.some(Boolean)){
       const l = ['📈 FORME RÉCENTE'];
-      re.forEach((r, i) => { if (r) l.push(`${r.ecart >= 1 ? '✅' : r.ecart <= -1 ? '⚠️' : '▪️'} ${N[i]} : ${r.victoires} victoires sur ses ${r.matchs} derniers matchs, pour ${d1(r.attendu)} attendues.`); });
-      bloc(...l);
-      const meilleur = re[0] && re[1] ? (re[0].ecart - re[1].ecart >= 2 ? 0 : re[1].ecart - re[0].ecart >= 2 ? 1 : null) : null;
-      if (meilleur != null) retenir.push(`✅ ${N[meilleur]} présente la meilleure dynamique récente.`);
+      // 26/11/2026 (paquet 459) : le fait, sans ✅ ni ⚠️, et rien dans « Ce qu'il faut retenir » — l'écart à l'attendu sur
+      // 40 matchs est surtout du hasard (σ ≈ 3 victoires ; sur 221 joueurs du 22/11, 6 % à 6 victoires ou plus, autant
+      // que le hasard seul) et l'Elo tient déjà compte de ces résultats
+      re.forEach((r, i) => { if (r) l.push(`▪️ ${N[i]} : ${r.victoires} victoires sur ses ${r.matchs} derniers matchs, pour ${d1(r.attendu)} attendues.`); });
+      bloc(...l, 'Descriptif : ces résultats sont déjà pris en compte dans le niveau Elo, ils ne changent pas le %.');
     }
     const h2 = av.face_a_face;
     if (h2 && h2.rencontres) bloc('🤝 FACE-À-FACE', h2.home === h2.away ? `⚖️ Égalité ${h2.home}-${h2.away}.` : `🏆 ${h2.home > h2.away ? H : A} mène ${Math.max(h2.home,h2.away)} victoire${Math.max(h2.home,h2.away)>1?'s':''} à ${Math.min(h2.home,h2.away)}.`);

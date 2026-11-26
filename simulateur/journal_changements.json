@@ -2571,6 +2571,13 @@
    "paquet": 458,
    "quoi": "PLUS DE % SUR DE TOUT PETITS ÉCHANTILLONS (paquet 458, Lucas, à propos d'un concurrent qui compare des joueurs sur 2 ou 3 matchs). Bilans face au style adverse : sur le site, plus aucun % sous 10 matchs (« trop peu de matchs ») — sur 298 bilans du 22/11, 52 tous terrains et 65 sur la surface reposaient sur 1 à 9 matchs ; dans les posts X, un bilan seulement à partir de 30 matchs, sans ✅ ni ⚠️, sans « ses 5 derniers matchs contre ce style », et plus aucune ligne de style dans « Ce qu'il faut retenir » : huit études, dont la dernière (paquet 457), n'ont trouvé aucun effet du style au-delà du niveau des joueurs. Dans le résumé de la fiche, un écart net face au style est présenté comme une information (ni vert ni rouge). Note de fiabilité d'un joueur (page des joueurs) : affichée à partir de 20 matchs (avant : 5) ; performance par surface ou par style à partir de 10 matchs (avant : 3). Le critère « joueur peu fiable » de la note du match garde 5 matchs : son effet y est appris et ramené vers zéro quand les matchs manquent. Texte d'aide de la note de fiabilité mis à jour : note mesurée pour chaque match (paquet 451), réapprise chaque semaine. Le % de victoire ne change pas.",
    "garde_fou": "Affichage seulement. Test : tests/test_petits_echantillons_458.py."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 459,
+   "quoi": "FORME RÉCENTE DANS LES POSTS X : LE FAIT, SANS SIGNAL (paquet 459, accord de Lucas). « X victoires sur ses 40 derniers matchs, pour Y attendues » portait un ✅ dès 1 victoire au-dessus de l'attendu (plus de la moitié des joueurs) et « présente la meilleure dynamique récente » entrait dans « Ce qu'il faut retenir » dès 2 victoires d'écart entre les deux joueurs. Or l'écart sur 40 matchs est surtout du hasard (environ 3 victoires d'écart type) : sur 221 joueurs du 22/11, 13 (6 %) étaient à 6 victoires ou plus de l'attendu, à peu près ce que donne le hasard seul ; et l'Elo tient déjà compte de ces résultats. La ligne reste, sans ✅ ni ⚠️, avec la mention qu'elle ne change pas le %, et plus rien sur la forme dans « Ce qu'il faut retenir ». Le % de victoire ne change pas.",
+   "garde_fou": "Affichage seulement. Test : tests/test_petits_echantillons_458.py."
   }
  ]
 }
