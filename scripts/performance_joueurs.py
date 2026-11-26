@@ -23,10 +23,14 @@ import math
 import os
 
 FENETRE = 20
-MIN_NOTE = 5
-MIN_STABLE = 15
+# 26/11/2026 (paquet 458, Lucas) : sur 5 à 10 matchs, une note de joueur reflète surtout la chance (« comparer des joueurs
+# avec 2 matchs » ne veut rien dire) — note affichée à partir de 20 matchs (avant : 5, provisoire sous 15) ; une
+# surface ou un style à partir de 10 matchs (avant : 3). Le critère « joueur peu fiable » de la note du match
+# (note_par_match.py) garde 5 matchs : son effet y est appris et ramené vers zéro quand les matchs manquent.
+MIN_NOTE = 20
+MIN_STABLE = 20
 Z_MAX = 2.5
-MIN_GROUPE = 3              # en dessous, une surface ou un style est affiché « trop peu de matchs »
+MIN_GROUPE = 10             # en dessous, une surface ou un style est affiché « trop peu de matchs »
 STATS = ('aces', 'breaks')
 STYLES = ('grand_serveur', 'serveur_attaquant', 'retourneur_pressant', 'contreur', 'equilibre')
 
@@ -107,9 +111,10 @@ def _groupe(lignes):
     return {'n': n, 'v': v, 'annonce': round(sum(p for p, _ in lignes) / n, 4), 'reel': round(v / n, 4)}
 
 
-def note_fiabilite(lignes):
-    """lignes : [(p annoncé pour le joueur, 1 si victoire)]. → (note 0-100, z) ou (None, None)."""
-    if len(lignes) < MIN_NOTE:
+def note_fiabilite(lignes, min_n=None):
+    """lignes : [(p annoncé pour le joueur, 1 si victoire)]. → (note 0-100, z) ou (None, None).
+    min_n : minimum de matchs (par défaut MIN_NOTE ; note_par_match.py passe le sien)."""
+    if len(lignes) < (MIN_NOTE if min_n is None else min_n):
         return None, None
     att = sum(p for p, _ in lignes)
     var = sum(p * (1 - p) for p, _ in lignes)

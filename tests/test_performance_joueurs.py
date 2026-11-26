@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """25/11/2026 (paquet 438) — « Performance des joueurs » sur la page de chaque joueur."""
+import pytest
 import gzip
 import json
 import pathlib
@@ -18,14 +19,29 @@ def _m(uid, debut, h, a, p, g='home', surface='Clay', interrompu=None):
 
 
 def test_note_fiabilite():
-    assert PJ.note_fiabilite([(0.5, 1)] * 4) == (None, None)                     # moins de 5 matchs : pas de note
-    note, z = PJ.note_fiabilite([(0.6, 1), (0.6, 0), (0.6, 1), (0.6, 1), (0.6, 0)])
+    assert PJ.note_fiabilite([(0.5, 1)] * 4, 5) == (None, None)                  # moins de 5 matchs : pas de note
+    note, z = PJ.note_fiabilite([(0.6, 1), (0.6, 0), (0.6, 1), (0.6, 1), (0.6, 0)], 5)
     assert note == 100 and z == 0.0                                              # 3 victoires pour 3 attendues
-    note, _ = PJ.note_fiabilite([(0.9, 0)] * 10)                                 # 0 victoire pour 9 attendues
+    note, _ = PJ.note_fiabilite([(0.9, 0)] * 10, 5)                              # 0 victoire pour 9 attendues
     assert note == 0
 
 
-def test_performance_fenetre_stats_surfaces_styles():
+def test_seuils_d_affichage_paquet_458():
+    # 26/11/2026 (paquet 458) : pas de note de joueur sous 20 matchs, ni de surface ou de style sous 10
+    assert (PJ.MIN_NOTE, PJ.MIN_STABLE, PJ.MIN_GROUPE) == (20, 20, 10)
+    assert PJ.note_fiabilite([(0.6, 1)] * 19) == (None, None)
+    assert PJ.note_fiabilite([(0.6, 1)] * 20)[0] is not None
+
+
+@pytest.fixture
+def seuils_anciens(monkeypatch):
+    """La mécanique est testée avec les petits seuils d'avant le paquet 458 (données factices courtes)."""
+    monkeypatch.setattr(PJ, 'MIN_NOTE', 5)
+    monkeypatch.setattr(PJ, 'MIN_STABLE', 15)
+    monkeypatch.setattr(PJ, 'MIN_GROUPE', 3)
+
+
+def test_performance_fenetre_stats_surfaces_styles(seuils_anciens):
     ms = [_m(f'2026-11-{20 - i:02d}_aa_x{i}', f'2026-11-{20 - i:02d}T10:00', 'Aaa', f'X{i}', 0.6, g='home' if i % 2 == 0 else 'away',
              surface='Hard' if i < 3 else 'Clay') for i in range(8)]
     ms.append(_m('2026-11-01_aa_ab', '2026-11-01T10:00', 'Aaa', 'Ab', 0.5, interrompu='abandon'))
@@ -41,7 +57,7 @@ def test_performance_fenetre_stats_surfaces_styles():
                            'contreur': {'n': 1, 'v': 0, 'annonce': 0.6, 'reel': 0.0}}
 
 
-def test_page_joueur_affiche_la_performance(tmp_path):
+def test_page_joueur_affiche_la_performance(tmp_path, seuils_anciens):
     ms = [_m(f'2026-11-{20 - i:02d}_aa_x{i}', f'2026-11-{20 - i:02d}T10:00', 'Aaa Bbb', f'Xx{i}', 0.6, g='home' if i % 3 else 'away')
           for i in range(9)]
     PS.construire({'matchs': ms}, str(tmp_path), maintenant='2026-11-24T12:00', bilans={}, donnees={})
