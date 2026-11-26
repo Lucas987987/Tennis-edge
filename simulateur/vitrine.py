@@ -163,7 +163,7 @@ def recaler_feuille(c, fp, fq, coefs=None):
 
 
 CLES_PLUS = ('gagnes_1re_pct', 'gagnes_2e_pct', 'jeux_service_gagnes_pct', 'balles_break_obtenues', 'breaks',
-             'points_gagnes')
+             'points_gagnes', 'points_service_pct')
 
 
 def _feuille_plus(v):
