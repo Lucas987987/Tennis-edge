@@ -260,31 +260,38 @@ test('382 : un compte jamais confirmé est effacé après 30 jours (à l’ouver
   assert.ok(![...C.m.values()].some((x) => x.includes('vieux@')));
 });
 
-test('384 : liste d’attente fondateurs (compte confirmé), e-mail une fois, annulation, référence de virement', async () => {
-  const { env, mails } = monde();
-  assert.equal((await worker.fetch(post('/compte/api/fondateur', { reserver: true }), env)).status, 401);
-  // compte pas encore confirmé : la session n'existe qu'après confirmation, on vérifie le refus côté données
+test('474 : les 100 premiers comptes confirmés sont fondateurs, automatiquement ; place figée ; admin exclu', async () => {
+  const { env, mails, C } = monde();
+  // un compte administrateur ne prend pas de place
+  const { idCompte } = await import('./comptes.js');
+  const idA = await idCompte('admin@exemple.fr');
+  C.m.set(`comptes/u/${idA}.json`, JSON.stringify({ id: idA, email: 'admin@exemple.fr', verifie: true, cree: '2026-01-01T00:00:00Z', acces: { formule: 'admin' } }));
   await worker.fetch(post('/compte/api/inscription', { email: 'g@exemple.fr', mdp: 'motdepasse1' }), env);
-  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
-  let o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env)).json();
-  assert.equal(o.ok, true);
+  const r = await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env);
+  const c = cookie(r);
+  const o = await r.json();
+  assert.equal(o.compte.fondateur_place, 1);                    // rien à réserver
   assert.match(o.compte.fondateur, /^\d{4}-\d{2}-\d{2}T/);
   assert.match(o.compte.reference, /^GSA-[0-9A-F]{6}$/);
-  assert.equal(mails.length, 2);
-  assert.match(mails[1].subject, /fondateur/);
-  const date = o.compte.fondateur;
-  o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env)).json();
-  assert.equal(o.compte.fondateur, date);                      // réserver deux fois garde la première date
-  o = await (await worker.fetch(post('/compte/api/fondateur', { reserver: false }, { Cookie: c }), env)).json();
-  assert.equal(o.compte.fondateur, null);
-  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
-  assert.equal(mails.length, 2);                                // pas de second e-mail de confirmation
-  const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
-  assert.ok(moi.compte.fondateur);
-  const l = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
-  assert.equal(l.comptes[0].reference, moi.compte.reference);
+  assert.equal(mails.length, 1);                                // pas d'e-mail de réservation
+  // un second compte prend la place 2 ; la place du premier ne bouge jamais
+  await worker.fetch(post('/compte/api/inscription', { email: 'h2@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c2 = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[1], 'verifier') }), env));
+  env.VIREMENT = JSON.stringify({ titulaire: 'Game Set Algo', iban: 'FR76 0000' });
+  let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c2 }), env)).json();
+  assert.equal(moi.compte.fondateur_place, 2);
+  assert.equal(moi.paiement.montant, 9.99);                     // le tarif fondateur est montré tout de suite
+  moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.compte.fondateur_place, 1);
   const ex = await (await worker.fetch(get('/compte/api/export', { Cookie: c }), env)).json();
   assert.ok(ex.fondateur);
+  // compte confirmé AVANT les places automatiques : place calculée à sa première visite
+  const idV = await idCompte('vieux@exemple.fr');
+  C.m.set(`comptes/u/${idV}.json`, JSON.stringify({ id: idV, email: 'vieux@exemple.fr', verifie: true, cree: '2026-11-20T00:00:00Z' }));
+  const V = await import('./ventes.js');
+  const uV = JSON.parse(C.m.get(`comptes/u/${idV}.json`));
+  assert.equal(await V.attribuerFondateur(env, uV), true);
+  assert.equal(uV.fondateur_place, 3);                          // places 1 et 2 déjà données : jamais reprises
 });
 
 test('384 : le script de la page d’administration est du JavaScript valide', async () => {
@@ -306,9 +313,8 @@ test('385 : alerte Telegram à la création, à la confirmation et à la place f
   assert.match(tg[0].text, /nouveau compte : lu\*\*\*@exemple\.fr/);
   assert.ok(!tg[0].text.includes('lucie.martin'));
   const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
-  assert.match(tg[1].text, /adresse confirmée/);
-  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
-  assert.match(tg[2].text, /place fondateur réservée/);
+  assert.match(tg[1].text, /adresse confirmée : lu\*\*\*@exemple\.fr · fondateur n° 1/);   // 474 : place automatique
+  void c;
   // Telegram en panne : le compte se crée quand même
   globalThis.fetch = async (u, o) => { if (String(u).includes('telegram')) throw new Error('panne'); return brevo(u, o); };
   const r = await worker.fetch(post('/compte/api/inscription', { email: 'x@exemple.fr', mdp: 'motdepasse1' }), env);
@@ -330,7 +336,10 @@ test('471 : test sans facture — seulement sans FACTURE_VENDEUR, accès ouvert,
   assert.match(mails.at(-1).subject, /accès Plus est ouvert/);
   // dès que le vendeur existe, la case est ignorée : facture obligatoire, et la numérotation démarre à 0001
   env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court', siret: '123 456 789 00012' });
+  // 474 : une 2e validation en moins de 10 minutes est refusée (double appui), sauf confirmation explicite
   o = await vir({ compte: 't@exemple.fr', formule: 'mois', montant: '14,99', test_sans_facture: true });
+  assert.equal(o.ok, false); assert.equal(o.erreur, 'doublon'); assert.ok(o.le);
+  o = await vir({ compte: 't@exemple.fr', formule: 'mois', montant: '14,99', test_sans_facture: true, confirmer_doublon: true });
   assert.equal(o.ok, true); assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0001`);
 });
 
@@ -351,7 +360,7 @@ test('386 : virement reçu → accès payé, facture numérotée sans trou, e-ma
   assert.equal(o.renonciation, true);
   assert.equal(o.ok, true);
   assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0001`);
-  o = await vir({ compte: 'h@exemple.fr', formule: 'mois', montant: '9,99' });   // par e-mail, prolonge l'accès
+  o = await vir({ compte: 'h@exemple.fr', formule: 'mois', montant: '9,99', confirmer_doublon: true });   // par e-mail, prolonge l'accès
   assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0002`);
   const moi = (await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json()).compte;
   assert.equal(moi.paye, true);
@@ -474,7 +483,6 @@ test('405 : ouverture fondateurs — aperçu, refus sans coordonnées, envoi par
     const n0 = mails.length;
     await worker.fetch(post('/compte/api/inscription', { email: `f${i}@exemple.fr`, mdp: 'motdepasse1' }), env);
     const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[n0], 'verifier') }), env));
-    await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: c }), env);
     cookies.push(c);
     await new Promise((r) => setTimeout(r, 5));
   }
@@ -483,10 +491,10 @@ test('405 : ouverture fondateurs — aperçu, refus sans coordonnées, envoi par
   env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court', siret: '123' });
   assert.equal((await ouv({ mode: 'apercu' })).erreur, 'coordonnees_absentes');
   env.VIREMENT = JSON.stringify({ titulaire: 'Lucas Test', iban: 'FR76 0000 0000 0000', bic: 'TESTFRPP' });
-  // avant l'ouverture : aucune coordonnée montrée au client
+  // 474 : la place est connue dès la confirmation, le tarif fondateur et les coordonnées sont visibles tout de suite
   let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cookies[0] }), env)).json();
-  assert.equal(moi.paiement, null);
-  assert.equal(moi.compte.fondateur_place, null);
+  assert.equal(moi.compte.fondateur_place, 1);
+  assert.equal(moi.paiement.montant, 9.99);
   const a = await ouv({ mode: 'apercu' });
   assert.equal(a.places, 3);
   assert.match(a.sujet, /place fondateur n° 1/);
@@ -499,7 +507,7 @@ test('405 : ouverture fondateurs — aperçu, refus sans coordonnées, envoi par
   assert.deepEqual([o.envoyes, o.restants, o.places], [3, 0, 3]);
   assert.equal(mails.length, n0 + 3);
   assert.match(mails[n0].subject, /n° 1/);
-  assert.equal(mails[n0].to[0].email, 'f0@exemple.fr');                        // ordre de réservation
+  assert.equal(mails[n0].to[0].email, 'f0@exemple.fr');                        // ordre des comptes
   assert.match(mails[n0 + 2].subject, /n° 3/);
   assert.equal((await ouv({ mode: 'envoyer' })).envoyes, 0);                    // jamais deux fois
   moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cookies[1] }), env)).json();
@@ -516,7 +524,7 @@ test('405 : au-delà des 100 places, pas d’e-mail d’ouverture', async () => 
   const { idCompte } = await import('./comptes.js');
   for (let i = 0; i < 102; i++) {
     const email = `z${String(i).padStart(3, '0')}@exemple.fr`, id = await idCompte(email);
-    C.m.set(`comptes/u/${id}.json`, JSON.stringify({ id, email, verifie: true, fondateur: { le: new Date(Date.UTC(2026, 10, 1, 0, i)).toISOString() } }));
+    C.m.set(`comptes/u/${id}.json`, JSON.stringify({ id, email, verifie: true, cree: new Date(Date.UTC(2026, 10, 1, 0, i)).toISOString() }));
   }
   const V = await import('./ventes.js');
   const L = (await V.fondateursOrdonnes(env)).slice(0, V.PLACES_FONDATEUR);
@@ -539,7 +547,7 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
     comptes.push(cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[n0], 'verifier') }), env)));
   }
   const [cA, cB] = comptes;
-  await worker.fetch(post('/compte/api/fondateur', { reserver: true }, { Cookie: cA }), env);    // A : fondateur n° 1
+  // 474 : A et B sont fondateurs n° 1 et 2, automatiquement
   let r = await worker.fetch(post('/compte/api/abonnement', { formule: 'decennie' }, { Cookie: cB }), env);
   assert.equal((await r.json()).erreur, 'formule');
   // sans coordonnées bancaires : la demande est notée, l'e-mail annonce les coordonnées plus tard
@@ -547,13 +555,13 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
   r = await (await worker.fetch(post('/compte/api/abonnement', { formule: 'trimestre', montant: 0.01 }, { Cookie: cB }), env)).json();
   assert.equal(r.ok, true);
   assert.equal(mails.length, n0 + 1);
-  assert.match(mails.at(-1).subject, /3 mois, 39,99 €/);
+  assert.match(mails.at(-1).subject, /3 mois, 49,99 €/);
   assert.match(mails.at(-1).textContent, /Ta référence : GSA-[0-9A-F]{6}/);
   let moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cB }), env)).json();
   assert.equal(moi.compte.demande.montant, V.TARIFS.trimestre);                 // jamais le montant du navigateur
   assert.deepEqual(moi.tarifs, { ...V.TARIFS });
   assert.equal(moi.paiement.iban, null);
-  assert.equal(moi.paiement.montant, 39.99);
+  assert.equal(moi.paiement.montant, 49.99);
   // fondateur parmi les 100 premiers : 9,99 € au mois
   env.VIREMENT = JSON.stringify({ titulaire: 'Lucas Test', iban: 'FR76 0000', bic: 'TESTFRPP' });
   r = await (await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }, { Cookie: cA }), env)).json();
@@ -566,7 +574,7 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
   // le même fondateur à l'année : prix normal
   await worker.fetch(post('/compte/api/abonnement', { formule: 'annee' }, { Cookie: cA }), env);
   moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
-  assert.equal(moi.compte.demande.montant, 129.99);
+  assert.equal(moi.compte.demande.montant, 169.99);
   // l'administration voit les demandes
   const l = await (await worker.fetch(get('/compte/admin/api/liste', { 'X-Cle': CLE }, DEV), env)).json();
   assert.equal(l.comptes.filter((c) => c.demande).length, 2);
@@ -574,10 +582,10 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
   await worker.fetch(post('/compte/api/abonnement', { annuler: true }, { Cookie: cA }), env);
   moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cA }), env)).json();
   assert.equal(moi.compte.demande, null);
-  assert.equal(moi.paiement, null);
+  assert.equal(moi.paiement.montant, 9.99);                     // 474 : le tarif fondateur reste proposé
   // virement reçu : la demande de B est effacée
   env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue', siret: '1' });
-  const o = await worker.fetch(post('/compte/admin/api/virement', { compte: 'a2@exemple.fr', formule: 'trimestre', montant: '39,99', sans_renonciation: true },
+  const o = await worker.fetch(post('/compte/admin/api/virement', { compte: 'a2@exemple.fr', formule: 'trimestre', montant: '49,99', sans_renonciation: true },
     { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
   assert.equal(o.ok, true);
   moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: cB }), env)).json();
@@ -588,9 +596,9 @@ test('407 : demande d’abonnement — montant fixé par le serveur, tarif fonda
 test('407 : prix du mois pour un fondateur au-delà des 100 places : prix normal', async () => {
   const V = await import('./ventes.js');
   assert.equal(V.montantDemande('mois', 100), 9.99);
-  assert.equal(V.montantDemande('mois', 101), 14.99);
-  assert.equal(V.montantDemande('mois', null), 14.99);
-  assert.equal(V.montantDemande('semaine', 1), 4.99);
+  assert.equal(V.montantDemande('mois', 101), 19.99);
+  assert.equal(V.montantDemande('mois', null), 19.99);
+  assert.equal(V.montantDemande('semaine', 1), 5.99);
   assert.equal(V.montantDemande('decennie', 1), null);
 });
 
@@ -615,7 +623,7 @@ test('412 : tarif fondateur perdu après 7 jours de retard ; rappel avec la date
   }
   await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }, { Cookie: c }), env);
   const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
-  assert.equal(moi.compte.demande.montant, 14.99);
+  assert.equal(moi.compte.demande.montant, 19.99);
   assert.equal(moi.compte.fondateur_perdu, true);
   env.FACTURE_VENDEUR = JSON.stringify({ nom: 'X', adresse: 'Y', siret: '1' });
   const o = await worker.fetch(post('/compte/admin/api/virement', { compte: 'r@exemple.fr', formule: 'mois', montant: '9,99', fondateur: true, sans_renonciation: true },
