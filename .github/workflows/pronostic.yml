@@ -165,6 +165,14 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python simulateur/note_par_match.py . --telegram
+      # 26/11/2026 (paquet 466) : fantôme « pente sous 500 points » en Challenger (étude 465), suivi sur nos matchs
+      # publiés ; proposé à Lucas seulement si la règle écrite dans le script est remplie, jamais appliqué seul
+      - name: Pente sous 500 points (Challenger) — suivi
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/suivi_pente_sous_500.py . --telegram
       # 05/11/2026 : un seul message pour tout ce qui a été adopté directement (signaux, tie-breaks, recalage) — Telegram privé
       - name: Adoptions directes — état de la semaine
         continue-on-error: true
@@ -282,6 +290,7 @@ jobs:
           if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
           if [ -f simulateur/surveillance_fragilite.json ]; then git add -- simulateur/surveillance_fragilite.json; fi
           if [ -f simulateur/note_par_match.json ]; then git add -- simulateur/note_par_match.json; fi
+          if [ -f simulateur/suivi_pente_sous_500.json ]; then git add -- simulateur/suivi_pente_sous_500.json; fi
           if [ -f simulateur/biais_annexes.json ]; then git add -- simulateur/biais_annexes.json; fi
           if [ -f simulateur/live_reevaluation.json ]; then git add -- simulateur/live_reevaluation.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
