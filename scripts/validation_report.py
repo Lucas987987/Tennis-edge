@@ -102,10 +102,10 @@ def mean_ci(xs, bootstrap=True, n_boot=3000, graine=1234567):
         half = Z * s / math.sqrt(n)
         return (m, m - half, m + half, s)
     rng = random.Random(graine)
-    moyennes = []
-    for _ in range(n_boot):
-        tirage = [xs[rng.randrange(n)] for _ in range(n)]
-        moyennes.append(sum(tirage) / n)
+    # 26/11/2026 (paquet 477) : tirage avec remise par rng.choices (en C, environ 3 fois plus rapide que la boucle) —
+    # même méthode (bootstrap percentile, 3000 tirages, graine fixe), IC reproductibles ; le run du 26/11 a dépassé
+    # sa limite de 90 min, dont 46 min dans ce script.
+    moyennes = [sum(rng.choices(xs, k=n)) / n for _ in range(n_boot)]
     moyennes.sort()
     lo = moyennes[int(0.025 * n_boot)]
     hi = moyennes[int(0.975 * n_boot) - 1]
