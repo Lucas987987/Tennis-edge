@@ -2696,6 +2696,7 @@ def resoudre(racine, maintenant=None):
                     'pronostique_le': r.get('pronostique_le'), 'matchs_joues': r.get('matchs_joues'),
                     'fiabilite': r.get('fiabilite'), 'profil_contexte': r.get('profil_contexte'),
                     'stabilite_score': r.get('stabilite_score'),
+                    'balles_min': r.get('balles_min'),   # 26/11/2026 (paquet 466) : documentation au jour du pronostic
                     'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
                              'feuille': feuille[0] if feuille else None, 'interrompu': interrompu,
