@@ -1,8 +1,53 @@
 {
- "genere_le": "2026-11-25T18:55:20+00:00",
- "couverture_utr": 0.9195,
+ "genere_le": "2026-11-26T18:22:36+00:00",
+ "couverture_utr": 1.0,
  "regle": "Challenger : log loss −0,001 au moins avec l'UTR, ATP : pas plus de +0,0005 ; deux semaines de suite ; matchs jugés depuis le 01/01/2025 ; rien n'est jugé sous 95 % de jours collectés (fixée le 24/11/2026, avant tout résultat)",
- "statut": "collecte incomplète (92.0 % des jours) : rien n'est jugé",
+ "matchs_utr": 22182,
+ "joueurs_utr": 2786,
+ "challenger": {
+  "n": 23833,
+  "log_loss_sans": 0.608975,
+  "log_loss_avec": 0.609087,
+  "gain": -0.000112,
+  "vainqueurs_sans_pct": 66.0,
+  "vainqueurs_avec_pct": 66.0
+ },
+ "atp": {
+  "n": 6337,
+  "log_loss_sans": 0.612107,
+  "log_loss_avec": 0.611866,
+  "gain": 0.000241,
+  "vainqueurs_sans_pct": 65.8,
+  "vainqueurs_avec_pct": 65.9
+ },
+ "descriptif": {
+  "challenger_avec_joueur_utr": {
+   "n": 5133,
+   "log_loss_sans": 0.560887,
+   "log_loss_avec": 0.561364,
+   "gain": -0.000477,
+   "vainqueurs_sans_pct": 71.0,
+   "vainqueurs_avec_pct": 70.7
+  },
+  "challenger_peu_vus": {
+   "n": 2911,
+   "log_loss_sans": 0.510684,
+   "log_loss_avec": 0.510529,
+   "gain": 0.000155,
+   "vainqueurs_sans_pct": 75.2,
+   "vainqueurs_avec_pct": 75.2
+  }
+ },
+ "verdict_semaine": false,
+ "statut": "pas adopté",
  "adopte": false,
- "stabilite": {}
+ "stabilite": {
+  "elo_utr": {
+   "adopte": false,
+   "semaine": "2026-W48",
+   "serie_avant": 0,
+   "serie": 0,
+   "gain": -0.00011
+  }
+ }
 }
