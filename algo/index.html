@@ -993,6 +993,8 @@ const T = {
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
   proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
   sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:n=>`Feuille de match prévue (moyenne des ${fmt(n)} simulations)`,
+  ps_titre:an=>`Profil de la saison ${an}`, ps_sous:(srf)=>`Statistiques de l'année${srf?` sur ${srf}`:', toutes surfaces'}. Information descriptive : elle ne change pas le % de l'algo.`,
+  ps_lignes:[['m','Matchs avec stats (V – D)'],['ps','Points gagnés au service'],['p1','Derrière la 1re balle'],['p2','Derrière la 2e balle'],['pr','1res balles'],['ac','Aces par match'],['df','Doubles fautes par match'],['bs','Balles de break sauvées'],['bc','Balles de break converties'],['tb','Jeux décisifs (G – P)'],['cl','Classement (meilleur)'],['utr','Classement UTR']],
   styles_titre:'Bilans contre le style adverse', styles_sous:'Notre classification service–retour, figée avant chaque match. Lecture descriptive : ces bilans ne modifient pas la probabilité affichée.',
   styles_global:'Toutes surfaces', styles_surface:s=>`Sur ${s}`, styles_contre:s=>`Contre : ${s}`,
   styles_vn:(v,n)=>`${fmt(v)} victoires sur ${fmt(n)} matchs`, styles_ic:i=>`Fourchette probable : ${Math.round(i[0])} à ${Math.round(i[1])} %`,
@@ -1372,6 +1374,8 @@ const T = {
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
   proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
   sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:n=>`Expected match stats (average of ${fmt(n)} simulations)`,
+  ps_titre:an=>`${an} season profile`, ps_sous:(srf)=>`Season statistics${srf?` on ${srf}`:', all surfaces'}. Descriptive only: it does not change the algo's %.`,
+  ps_lignes:[['m','Matches with stats (W – L)'],['ps','Service points won'],['p1','1st-serve points won'],['p2','2nd-serve points won'],['pr','1st serves in'],['ac','Aces per match'],['df','Double faults per match'],['bs','Break points saved'],['bc','Break points converted'],['tb','Tie-breaks (W – L)'],['cl','Ranking (career high)'],['utr','UTR ranking']],
   styles_titre:'Records against the opponent’s style', styles_sous:'Our own serve–return classification, frozen before each match. Descriptive only: these records do not change the displayed probability.',
   styles_global:'All surfaces', styles_surface:s=>`On ${s}`, styles_contre:s=>`Against: ${s}`,
   styles_vn:(v,n)=>`${fmt(v)} wins in ${fmt(n)} matches`, styles_ic:i=>`Likely range: ${Math.round(i[0])} to ${Math.round(i[1])}%`,
@@ -3895,6 +3899,33 @@ function rendStylesJeu(m){
     ${schemaStyles(sj.joueurs, m, () => '', () => '')}
     <details class="ry-det sd-det"><summary>${esc(fr?'Détail par joueur':'Detail by player')}</summary><div class="styles-joueurs">${joueurs}</div></details></div>`;
 }
+// 26/11/2026 (paquet 487, Lucas) — PROFIL DE LA SAISON des deux joueurs (profils_saison.json, construit avec le site) :
+// statistiques de l'année sur la surface du match (si chacun y a au moins 3 matchs), sinon toutes surfaces, et les
+// classements. Descriptif : rien de tout cela n'entre dans le %. Chargé une fois, à la première fiche ouverte.
+let PROFILS_SAISON = null, PS_DEMANDE = false;
+function rendProfilSaison(m){ return `<div class="panel ps-bloc" style="padding:14px 16px" data-ps-h="${esc(m.home)}" data-ps-a="${esc(m.away)}" data-ps-s="${esc(m.surface||'')}" hidden></div>`; }
+function remplirProfilsSaison(zone){
+  if (!PROFILS_SAISON) {
+    if (!PS_DEMANDE) { PS_DEMANDE = true; fetch('profils_saison.json', { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(o => { PROFILS_SAISON = (o && o.joueurs) || {}; remplirProfilsSaison(document); }).catch(() => { PROFILS_SAISON = {}; }); }
+    return;
+  }
+  zone.querySelectorAll('[data-ps-h]').forEach(z => {
+    const ph = PROFILS_SAISON[z.dataset.psH], pa = PROFILS_SAISON[z.dataset.psA], s = z.dataset.psS;
+    if (!ph && !pa) { z.hidden = true; return; }                 // un seul connu : l'autre colonne affiche « — »
+    const ok = (x) => !x || (x[s] && x[s].m >= 3);
+    const surf = s && ok(ph) && ok(pa) ? s : null;
+    const bh = ph ? (surf ? ph[surf] : ph.tout) : null, ba = pa ? (surf ? pa[surf] : pa.tout) : null;
+    const fr = L === 'fr', pct = v => v == null ? '—' : (fr ? Math.round(v) + ' %' : Math.round(v) + '%'), dec = v => v == null ? '—' : (fr ? v.toFixed(1).replace('.', ',') : v.toFixed(1));
+    const val = (k, b, p) => !b || !p ? '—' : k === 'm' ? `${b.m} (${b.v||0} – ${b.m-(b.v||0)})` : k === 'tb' ? `${(b.tb||[0,0])[0]} – ${(b.tb||[0,0])[1]}`
+      : k === 'ac' || k === 'df' ? dec(b[k]) : k === 'cl' ? ((p.cl||{}).rang ? `${p.cl.rang}${p.cl.meilleur ? ' (' + p.cl.meilleur + ')' : ''}` : '—') : k === 'utr' ? ((p.cl||{}).utr || '—') : pct(b[k]);
+    const an = !ph || !pa ? (ph || pa).an : ph.an === pa.an ? ph.an : `${ph.an} / ${pa.an}`;
+    z.innerHTML = `<h3>${esc(t('ps_titre', an))}</h3><p class="aide" style="margin:0 0 8px">${esc(t('ps_sous', surf ? (SURF[L][surf] || surf) : null))}</p>
+      <table class="ps-t" style="width:100%;border-collapse:collapse;font-size:.9rem"><thead><tr><th></th><th style="text-align:right">${esc(court(z.dataset.psH))}</th><th style="text-align:right">${esc(court(z.dataset.psA))}</th></tr></thead><tbody>`
+      + t('ps_lignes').map(([k, lib]) => `<tr style="border-top:1px solid var(--line2)"><td style="padding:4px 0">${esc(lib)}</td><td style="text-align:right">${esc(String(val(k, bh, ph)))}</td><td style="text-align:right">${esc(String(val(k, ba, pa)))}</td></tr>`).join('')
+      + `</tbody></table>`;
+    z.hidden = false;
+  });
+}
 function rendStylesDescriptifs(sd,m){
   if (!sd || sd.descriptif_seulement !== true || !Array.isArray(sd.joueurs) || sd.joueurs.length!==2) return '';
   const joueurs = sd.joueurs.map((j,i)=>`<section class="style-joueur ${i===0?'home':'away'}">
@@ -4154,6 +4185,7 @@ function rendMdj(){
       ${rendMeteo(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       ${rendStylesJeu(m)}
+      ${rendProfilSaison(m)}
       ${m.scenarios ? rendScenarios(m, sc) : `<div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div>${ligneSetsSecs(m)}</div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
@@ -4166,6 +4198,7 @@ function rendMdj(){
       ${rendRythme(m.rythme,m)}
     </div></div>`;
   lierJoueurs(zone);                                              // 437 : noms → page du joueur
+  remplirProfilsSaison(zone);                                     // 487 : profil de la saison
   const cartesPleineLargeur = zone.querySelector('.duelx .cartes');
   const fichePleineLargeur = zone.querySelector('.mdj > .fiche');
   if (cartesPleineLargeur && fichePleineLargeur) fichePleineLargeur.querySelector('.duelx').after(cartesPleineLargeur);

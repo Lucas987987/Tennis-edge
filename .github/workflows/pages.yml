@@ -135,6 +135,8 @@ jobs:
             scripts/decouper_page.py
             scripts/pages_seo.py
             scripts/performance_joueurs.py
+            scripts/profils_saison.py
+            historique/stats_annee
             simulateur/journal_pronostics/apres_match
             scripts/publier_r2.py
             scripts/indexnow.py
@@ -315,6 +317,8 @@ jobs:
           cp algo/editeur.json algo/partage.png algo/methode.html algo/apropos.html _site/algo/
           # 24/11/2026 (paquet 418) : une page par match terminé et par joueur, et le plan du site complet (référencement)
           python3 scripts/pages_seo.py . _site/algo || echo "::warning::pages des matchs et des joueurs non construites"
+          # 26/11/2026 (paquet 487) : profil de la saison des joueurs du site (descriptif, ne change pas le %)
+          if [ -f algo/donnees.json ]; then python3 scripts/profils_saison.py algo/donnees.json _site/algo/profils_saison.json . || echo "::warning::profils de la saison non construits"; fi
           # 23/11/2026 (paquet 391) : appli installable (manifeste, service worker, icônes) et page découpée (script et
           # style dans des fichiers à empreinte, gardés un an par le navigateur). Échec : la page reste d'un seul tenant.
           cp algo/manifest.webmanifest algo/sw.js algo/badge-96.png algo/icone-192.png algo/icone-512.png algo/icone-maskable-512.png algo/apple-touch-icon.png _site/algo/
