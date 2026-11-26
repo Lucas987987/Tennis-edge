@@ -1123,7 +1123,9 @@ def construire(racine, maintenant=None):
             json.dump(analyse_am, f, ensure_ascii=False, indent=1)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
-    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
+    for l_ in lignes:                           # 26/11/2026 (paquet 456) : heure du calcul de CE match (images et textes)
+        l_.setdefault('calcule_le', pron.get('genere_le'))
+    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)   # les matchs gardés gardent leur heure de calcul
     bilan_tout = bilan(resultats)
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
