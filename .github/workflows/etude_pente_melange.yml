@@ -1,0 +1,80 @@
+name: Étude - pente du % final par circuit et par documentation (paquet 465)
+
+# 26/11/2026 — paquet 465 (Lucas : « On peut adapter les règles en fonction du nombre de points et du circuit »).
+# Faut-il étirer ou resserrer le % final par une pente propre à chaque circuit et à chaque tranche de documentation ?
+# Règle écrite dans l'en-tête de simulateur/etude_pente_melange.py (apprise 01/2025 → 05/2026, jugée une fois sur
+# 06 → 12/2024, case par case). Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit
+# simulateur/rapport_pente_melange.json et l'entrée 465 du journal. 0 requête d'API. Rien n'entre dans l'algo.
+# Journal du run : comptes et moyennes seulement, aucun nom de joueur.
+# scripts/feuilles_match.py est nécessaire : scripts/resultats_itf.py l'importe ; sans lui, les résultats ITF hommes
+# ne sont pas lus (0 match, sans erreur) et l'Elo n'est plus celui de la production. Le script s'arrête dans ce cas.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_pente_melange.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+            /scripts/feuilles_match.py
+            /feuilles/
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Rejouer Elo et simulation, apprendre 01/2025 → 05/2026, juger une fois 06 → 12/2024
+        run: |
+          set -euo pipefail
+          python simulateur/etude_pente_melange.py /tmp/sackmann . | tee /tmp/pente_melange.log
+          cp simulateur/rapport_pente_melange.json /tmp/rapport_pente_melange.json
+          echo '### Pente du % final par circuit et par documentation (paquet 465, étude seule)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/pente_melange.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            # À chaque essai, main tel qu'il est maintenant, puis NOTRE rapport et NOTRE entrée (l'entrée du
+            # paquet 465 est remplacée si elle existe déjà), jamais de rebase sur le journal.
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_pente_melange.json simulateur/rapport_pente_melange.json
+            python simulateur/etude_pente_melange.py --journal-depuis-rapport /tmp/rapport_pente_melange.json
+            git add -- simulateur/rapport_pente_melange.json simulateur/journal_changements.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 465 - pente du % final par circuit et par documentation (rapport et journal)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
