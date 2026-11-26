@@ -1,0 +1,1435 @@
+{
+ "genere_le": "2026-11-26T13:37:47+00:00",
+ "paquet": 469,
+ "regle": "par circuit (ATP, WTA, Challenger) : poids du mélange selon le modèle le plus sûr (deux régimes : Elo plus sûr, simulation plus sûre ; variante à trois régimes : moins de 10 points d'écart, 10 points et plus avec l'Elo plus sûr, 10 points et plus avec la simulation plus sûre), appris sur le 01/01/2025 → 31/05/2026 (au moins 300 matchs par régime), jugés une seule fois sur le 01/06/2024 → 31/12/2024 face à un témoin « poids uniques réappris » sur la même période ; matchs concernés = ceux dont le % bouge d'au moins 1 point face au témoin ; retenu si au moins 1 000 matchs concernés jugés, gain de log loss ≥ 0,001 par match concerné, même sens en sens inverse (gain aussi, et part de la simulation qui bouge dans le même sens entre les deux régimes) et gain de plus de 2 erreurs types ; sinon chiffres publiés, aucune décision",
+ "apprentissage": [
+  "2025-01-01",
+  "2026-06-01"
+ ],
+ "jugement_une_seule_fois": [
+  "2024-06-01",
+  "2025-01-01"
+ ],
+ "periode_jugee": "juin → décembre 2024 : seule période rejouable comme en production hors de l'apprentissage (résultats ITF hommes depuis juin 2024). Réserves écrites avant tout résultat : elle a déjà servi une fois, à l'étude 465 (pentes du % final), jamais à cette question ; en ATP et en WTA les poids en place ont été appris sur des matchs qui la contiennent (2024 → janvier 2026, poids propres à l'ATP : 2024), ce qui avantage la base « en place » mais pas le jugement, fait face au témoin réappris sur 01/2025 → 05/2026 comme le candidat ; en Challenger l'Elo n'y a que 0 à 7 mois de résultats ITF",
+ "itf_hommes_dans_le_rejeu": 57230,
+ "profils_refaits": 97,
+ "en_place": {
+  "CH": {
+   "elo": 0.7815,
+   "simulation": 0.2378,
+   "pente_doc": 1.11,
+   "fmd": {
+    "pente": 0.775,
+    "de": 500,
+    "a": 1500
+   },
+   "surfaces": {
+    "Clay": 1.065
+   }
+  },
+  "ATP": {
+   "elo": 0.7339,
+   "simulation": 0.3036,
+   "pente_doc": null,
+   "fmd": null,
+   "surfaces": {}
+  },
+  "WTA": {
+   "elo": 0.7815,
+   "simulation": 0.2378,
+   "pente_doc": null,
+   "fmd": null,
+   "surfaces": {}
+  }
+ },
+ "correction_non_rejouee": "correction Challenger « correct » × 1,142 (correction_niveaux.json) : non rejouée, car le niveau de fiabilité du match vient de nos pronostics publiés et n'existe pas avant octobre 2026 ; les matchs qu'elle toucherait (Challenger de niveau « correct », toutes tranches) sont jugés ici sans elle",
+ "jugement": {
+  "ATP": {
+   "matchs": 5177,
+   "matchs_apprentissage": 3764,
+   "matchs_jugement": 1413,
+   "poids_en_place": {
+    "elo": 0.7339,
+    "simulation": 0.3036,
+    "part_simulation": 0.2926
+   },
+   "deux_regimes": {
+    "matchs_apprentissage": 3764,
+    "matchs_jugement": 1413,
+    "regimes": {
+     "elo_plus_sur": {
+      "matchs_apprentissage": 2105,
+      "matchs_jugement": 837,
+      "poids_appris": {
+       "elo": 0.81,
+       "simulation": 0.1588,
+       "part_simulation": 0.1639,
+       "somme": 0.9688
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 837,
+       "gain": -0.00032,
+       "erreur_type": 0.00038
+      },
+      "matchs_concernes_jugement": 51
+     },
+     "simulation_plus_sure": {
+      "matchs_apprentissage": 1659,
+      "matchs_jugement": 576,
+      "poids_appris": {
+       "elo": 0.6166,
+       "simulation": 0.3344,
+       "part_simulation": 0.3516,
+       "somme": 0.951
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 576,
+       "gain": 0.00046,
+       "erreur_type": 0.00069
+      },
+      "matchs_concernes_jugement": 87
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.7544,
+     "simulation": 0.2362,
+     "part_simulation": 0.2384,
+     "somme": 0.9906
+    },
+    "sens": "plus de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 138,
+     "gain": 0.00356,
+     "erreur_type": 0.00273
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 1413,
+     "gain": -0.0,
+     "erreur_type": 0.00036
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 333,
+     "gain": -0.0001,
+     "erreur_type": 0.00177
+    },
+    "erreurs_types": 1.3,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 1413,
+      "gain": -4e-05,
+      "erreur_type": 0.00045
+     },
+     "candidat": {
+      "matchs": 1413,
+      "gain": -4e-05,
+      "erreur_type": 0.00058
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "elo_plus_sur": 1.005,
+      "simulation_plus_sure": 0.992
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 1413,
+      "gain": -2e-05,
+      "erreur_type": 6e-05
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 1413,
+      "gain": 2e-05,
+      "erreur_type": 0.00035
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.6189,
+      "simulation": 0.3791,
+      "part_simulation": 0.3799,
+      "somme": 0.998
+     },
+     "poids_appris": {
+      "elo_plus_sur": {
+       "elo": 0.627,
+       "simulation": 0.3903,
+       "part_simulation": 0.3837,
+       "somme": 1.0173
+      },
+      "simulation_plus_sure": {
+       "elo": 0.4737,
+       "simulation": 0.4625,
+       "part_simulation": 0.494,
+       "somme": 0.9362
+      }
+     },
+     "appris": {
+      "elo_plus_sur": true,
+      "simulation_plus_sure": true
+     },
+     "sens": "plus de simulation quand elle est la plus sûre",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 325,
+      "gain": -0.00093,
+      "erreur_type": 0.00173
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 3764,
+      "gain": 4e-05,
+      "erreur_type": 0.00021
+     }
+    },
+    "verdict": "aucune décision",
+    "raisons": [
+     "moins de 1000 matchs concernés jugés (138)"
+    ]
+   },
+   "trois_regimes": {
+    "matchs_apprentissage": 3764,
+    "matchs_jugement": 1413,
+    "regimes": {
+     "moins_de_10_points": {
+      "matchs_apprentissage": 2839,
+      "matchs_jugement": 1017,
+      "poids_appris": {
+       "elo": 0.8348,
+       "simulation": 0.1845,
+       "part_simulation": 0.181,
+       "somme": 1.0193
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 1017,
+       "gain": -0.00023,
+       "erreur_type": 0.00043
+      },
+      "matchs_concernes_jugement": 35
+     },
+     "elo_plus_sur_10": {
+      "matchs_apprentissage": 592,
+      "matchs_jugement": 275,
+      "poids_appris": {
+       "elo": 0.7327,
+       "simulation": 0.1307,
+       "part_simulation": 0.1514,
+       "somme": 0.8634
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 275,
+       "gain": 0.00031,
+       "erreur_type": 0.00185
+      },
+      "matchs_concernes_jugement": 136
+     },
+     "simulation_plus_sure_10": {
+      "matchs_apprentissage": 333,
+      "matchs_jugement": 121,
+      "poids_appris": {
+       "elo": 0.0201,
+       "simulation": 0.3926,
+       "part_simulation": 0.9513,
+       "somme": 0.4127
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 121,
+       "gain": -0.00619,
+       "erreur_type": 0.00988
+      },
+      "matchs_concernes_jugement": 109
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.7544,
+     "simulation": 0.2362,
+     "part_simulation": 0.2384,
+     "somme": 0.9906
+    },
+    "sens": "plus de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 280,
+     "gain": -0.00252,
+     "erreur_type": 0.00464
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 1413,
+     "gain": -0.00064,
+     "erreur_type": 0.00097
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 637,
+     "gain": 0.00378,
+     "erreur_type": 0.00345
+    },
+    "erreurs_types": -0.54,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 1413,
+      "gain": -4e-05,
+      "erreur_type": 0.00045
+     },
+     "candidat": {
+      "matchs": 1413,
+      "gain": -0.00068,
+      "erreur_type": 0.00104
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "moins_de_10_points": 1.03,
+      "elo_plus_sur_10": 0.934,
+      "simulation_plus_sure_10": 0.674
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 1413,
+      "gain": -0.00108,
+      "erreur_type": 0.00069
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 1413,
+      "gain": 0.00045,
+      "erreur_type": 0.00063
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.6189,
+      "simulation": 0.3791,
+      "part_simulation": 0.3799,
+      "somme": 0.998
+     },
+     "poids_appris": {
+      "moins_de_10_points": {
+       "elo": 0.737,
+       "simulation": 0.2237,
+       "part_simulation": 0.2329,
+       "somme": 0.9607
+      },
+      "elo_plus_sur_10": {
+       "elo": 0.6189,
+       "simulation": 0.3791,
+       "part_simulation": 0.3799,
+       "somme": 0.998
+      },
+      "simulation_plus_sure_10": {
+       "elo": 0.6189,
+       "simulation": 0.3791,
+       "part_simulation": 0.3799,
+       "somme": 0.998
+      }
+     },
+     "appris": {
+      "moins_de_10_points": true,
+      "elo_plus_sur_10": false,
+      "simulation_plus_sure_10": false
+     },
+     "sens": "inchangé",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 770,
+      "gain": -0.00116,
+      "erreur_type": 0.00116
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 3764,
+      "gain": 3e-05,
+      "erreur_type": 0.00029
+     }
+    },
+    "verdict": "aucune décision",
+    "raisons": [
+     "moins de 1000 matchs concernés jugés (280)"
+    ]
+   },
+   "trois_regimes_moins_deux_regimes_jugement": {
+    "matchs": 1413,
+    "gain": -0.00064,
+    "erreur_type": 0.001
+   },
+   "qui_a_raison": {
+    "jugement": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 190,
+      "elo_pct": 75.1,
+      "simulation_pct": 61.1,
+      "en_place_pct": 72.1,
+      "favori_gagne_pct": 71.1,
+      "erreur_type_points": 3.3
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 69,
+      "elo_pct": 60.3,
+      "simulation_pct": 73.2,
+      "en_place_pct": 64.8,
+      "favori_gagne_pct": 72.5,
+      "erreur_type_points": 5.4
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 943,
+      "elo_pct": 68.9,
+      "simulation_pct": 68.1,
+      "en_place_pct": 69.2,
+      "favori_gagne_pct": 66.6,
+      "erreur_type_points": 1.5
+     },
+     "vainqueurs_differents": {
+      "matchs": 211,
+      "elo_a_raison_pct": 49.3,
+      "simulation_a_raison_pct": 50.7,
+      "erreur_type_points": 3.4,
+      "en_place_a_raison_pct": 52.1,
+      "elo_confiance_moyenne_pct": 57.3,
+      "simulation_confiance_moyenne_pct": 56.2,
+      "elo_plus_sur_pct": 54.0,
+      "le_plus_sur_a_raison_pct": 57.3
+     }
+    },
+    "apprentissage": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 404,
+      "elo_pct": 73.4,
+      "simulation_pct": 59.0,
+      "en_place_pct": 70.2,
+      "favori_gagne_pct": 70.3,
+      "erreur_type_points": 2.3
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 213,
+      "elo_pct": 60.4,
+      "simulation_pct": 73.8,
+      "en_place_pct": 65.2,
+      "favori_gagne_pct": 62.0,
+      "erreur_type_points": 3.3
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 2611,
+      "elo_pct": 68.9,
+      "simulation_pct": 68.6,
+      "en_place_pct": 69.4,
+      "favori_gagne_pct": 69.4,
+      "erreur_type_points": 0.9
+     },
+     "vainqueurs_differents": {
+      "matchs": 536,
+      "elo_a_raison_pct": 53.4,
+      "simulation_a_raison_pct": 46.6,
+      "erreur_type_points": 2.2,
+      "en_place_a_raison_pct": 53.9,
+      "elo_confiance_moyenne_pct": 56.9,
+      "simulation_confiance_moyenne_pct": 55.3,
+      "elo_plus_sur_pct": 58.8,
+      "le_plus_sur_a_raison_pct": 55.0
+     }
+    }
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 3764,
+     "pente_elo_seul": 0.957,
+     "erreur_type": 0.043
+    },
+    "jugement": {
+     "matchs": 1413,
+     "pente_elo_seul": 0.917,
+     "erreur_type": 0.067
+    },
+    "jugement_06_08_2024": {
+     "matchs": 848,
+     "pente_elo_seul": 0.937,
+     "erreur_type": 0.087
+    },
+    "jugement_09_12_2024": {
+     "matchs": 565,
+     "pente_elo_seul": 0.886,
+     "erreur_type": 0.106
+    },
+    "ecart_en_erreurs_types": -0.5,
+    "en_chauffe": false
+   },
+   "retenus": []
+  },
+  "WTA": {
+   "matchs": 5159,
+   "matchs_apprentissage": 3786,
+   "matchs_jugement": 1373,
+   "poids_en_place": {
+    "elo": 0.7815,
+    "simulation": 0.2378,
+    "part_simulation": 0.2333
+   },
+   "deux_regimes": {
+    "matchs_apprentissage": 3786,
+    "matchs_jugement": 1373,
+    "regimes": {
+     "elo_plus_sur": {
+      "matchs_apprentissage": 1960,
+      "matchs_jugement": 683,
+      "poids_appris": {
+       "elo": 0.8054,
+       "simulation": 0.3528,
+       "part_simulation": 0.3046,
+       "somme": 1.1582
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 683,
+       "gain": -0.00097,
+       "erreur_type": 0.00086
+      },
+      "matchs_concernes_jugement": 236
+     },
+     "simulation_plus_sure": {
+      "matchs_apprentissage": 1826,
+      "matchs_jugement": 690,
+      "poids_appris": {
+       "elo": 0.7077,
+       "simulation": 0.2761,
+       "part_simulation": 0.2806,
+       "somme": 0.9838
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 690,
+       "gain": -0.00204,
+       "erreur_type": 0.00075
+      },
+      "matchs_concernes_jugement": 240
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.8516,
+     "simulation": 0.216,
+     "part_simulation": 0.2023,
+     "somme": 1.0676
+    },
+    "sens": "moins de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 476,
+     "gain": -0.00414,
+     "erreur_type": 0.00147
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 1373,
+     "gain": -0.0015,
+     "erreur_type": 0.00057
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 1340,
+     "gain": 0.00054,
+     "erreur_type": 0.00095
+    },
+    "erreurs_types": -2.82,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 1373,
+      "gain": 0.00065,
+      "erreur_type": 0.00045
+     },
+     "candidat": {
+      "matchs": 1373,
+      "gain": -0.00085,
+      "erreur_type": 0.00079
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "elo_plus_sur": 1.041,
+      "simulation_plus_sure": 0.943
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 1373,
+      "gain": -0.00085,
+      "erreur_type": 0.00044
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 1373,
+      "gain": -0.00065,
+      "erreur_type": 0.00032
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.9778,
+      "simulation": 0.1618,
+      "part_simulation": 0.142,
+      "somme": 1.1396
+     },
+     "poids_appris": {
+      "elo_plus_sur": {
+       "elo": 0.9824,
+       "simulation": 0.0,
+       "part_simulation": 0.0,
+       "somme": 0.9824
+      },
+      "simulation_plus_sure": {
+       "elo": 1.3671,
+       "simulation": 0.0,
+       "part_simulation": 0.0,
+       "somme": 1.3671
+      }
+     },
+     "appris": {
+      "elo_plus_sur": true,
+      "simulation_plus_sure": true
+     },
+     "sens": "inchangé",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 2539,
+      "gain": -0.00371,
+      "erreur_type": 0.00129
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 3786,
+      "gain": -0.00255,
+      "erreur_type": 0.00087
+     }
+    },
+    "verdict": "aucune décision",
+    "raisons": [
+     "moins de 1000 matchs concernés jugés (476)"
+    ]
+   },
+   "trois_regimes": {
+    "matchs_apprentissage": 3786,
+    "matchs_jugement": 1373,
+    "regimes": {
+     "moins_de_10_points": {
+      "matchs_apprentissage": 2872,
+      "matchs_jugement": 1105,
+      "poids_appris": {
+       "elo": 0.9214,
+       "simulation": 0.1381,
+       "part_simulation": 0.1303,
+       "somme": 1.0595
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 1105,
+       "gain": -0.00041,
+       "erreur_type": 0.00025
+      },
+      "matchs_concernes_jugement": 0
+     },
+     "elo_plus_sur_10": {
+      "matchs_apprentissage": 521,
+      "matchs_jugement": 131,
+      "poids_appris": {
+       "elo": 0.804,
+       "simulation": 0.6463,
+       "part_simulation": 0.4456,
+       "somme": 1.4503
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 131,
+       "gain": 0.00252,
+       "erreur_type": 0.00478
+      },
+      "matchs_concernes_jugement": 105
+     },
+     "simulation_plus_sure_10": {
+      "matchs_apprentissage": 393,
+      "matchs_jugement": 137,
+      "poids_appris": {
+       "elo": 0.2249,
+       "simulation": 0.3761,
+       "part_simulation": 0.6258,
+       "somme": 0.601
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 137,
+       "gain": -0.01265,
+       "erreur_type": 0.00643
+      },
+      "matchs_concernes_jugement": 124
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.8516,
+     "simulation": 0.216,
+     "part_simulation": 0.2023,
+     "somme": 1.0676
+    },
+    "sens": "plus de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 229,
+     "gain": -0.0069,
+     "erreur_type": 0.00472
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 1373,
+     "gain": -0.00135,
+     "erreur_type": 0.00082
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 749,
+     "gain": 0.00306,
+     "erreur_type": 0.00288
+    },
+    "erreurs_types": -1.46,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 1373,
+      "gain": 0.00065,
+      "erreur_type": 0.00045
+     },
+     "candidat": {
+      "matchs": 1373,
+      "gain": -0.0007,
+      "erreur_type": 0.00093
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "moins_de_10_points": 0.993,
+      "elo_plus_sur_10": 1.085,
+      "simulation_plus_sure_10": 0.804
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 1373,
+      "gain": 3e-05,
+      "erreur_type": 0.00045
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 1373,
+      "gain": -0.00138,
+      "erreur_type": 0.00065
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.9778,
+      "simulation": 0.1618,
+      "part_simulation": 0.142,
+      "somme": 1.1396
+     },
+     "poids_appris": {
+      "moins_de_10_points": {
+       "elo": 0.456,
+       "simulation": 0.635,
+       "part_simulation": 0.582,
+       "somme": 1.091
+      },
+      "elo_plus_sur_10": {
+       "elo": 0.9778,
+       "simulation": 0.1618,
+       "part_simulation": 0.142,
+       "somme": 1.1396
+      },
+      "simulation_plus_sure_10": {
+       "elo": 0.9778,
+       "simulation": 0.1618,
+       "part_simulation": 0.142,
+       "somme": 1.1396
+      }
+     },
+     "appris": {
+      "moins_de_10_points": true,
+      "elo_plus_sur_10": false,
+      "simulation_plus_sure_10": false
+     },
+     "sens": "inchangé",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 2093,
+      "gain": -0.00156,
+      "erreur_type": 0.00149
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 3786,
+      "gain": -0.00085,
+      "erreur_type": 0.00083
+     }
+    },
+    "verdict": "aucune décision",
+    "raisons": [
+     "moins de 1000 matchs concernés jugés (229)"
+    ]
+   },
+   "trois_regimes_moins_deux_regimes_jugement": {
+    "matchs": 1373,
+    "gain": 0.00015,
+    "erreur_type": 0.0008
+   },
+   "qui_a_raison": {
+    "jugement": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 87,
+      "elo_pct": 75.2,
+      "simulation_pct": 61.1,
+      "en_place_pct": 72.7,
+      "favori_gagne_pct": 81.6,
+      "erreur_type_points": 4.2
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 86,
+      "elo_pct": 61.1,
+      "simulation_pct": 74.7,
+      "en_place_pct": 64.8,
+      "favori_gagne_pct": 64.0,
+      "erreur_type_points": 5.2
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 1026,
+      "elo_pct": 67.7,
+      "simulation_pct": 67.6,
+      "en_place_pct": 68.0,
+      "favori_gagne_pct": 68.0,
+      "erreur_type_points": 1.5
+     },
+     "vainqueurs_differents": {
+      "matchs": 174,
+      "elo_a_raison_pct": 53.4,
+      "simulation_a_raison_pct": 46.6,
+      "erreur_type_points": 3.8,
+      "en_place_a_raison_pct": 52.3,
+      "elo_confiance_moyenne_pct": 55.3,
+      "simulation_confiance_moyenne_pct": 55.6,
+      "elo_plus_sur_pct": 47.7,
+      "le_plus_sur_a_raison_pct": 50.6
+     }
+    },
+    "apprentissage": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 349,
+      "elo_pct": 75.8,
+      "simulation_pct": 61.0,
+      "en_place_pct": 73.2,
+      "favori_gagne_pct": 74.8,
+      "erreur_type_points": 2.3
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 236,
+      "elo_pct": 59.5,
+      "simulation_pct": 73.9,
+      "en_place_pct": 63.4,
+      "favori_gagne_pct": 61.4,
+      "erreur_type_points": 3.2
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 2655,
+      "elo_pct": 68.3,
+      "simulation_pct": 68.2,
+      "en_place_pct": 68.6,
+      "favori_gagne_pct": 69.6,
+      "erreur_type_points": 0.9
+     },
+     "vainqueurs_differents": {
+      "matchs": 546,
+      "elo_a_raison_pct": 55.3,
+      "simulation_a_raison_pct": 44.7,
+      "erreur_type_points": 2.1,
+      "en_place_a_raison_pct": 55.5,
+      "elo_confiance_moyenne_pct": 56.8,
+      "simulation_confiance_moyenne_pct": 56.4,
+      "elo_plus_sur_pct": 50.7,
+      "le_plus_sur_a_raison_pct": 54.8
+     }
+    }
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 3786,
+     "pente_elo_seul": 1.036,
+     "erreur_type": 0.045
+    },
+    "jugement": {
+     "matchs": 1373,
+     "pente_elo_seul": 1.127,
+     "erreur_type": 0.08
+    },
+    "jugement_06_08_2024": {
+     "matchs": 775,
+     "pente_elo_seul": 1.204,
+     "erreur_type": 0.108
+    },
+    "jugement_09_12_2024": {
+     "matchs": 598,
+     "pente_elo_seul": 1.03,
+     "erreur_type": 0.117
+    },
+    "ecart_en_erreurs_types": 0.99,
+    "en_chauffe": false
+   },
+   "retenus": []
+  },
+  "CH": {
+   "matchs": 22586,
+   "matchs_apprentissage": 16191,
+   "matchs_jugement": 6395,
+   "poids_en_place": {
+    "elo": 0.7815,
+    "simulation": 0.2378,
+    "part_simulation": 0.2333
+   },
+   "deux_regimes": {
+    "matchs_apprentissage": 16191,
+    "matchs_jugement": 6395,
+    "regimes": {
+     "elo_plus_sur": {
+      "matchs_apprentissage": 9892,
+      "matchs_jugement": 3996,
+      "poids_appris": {
+       "elo": 0.9263,
+       "simulation": 0.1518,
+       "part_simulation": 0.1408,
+       "somme": 1.0781
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 3996,
+       "gain": 0.00019,
+       "erreur_type": 0.0002
+      },
+      "matchs_concernes_jugement": 218
+     },
+     "simulation_plus_sure": {
+      "matchs_apprentissage": 6299,
+      "matchs_jugement": 2399,
+      "poids_appris": {
+       "elo": 0.8019,
+       "simulation": 0.3063,
+       "part_simulation": 0.2764,
+       "somme": 1.1082
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 2399,
+       "gain": 0.00023,
+       "erreur_type": 0.00031
+      },
+      "matchs_concernes_jugement": 339
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.887,
+     "simulation": 0.2404,
+     "part_simulation": 0.2132,
+     "somme": 1.1274
+    },
+    "sens": "plus de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 557,
+     "gain": 0.00087,
+     "erreur_type": 0.00138
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 6395,
+     "gain": 0.0002,
+     "erreur_type": 0.00017
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 1515,
+     "gain": 0.00017,
+     "erreur_type": 0.00082
+    },
+    "erreurs_types": 0.63,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 6395,
+      "gain": 0.00049,
+      "erreur_type": 0.00048
+     },
+     "candidat": {
+      "matchs": 6395,
+      "gain": 0.00069,
+      "erreur_type": 0.00049
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "elo_plus_sur": 0.998,
+      "simulation_plus_sure": 1.009
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 6395,
+      "gain": 3e-05,
+      "erreur_type": 2e-05
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 6395,
+      "gain": 0.00017,
+      "erreur_type": 0.00017
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.8396,
+      "simulation": 0.2905,
+      "part_simulation": 0.2571,
+      "somme": 1.1301
+     },
+     "poids_appris": {
+      "elo_plus_sur": {
+       "elo": 0.9111,
+       "simulation": 0.1047,
+       "part_simulation": 0.1031,
+       "somme": 1.0158
+      },
+      "simulation_plus_sure": {
+       "elo": 0.8678,
+       "simulation": 0.3468,
+       "part_simulation": 0.2855,
+       "somme": 1.2146
+      }
+     },
+     "appris": {
+      "elo_plus_sur": true,
+      "simulation_plus_sure": true
+     },
+     "sens": "plus de simulation quand elle est la plus sûre",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 6914,
+      "gain": -0.00023,
+      "erreur_type": 0.00046
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 16191,
+      "gain": -6e-05,
+      "erreur_type": 0.00021
+     }
+    },
+    "verdict": "aucune décision",
+    "raisons": [
+     "moins de 1000 matchs concernés jugés (557)"
+    ]
+   },
+   "trois_regimes": {
+    "matchs_apprentissage": 16191,
+    "matchs_jugement": 6395,
+    "regimes": {
+     "moins_de_10_points": {
+      "matchs_apprentissage": 10129,
+      "matchs_jugement": 4078,
+      "poids_appris": {
+       "elo": 0.7202,
+       "simulation": 0.4124,
+       "part_simulation": 0.3641,
+       "somme": 1.1326
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 4078,
+       "gain": -0.00017,
+       "erreur_type": 0.00031
+      },
+      "matchs_concernes_jugement": 1320
+     },
+     "elo_plus_sur_10": {
+      "matchs_apprentissage": 4242,
+      "matchs_jugement": 1609,
+      "poids_appris": {
+       "elo": 0.9517,
+       "simulation": 0.0612,
+       "part_simulation": 0.0604,
+       "somme": 1.0129
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 1609,
+       "gain": 0.00064,
+       "erreur_type": 0.00066
+      },
+      "matchs_concernes_jugement": 533
+     },
+     "simulation_plus_sure_10": {
+      "matchs_apprentissage": 1820,
+      "matchs_jugement": 708,
+      "poids_appris": {
+       "elo": 0.6879,
+       "simulation": 0.2829,
+       "part_simulation": 0.2914,
+       "somme": 0.9708
+      },
+      "appris": true,
+      "gain_jugement": {
+       "matchs": 708,
+       "gain": -0.00227,
+       "erreur_type": 0.00114
+      },
+      "matchs_concernes_jugement": 404
+     }
+    },
+    "temoin_poids_uniques_reappris": {
+     "elo": 0.887,
+     "simulation": 0.2404,
+     "part_simulation": 0.2132,
+     "somme": 1.1274
+    },
+    "sens": "plus de simulation quand elle est la plus sûre",
+    "gain_jugement_matchs_concernes": {
+     "matchs": 2257,
+     "gain": -0.00081,
+     "erreur_type": 0.00072
+    },
+    "gain_jugement_tous_les_matchs": {
+     "matchs": 6395,
+     "gain": -0.0002,
+     "erreur_type": 0.00029
+    },
+    "gain_apprentissage_matchs_concernes": {
+     "matchs": 5713,
+     "gain": 0.00063,
+     "erreur_type": 0.00046
+    },
+    "erreurs_types": -1.12,
+    "face_aux_poids_en_place_jugement": {
+     "temoin": {
+      "matchs": 6395,
+      "gain": 0.00049,
+      "erreur_type": 0.00048
+     },
+     "candidat": {
+      "matchs": 6395,
+      "gain": 0.00029,
+      "erreur_type": 0.00054
+     }
+    },
+    "temoin_une_pente_par_regime": {
+     "pentes": {
+      "moins_de_10_points": 0.989,
+      "elo_plus_sur_10": 1.022,
+      "simulation_plus_sure_10": 0.929
+     },
+     "gain_jugement_tous_les_matchs": {
+      "matchs": 6395,
+      "gain": -0.00028,
+      "erreur_type": 9e-05
+     },
+     "candidat_moins_pentes_jugement": {
+      "matchs": 6395,
+      "gain": 8e-05,
+      "erreur_type": 0.00027
+     }
+    },
+    "sens_inverse": {
+     "temoin_poids_uniques_reappris": {
+      "elo": 0.8396,
+      "simulation": 0.2905,
+      "part_simulation": 0.2571,
+      "somme": 1.1301
+     },
+     "poids_appris": {
+      "moins_de_10_points": {
+       "elo": 0.8755,
+       "simulation": 0.2358,
+       "part_simulation": 0.2122,
+       "somme": 1.1113
+      },
+      "elo_plus_sur_10": {
+       "elo": 0.8923,
+       "simulation": 0.0,
+       "part_simulation": 0.0,
+       "somme": 0.8923
+      },
+      "simulation_plus_sure_10": {
+       "elo": 1.4364,
+       "simulation": 0.4025,
+       "part_simulation": 0.2189,
+       "somme": 1.8389
+      }
+     },
+     "appris": {
+      "moins_de_10_points": true,
+      "elo_plus_sur_10": true,
+      "simulation_plus_sure_10": true
+     },
+     "sens": "plus de simulation quand elle est la plus sûre",
+     "gain_sur_l_apprentissage_matchs_concernes": {
+      "matchs": 4101,
+      "gain": -0.00446,
+      "erreur_type": 0.00148
+     },
+     "gain_sur_l_apprentissage_tous_les_matchs": {
+      "matchs": 16191,
+      "gain": -0.00116,
+      "erreur_type": 0.00038
+     }
+    },
+    "verdict": "non retenu",
+    "raisons": [
+     "gain jugé sous 0,001 face au témoin",
+     "pas de gain en sens inverse",
+     "gain jugé à 2 erreurs types ou moins"
+    ]
+   },
+   "trois_regimes_moins_deux_regimes_jugement": {
+    "matchs": 6395,
+    "gain": -0.0004,
+    "erreur_type": 0.00021
+   },
+   "qui_a_raison": {
+    "jugement": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 1100,
+      "elo_pct": 76.1,
+      "simulation_pct": 60.5,
+      "en_place_pct": 74.1,
+      "favori_gagne_pct": 74.4,
+      "erreur_type_points": 1.3
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 342,
+      "elo_pct": 58.0,
+      "simulation_pct": 72.2,
+      "en_place_pct": 62.3,
+      "favori_gagne_pct": 69.6,
+      "erreur_type_points": 2.5
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 3688,
+      "elo_pct": 65.2,
+      "simulation_pct": 64.2,
+      "en_place_pct": 65.7,
+      "favori_gagne_pct": 67.8,
+      "erreur_type_points": 0.8
+     },
+     "vainqueurs_differents": {
+      "matchs": 1260,
+      "elo_a_raison_pct": 56.6,
+      "simulation_a_raison_pct": 43.4,
+      "erreur_type_points": 1.4,
+      "en_place_a_raison_pct": 56.7,
+      "elo_confiance_moyenne_pct": 58.7,
+      "simulation_confiance_moyenne_pct": 56.8,
+      "elo_plus_sur_pct": 55.6,
+      "le_plus_sur_a_raison_pct": 55.3
+     }
+    },
+    "apprentissage": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 2872,
+      "elo_pct": 77.8,
+      "simulation_pct": 60.9,
+      "en_place_pct": 76.0,
+      "favori_gagne_pct": 78.1,
+      "erreur_type_points": 0.8
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 938,
+      "elo_pct": 57.7,
+      "simulation_pct": 72.2,
+      "en_place_pct": 62.0,
+      "favori_gagne_pct": 62.7,
+      "erreur_type_points": 1.6
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 9069,
+      "elo_pct": 65.0,
+      "simulation_pct": 64.2,
+      "en_place_pct": 65.6,
+      "favori_gagne_pct": 67.2,
+      "erreur_type_points": 0.5
+     },
+     "vainqueurs_differents": {
+      "matchs": 3296,
+      "elo_a_raison_pct": 56.0,
+      "simulation_a_raison_pct": 44.0,
+      "erreur_type_points": 0.9,
+      "en_place_a_raison_pct": 56.3,
+      "elo_confiance_moyenne_pct": 59.1,
+      "simulation_confiance_moyenne_pct": 56.6,
+      "elo_plus_sur_pct": 57.7,
+      "le_plus_sur_a_raison_pct": 57.2
+     }
+    }
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 16191,
+     "pente_elo_seul": 1.078,
+     "erreur_type": 0.023
+    },
+    "jugement": {
+     "matchs": 6395,
+     "pente_elo_seul": 1.05,
+     "erreur_type": 0.037
+    },
+    "jugement_06_08_2024": {
+     "matchs": 3052,
+     "pente_elo_seul": 1.048,
+     "erreur_type": 0.056
+    },
+    "jugement_09_12_2024": {
+     "matchs": 3343,
+     "pente_elo_seul": 1.052,
+     "erreur_type": 0.049
+    },
+    "ecart_en_erreurs_types": -0.64,
+    "en_chauffe": false
+   },
+   "retenus": []
+  }
+ },
+ "nos_matchs_publies": {
+  "lu": true,
+  "circuits": {
+   "ATP": {
+    "matchs": 204,
+    "qui_a_raison": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 31,
+      "elo_pct": 75.6,
+      "simulation_pct": 61.1,
+      "en_place_pct": 71.0,
+      "favori_gagne_pct": 67.7,
+      "erreur_type_points": 8.4
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 32,
+      "elo_pct": 65.5,
+      "simulation_pct": 81.3,
+      "en_place_pct": 71.3,
+      "favori_gagne_pct": 78.1,
+      "erreur_type_points": 7.3
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 114,
+      "elo_pct": 67.5,
+      "simulation_pct": 68.2,
+      "en_place_pct": 66.9,
+      "favori_gagne_pct": 70.2,
+      "erreur_type_points": 4.3
+     },
+     "vainqueurs_differents": {
+      "matchs": 27,
+      "elo_a_raison_pct": 40.7,
+      "simulation_a_raison_pct": 59.3,
+      "erreur_type_points": 9.5,
+      "en_place_a_raison_pct": 48.1,
+      "elo_confiance_moyenne_pct": 56.2,
+      "simulation_confiance_moyenne_pct": 59.0,
+      "elo_plus_sur_pct": 44.4,
+      "le_plus_sur_a_raison_pct": 51.9
+     }
+    },
+    "poids_du_rejeu_deux_regimes": {
+     "gain_matchs_concernes": {
+      "matchs": 38,
+      "gain": 0.00333,
+      "erreur_type": 0.00653
+     },
+     "gain_tous_les_matchs": {
+      "matchs": 204,
+      "gain": 0.0011,
+      "erreur_type": 0.00134
+     }
+    }
+   },
+   "WTA": {
+    "matchs": 186,
+    "qui_a_raison": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 18,
+      "elo_pct": 74.6,
+      "simulation_pct": 59.6,
+      "en_place_pct": 70.3,
+      "favori_gagne_pct": 61.1,
+      "erreur_type_points": 11.5
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 25,
+      "elo_pct": 58.6,
+      "simulation_pct": 74.0,
+      "en_place_pct": 64.9,
+      "favori_gagne_pct": 72.0,
+      "erreur_type_points": 9.0
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 115,
+      "elo_pct": 66.8,
+      "simulation_pct": 67.2,
+      "en_place_pct": 66.9,
+      "favori_gagne_pct": 73.0,
+      "erreur_type_points": 4.1
+     },
+     "vainqueurs_differents": {
+      "matchs": 28,
+      "elo_a_raison_pct": 42.9,
+      "simulation_a_raison_pct": 57.1,
+      "erreur_type_points": 9.4,
+      "en_place_a_raison_pct": 50.0,
+      "elo_confiance_moyenne_pct": 58.1,
+      "simulation_confiance_moyenne_pct": 55.7,
+      "elo_plus_sur_pct": 60.7,
+      "le_plus_sur_a_raison_pct": 46.4
+     }
+    },
+    "poids_du_rejeu_deux_regimes": {
+     "gain_matchs_concernes": {
+      "matchs": 53,
+      "gain": 0.00627,
+      "erreur_type": 0.00397
+     },
+     "gain_tous_les_matchs": {
+      "matchs": 186,
+      "gain": 0.0019,
+      "erreur_type": 0.00133
+     }
+    }
+   },
+   "CH": {
+    "matchs": 1359,
+    "qui_a_raison": {
+     "meme_favori_10_points_elo_plus_sur": {
+      "matchs": 160,
+      "elo_pct": 77.6,
+      "simulation_pct": 60.6,
+      "en_place_pct": 77.2,
+      "favori_gagne_pct": 78.8,
+      "erreur_type_points": 3.2
+     },
+     "meme_favori_10_points_simulation_plus_sure": {
+      "matchs": 187,
+      "elo_pct": 60.2,
+      "simulation_pct": 75.9,
+      "en_place_pct": 67.4,
+      "favori_gagne_pct": 69.5,
+      "erreur_type_points": 3.4
+     },
+     "meme_favori_moins_de_10_points": {
+      "matchs": 739,
+      "elo_pct": 67.1,
+      "simulation_pct": 67.3,
+      "en_place_pct": 68.5,
+      "favori_gagne_pct": 69.6,
+      "erreur_type_points": 1.7
+     },
+     "vainqueurs_differents": {
+      "matchs": 273,
+      "elo_a_raison_pct": 57.9,
+      "simulation_a_raison_pct": 42.1,
+      "erreur_type_points": 3.0,
+      "en_place_a_raison_pct": 54.6,
+      "elo_confiance_moyenne_pct": 59.7,
+      "simulation_confiance_moyenne_pct": 58.6,
+      "elo_plus_sur_pct": 51.6,
+      "le_plus_sur_a_raison_pct": 52.0
+     }
+    },
+    "poids_du_rejeu_deux_regimes": {
+     "gain_matchs_concernes": {
+      "matchs": 181,
+      "gain": -0.0011,
+      "erreur_type": 0.00268
+     },
+     "gain_tous_les_matchs": {
+      "matchs": 1359,
+      "gain": -2e-05,
+      "erreur_type": 0.00044
+     }
+    }
+   }
+  }
+ },
+ "limites": "simulation de base (profils ajustés aux adversaires, refaits tous les 7 jours), sans les couches du lundi (facteurs, modèle d'arbres, profils hiérarchiques) ni les autres signaux ; la correction Challenger « correct » n'est pas rejouée ; sur nos matchs publiés, le % « stats » porte déjà d'autres signaux que l'Elo : confirmation seulement",
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-26",
+  "statut": "etude",
+  "paquet": 469,
+  "quoi": "QUAND L'ELO ET LA SIMULATION DIVERGENT, QUI A RAISON ? LE POIDS DE LA SIMULATION DOIT-IL DÉPENDRE DU MODÈLE LE PLUS SÛR ? (paquet 469, question de Lucas). Constat sur nos matchs publiés du 23/10 au 26/11, quand les deux modèles ont le même favori et au moins 10 points d'écart : Elo plus sûr (208 matchs), Elo 77 %, simulation 61 %, affiché 75,7 %, le favori gagne 75,5 % ± 3,0 ; simulation plus sûre (242 matchs), Elo 61 %, simulation 76 %, affiché 67,6 %, le favori gagne 71,1 % ± 2,9 ; vainqueurs différents en Challenger (274 matchs), l'Elo a raison 58 % du temps. Ces chiffres ont déjà été vus, sur quelques centaines de matchs : ils ne jugent rien. Vérifié avant d'écrire : aucune étude du dépôt ne fait dépendre les poids du modèle le plus sûr (etude_desaccord_modeles.py du 04/11 rapprochait de 50 % tous les désaccords, rejeté ; le mélange propre aux désaccords WTA du 29/10 et le suivi 383 en Challenger ne regardent que les vainqueurs différents ; 462 : poids selon la documentation ; 465 : pente du % final). Nouvelle étude simulateur/etude_plus_sur.py, sur le rejeu comme en production du 465 réutilisé tel quel (Elo de production avec les résultats ITF hommes, simulation de base rejouée sans fuite, base = mélange en place et corrections en service). « Plus sûr » = le plus loin de 50 % (|logit simulation| > |logit Elo|). Candidats fixés avant tout résultat : deux régimes (un couple de poids quand l'Elo est le plus sûr, un autre quand c'est la simulation) ; trois régimes (moins de 10 points d'écart, 10 points et plus avec l'Elo plus sûr, 10 points et plus avec la simulation plus sûre). Témoin « poids uniques réappris » sur la même période, pour que le gain mesuré ne soit pas un simple réapprentissage des poids. Règle écrite dans l'en-tête avant tout résultat, par circuit : poids appris du 01/01/2025 au 31/05/2026 (au moins 300 matchs par régime), jugés une seule fois du 01/06/2024 au 31/12/2024 ; matchs concernés = ceux dont le % bouge d'au moins 1 point face au témoin ; retenu si au moins 1 000 matchs concernés jugés, gain de log loss d'au moins 0,001 par match concerné face au témoin, même sens en sens inverse (gain aussi, et part de la simulation qui bouge dans le même sens entre les deux régimes) et gain de plus de 2 erreurs types ; sinon chiffres publiés, aucune décision. Réserves écrites avant tout résultat : la période jugée a déjà servi une fois (étude 465, pentes du % final), jamais à cette question ; en ATP et en WTA les poids en place ont été appris sur des matchs qui la contiennent, ce qui n'avantage que la base « en place », pas le témoin ; en Challenger l'Elo n'y a que 0 à 7 mois de résultats ITF. Publiés sans décider : la table « qui a raison » sur le rejeu, le gain régime par régime, un second témoin « une pente par régime », et nos matchs publiés en confirmation. Rapport public : simulateur/rapport_plus_sur.json (comptes et moyennes, aucun nom). RÉSULTAT : ATP (3764 matchs appris, 1413 jugés ; poids en place Elo 0,7339 / simulation 0,3036) — qui a raison sur la période jugée : même favori et 10 points d'écart, Elo plus sûr (190 matchs) : Elo 75,1 %, simulation 61,1 %, en place 72,1 %, le favori gagne 71,1 % ± 3,3 ; simulation plus sûre (69) : Elo 60,3 %, simulation 73,2 %, en place 64,8 %, le favori gagne 72,5 % ± 5,4 ; vainqueurs différents (211) : l'Elo a raison 49,3 % ± 3,4 — deux régimes : témoin Elo 0,7544 / simulation 0,2362 ; Elo plus sûr Elo 0,81 / simulation 0,1588 (2105 matchs appris) · simulation plus sûre Elo 0,6166 / simulation 0,3344 (1659 matchs appris) ; 333 matchs concernés appris, 138 jugés, gain face au témoin 0,00356 ± 0,00273 (sens inverse : 325 matchs concernés, gain -0,00093 ± 0,00173) — aucune décision (moins de 1000 matchs concernés jugés (138)) · trois régimes : témoin Elo 0,7544 / simulation 0,2362 ; moins de 10 points d'écart Elo 0,8348 / simulation 0,1845 (2839 matchs appris) · 10 points et plus, Elo plus sûr Elo 0,7327 / simulation 0,1307 (592 matchs appris) · 10 points et plus, simulation plus sûre Elo 0,0201 / simulation 0,3926 (333 matchs appris) ; 637 matchs concernés appris, 280 jugés, gain face au témoin -0,00252 ± 0,00464 (sens inverse : 770 matchs concernés, gain -0,00116 ± 0,00116) — aucune décision (moins de 1000 matchs concernés jugés (280)) ; WTA (3786 matchs appris, 1373 jugés ; poids en place Elo 0,7815 / simulation 0,2378) — qui a raison sur la période jugée : même favori et 10 points d'écart, Elo plus sûr (87 matchs) : Elo 75,2 %, simulation 61,1 %, en place 72,7 %, le favori gagne 81,6 % ± 4,2 ; simulation plus sûre (86) : Elo 61,1 %, simulation 74,7 %, en place 64,8 %, le favori gagne 64 % ± 5,2 ; vainqueurs différents (174) : l'Elo a raison 53,4 % ± 3,8 — deux régimes : témoin Elo 0,8516 / simulation 0,216 ; Elo plus sûr Elo 0,8054 / simulation 0,3528 (1960 matchs appris) · simulation plus sûre Elo 0,7077 / simulation 0,2761 (1826 matchs appris) ; 1340 matchs concernés appris, 476 jugés, gain face au témoin -0,00414 ± 0,00147 (sens inverse : 2539 matchs concernés, gain -0,00371 ± 0,00129) — aucune décision (moins de 1000 matchs concernés jugés (476)) · trois régimes : témoin Elo 0,8516 / simulation 0,216 ; moins de 10 points d'écart Elo 0,9214 / simulation 0,1381 (2872 matchs appris) · 10 points et plus, Elo plus sûr Elo 0,804 / simulation 0,6463 (521 matchs appris) · 10 points et plus, simulation plus sûre Elo 0,2249 / simulation 0,3761 (393 matchs appris) ; 749 matchs concernés appris, 229 jugés, gain face au témoin -0,0069 ± 0,00472 (sens inverse : 2093 matchs concernés, gain -0,00156 ± 0,00149) — aucune décision (moins de 1000 matchs concernés jugés (229)) ; Challenger (16191 matchs appris, 6395 jugés ; poids en place Elo 0,7815 / simulation 0,2378) — qui a raison sur la période jugée : même favori et 10 points d'écart, Elo plus sûr (1100 matchs) : Elo 76,1 %, simulation 60,5 %, en place 74,1 %, le favori gagne 74,4 % ± 1,3 ; simulation plus sûre (342) : Elo 58 %, simulation 72,2 %, en place 62,3 %, le favori gagne 69,6 % ± 2,5 ; vainqueurs différents (1260) : l'Elo a raison 56,6 % ± 1,4 — deux régimes : témoin Elo 0,887 / simulation 0,2404 ; Elo plus sûr Elo 0,9263 / simulation 0,1518 (9892 matchs appris) · simulation plus sûre Elo 0,8019 / simulation 0,3063 (6299 matchs appris) ; 1515 matchs concernés appris, 557 jugés, gain face au témoin 0,00087 ± 0,00138 (sens inverse : 6914 matchs concernés, gain -0,00023 ± 0,00046) — aucune décision (moins de 1000 matchs concernés jugés (557)) · trois régimes : témoin Elo 0,887 / simulation 0,2404 ; moins de 10 points d'écart Elo 0,7202 / simulation 0,4124 (10129 matchs appris) · 10 points et plus, Elo plus sûr Elo 0,9517 / simulation 0,0612 (4242 matchs appris) · 10 points et plus, simulation plus sûre Elo 0,6879 / simulation 0,2829 (1820 matchs appris) ; 5713 matchs concernés appris, 2257 jugés, gain face au témoin -0,00081 ± 0,00072 (sens inverse : 4101 matchs concernés, gain -0,00446 ± 0,00148) — non retenu (gain jugé sous 0,001 face au témoin ; pas de gain en sens inverse ; gain jugé à 2 erreurs types ou moins). Retenu : aucun circuit. Proposé à Lucas ; rien n'est changé par ce paquet. Confirmation seulement, nos matchs publiés : ATP 204 matchs, poids à deux régimes du rejeu : 0,00333 ± 0,00653 sur 38 matchs concernés ; WTA 186 matchs, poids à deux régimes du rejeu : 0,00627 ± 0,00397 sur 53 matchs concernés ; Challenger 1359 matchs, poids à deux régimes du rejeu : -0,0011 ± 0,00268 sur 181 matchs concernés. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans l'algo. Un candidat retenu serait proposé à Lucas dans un paquet suivant : poids par régime dans le mélange (simulateur/match_simule.py, melange_contexte, poids lus dans simulateur/choix_simulation.json), les deux % gardés dans la fiche (avec / sans), retrait par la règle cumulée (300 matchs concernés, gain négatif de plus de 2 erreurs types). Limites : simulation de base, sans les couches du lundi (facteurs, modèle d'arbres, profils hiérarchiques) ni les autres signaux ; correction Challenger « correct » non rejouée. 0 requête d'API. Retrait de l'étude : supprimer simulateur/etude_plus_sur.py, simulateur/journal_ajouts/paquet_469.json, simulateur/tests/test_etude_plus_sur.py et .github/workflows/etude_plus_sur.yml."
+ }
+}
