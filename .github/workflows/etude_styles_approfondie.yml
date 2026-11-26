@@ -36,6 +36,7 @@ jobs:
             /resultats_itf/
             /resultats_itf_femmes/
             /scripts/resultats_itf.py
+            /scripts/feuilles_match.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:

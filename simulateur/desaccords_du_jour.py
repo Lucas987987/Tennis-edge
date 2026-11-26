@@ -35,7 +35,7 @@ def p_pinnacle(c):
 
 def niveau_fiabilite(m):
     """26/11/2026 (paquet 463) : la pastille « fiable / standard / fragile » est retirée ; on affiche le niveau de la note
-    de fiabilité mesurée match par match (fragile < 78, prudent < 85, correct < 93, solide)."""
+    de fiabilité mesurée match par match (paquet 464 : fragile / normal)."""
     return (m.get('fiabilite') or {}).get('niveau') or 'inconnu'
 
 
@@ -106,7 +106,7 @@ def message(L, maintenant):
     if not L:
         return f"<b>🔎 Désaccords algo / Pinnacle — {jour}</b>\nAucun match du jour avec des favoris opposés ou 10 points d'écart."
     T = [f"<b>🔎 Désaccords algo / Pinnacle — {jour}</b> ({len(L)} matchs, cotes = loupe privée)"]
-    ic = {'solide': '🟢', 'correct': '🟢', 'prudent': '⚪', 'fragile': '🟠'}
+    ic = {'normal': '⚪', 'solide': '🟢', 'correct': '🟢', 'prudent': '⚪', 'fragile': '🟠'}
     for x in L:
         fa = x['home'] if x['p_algo'] >= .5 else x['away']
         fp = x['home'] if x['p_pin'] >= .5 else x['away']

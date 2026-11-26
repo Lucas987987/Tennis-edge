@@ -32,7 +32,7 @@ def test_par_niveau_annonce():
 
 def test_page():
     p = (R / 'algo' / 'index.html').read_text(encoding='utf-8')
-    assert 'data-fniv="solide"' in p and 'data-fniv="fragile"' in p and "(m.fiabilite||{}).niveau===fiabNiv" in p
+    assert 'data-fniv="normal"' in p and 'data-fniv="fragile"' in p and "(m.fiabilite||{}).niveau===fiabNiv" in p
     assert 'id="bilan-fiab"' in p and 'function rendBilanFiab' in p
     assert p.count("fiab_filtre_plus:") == 2 and p.count("bf_titre:") == 2
     for mot in ('marché', 'Pinnacle'):

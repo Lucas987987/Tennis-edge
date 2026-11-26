@@ -70,6 +70,19 @@ def note(a):
     return int(round(100 * min(a, 1 / a))) if a and a > 0 else 0
 
 
+# 26/11/2026 (paquet 464, Lucas) : DEUX niveaux affichés. Jugés hors échantillon sur nos 1 487 matchs terminés (apprendre
+# sur les 60 % les plus anciens, juger sur les 40 % suivants, puis l'inverse), seuls les matchs où la note annonce des %
+# trop tranchés (pente du match < 0,95) se vérifient sur les deux périodes : pente annoncée 0,82, réelle 0,82 ± 0,22
+# (204 matchs) puis 0,85 ± 0,16 (259). Prudent / correct / solide ne sortent pas dans l'ordre et « nos % plutôt
+# prudents » ne se vérifie pas : ces matchs sont « normal ». Le chiffre sur 100 reste dans la fiche (descriptif).
+SEUIL_FRAGILE = 0.95
+NIVEAUX_MESURES = ('fragile', 'normal')
+
+
+def niveau_mesure(a):
+    return 'fragile' if a < SEUIL_FRAGILE else 'normal'
+
+
 def niveau(n):
     s = SEUILS
     return 'fragile' if n < s['prudent'] else 'prudent' if n < s['correct'] else 'correct' if n < s['solide'] else 'solide'
@@ -170,7 +183,7 @@ def evaluer_match(M, circuit, n_min, crit):
         return None
     a, a0, appl = r
     return {'note': note(a), 'pente_du_match': round(a, 3), 'pente_de_base': round(a0, 3), 'effets_criteres': appl,
-            'sens': 'prudents' if a > 1.005 else 'tranches' if a < 0.995 else 'justes'}
+            'sens': 'prudents' if a > 1.005 else 'tranches' if a < 0.995 else 'justes', 'niveau_mesure': niveau_mesure(a)}
 
 
 # ------------------------------------------------------------------ apprentissage des effets (nos matchs en direct)
@@ -337,6 +350,7 @@ def garde_fou(racine, dec, aujourdhui):
     ctl = {'jour': aujourdhui.isoformat(), 'matchs': n, 'assez': n >= MIN_MATCHS,
            'log_loss_pente_nouvelle': ll_new, 'log_loss_pente_ancienne': ll_old,
            'tranches_nouvelle': ecart(L, 'nouvelle')[1], 'tranches_ancienne': ecart(L, 'ancienne')[1]}
+    ctl['deux_niveaux'] = suivi_deux_niveaux(L)
     if dec.get('retire'):
         ctl['verdict'] = 'déjà retirée'
     elif not ctl['assez']:
@@ -349,6 +363,36 @@ def garde_fou(racine, dec, aujourdhui):
         ctl['verdict'] = 'gardée'
     dec['dernier_controle'] = ctl
     return ctl
+
+
+MIN_JUGES_CANDIDAT = 1000
+
+
+def suivi_deux_niveaux(L):
+    """Paquet 464 : chaque lundi, sur les matchs notés depuis l'activation, la pente réelle des matchs « fragile » (pente
+    annoncée < SEUIL_FRAGILE) et des matchs « normal ». Plus le CANDIDAT « appliquer la pente du match aux fragiles »
+    (gain de log loss de σ(a·z) contre σ(z)) : suivi seulement, JAMAIS appliqué automatiquement ; il ne pourra être
+    proposé à Lucas qu'avec ≥ MIN_JUGES_CANDIDAT matchs fragiles jugés, un gain ≥ 0,001 et le même sens sur les deux
+    moitiés de la période."""
+    out = {}
+    for niv in NIVEAUX_MESURES:
+        G = [r for r in L if niveau_mesure(r['a_nouvelle']) == niv]
+        out[niv] = {'matchs': len(G),
+                    'pente_annoncee': round(sum(r['a_nouvelle'] for r in G) / len(G), 3) if G else None,
+                    'pente_reelle': round(pente([r['z'] for r in G]), 3) if len(G) >= MIN_TRANCHE else None}
+    F = [r for r in L if niveau_mesure(r['a_nouvelle']) == 'fragile']
+
+    def gain(R):
+        return round(sum(_ll(r['z']) - _ll(r['a_nouvelle'] * r['z']) for r in R) / len(R), 5) if R else None
+    h = len(F) // 2
+    g, g1, g2 = gain(F), gain(F[:h]), gain(F[h:])
+    out['candidat_pente_fragiles'] = {
+        'matchs': len(F), 'gain_log_loss': g, 'gain_1re_moitie': g1, 'gain_2de_moitie': g2,
+        'a_proposer': bool(len(F) >= MIN_JUGES_CANDIDAT and g is not None and g >= 0.001 and g1 is not None
+                           and g2 is not None and g1 > 0 and g2 > 0),
+        'regle': f"suivi seulement ; proposé à Lucas si ≥ {MIN_JUGES_CANDIDAT} matchs fragiles jugés, gain ≥ 0,001 et même sens "
+                 "sur les deux moitiés ; jamais appliqué automatiquement"}
+    return out
 
 
 # ------------------------------------------------------------------ pentes de base
@@ -380,7 +424,17 @@ def message(ctl, eff):
     fac = ', '.join(f"{k} × {v}" for k, v in (eff.get('facteurs') or {}).items())
     return (f"🎯 Note de fiabilité par match (paquet 451) — {ctl['matchs']} matchs jugés ; la pente annoncée décrit-elle la réalité (log loss) : "
             f"nouvelle {ctl['log_loss_pente_nouvelle']}, ancienne {ctl['log_loss_pente_ancienne']} — {ctl['verdict']}\n"
-            f"Effets réappris sur {eff.get('matchs')} matchs : {fac}")
+            f"Effets réappris sur {eff.get('matchs')} matchs : {fac}" + _ligne_deux_niveaux(ctl.get('deux_niveaux')))
+
+
+def _ligne_deux_niveaux(d):
+    if not d:
+        return ''
+    f, n, c = d.get('fragile') or {}, d.get('normal') or {}, d.get('candidat_pente_fragiles') or {}
+    return (f"\nDeux niveaux : fragile {f.get('matchs')} matchs (pente annoncée {f.get('pente_annoncee')}, réelle {f.get('pente_reelle')}) ; "
+            f"normal {n.get('matchs')} matchs (réelle {n.get('pente_reelle')})\n"
+            f"Candidat « pente du match sur les fragiles » : {c.get('matchs')} matchs, gain {c.get('gain_log_loss')}"
+            + (" — À PROPOSER à Lucas" if c.get('a_proposer') else " — suivi seulement"))
 
 
 def main(argv):
