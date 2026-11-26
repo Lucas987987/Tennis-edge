@@ -135,6 +135,35 @@ async function lireLien(env, jeton, but) {
 
 // --------------------------------------------------------------------------------------------- e-mails (Brevo)
 export const ESC = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// 26/11/2026 (paquet 473, Lucas : « un mail plus joli qui reprend le thème du site… pour tous les mails envoyés ») —
+// CADRE COMMUN de tous les e-mails, aux couleurs du site : nuit #0E0A24, panneau #1B1342, balle #D4FF3A, cyan #2EE6FF,
+// rose #FF4FAE. Tableaux et styles en ligne (seule mise en page fiable dans Gmail, Outlook, Hotmail). Le premier lien de
+// l'e-mail reste le bouton (le logo n'est pas un lien). Aucune cote, aucune promesse de gain.
+export const MAIL_P = (t) => `<p style="margin:0 0 14px;color:#F4F1FF;font-size:15px;line-height:1.55">${t}</p>`;
+export const MAIL_FORT = (t) => `<p style="margin:0 0 14px;color:#D4FF3A;font-size:15px;line-height:1.55;font-weight:bold">${t}</p>`;
+export const MAIL_BOITE = (lignes) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 16px"><tr><td bgcolor="#0E0A24" style="background:#0E0A24;border:1px solid #3A2F6E;border-radius:12px;padding:14px 16px;font-family:Menlo,Consolas,monospace;font-size:14px;line-height:1.7;color:#F4F1FF">${lignes.join('<br>')}</td></tr></table>`;
+export const MAIL_LISTE = (items) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px">${items.map((t) => `<tr><td style="padding:5px 0;color:#F4F1FF;font-size:15px;line-height:1.45"><span style="color:#D4FF3A;font-weight:bold">✓</span>&nbsp; ${t}</td></tr>`).join('')}</table>`;
+export const MAIL_VEDETTE = (sur, gros, sous) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 18px"><tr><td bgcolor="#D4FF3A" style="background:#D4FF3A;border-radius:14px;padding:16px 18px">
+<p style="margin:0;color:#141225;font-size:12px;font-weight:bold;letter-spacing:1px;text-transform:uppercase">${sur}</p>
+<p style="margin:4px 0 0;color:#141225;font-size:26px;font-weight:900;line-height:1.2">${gros}</p>${sous ? `<p style="margin:4px 0 0;color:#141225;font-size:13px">${sous}</p>` : ''}</td></tr></table>`;
+export function cadreMail({ lang = 'fr', surtitre = '', titre, corps = '', bouton = null, apres = '', pied = [], site = 'https://gamesetalgo.com' }) {
+  const s_ = String(site || 'https://gamesetalgo.com').replace(/\/$/, ''), fr = lang !== 'en';
+  const btn = bouton ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 6px"><tr><td bgcolor="#FF4FAE" style="background:#FF4FAE;border-radius:999px">
+<a href="${ESC(bouton.url)}" style="display:inline-block;padding:13px 26px;color:#FFFFFF;font-size:15px;font-weight:bold;text-decoration:none">${ESC(bouton.lib)}&nbsp;→</a></td></tr></table>` : '';
+  return `<!doctype html><html lang="${fr ? 'fr' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"></head><body style="margin:0;padding:0;background:#0E0A24">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0E0A24" style="background:#0E0A24"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;font-family:Arial,Helvetica,sans-serif">
+<tr><td style="padding:4px 4px 18px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#45F0A0;vertical-align:middle"></span>
+<span style="color:#F4F1FF;font-size:18px;font-weight:900;letter-spacing:2px;vertical-align:middle">&nbsp;GAME SET ALGO</span>
+<span style="color:#ABA3D6;font-size:13px;vertical-align:middle">&nbsp;tennis</span></td></tr>
+<tr><td bgcolor="#1B1342" style="background:#1B1342;border-radius:18px;border:1px solid #3A2F6E;padding:28px 24px">
+${surtitre ? `<p style="margin:0 0 6px;color:#2EE6FF;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">${ESC(surtitre)}</p>` : ''}
+<h1 style="margin:0 0 16px;color:#F4F1FF;font-size:24px;line-height:1.25">${ESC(titre)}</h1>
+${corps}${btn}</td></tr>
+${apres ? `<tr><td style="padding:14px 0 0">${apres}</td></tr>` : ''}
+<tr><td style="padding:18px 6px 0;color:#ABA3D6;font-size:12px;line-height:1.6">${pied.filter(Boolean).join('<br>')}${pied.filter(Boolean).length ? '<br>' : ''}<a href="${ESC(s_)}/#cgv" style="color:#ABA3D6">${fr ? 'Conditions de vente' : 'Terms of sale'}</a> · <a href="${ESC(s_)}/" style="color:#ABA3D6">gamesetalgo.com</a></td></tr>
+</table></td></tr></table></body></html>`;
+}
 export function messageMail(but, url, lang) {
   const fr = lang !== 'en';
   const T = {
@@ -147,10 +176,9 @@ export function messageMail(but, url, lang) {
     fondateur: fr ? ['Ta place fondateur est réservée', "Merci ! Ta place sur la liste d'attente fondateurs de l'accès Plus est réservée. Le paiement n'est pas encore ouvert : on te préviendra par e-mail à l'ouverture.", 'Voir Game Set Algo', "Réserver n'engage à rien. Tu peux annuler depuis « Mon compte »."]
       : ['Your founder spot is reserved', "Thank you! Your spot on the Plus founders waiting list is reserved. Payment isn't open yet: we'll email you when it opens.", 'Open Game Set Algo', 'Reserving commits you to nothing. You can cancel from "My account".'],
   }[but];
-  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e">
-<h2 style="margin:0 0 12px">${ESC(T[0])}</h2><p>${ESC(T[1])}</p>
-<p style="margin:24px 0"><a href="${ESC(url)}" style="background:#2ee6ff;color:#0e0a24;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">${ESC(T[2])}</a></p>
-<p style="color:#666;font-size:13px">${ESC(T[3])}</p><p style="color:#666;font-size:13px">Game Set Algo · gamesetalgo.com</p></div>`;
+  const sur = { verif: fr ? 'Bienvenue' : 'Welcome', reinit: fr ? 'Mot de passe' : 'Password', existe: fr ? 'Ton compte' : 'Your account', fondateur: fr ? 'Liste fondateurs' : 'Founders list' }[but];
+  const site = (() => { try { return new URL(url).origin; } catch (e) { return 'https://gamesetalgo.com'; } })();
+  const html = cadreMail({ lang, surtitre: sur, titre: T[0], corps: MAIL_P(ESC(T[1])), bouton: { lib: T[2], url }, pied: [ESC(T[3])], site });
   return { sujet: T[0], html, texte: `${T[1]}\n${url}\n\n${T[3]}` };
 }
 // 23/11/2026 (paquet 385, Lucas : « recevoir une alerte dès que quelqu'un crée un compte ») : message sur le Telegram
@@ -418,9 +446,8 @@ export function mailRenonciation(r, url) {
     'Garde cet e-mail : il confirme ta demande. Tu peux la retirer depuis la section Plus tant que ton accès payé n’est pas ouvert.']
     : ['Your immediate access request', `On ${d}, you ticked the following two boxes on Game Set Algo:`,
       'Keep this email: it confirms your request. You can withdraw it from the Plus section until your paid access opens.'];
-  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e">
-<h2 style="margin:0 0 12px">${ESC(t[0])}</h2><p>${ESC(t[1])}</p><ul>${r.textes.map((x) => `<li>${ESC(x)}</li>`).join('')}</ul>
-<p>${ESC(t[2])}</p><p style="color:#666;font-size:13px">Game Set Algo · ${ESC(url)} · version ${ESC(r.version)}</p></div>`;
+  const html = cadreMail({ lang: fr ? 'fr' : 'en', surtitre: fr ? 'Accès immédiat' : 'Immediate access', titre: t[0],
+    corps: MAIL_P(ESC(t[1])) + MAIL_LISTE(r.textes.map(ESC)) + MAIL_P(ESC(t[2])), pied: [`${fr ? 'Version des conditions' : 'Terms version'} ${ESC(r.version)}`], site: url });
   return { sujet: t[0], html, texte: `${t[1]}\n- ${r.textes.join('\n- ')}\n\n${t[2]}\n${url}` };
 }
 async function accesImmediat(req, env, b) {
