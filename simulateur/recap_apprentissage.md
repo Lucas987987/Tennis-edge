@@ -1,6 +1,6 @@
 # Récapitulatif de l’apprentissage — 2026-W48
 
-Généré le 2026-11-26T11:28:26+00:00 · état **a_verifier**.
+Généré le 2026-11-26T11:50:40+00:00 · état **a_verifier**.
 
 > Lecture seule des rapports hebdomadaires. Les populations restent séparées ; aucune adoption nouvelle n’est déclenchée par ce document et aucun gain de ROI n’est déduit.
 
@@ -8,7 +8,7 @@ Généré le 2026-11-26T11:28:26+00:00 · état **a_verifier**.
 
 - **Facteurs adoptés** : Adversaires communs, Conditions, Contexte du tournoi, dotation, Durée, Face-à-face, Forme et fatigue, Matchup, Morphologie, Points importants, Pression, Profil de réaction, Styles, Vitesse du court, voyage.
 - **Candidats encore en attente** : Blessure, Match Charting.
-- **Apprentissage sur nos propres pronostics** : non_adopte — 1751/400 matchs documentés ; en attente : 28 nouveaux matchs depuis le dernier jugement (il en faut 30)
+- **Apprentissage sur nos propres pronostics** : adopte — 1753/400 matchs documentés ; sur les 30 matchs joués les plus récents : poids appris sur nos matchs 0.5572 contre poids de l'archive 0.5639 (Elo seul 0.5717) ; marge exigée 0.001 et Brier non dégradé
 - **Pronostics récents évalués** : 1588 matchs ; exactitude de la combinaison 66.31 %.
 - **Dérive** : surveillance ; 0 alerte(s).
 - **Champion modifié cette semaine** : oui.
@@ -54,10 +54,10 @@ Direct : **1592** pronostics sur **6** semaine(s). Rejoué : **6650** pronostics
 ## Gouvernance, dérive et champion
 
 - **Gouvernance** : a_verifier.
-- **Promotions retenues** : aucune.
+- **Promotions retenues** : combinaison_continue.
 - **Promotions différées** : aucune.
 - **Dérive** : surveillance, sur 1588 matchs ; alertes : aucune.
-- **Empreinte du champion** : `c56edcea729b4c039bd9522e299d41a2be28d48a359787a28f8f0056b2a67092`.
+- **Empreinte du champion** : `c56395354c10c01b5b9ed26398bcef004f6bcd33c2bcc93de7797f25604910f0`.
 - **Sources manquantes** : aucune.
 
 Ce récapitulatif décrit l’apprentissage et ses contrôles. Il ne constitue ni une preuve prospective supplémentaire ni une promesse d’amélioration future des vainqueurs, des scores ou du ROI.
