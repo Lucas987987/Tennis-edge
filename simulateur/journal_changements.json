@@ -2634,6 +2634,13 @@
    "paquet": 468,
    "quoi": "TABLEAU « RÉUSSITE PAR NIVEAU DE FIABILITÉ » REMPLACÉ (paquet 468, Lucas). L'ancien tableau montrait les quatre anciens niveaux (solide, correct, prudent, fragile), qui ne se distinguaient pas les uns des autres. Le nouveau ne montre que « normal » et « fragile », sur nos 1 487 matchs terminés, chacun classé HORS ÉCHANTILLON par la note apprise sur les autres matchs (60 % les plus anciens pour classer les 40 % suivants, et l'inverse), jamais sur lui-même : fragile 405 matchs, favori annoncé 65,5 %, trouvé 64,7 % ; normal 1 082 matchs, annoncé 68,0 %, trouvé 68,5 %. À côté, les matchs dont le niveau a été annoncé avant le match (depuis le 26/11 ; le niveau est figé au premier pronostic, souvent la veille, d'où aucun match terminé le premier jour). Recalculé chaque lundi avec le réapprentissage de la note. Le % de victoire ne change pas.",
    "garde_fou": "Aucun : affichage seulement."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 470,
+   "quoi": "« DEMANDE À L'ALGO » EN DIRECT (paquet 470, Lucas : « demander une information en live, recalculée par rapport au vrai déroulé du match »). Pendant un match en cours, la fiche propose « Avant le match » ou « Depuis le score actuel ». En direct, les thèmes Match et Jeux sont recalculés depuis le score réel (sets joués, jeux, points, serveur) : la fin du match est rejouée 4 000 fois dans le navigateur, avec le même moteur que le % en direct (forme du jour lue dans les points de service joués quand elle est suivie). Les sets déjà joués comptent (1er set, tie-breaks, total de jeux) ; une issue devenue impossible est dite telle quelle. Stats prévues et Historique restent ceux d'avant le match et le disent. Recalculé à chaque mise à jour du score, sans aucun appel de plus. Le % publié avant le match ne change pas.",
+   "garde_fou": "Aucun : affichage seulement."
   }
  ]
 }
