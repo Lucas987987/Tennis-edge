@@ -222,6 +222,42 @@ def duel_des_cartes(cartes, circuit, surface):
                       {'service': 1, 'ecart': J[1]['serv_indice'] - J[0]['ret_indice']}]}
 
 
+def reference_service(ajuste, circuit, surface):
+    """% de points gagnés par un serveur moyen face à un relanceur moyen, sur ce circuit et cette surface (profils ajustés)."""
+    if ajuste is None or not circuit:
+        return None
+    try:
+        import match_simule as MS
+        return round(100 * _p_service(MS.borner(ajuste.taux(MOYEN, MOYEN, circuit, surface))), 1)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def duel_simule(ligne, reference=None):
+    """26/11/2026 (paquet 455, choix de Lucas) — le duel service ↔ retour tiré de LA SIMULATION DU MATCH (recalée sur le
+    % final) : % de points gagnés au service par chacun face à CET adversaire, et % de jeux de service gagnés (les mêmes
+    que les statistiques prédites). Avant : la différence de deux classements sur 100 (service de l'un, retour de
+    l'autre, face à un adversaire moyen) — deux échelles différentes, qui pouvaient dire l'inverse de la simulation
+    (Kicker – Moller du 25/11 : « Avantage Kicker : 64 points » sur le service de Moller, alors que Moller gagnait 67 %
+    de ses jeux de service contre 53 % pour Kicker). Les classements sur 100 restent sur les cartes des joueurs."""
+    fp, fpl = ligne.get('feuille_prevue') or [], ligne.get('feuille_plus') or []
+    J = []
+    for i in (0, 1):
+        pts = ((fpl[i] if i < len(fpl) else None) or {}).get('points_service_pct')
+        pts = pts[0] if isinstance(pts, list) else pts
+        jsg = ((fp[i] if i < len(fp) else None) or {}).get('jeux_service_gagnes_pct')
+        if pts is None:
+            return None
+        J.append({'points_service_pct': round(float(pts), 1),
+                  **({'jeux_service_gagnes_pct': round(float(jsg), 1)} if jsg is not None else {})})
+    out = {'descriptif_seulement': True, 'source': 'simulation', 'joueurs': J, 'circuit': ligne.get('circuit'),
+           'surface': ligne.get('surface')}
+    if reference is not None:
+        out['reference_pct'] = reference
+        out['ecarts'] = [round(j['points_service_pct'] - reference, 1) for j in J]
+    return out
+
+
 def ajouter_cartes(lignes, racine, etat):
     """ligne['cartes'] = {descriptif_seulement, circuit, joueurs: [carte home, carte away]} si les deux existent."""
     import elo as E
@@ -240,3 +276,11 @@ def ajouter_cartes(lignes, racine, etat):
             du = duel_des_cartes(cs, x.get('circuit'), x.get('surface'))
             if du:                                          # 12/11/2026 (paquet 240) : une seule échelle sur tout le site
                 x['duel'] = du
+    refs = {}
+    for x in lignes:                                        # 26/11/2026 (paquet 455) : le duel de la simulation du match
+        cle = (x.get('circuit'), x.get('surface'))
+        if cle not in refs:
+            refs[cle] = reference_service(C.A, *cle)
+        ds = duel_simule(x, refs[cle])
+        if ds:
+            x['duel_simule'] = ds
