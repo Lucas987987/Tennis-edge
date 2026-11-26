@@ -1,0 +1,28 @@
+name: Sonde tennis de table (lecture seule)
+
+# 26/11/2026 — AllSportsApi (RapidAPI, formule gratuite Basic) donne-t-elle le tennis de
+# table, avec assez d'historique et le score de chaque manche ? 15 requêtes au plus, aucune
+# nouvelle tentative, le quota du tennis n'est pas touché. Rien n'est écrit dans le dépôt.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/sonde_tennis_de_table.py
