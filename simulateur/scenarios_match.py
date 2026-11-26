@@ -62,7 +62,35 @@ def scenarios(D_, sets=None):
         tot = sum(float(r['probabilite']) for r in D_)
         if not tot:
             return None
+    # 25/11/2026 (paquet 454) : un score en sets publié dont AUCUN score exact n'a été reçu (tous coupés sous 0,1 % :
+    # ce sont des 3 sets très dispersés) n'était pas compté — « Kicker en 3 sets : 0 % » pour 13 % annoncés. Sa masse
+    # est ajoutée à part : un 2-1 est toujours « en 3 sets » ; la part « remontée » (1er set perdu) n'est pas connue
+    # pour cette masse, elle est comptée pour moitié (un des deux premiers sets perdu) et signalée (« estime »).
+    manquant = {}
+    if sets and tot < 0.999:
+        masse_ = {}
+        for r in D_:
+            sc_ = [tuple(x) for x in r['score']]
+            if sc_:
+                masse_[_cle_sets(sc_)] = masse_.get(_cle_sets(sc_), 0.0) + float(r['probabilite'])
+        manquant = {k: float(v) for k, v in sets.items() if float(v or 0) > 0.001 and masse_.get(k, 0) <= 0}
+        if manquant and not poids:
+            present = sum(float(v or 0) for k, v in sets.items() if k not in manquant)
+            poids = {k: (float(sets.get(k) or 0) / v if present > 0 else 0.0) for k, v in masse_.items() if v > 0}
+            D_ = [dict(r, probabilite=float(r['probabilite']) * poids.get(_cle_sets([tuple(x) for x in r['score']]), 0.0))
+                  for r in D_]
+            tot = sum(float(r['probabilite']) for r in D_) + sum(manquant.values())
+            if not tot:
+                return None
     J = [{'net': 0.0, 'accroche': 0.0, 'long': 0.0, 'remontee': 0.0} for _ in (0, 1)]
+    for k, v in manquant.items():
+        a_, b_ = (int(x) for x in k.split('-'))
+        w_ = 0 if a_ > b_ else 1
+        if min(a_, b_) > 0:
+            J[w_]['long'] += v / tot
+            J[w_]['remontee'] += 0.5 * v / tot
+        else:
+            J[w_]['accroche'] += v / tot
     tb = sec = 0.0
     jeux = {}
     jeux_sets = {}                                                   # paquet 430 : jeux selon le nombre de sets joués
@@ -102,6 +130,7 @@ def scenarios(D_, sets=None):
         J[j]['si_set1_perdu'] = (s1[o][0] - s1[o][1]) / s1[o][0] if s1[o][0] > 0 else None
     r4 = lambda x: round(x, 4) if x is not None else None  # noqa: E731
     return {'definition': DEFINITION, 'j': [{k: r4(v) for k, v in o.items()} for o in J], 'tiebreak': r4(tb), 'set_sec': r4(sec),
+            **({'estime': sorted(manquant)} if manquant else {}),
             'jeux': {'p10': centile(0.10), 'mediane': centile(0.50), 'p90': centile(0.90),
                      # 25/11/2026 (paquet 430) : la fourchette par nombre de sets (2 sets / 3 sets…), avec sa probabilité
                      'par_sets': {str(ns): {'p': r4(sum(d.values())), 'p10': centile(0.10, d), 'mediane': centile(0.50, d),
