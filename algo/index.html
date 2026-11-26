@@ -853,9 +853,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
       <div class="fiab-bloc"><span class="fiab-lab" data-t="fiab" aria-hidden="true"></span>
       <div class="seg fiab-filtre" role="group" data-t-aria="fiab_filtre_label">
         <button type="button" data-fniv="TOUS" aria-pressed="true" data-t="fiab_toutes"></button>
-        <button type="button" data-fniv="solide" aria-pressed="false" data-t="niv_solide"></button>
-        <button type="button" data-fniv="correct" aria-pressed="false" data-t="niv_correct"></button>
-        <button type="button" data-fniv="prudent" aria-pressed="false" data-t="niv_prudent"></button>
+        <button type="button" data-fniv="normal" aria-pressed="false" data-t="niv_normal"></button>
         <button type="button" data-fniv="fragile" aria-pressed="false" data-t="niv_fragile"></button>
       </div></div>
     </div>
@@ -981,7 +979,7 @@ const T = {
   vg_ligne:(l,p,r,c)=>`${l} : annoncé ${p} % en moyenne, arrivé ${r} % (${c}).`, vg_tous:'tous circuits',
   vg_set1:n=>`1er set gagné par ${n}`, vg_tb:'Au moins un tie-break', vg_sd:'Set décisif', vg_total:x=>`Plus de ${x} jeux`, vg_hand:x=>`Favori à −${x} jeux`,
   vg_xp:'Un joueur a moins de 100 matchs : ses statistiques de service prévues sont moins sûres (fourchette respectée environ 70 % du temps au lieu de 80 %).',
-  fiab:'Fiabilité', fiab_aide:"Note mesurée pour CE match, de 0 à 100 : plus elle est proche de 100, plus nos pourcentages se réalisent tels quels sur ce type de match (circuit, expérience des joueurs, critères du match comme des favoris opposés ou un huitième de finale, fiabilité passée des deux joueurs). Mesurée sur des milliers de matchs rejoués et sur nos matchs publiés, réapprise chaque semaine. Ce n'est pas la probabilité que le favori gagne.",
+  fiab:'Fiabilité', fiab_aide:"Deux niveaux, mesurés pour CE match (circuit, expérience des joueurs, critères du match comme des favoris opposés ou un huitième de finale, fiabilité passée des deux joueurs). « Fragile » : sur ce type de match, nos % sont trop tranchés, le favori gagne moins souvent qu'annoncé ; c'est vérifié hors échantillon sur deux périodes. « Normal » : nos % se réalisent, rien de mesuré ne dit le contraire. La note sur 100 de la fiche est descriptive ; les niveaux plus fins ne se vérifient pas encore et reviendront quand ils tiendront. Réappris chaque semaine. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
   son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, choisi pour montrer le type de match prévu : 3 sets si la probabilité de set décisif dépasse nettement la moyenne du circuit (seuil réglé pour que la part de vidéos en 3 sets égale la part réelle du circuit), un tie-break de même ; le favori gagne, dans son scénario le plus fréquent pour ce type de match (sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), avec les jeux et les statistiques médianes. Chaque relance reprend ce même scénario.`,
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
@@ -1004,7 +1002,7 @@ const T = {
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
   styles_note:'Écart « net » : le chiffre attendu tombe hors de la fourchette probable (intervalle de confiance à 95 %). Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
-  es_titre:'L’essentiel', es_vitesse:(c,v,o,an,cour)=>`Court ${c}${v!=null?` : CPI ${o!=null?'officiel':'estimé'} ${v}`:''} (${an}${cour?', édition en cours':''}) — plus le CPI est haut, plus la balle fuse : avantage aux serveurs.`, es_signaux:(l,c,p)=>`Signal propre ${c==='WTA'?'à la WTA':c==='ATP'?'à l’ATP':'au '+c} appliqué (suivi avec / sans lui sur ce circuit, retiré si son bilan devient nettement négatif) : ${l}. Sans lui : ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`Les deux modèles divergent : l’Elo (résultats, en tenant compte du niveau des adversaires battus) donne ${e} à ${pe} ; la simulation service-retour (taux corrigés du niveau des adversaires rencontrés) donne ${s_} à ${ps}. Le mélange appris sur nos matchs retient ${f} à ${pf}.`, es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
+  es_titre:'L’essentiel', es_vitesse:(c,v,o,an,cour)=>`Court ${c}${v!=null?` : CPI ${o!=null?'officiel':'estimé'} ${v}`:''} (${an}${cour?', édition en cours':''}) — plus le CPI est haut, plus la balle fuse : avantage aux serveurs.`, es_signaux:(l,c,p)=>`Signal propre ${c==='WTA'?'à la WTA':c==='ATP'?'à l’ATP':'au '+c} appliqué (suivi avec / sans lui sur ce circuit, retiré si son bilan devient nettement négatif) : ${l}. Sans lui : ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`Les deux modèles divergent : l’Elo (résultats, en tenant compte du niveau des adversaires battus) donne ${e} à ${pe} ; la simulation service-retour (taux corrigés du niveau des adversaires rencontrés) donne ${s_} à ${ps}. Le mélange appris sur nos matchs retient ${f} à ${pf}.`, es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',normal:'normale',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv}${niv==='fragile'||niv==='normal'?'':` (${note}/100)`}`,
   es_evol:(n,p0,p1,d)=>`Pronostic de ${n} passé de ${p0} à ${p1} depuis le premier affichage${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Pourquoi : ${r}.`, es_raisons_donnees:'Pourquoi : nouveaux résultats et nouvelles données des joueurs.',
   es_premier:(p,n,d)=>`Premier pronostic : ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -1038,7 +1036,7 @@ const T = {
   sv_niv_titre:'Par niveau de fiabilité', sv_niv_sous:'Confiance annoncée → vainqueurs trouvés, et l’erreur en trop par rapport à l’erreur normale vu la confiance (log loss). Proche de 0 : l’annonce tient ; positif : plus d’erreurs que prévu. Les notes hautes vont souvent à des matchs serrés : c’est cette colonne qu’il faut comparer, pas le taux de vainqueurs.',
   sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
-  niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
+  niv_fragile:'Fragile', niv_normal:'Normal', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
   rt_titre:'Ce % a-t-il tenu par le passé ?', rt_phrase:(tr,c)=>`Quand l’algo a donné un joueur à ${tr}${c}, ce joueur a gagné`, rt_sur:(b,n)=>`${b} sur ${n} matchs`,
   rt_annonce:p=>`Trait blanc : ${p} annoncé`, rt_realise:p=>`Barre : ${p} réalisé`, rt_en:c=>` en ${c}`, rt_tous:' (tous circuits)',
   rt_note:'Historique de l’algo : il ne change pas le % de ce match. Une tranche n’est montrée qu’à partir de 100 matchs ; en dessous, elle reprend tous les circuits, puis s’élargit à 10 points.',
@@ -1349,7 +1347,7 @@ const T = {
   vg_ligne:(l,p,r,c)=>`${l}: forecast ${p}% on average, happened ${r}% (${c}).`, vg_tous:'all tours',
   vg_set1:n=>`First set won by ${n}`, vg_tb:'At least one tie-break', vg_sd:'Deciding set', vg_total:x=>`Over ${x} games`, vg_hand:x=>`Favourite −${x} games`,
   vg_xp:'One player has fewer than 100 matches: their forecast serve stats are less certain (range met about 70% of the time instead of 80%).',
-  fiab:'Reliability', fiab_aide:'Score measured for THIS match, from 0 to 100: the closer to 100, the more our percentages come true as stated on this kind of match (tour, players\' experience, match criteria such as split favourites or a round of 16, both players\' past reliability). Measured on thousands of replayed matches and on our published matches, relearned every week. This is not the probability that the favourite wins.',
+  fiab:'Reliability', fiab_aide:'Two levels, measured for THIS match (tour, players\' experience, match criteria such as split favourites or a round of 16, both players\' past reliability). “Fragile”: on this kind of match our % are too sharp, the favourite wins less often than shown; checked out of sample over two periods. “Normal”: our % come true, nothing measured says otherwise. The score out of 100 on the match page is descriptive; finer levels do not hold yet and will come back once they do. Relearned every week. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
   son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual match drawn from ${fmt(n)} simulations, selected to show the expected type of match: three sets if the deciding-set probability is clearly above the tour average (threshold set so that the share of three-set videos matches the tour's real share), a tie-break likewise; the favourite wins, in their most frequent scenario for that type of match (comfortable or tight straight sets; in three sets, after winning or losing the first set), with median games and statistics. Every replay uses this same scenario.`,
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
@@ -1372,7 +1370,7 @@ const T = {
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
   styles_note:'A “clear” gap: the expected figure falls outside the likely range (95% confidence interval). Internal serve–return styles, not comparable with third-party categories.',
-  es_titre:'Key points', es_vitesse:(c,v,o,an,cour)=>`${c.charAt(0).toUpperCase()+c.slice(1)} court${v!=null?`: ${o!=null?'official':'estimated'} CPI ${v}`:''} (${an}${cour?', current edition':''}) — the higher the CPI, the faster the ball: servers benefit.`, es_signaux:(l,c,p)=>`${c}-specific signal applied (tracked with / without it on this tour, withdrawn if its record turns clearly negative): ${l}. Without it: ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`The two models disagree: Elo (results, weighted by the level of the opponents beaten) gives ${e} ${pe}; the serve–return simulation (rates corrected for the level of opponents faced) gives ${s_} ${ps}. The blend learned on our matches settles on ${f} at ${pf}.`, es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
+  es_titre:'Key points', es_vitesse:(c,v,o,an,cour)=>`${c.charAt(0).toUpperCase()+c.slice(1)} court${v!=null?`: ${o!=null?'official':'estimated'} CPI ${v}`:''} (${an}${cour?', current edition':''}) — the higher the CPI, the faster the ball: servers benefit.`, es_signaux:(l,c,p)=>`${c}-specific signal applied (tracked with / without it on this tour, withdrawn if its record turns clearly negative): ${l}. Without it: ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`The two models disagree: Elo (results, weighted by the level of the opponents beaten) gives ${e} ${pe}; the serve–return simulation (rates corrected for the level of opponents faced) gives ${s_} ${ps}. The blend learned on our matches settles on ${f} at ${pf}.`, es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',normal:'normal',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability${niv==='fragile'||niv==='normal'?'':` (${note}/100)`}`,
   es_evol:(n,p0,p1,d)=>`${n}’s forecast moved from ${p0} to ${p1} since first shown${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Why: ${r}.`, es_raisons_donnees:'Why: new results and new player data.',
   es_premier:(p,n,d)=>`First forecast: ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -1406,7 +1404,7 @@ const T = {
   sv_niv_titre:'By reliability level', sv_niv_sous:'Announced confidence → winners called, and the error above the normal error for that confidence (log loss). Near 0: the forecast holds; positive: more errors than expected. High scores often go to close matches: compare this column, not the hit rate.',
   sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
-  niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
+  niv_fragile:'Fragile', niv_normal:'Normal', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
   rt_titre:'Has this % held up before?', rt_phrase:(tr,c)=>`When the algorithm gave a player ${tr}${c}, that player won`, rt_sur:(b,n)=>`${b} of ${n} matches`,
   rt_annonce:p=>`White mark: ${p} announced`, rt_realise:p=>`Bar: ${p} happened`, rt_en:c=>` on the ${c} tour`, rt_tous:' (all tours)',
   rt_note:'The algorithm’s track record: it does not change this match’s %. A band is shown only from 100 matches; below that it uses all tours, then widens to 10 points.',
@@ -2805,7 +2803,7 @@ function analyseComplete(m, court_){
     T.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, '');
     T.push(pf < .55 ? `⚖️ MATCH TRÈS SERRÉ : ${fav} à peine devant (${pct(pf)})` : `🏆 FAVORI DE L'ALGO : ${(favH ? m.home : m.away).toUpperCase()} (${pct(pf)})`);
     if (Array.isArray(m.fourchette)) T.push(`📏 Selon l'incertitude sur le niveau des joueurs : entre ${pct(fi ? 1-m.fourchette[1] : m.fourchette[0])} et ${pct(fi ? 1-m.fourchette[0] : m.fourchette[1])} (8 fois sur 10)`);
-    if (m.fiabilite && m.fiabilite.note != null) T.push(`🔒 Fiabilité : ${m.fiabilite.note}/100 (${m.fiabilite.niveau})`);
+    if (m.fiabilite && m.fiabilite.note != null) T.push((m.fiabilite.niveau==='fragile'||m.fiabilite.niveau==='normal') ? `🔒 Fiabilité : ${m.fiabilite.niveau==='normal'?'normale':'fragile'}` : `🔒 Fiabilité : ${m.fiabilite.note}/100 (${m.fiabilite.niveau})`);
     T.push('');
     retenir.push(`✅ ${fav} favori avec ${pct(pf)} de chances de victoire.`);
     // sets et scénarios
@@ -3580,7 +3578,8 @@ function rendTextes(){
 // te-incertitude-fiabilite-v1 : indicateur de sensibilité propre au match.
 function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
-  const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
+  const niveaux = L==='fr' ? {fragile:'fragile',normal:'normale',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',normal:'normal',prudent:'cautious',correct:'fair',solide:'strong'};
+  const deux = f.niveau==='fragile' || f.niveau==='normal';   // 26/11/2026 (paquet 464) : deux niveaux mesurés
   const niveau = niveaux[f.niveau] || f.niveau || '';
   let explication = '';
   if (detail){
@@ -3596,12 +3595,17 @@ function rendFiabilite(f, detail=false){
     } else explication = `<p class="aide">${esc(t('fiab_ancienne'))}</p>`;
   }
   // 25/11/2026 (paquet 451) : note mesurée match par match — le sens de l'écart, descriptif (ne change pas le %)
-  const sensTxt = !detail ? '' : f.sens==='prudents'
+  const sensTxt = !detail ? '' : deux
+    ? (f.niveau==='fragile'
+      ? (L==='fr' ? 'Sur ce type de match, nos % sont trop tranchés : le favori gagne moins souvent qu’annoncé (vérifié sur deux périodes). Information descriptive : elle ne change pas le %.' : 'On this kind of match our % are too sharp: the favourite wins less often than shown (checked over two periods). Descriptive only: it does not change the %.')
+      : (L==='fr' ? 'Sur ce type de match, nos % se réalisent : rien de mesuré ne dit le contraire. Information descriptive : elle ne change pas le %.' : 'On this kind of match our % come true: nothing measured says otherwise. Descriptive only: it does not change the %.'))
+    : f.sens==='prudents'
     ? (L==='fr' ? 'Sur ce type de match, nos % sont plutôt prudents : le favori gagne un peu plus souvent qu’annoncé. Information descriptive : elle ne change pas le %.' : 'On this kind of match our % tend to be cautious: the favourite wins a little more often than shown. Descriptive only: it does not change the %.')
     : f.sens==='tranches'
     ? (L==='fr' ? 'Sur ce type de match, nos % sont plutôt trop tranchés : le favori gagne un peu moins souvent qu’annoncé. Information descriptive : elle ne change pas le %.' : 'On this kind of match our % tend to be too sharp: the favourite wins a little less often than shown. Descriptive only: it does not change the %.')
     : '';
-  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>${sensTxt?`<p class="aide fiab-sens">${esc(sensTxt)}</p>`:''}${explication}`;
+  const chiffre = (!deux || detail) ? `<b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>` : `<b>${esc(niveau)}</b>`;
+  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span>${chiffre}${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>${sensTxt?`<p class="aide fiab-sens">${esc(sensTxt)}</p>`:''}${explication}`;
 }
 function styleLib(code){
   const lib = {
@@ -8349,7 +8353,7 @@ function rendBilan(){
 // 24/11/2026 (paquet 420, Lucas) : % de réussite par niveau de fiabilité annoncé avant le match (vitrine.bilan)
 function rendBilanFiab(PF){
   const el = document.getElementById('bilan-fiab'); if (!el) return;
-  const niv = ['solide','correct','prudent','fragile'].filter(k=>PF && PF[k]);
+  const niv = ['solide','correct','prudent','normal','fragile'].filter(k=>PF && PF[k]);
   el.hidden = !niv.length; if (!niv.length) { el.innerHTML = ''; return; }
   el.innerHTML = `<h3 class="cv-h" style="margin-top:0">${esc(t('bf_titre'))}</h3><p class="cv-p">${esc(t('bf_sous'))}</p>
     <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('bf_niveau'))}</th><th>${esc(t('bf_annonce'))}</th><th>${esc(t('bf_trouve'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PF[k];
@@ -8362,7 +8366,7 @@ function rendSuivi(){
   const circuits = Object.entries(B.par_circuit || {}).sort((a,b)=>b[1].n-a[1].n);
   const detail = circuits.length ? `<div class="suivi-grid">${circuits.map(([c,v])=>`<div class="suivi-circuit"><b>${esc(CIRC[c]||c)}</b><span>${pc(v.pct)}</span><small>${fmt(v.vainqueurs)} / ${fmt(v.n)} · Brier ${dec(v.brier,3)}</small></div>`).join('')}</div>` : '';
   // 29/10/2026 : par niveau, la PERTE EXCÉDENTAIRE (erreur réelle − erreur normale vu la confiance annoncée)
-  const PN = B.par_niveau || {}, niv = ['fragile','prudent','correct','solide'].filter(k=>PN[k]);
+  const PN = B.par_niveau || {}, niv = ['fragile','normal','prudent','correct','solide'].filter(k=>PN[k]);
   const tn = niv.length ? `<h3 class="cv-h">${esc(t('sv_niv_titre'))}</h3><p class="cv-p">${esc(t('sv_niv_sous'))}</p>
     <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('sv_niveau'))}</th><th>${esc(t('sv_conf_trouves'))}</th><th>${esc(t('sv_exces'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PN[k];
       const ex=v.perte_excedentaire, cl=!v.conclusion_possible?'':ex>0.03?'style="color:var(--ko)"':ex<-0.03?'style="color:var(--ok)"':'';
