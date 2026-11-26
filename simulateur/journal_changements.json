@@ -2627,6 +2627,13 @@
    "paquet": 466,
    "quoi": "CHALLENGER, JOUEUR LE MOINS VU SOUS 500 POINTS : PENTE EN PLUS SUIVIE EN FANTÔME SUR NOS MATCHS PUBLIÉS (paquet 466, accord de Lucas). L'étude 465 trouve nos % encore trop timides sur ces matchs malgré la pente 1,11 en place : pente 1,174 en plus apprise sur 2025 → 05/2026, gain jugé sur 06–12/2024 +0,0070 ± 0,0019 sur 1 018 matchs, mais pas dans le sens inverse (pente 1,40 apprise sur 2024, −0,0010 ± 0,0034) : les deux périodes disent « trop timide », pas la même valeur (en 2024, l'Elo n'avait que quelques mois de résultats ITF). Seuls nos matchs publiés, qui portent toutes les couches et corrections, peuvent trancher : chaque lundi, sur les Challengers terminés dont le joueur le moins vu avait moins de 500 points au moment du pronostic, log loss du % publié contre le même étiré de 1,174 (environ 1,30 au total). La documentation au jour du pronostic (balles_min, enregistrée depuis le paquet 368) est maintenant recopiée dans le fichier des résultats, ce qui donne aussi la pente de nos % publiés par circuit et par tranche (moins de 500, 500–1 500, 1 500–3 000, 3 000 et plus). Le % de victoire ne change pas.",
    "garde_fou": "Proposé à Lucas, jamais appliqué automatiquement, seulement avec au moins 1 000 matchs concernés, un gain ≥ 0,001, gain − 2 erreurs types > 0 et un gain sur les deux moitiés chronologiques (simulateur/suivi_pente_sous_500.py)."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 468,
+   "quoi": "TABLEAU « RÉUSSITE PAR NIVEAU DE FIABILITÉ » REMPLACÉ (paquet 468, Lucas). L'ancien tableau montrait les quatre anciens niveaux (solide, correct, prudent, fragile), qui ne se distinguaient pas les uns des autres. Le nouveau ne montre que « normal » et « fragile », sur nos 1 487 matchs terminés, chacun classé HORS ÉCHANTILLON par la note apprise sur les autres matchs (60 % les plus anciens pour classer les 40 % suivants, et l'inverse), jamais sur lui-même : fragile 405 matchs, favori annoncé 65,5 %, trouvé 64,7 % ; normal 1 082 matchs, annoncé 68,0 %, trouvé 68,5 %. À côté, les matchs dont le niveau a été annoncé avant le match (depuis le 26/11 ; le niveau est figé au premier pronostic, souvent la veille, d'où aucun match terminé le premier jour). Recalculé chaque lundi avec le réapprentissage de la note. Le % de victoire ne change pas.",
+   "garde_fou": "Aucun : affichage seulement."
   }
  ]
 }
