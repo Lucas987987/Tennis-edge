@@ -315,6 +315,25 @@ test('385 : alerte Telegram à la création, à la confirmation et à la place f
   assert.equal(r.status, 200);
 });
 
+test('471 : test sans facture — seulement sans FACTURE_VENDEUR, accès ouvert, aucun numéro consommé', async () => {
+  const { env, mails } = monde();
+  await worker.fetch(post('/compte/api/inscription', { email: 't@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env);
+  const vir = (b) => worker.fetch(post('/compte/admin/api/virement', b, { 'X-Cle': CLE }, DEV), env).then((r) => r.json());
+  assert.equal((await vir({ compte: 't@exemple.fr', formule: 'mois', montant: '14,99' })).erreur, 'vendeur_absent');
+  let o = await vir({ compte: 't@exemple.fr', formule: 'mois', montant: '14,99', test_sans_facture: true });
+  assert.equal(o.ok, true); assert.equal(o.sans_facture, true); assert.equal(o.numero, null);
+  const moi = (await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json()).compte;
+  assert.equal(moi.paye, true);
+  assert.ok(Date.parse(moi.jusqu_au) > Date.now() + 25 * 86400e3);
+  assert.match(mails.at(-1).subject, /accès Plus est ouvert/);
+  // dès que le vendeur existe, la case est ignorée : facture obligatoire, et la numérotation démarre à 0001
+  env.FACTURE_VENDEUR = JSON.stringify({ nom: 'Lucas Test EI', adresse: '1 rue du Court', siret: '123 456 789 00012' });
+  o = await vir({ compte: 't@exemple.fr', formule: 'mois', montant: '14,99', test_sans_facture: true });
+  assert.equal(o.ok, true); assert.equal(o.numero, `F${new Date().getUTCFullYear()}-0001`);
+});
+
 test('386 : virement reçu → accès payé, facture numérotée sans trou, e-mail, page du client, rappel avant la fin', async () => {
   const { env, mails, C } = monde();
   await worker.fetch(post('/compte/api/inscription', { email: 'h@exemple.fr', mdp: 'motdepasse1' }), env);
