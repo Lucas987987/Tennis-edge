@@ -1,0 +1,67 @@
+name: Collecte tennis de table
+
+# 26/11/2026 (paquet 482, demande de Lucas : « Lance la collecte du ping pong ») — résultats de tennis de table
+# d'AllSportsApi (formule Pro un mois, puis gratuite : 100 requêtes par jour), du plus récent au 01/01/2021 (voir
+# l'en-tête de scripts/collecte_tennis_de_table.py). Rangé à part dans historique/tennis_de_table/ : aucun script de
+# l'algo tennis ne le lit, le quota de TennisApi n'est pas touché. Un jour complet n'est jamais redemandé ; une fois
+# l'historique fait, un seul passage par jour (06 h UTC). Le journal du run n'affiche que des comptes.
+on:
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Durée de collecte au plus (minutes)'
+        default: '100'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collecte-tennis-de-table
+  cancel-in-progress: false
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/collecte_tennis_de_table.py
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Collecte (récents d'abord)
+        timeout-minutes: 110
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          MINUTES: ${{ github.event.inputs.minutes || '100' }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '10'
+        run: python scripts/collecte_tennis_de_table.py "$MINUTES" | tee /tmp/tt.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Tennis de table'; sed 's/^/    /' /tmp/tt.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique/tennis_de_table
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Tennis de table $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
