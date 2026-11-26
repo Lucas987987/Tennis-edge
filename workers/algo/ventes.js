@@ -58,7 +58,7 @@ export async function compterVisite(req, env) {
 // provenance (nom de domaine seul). Ne sont gardés que des totaux par jour. Liste fermée d'événements, valeurs bornées.
 export const EVENEMENTS = Object.freeze(['fiche', 'simulation', 'direct_3d', 'demande_algo', 'demande_algo_direct', 'favori',
   'filtre_favoris', 'filtre_circuit', 'inscription_ouverte', 'section_plus_vue', 'bilan_vu', 'fiche_verrouillee', 'langue_changee',
-  'page_match', 'page_joueur', 'page_tournoi', 'page_bilan']);
+  'page_match', 'page_joueur', 'page_tournoi', 'page_bilan', 'notifs_activees']);   // 483 : + notifications activées
 const UID_OK = /^[a-z0-9_-]{5,140}$/, DOM_OK = /^[a-z0-9.-]{3,80}$/;
 const appareil = (ua) => /Mobi|Android|iPhone|iPad/i.test(ua || '') ? 'mobile' : 'ordinateur';
 export function nettoyerEvenements(b) {
@@ -609,7 +609,7 @@ export async function poulsVisites(env, maintenant = Date.now()) {
 }
 // 479 : ce que les visiteurs ont fait la veille (totaux anonymes)
 const LIB_EV = { simulation: 'simulations lancées', direct_3d: 'directs en 3D', demande_algo: '« Demande à l’algo »', demande_algo_direct: 'dont en direct',
-  favori: 'favoris', inscription_ouverte: 'formulaires d’inscription ouverts', section_plus_vue: 'section Plus vue', fiche_verrouillee: 'fiches Plus verrouillées vues',
+  favori: 'favoris', notifs_activees: 'notifications activées (essais)', inscription_ouverte: 'formulaires d’inscription ouverts', section_plus_vue: 'section Plus vue', fiche_verrouillee: 'fiches Plus verrouillées vues',
   page_match: 'pages match', page_joueur: 'pages joueur', page_tournoi: 'pages tournoi', page_bilan: 'pages bilan' };
 const titreUid = (u) => String(u).replace(/^\d{4}-\d{2}-\d{2}_/, '').split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, n);
