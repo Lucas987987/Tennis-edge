@@ -81,7 +81,8 @@ function vueCompte(u) {
     reference: referenceVirement(u), paye: !!(u.acces || {}).paye, factures: u.factures || [],
     acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.fondateur_place || null,   // 474 : toujours visible
     fondateur_perdu: !!u.fondateur_perdu, fondateur_tarif: !!(u.acces || {}).fondateur_tarif,
-    demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null };
+    demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null,
+    favoris: favorisDe(u) };
 }
 // 405 : coordonnées de paiement, montrées dans la section Plus au seul fondateur prévenu de l'ouverture
 export const PRIX_FONDATEUR_SITE = 9.99;
@@ -361,11 +362,31 @@ async function supprimer(req, env, b) {
   await env.COFFRE.delete(chemin(u.id));
   return rep({ ok: true }, 200, { 'Set-Cookie': `${COOKIE_COMPTE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
 }
+// 26/11/2026 (paquet 476, Lucas) — FAVORIS : joueurs (noms) et matchs (identifiants) gardés sur le compte, gratuit
+// compris. Ils ne donnent accès à rien de réservé : ils trient, filtrent et marquent la liste. Bornés (200 joueurs,
+// 60 matchs : les plus anciens partent d'abord).
+export const FAV_MAX = Object.freeze({ joueurs: 200, matchs: 60 });
+export function favorisDe(u) {
+  const f = (u && u.favoris) || {};
+  return { joueurs: Array.isArray(f.joueurs) ? f.joueurs : [], matchs: Array.isArray(f.matchs) ? f.matchs : [] };
+}
+async function favoris(req, env, b) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  const k = b.type === 'joueur' ? 'joueurs' : b.type === 'match' ? 'matchs' : null;
+  const cle = String(b.cle || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 120);
+  if (!k || !cle) return rep({ ok: false, erreur: 'requete' }, 400);
+  const F = favorisDe(u);
+  F[k] = (b.actif === false ? F[k].filter((x) => x !== cle) : [cle, ...F[k].filter((x) => x !== cle)]).slice(0, FAV_MAX[k]);
+  u.favoris = F;
+  await ecrire(env, u);
+  return rep({ ok: true, favoris: F });
+}
 async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
   const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat',
-    'fondateur_place', 'ouverture_envoyee', 'demande'];
+    'fondateur_place', 'ouverture_envoyee', 'demande', 'favoris'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -399,6 +420,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'fondateur') return fondateur(req, env, b);
   if (p === 'acces_immediat') return accesImmediat(req, env, b);
   if (p === 'abonnement') return demandeAbonnement(req, env, b);
+  if (p === 'favoris') return favoris(req, env, b);
   return rep({ ok: false, erreur: 'inconnu' }, 404);
 }
 
