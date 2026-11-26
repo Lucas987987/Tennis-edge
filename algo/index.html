@@ -2263,6 +2263,32 @@ function duelVis(d, N){
   }).join('');
   return rows ? `<div class="du-vis">${rows}</div>` : '';
 }
+// 26/11/2026 (paquet 455, choix de Lucas) — DUEL SERVICE / RETOUR TIRÉ DE LA SIMULATION DU MATCH : % de points gagnés au
+// service par chacun face à CET adversaire (la même simulation que le % et les statistiques prédites). Avant : la
+// différence de deux classements sur 100 (deux échelles différentes), qui pouvait dire l'inverse de la simulation.
+// Les classements sur 100 restent sur les cartes des joueurs.
+const DUS_SEUIL = 2;   // points de % : en dessous, les deux services se valent
+function duelSimTexte(ds, N){
+  const J = ds && ds.joueurs; if (!J || J.length!==2 || J[0].points_service_pct==null || J[1].points_service_pct==null) return null;
+  const fr = L==='fr', a = J[0].points_service_pct, b = J[1].points_service_pct, d = a - b;
+  if (Math.abs(d) < DUS_SEUIL) return { sens:'neutre', txt: fr ? `Au service, les deux se valent face à ces retours : ${dec(a,1)} % des points pour ${N[0]}, ${dec(b,1)} % pour ${N[1]}.` : `On serve they are level against these returns: ${dec(a,1)}% of points for ${N[0]}, ${dec(b,1)}% for ${N[1]}.` };
+  const i = d > 0 ? 0 : 1;
+  return { sens:'info', txt: fr ? `${N[i]} tient mieux son service : ${dec(J[i].points_service_pct,1)} % des points gagnés face à ce retour, contre ${dec(J[1-i].points_service_pct,1)} % pour ${N[1-i]}.` : `${N[i]} holds serve better: ${dec(J[i].points_service_pct,1)}% of points won against this return, vs ${dec(J[1-i].points_service_pct,1)}% for ${N[1-i]}.` };
+}
+function duelSimLignes(ds, N){
+  const fr = L==='fr', J = ds.joueurs, ref = ds.reference_pct, surf = (SURF[L][ds.surface] || ds.surface || '');
+  const refTxt = ref==null ? '' : (fr ? ` (en moyenne ${CIRC[ds.circuit]||ds.circuit}${surf ? ' sur ' + surf : ''} : ${dec(ref,1)} %)` : ` (${CIRC[ds.circuit]||ds.circuit}${surf ? ' ' + surf : ''} average: ${dec(ref,1)}%)`);
+  return [0,1].map(i=>({ i, txt: fr
+    ? `${N[i]} au service face à ${N[1-i]} : ${dec(J[i].points_service_pct,1)} % des points gagnés${refTxt}${J[i].jeux_service_gagnes_pct!=null ? ` · ${dec(J[i].jeux_service_gagnes_pct,1)} % de jeux de service gagnés` : ''}`
+    : `${N[i]} serving against ${N[1-i]}: ${dec(J[i].points_service_pct,1)}% of points won${refTxt}${J[i].jeux_service_gagnes_pct!=null ? ` · ${dec(J[i].jeux_service_gagnes_pct,1)}% of service games won` : ''}` }));
+}
+function rendDuelSim(ds, m){
+  const N=[court(m.home),court(m.away)], fr = L==='fr', v = duelSimTexte(ds, N); if (!v) return '';
+  const J = ds.joueurs, ref = ds.reference_pct;
+  const barre = (x, c) => `<span><i class="${c}" style="width:${Math.max(0,Math.min(100,x))}%"></i></span>`;
+  const lig = duelSimLignes(ds, N).map(o=>`<div class="du-l"><p>${esc(o.txt)}</p><div class="du-r"><b class="${o.i===0?'c1':'c2'}">${dec(J[o.i].points_service_pct,1)}</b><div class="bb">${barre(J[o.i].points_service_pct, o.i===0?'c1':'c2')}${ref!=null ? barre(ref, '') : '<span></span>'}</div><b>${ref!=null ? dec(ref,1) : ''}</b></div></div>`).join('');
+  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(fr ? 'D’après la simulation du match (la même que le % et les statistiques prédites) : points gagnés au service face à cet adversaire.' : 'From the match simulation (the same as the % and the expected stats): points won on serve against this opponent.')}</p><p class="sv-phrase ${v.sens}">${esc(v.txt)}</p>${lig}<p class="styles-note">${esc(fr ? 'Descriptif : ne change pas le %. Les classements sur 100 (service, retour) sont sur les cartes des joueurs.' : 'Descriptive: does not change the %. The 0–100 rankings (serve, return) are on the player cards.')}</p></div>`;
+}
 function rendDuel(d,m){
   if (!d || d.descriptif_seulement !== true) return '';
   const N=[court(m.home),court(m.away)], J=d.joueurs;
@@ -2521,7 +2547,7 @@ function essentielListe(m){
   const sv = serviceTexte(m); if (sv) L_.push(sv);
   const en_ = entreeTexte(m); if (en_) L_.push(en_);
   const N = [court(m.home), court(m.away)];
-  const du = m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
+  const du = m.duel_simule ? duelSimTexte(m.duel_simule, N) : m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
   const ry = m.rythme ? rythmeTexte(m.rythme, m) : null, pv = m.rythme && m.rythme.prevision;
   if (pv || ry) L_.push({ sens: ry ? ry.sens : 'neutre', txt: (pv ? t('es_duree', hm(pv.minutes)) + ' ' : '') + (ry ? ry.txt : '') });
   const sd = m.styles_descriptifs;
@@ -2793,8 +2819,14 @@ function analyseComplete(m, court_){
     }
     const sc = (m.scores_probables||[]).slice(0,3);
     if (sc.length && !court_) bloc('🎯 Scores exacts les plus fréquents :', ...sc.map(([x,v])=>`• ${scoreVainqueur(x, m)} : ${pct1(v)}`));
-    // duel service / retour
-    const du = m.duel;
+    // duel service / retour — 26/11/2026 (paquet 455) : tiré de la simulation du match quand elle le donne
+    const ds = m.duel_simule, dsT = ds ? duelSimTexte(ds, N) : null;
+    if (dsT){
+      bloc('⚔️ DUEL SERVICE / RETOUR', '📊 D\'après la simulation du match (la même que le % et les statistiques prédites).', '',
+        ...duelSimLignes(ds, N).map(o=>`🎾 ${o.txt}`), '', `${dsT.sens==='info' ? '✅' : '⚖️'} ${dsT.txt}`);
+      if (dsT.sens==='info') retenir.push(`✅ ${dsT.txt}`);
+    }
+    const du = dsT ? null : m.duel;
     if (du && Array.isArray(du.joueurs) && du.joueurs.length === 2){
       const J = du.joueurs, surf = (SURF.fr[du.surface] || '').toLowerCase();
       const l = ['⚔️ DUEL SERVICE / RETOUR', du.source==='cartes'
@@ -3969,7 +4001,7 @@ function rendMdj(){
       </div>`}
       ${f && lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3>${feuilleMiroir(f, m)}</div>` : ''}
       ${rendPointsMarques(m)}
-      ${rendDuel(m.duel,m)}
+      ${m.duel_simule ? rendDuelSim(m.duel_simule,m) : rendDuel(m.duel,m)}
       ${rendQuestion(m)}
       ${rendMarches(m.lignes_algo,m)}
       ${rendRythme(m.rythme,m)}

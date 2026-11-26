@@ -2543,6 +2543,13 @@
    "paquet": 454,
    "quoi": "ANALYSE COMPLÈTE POUR X : SCÉNARIOS FAUX SUR LES MATCHS COMMENCÉS, CORRIGÉS (paquet 454, relevé par Lucas sur Kicker – Moller du 25/11 : « Kicker en 3 sets : 0 % » alors que le score en sets lui donnait 13 %). Cause : un match commencé est gardé tel qu'il était affiché (garder_commences) avec sa distribution des scores déjà coupée sous 0,1 % ; au passage suivant, ses scénarios et ses questions étaient RECALCULÉS sur cette distribution coupée, où les matchs en 3 sets, très dispersés, avaient disparu (5 matchs sur 180 dans la version du 22/11). Corrigé : un match déjà compacté garde ses scénarios et ses questions, calculés sur la distribution complète ; et si une distribution coupée arrive quand même, la masse d'un score en sets absent est remise dans le bon scénario (« en 3 sets »), sa part « après avoir perdu le 1er set » n'étant alors pas affichée. Lisibilité : les scores exacts sont écrits du point de vue du vainqueur (« Moller 6-2 6-2 » et non « 2-6 2-6 »). Le % de victoire ne change pas.",
    "garde_fou": "Descriptif seulement. Test : tests/test_scenarios_coupes.py."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 455,
+   "quoi": "DUEL SERVICE / RETOUR TIRÉ DE LA SIMULATION DU MATCH (paquet 455, choix de Lucas). Le duel affichait la différence de deux classements sur 100 (le service de l'un, le retour de l'autre, chacun face à un adversaire moyen) : deux échelles différentes, qui pouvaient dire l'inverse de la simulation. Sur Kicker – Moller du 25/11, « Avantage Kicker : 64 points » sur le service de Moller, alors que la simulation donnait à Moller 67 % de jeux de service gagnés contre 53 % à Kicker (3 matchs sur 42 nets se contredisaient ainsi dans la version du 22/11). Désormais, sur la fiche, dans le résumé et dans l'analyse complète pour X : le % de points gagnés au service par chacun face à CET adversaire, tiré de la même simulation que le % et les statistiques prédites, avec la moyenne du circuit sur la surface (un serveur moyen face à un relanceur moyen) et le % de jeux de service gagnés. Les classements sur 100 restent sur les cartes des joueurs. Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Ancien duel affiché tant qu'un match n'a pas la nouvelle donnée (matchs publiés avant le paquet). Test : tests/test_duel_simule.py."
   }
  ]
 }
