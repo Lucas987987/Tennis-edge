@@ -294,6 +294,35 @@ test('474 : les 100 premiers comptes confirmés sont fondateurs, automatiquement
   assert.equal(uV.fondateur_place, 3);                          // places 1 et 2 déjà données : jamais reprises
 });
 
+test('476 : favoris — compte requis, joueurs et matchs, retrait, bornes, dans « moi » et l’export', async () => {
+  const { env, mails } = monde();
+  assert.equal((await worker.fetch(post('/compte/api/favoris', { type: 'joueur', cle: 'Ivan Justo' }), env)).status, 401);
+  await worker.fetch(post('/compte/api/inscription', { email: 'fv@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  const fav = (b) => worker.fetch(post('/compte/api/favoris', b, { Cookie: c }), env).then((r) => r.json());
+  assert.equal((await fav({ type: 'tournoi', cle: 'x' })).erreur, 'requete');
+  assert.equal((await fav({ type: 'joueur', cle: '   ' })).erreur, 'requete');
+  let o = await fav({ type: 'joueur', cle: 'Guido Ivan Justo' });
+  o = await fav({ type: 'joueur', cle: 'Javier Barranco Cosano' });
+  assert.deepEqual(o.favoris.joueurs, ['Javier Barranco Cosano', 'Guido Ivan Justo']);
+  o = await fav({ type: 'joueur', cle: 'Guido Ivan Justo' });                     // deux fois : pas de doublon
+  assert.equal(o.favoris.joueurs.length, 2);
+  o = await fav({ type: 'match', cle: '2026-11-27_a_b' });
+  assert.deepEqual(o.favoris.matchs, ['2026-11-27_a_b']);
+  o = await fav({ type: 'joueur', cle: 'Javier Barranco Cosano', actif: false });
+  assert.deepEqual(o.favoris.joueurs, ['Guido Ivan Justo']);
+  for (let i = 0; i < 70; i++) o = await fav({ type: 'match', cle: 'm' + i });
+  assert.equal(o.favoris.matchs.length, 60);
+  assert.equal(o.favoris.matchs[0], 'm69');
+  o = await fav({ type: 'joueur', cle: '<script>x' });
+  assert.ok(!o.favoris.joueurs.some((x) => x.includes('<')));
+  const moi = await (await worker.fetch(get('/compte/api/moi', { Cookie: c }), env)).json();
+  assert.equal(moi.compte.favoris.joueurs.includes('Guido Ivan Justo'), true);
+  assert.equal(moi.compte.abonne, false);                                         // un favori ne donne aucun accès
+  const ex = await (await worker.fetch(get('/compte/api/export', { Cookie: c }), env)).json();
+  assert.ok(ex.favoris && ex.favoris.matchs.length === 60);
+});
+
 test('384 : le script de la page d’administration est du JavaScript valide', async () => {
   const { pageAdmin } = await import('./comptes.js');
   const s = pageAdmin().split('<script>')[1].split('</script>')[0];
