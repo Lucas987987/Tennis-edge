@@ -365,6 +365,46 @@ def garde_fou(racine, dec, aujourdhui):
     return ctl
 
 
+PART_REFERENCE = 0.6
+
+
+def reference_deux_niveaux(L, dec, part=PART_REFERENCE):
+    """26/11/2026 (paquet 468, Lucas : « enlever ce tableau qui n'a plus lieu d'être et mettre le nouveau ») : le tableau
+    public « fragile / normal » sur TOUS nos matchs terminés, chaque match classé HORS ÉCHANTILLON : effets appris sur
+    les 60 % de matchs les plus anciens pour classer les 40 % suivants, et appris sur ces 40 % pour classer les 60 %
+    d'avant ; jamais sur le match lui-même. Les niveaux annoncés avant le match (depuis le 26/11) sont comptés à part
+    par le site. Comptes et moyennes seulement."""
+    if len(L) < 50:
+        return None
+    k = int(len(L) * part)
+    G = {}
+    for A, B in ((L[:k], L[k:]), (L[k:], L[:k])):
+        M = {'pentes_base': dec.get('pentes_base') or {}, 'effets': apprendre_effets(A, dec)}
+        for r in B:
+            x = pente_du_match(M, r['c'], r['n'], r['crit'])
+            if x:
+                niv = niveau_mesure(x[0])
+                G.setdefault(('tous', niv), []).append(r['z'])
+                G.setdefault((r['c'], niv), []).append(r['z'])
+
+    def mesure(Z):
+        n = len(Z)
+        ok = sum(1 for z in Z if z > 0)
+        a = pente(Z) if n >= MIN_TRANCHE else None
+        return {'n': n, 'vainqueurs': ok, 'pct': round(100 * ok / n, 1),
+                'confiance_pct': round(100 * sum(_sg(abs(z)) for z in Z) / n, 1),
+                'pente_reelle': round(a, 3) if a else None, 'assez': n >= 100}
+    out = {'methode': ("classé hors échantillon : effets appris sur les 60 % de matchs les plus anciens pour les 40 % "
+                       "suivants, et l'inverse"), 'calcule_le': dt.date.today().isoformat(), 'matchs': len(L),
+           'par_circuit': {}}
+    for (c, niv), Z in sorted(G.items()):
+        if c == 'tous':
+            out[niv] = mesure(Z)
+        else:
+            out['par_circuit'].setdefault(c, {})[niv] = mesure(Z)
+    return out
+
+
 MIN_JUGES_CANDIDAT = 1000
 
 
@@ -448,8 +488,13 @@ def main(argv):
         print(ctl['matchs'], 'matchs ;', ctl['verdict'])
     else:
         ctl = None
-    eff = apprendre_effets(lignes(racine, aujourdhui), dec)
+    L = lignes(racine, aujourdhui)
+    eff = apprendre_effets(L, dec)
     eff['appris_le'] = aujourdhui.isoformat()
+    try:                                   # paquet 468 : tableau public « fragile / normal », classé hors échantillon
+        dec['reference_deux_niveaux'] = reference_deux_niveaux(L, dec)
+    except Exception as e:  # noqa: BLE001 — jamais bloquant pour le réapprentissage
+        print('référence deux niveaux :', type(e).__name__)
     dec['effets'] = eff
     ecrire(racine, dec)
     print('effets réappris sur', eff['matchs'], 'matchs :', eff['facteurs'])

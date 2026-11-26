@@ -15,19 +15,20 @@ def _m(i, p, gagnant, niveau, circ='CH'):
 
 
 def test_par_niveau_annonce():
-    ms = ([_m(i, .8, 'home', 'solide') for i in range(90)] + [_m(100 + i, .8, 'away', 'solide') for i in range(30)]
+    # 26/11/2026 (paquet 468) : le tableau ne garde que « normal » et « fragile » (anciens niveaux ignorés)
+    ms = ([_m(i, .8, 'home', 'normal') for i in range(90)] + [_m(100 + i, .8, 'away', 'normal') for i in range(30)]
           + [_m(200 + i, .3, 'home', 'fragile', 'ATP') for i in range(10)] + [_m(300, .6, 'home', None)]
-          + [_m(400, .6, 'home', 'inconnu')])
+          + [_m(400, .6, 'home', 'inconnu')] + [_m(500 + i, .7, 'home', 'solide') for i in range(5)])
     b = V.bilan({'matchs': ms})
     pf = b['par_fiabilite']
-    assert list(pf) == ['solide', 'fragile']                     # ordre solide → fragile, niveaux inconnus ignorés
-    assert pf['solide']['n'] == 120 and pf['solide']['vainqueurs'] == 90 and pf['solide']['pct'] == 75.0
-    assert pf['solide']['confiance_pct'] == 80.0 and pf['solide']['assez'] is True
+    assert list(pf) == ['normal', 'fragile']                     # anciens niveaux et niveaux inconnus ignorés
+    assert pf['normal']['n'] == 120 and pf['normal']['vainqueurs'] == 90 and pf['normal']['pct'] == 75.0
+    assert pf['normal']['confiance_pct'] == 80.0 and pf['normal']['assez'] is True
     assert pf['fragile']['n'] == 10 and pf['fragile']['pct'] == 0.0 and pf['fragile']['confiance_pct'] == 70.0
     assert pf['fragile']['assez'] is False                       # moins de 100 matchs : rien de conclu
-    assert b['global']['n'] == 132                               # le bilan général ne change pas
+    assert b['global']['n'] == 137                               # le bilan général ne change pas
     assert list(b['par_circuit']['ATP']['par_fiabilite']) == ['fragile']
-    assert b['par_circuit']['CH']['par_fiabilite']['solide']['n'] == 120
+    assert b['par_circuit']['CH']['par_fiabilite']['normal']['n'] == 120
 
 
 def test_page():
