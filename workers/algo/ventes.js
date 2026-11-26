@@ -14,7 +14,7 @@
 // 3. RAPPEL (tous les jours à 7 h 17 UTC) : un accès PAYÉ qui finit dans 3 jours ou moins reçoit un e-mail, une seule
 //    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
 import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
-  referenceVirement, idCompte, normaliser, ESC, abonne, base } from './comptes.js';
+  referenceVirement, idCompte, normaliser, ESC, abonne, base, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
 // coordonnees(), PLACES_FONDATEUR et PRIX_FONDATEUR sont définis plus bas (fonctions et constantes du module)
 
 const PAYANTES = { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' };
@@ -155,7 +155,7 @@ export async function virementRecu(env, b, req) {
   const ri = u.acces_immediat && u.acces_immediat.le ? u.acces_immediat : null;
   if (!ri && b.sans_renonciation !== true) return { ok: false, erreur: 'sans_renonciation' };
   const paye_le = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : jourUtc();
-  if (sansFacture) return virementSansFacture(env, u, b, montant, !!ri);
+  if (sansFacture) return virementSansFacture(env, u, b, montant, !!ri, req);
   const num = await numeroSuivant(env, new Date().getUTCFullYear());
   if (!num) return { ok: false, erreur: 'numero' };
   const r = await donnerAcces(env, u.email, b.formule, null, 'virement ' + num);
@@ -177,14 +177,35 @@ export async function virementRecu(env, b, req) {
   u2.rappel_fin = null;
   await ecrire(env, u2);
   const lienF = `${base(req, env)}/compte/api/facture?n=${num}`;
-  const m = await envoyerMail(env, u2.email, { sujet: `Ta facture ${num} · Game Set Algo`,
-    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:16px;color:#14102e"><p>Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${ESC(dateFr(f.periode.au))}.</p>${htmlFacture(f, true)}<p style="color:#666;font-size:13px">Elle reste disponible dans « Mon compte » : ${ESC(lienF)}</p></div>`,
-    texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(f.periode.au)}.\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
+  const corps_ = mailAccesOuvert({ jusquau: f.periode.au, formule: b.formule, montant, fondateur, url: env.SITE_URL || base(req, env),
+    facture: htmlFacture(f, true) + `<p style="color:#666;font-size:13px;margin:8px 0">Elle reste disponible dans « Mon compte » : ${ESC(lienF)}</p>` });
+  const m = await envoyerMail(env, u2.email, { sujet: `Ton accès Plus est ouvert · facture ${num} · Game Set Algo`, html: corps_.html,
+    texte: `${corps_.texte}\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
   await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`);
   return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation: !!ri };
 }
+// 26/11/2026 (paquet 473, Lucas : « un mail plus joli qui reprend le thème du site ») — e-mail « accès Plus ouvert »
+// aux couleurs du site (nuit #0E0A24, panneau #1B1342, balle #D4FF3A, cyan #2EE6FF, rose #FF4FAE). Tableaux et styles en
+// ligne : seule mise en page fiable dans les messageries (Gmail, Outlook, Hotmail). Aucune cote, aucune promesse de gain.
+export function mailAccesOuvert({ jusquau, formule, montant, fondateur, url, facture }) {
+  const site = String(url || 'https://gamesetalgo.com').replace(/\/$/, '');
+  const inclus = ['Le % de victoire de tous les matchs, avant le match', 'La note de fiabilité de chaque pronostic',
+    'Les sets et les scores probables', 'Les statistiques prévues (aces, 1re balle, breaks…)',
+    'Le direct, la simulation rejouable et « Demande à l’algo » en direct'];
+  const detail = [formule ? PAYANTES[formule] : null, montant ? eur(montant) : null, fondateur ? 'tarif fondateur' : null].filter(Boolean).join(' · ');
+  const html = cadreMail({ surtitre: 'Virement bien reçu', titre: 'Ton accès Plus est ouvert 🎾', site,
+    corps: `<p style="margin:0 0 18px;color:#ABA3D6;font-size:15px;line-height:1.5">Merci&nbsp;! Tout l’algo est à toi, sur tous les matchs ATP, WTA et Challenger.</p>`
+      + MAIL_VEDETTE('Accès ouvert jusqu’au', ESC(dateFr(jusquau)), detail ? ESC(detail) : '')
+      + `<p style="margin:6px 0 8px;color:#F4F1FF;font-size:15px;font-weight:bold">Ce qui est maintenant débloqué</p>` + MAIL_LISTE(inclus.map(ESC)),
+    bouton: { lib: 'Voir les matchs du jour', url: site + '/' },
+    apres: facture ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border-radius:14px;padding:6px 12px">${facture}</td></tr></table>` : '',
+    pied: ['Rien ne se renouvelle tout seul : un e-mail te prévient avant la fin de ton accès.'] });
+  const texte = [`Ton accès Plus est ouvert jusqu'au ${dateFr(jusquau)}${detail ? ' (' + detail + ')' : ''}.`, 'Merci ! Tout l’algo est à toi, sur tous les matchs ATP, WTA et Challenger.',
+    ...inclus.map((t) => '- ' + t), `Voir les matchs du jour : ${site}/`, 'Rien ne se renouvelle tout seul.'].join('\n');
+  return { html, texte };
+}
 // 471 : test sans facture (FACTURE_VENDEUR absent) — accès ouvert, aucune facture, aucun numéro, marqué sur le compte
-async function virementSansFacture(env, u, b, montant, renonciation) {
+async function virementSansFacture(env, u, b, montant, renonciation, req) {
   const r = await donnerAcces(env, u.email, b.formule, null, 'virement (test sans facture)');
   if (!r.ok) return r;
   const u2 = await lire(env, u.id);
@@ -197,9 +218,8 @@ async function virementSansFacture(env, u, b, montant, renonciation) {
   u2.rappel_fin = null;
   await ecrire(env, u2);
   const au = String(u2.acces.jusqu_au || '').slice(0, 10);
-  const m = await envoyerMail(env, u2.email, { sujet: 'Ton accès Plus est ouvert · Game Set Algo',
-    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:16px;color:#14102e"><p>Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${ESC(dateFr(au))}.</p></div>`,
-    texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(au)}.` });
+  const corps_ = mailAccesOuvert({ jusquau: au, formule: b.formule, montant, fondateur, url: env.SITE_URL || base(req, env) });
+  const m = await envoyerMail(env, u2.email, { sujet: 'Ton accès Plus est ouvert · Game Set Algo', html: corps_.html, texte: corps_.texte });
   await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · SANS FACTURE (test, FACTURE_VENDEUR absent)`);
   return { ok: true, numero: null, sans_facture: true, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation };
 }
@@ -293,9 +313,11 @@ export function messageRappel(u, env, url) {
   const garde = ft ? `\nPour garder ton tarif fondateur, paie au plus tard le ${dateFr(ft)}.` : '';
   const lignes = banque.split('\n');
   return { sujet: `Ton accès Plus se termine le ${fin}`,
-    html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#14102e"><h2 style="margin:0 0 12px">Ton accès Plus se termine le ${ESC(fin)}</h2>
-<p>Merci d'avoir soutenu Game Set Algo. Le virement ne se renouvelle pas tout seul.</p><p>${lignes.map(ESC).join('<br>')}</p>${garde ? `<p><b>${ESC(garde.trim())}</b></p>` : ''}
-<p>L'accès est prolongé dès réception (un virement instantané arrive en quelques secondes).</p><p style="color:#666;font-size:13px">Game Set Algo · ${ESC(url)}</p></div>`,
+    html: cadreMail({ surtitre: 'Bientôt la fin', titre: `Ton accès Plus se termine le ${fin}`, site: url,
+      corps: MAIL_P("Merci d'avoir soutenu Game Set Algo. Le virement ne se renouvelle pas tout seul.")
+        + (c ? MAIL_P(ESC(lignes[0])) + MAIL_BOITE(lignes.slice(1).map(ESC)) : MAIL_P(ESC(lignes.join(' '))))
+        + (garde ? MAIL_FORT(ESC(garde.trim())) : '') + MAIL_P("L'accès est prolongé dès réception (un virement instantané arrive en quelques secondes)."),
+      bouton: { lib: 'Ouvrir mon compte', url: url.replace(/\/$/, '') + '/#plus' } }),
     texte: `Ton accès Plus se termine le ${fin}.\n${banque}${garde}\n\n${url}` };
 }
 export async function rappels(env, maintenant = Date.now()) {
@@ -355,11 +377,11 @@ export function mailOuverture(u, place, c, url) {
       e2: '2. Make a bank transfer:', e3: 'Access opens on receipt (an instant transfer arrives within seconds) and the invoice is emailed to you.',
       bouton: 'Open the Plus section', cgv: 'Terms of sale', fin: 'Forecasts remain probabilities, never betting advice.' };
   const lienPlus = url.replace(/\/$/, '') + '/#plus', lienCgv = url.replace(/\/$/, '') + '/#cgv';
-  const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;padding:24px;color:#14102e">
-<h2 style="margin:0 0 12px">${ESC(T.sujet)}</h2><p>${ESC(T.intro)}</p><p><b>${ESC(T.prix)}</b></p>
-<p>${ESC(T.e1)}</p><p style="margin:18px 0"><a href="${ESC(lienPlus)}" style="background:#2ee6ff;color:#0e0a24;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">${ESC(T.bouton)}</a></p>
-<p>${ESC(T.e2)}</p><p style="background:#f1eefc;padding:12px;border-radius:8px;font-family:monospace">${banque.map(ESC).join('<br>')}</p>
-<p>${ESC(T.e3)}</p><p style="color:#666;font-size:13px">${ESC(T.fin)} · <a href="${ESC(lienCgv)}">${ESC(T.cgv)}</a> · Game Set Algo</p></div>`;
+  const html = cadreMail({ lang: fr ? 'fr' : 'en', surtitre: fr ? `Fondateur n° ${place}` : `Founder no. ${place}`, titre: T.sujet, site: url,
+    corps: MAIL_P(ESC(T.intro)) + MAIL_VEDETTE(fr ? 'Ton tarif fondateur' : 'Your founder price', ESC(fr ? `${prix} / mois` : `${prixEn} / month`), ESC(T.prix))
+      + MAIL_P(ESC(T.e1)) + MAIL_P(ESC(T.e2)) + MAIL_BOITE(banque.map(ESC)) + MAIL_P(ESC(T.e3)),
+    bouton: { lib: T.bouton, url: lienPlus }, pied: [ESC(T.fin)] });
+  void lienCgv;
   return { sujet: T.sujet, html, texte: [T.intro, T.prix, T.e1, lienPlus, T.e2, ...banque, T.e3, `${T.cgv} : ${lienCgv}`].join('\n') };
 }
 export async function ouverture(env, b, req) {
@@ -419,10 +441,10 @@ export function mailDemande(u, d, c, url) {
       ri: 'For access to open as soon as the transfer arrives, tick the two "immediate access" boxes in the Plus section.',
       fin: 'Nothing renews by itself. You can cancel your request in the Plus section until it is paid.', cgv: 'Terms of sale' };
   const lienCgv = url.replace(/\/$/, '') + '/#cgv';
-  const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;padding:24px;color:#14102e">
-<h2 style="margin:0 0 12px">${ESC(T.sujet)}</h2><p>${ESC(T.intro)}</p><p>${ESC(T.pay)}</p>
-${banque ? `<p style="background:#f1eefc;padding:12px;border-radius:8px;font-family:monospace">${banque.map(ESC).join('<br>')}</p>` : ''}
-${d.acces_immediat ? '' : `<p>${ESC(T.ri)}</p>`}<p style="color:#666;font-size:13px">${ESC(T.fin)} · <a href="${ESC(lienCgv)}">${ESC(T.cgv)}</a> · Game Set Algo</p></div>`;
+  const html = cadreMail({ lang: fr ? 'fr' : 'en', surtitre: fr ? "Demande d'abonnement" : 'Subscription request', titre: T.sujet, site: url,
+    corps: MAIL_P(ESC(T.intro)) + MAIL_P(ESC(T.pay)) + (banque ? MAIL_BOITE(banque.map(ESC)) : '') + (d.acces_immediat ? '' : MAIL_FORT(ESC(T.ri))),
+    bouton: { lib: fr ? 'Ouvrir la section Plus' : 'Open the Plus section', url: url.replace(/\/$/, '') + '/#plus' }, pied: [ESC(T.fin)] });
+  void lienCgv;
   return { sujet: T.sujet, html, texte: [T.intro, T.pay, ...(banque || []), d.acces_immediat ? '' : T.ri, T.fin, `${T.cgv} : ${lienCgv}`].filter(Boolean).join('\n') };
 }
 // 24/11/2026 (paquet 412, Lucas) — conditions de vente, art. 3 : le tarif fondateur est garanti tant que chaque nouveau
