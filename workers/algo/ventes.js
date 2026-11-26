@@ -14,14 +14,15 @@
 // 3. RAPPEL (tous les jours à 7 h 17 UTC) : un accès PAYÉ qui finit dans 3 jours ou moins reçoit un e-mail, une seule
 //    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
 import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
-  referenceVirement, idCompte, normaliser, ESC, abonne, base, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
+  referenceVirement, idCompte, normaliser, ESC, abonne, base, estAdmin, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
 // coordonnees(), PLACES_FONDATEUR et PRIX_FONDATEUR sont définis plus bas (fonctions et constantes du module)
 
 const PAYANTES = { semaine: '1 semaine', mois: '1 mois', trimestre: '3 mois', annee: '1 an' };
 // 24/11/2026 (paquet 407, Lucas : 14,99 €/mois ; semaine, mois, trimestre, année) — prix TTC, un seul endroit : le site
 // les reçoit de /compte/api/moi, la demande d'abonnement et l'e-mail les reprennent. Semaine, trimestre et année : choisis
 // par Claude (≈ −11 % au trimestre, ≈ −28 % à l'année), à confirmer par Lucas.
-export const TARIFS = Object.freeze({ semaine: 4.99, mois: 14.99, trimestre: 39.99, annee: 129.99 });
+// 26/11/2026 (paquet 475, Lucas) : grille avant l'ouverture — mois 19,99 € ; fondateurs (100 premiers comptes) 9,99 € à vie
+export const TARIFS = Object.freeze({ semaine: 5.99, mois: 19.99, trimestre: 49.99, annee: 169.99 });
 const RAPPEL_J = 3;
 const jourUtc = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
 const eur = (x) => Number(x).toFixed(2).replace('.', ',') + ' €';
@@ -151,6 +152,9 @@ export async function virementRecu(env, b, req) {
   const u = await trouverCompte(env, b.compte);
   if (!u) return { ok: false, erreur: 'inconnu' };
   if (b.fondateur && fondateurPerdu(u)) return { ok: false, erreur: 'fondateur_perdu' };     // 412
+  // 474 : deux validations en moins de 10 minutes pour le même compte = sans doute un double appui : refus, sauf confirmation
+  if (u.dernier_virement && Date.now() - Date.parse(u.dernier_virement) < 10 * 60e3 && b.confirmer_doublon !== true)
+    return { ok: false, erreur: 'doublon', le: u.dernier_virement };
   // 403 : sans demande d'accès immédiat, refus sauf case « sans renonciation » (le client garde alors ses 14 jours)
   const ri = u.acces_immediat && u.acces_immediat.le ? u.acces_immediat : null;
   if (!ri && b.sans_renonciation !== true) return { ok: false, erreur: 'sans_renonciation' };
@@ -174,6 +178,7 @@ export async function virementRecu(env, b, req) {
     u2.demande = null;
   }
   u2.factures = [...(u2.factures || []), num];
+  u2.dernier_virement = new Date().toISOString();
   u2.rappel_fin = null;
   await ecrire(env, u2);
   const lienF = `${base(req, env)}/compte/api/facture?n=${num}`;
@@ -211,6 +216,7 @@ async function virementSansFacture(env, u, b, montant, renonciation, req) {
   const u2 = await lire(env, u.id);
   const fondateur = !!b.fondateur;
   u2.acces = { ...u2.acces, paye: true, montant, formule_payee: b.formule, fondateur_tarif: fondateur, sans_facture: true };
+  u2.dernier_virement = new Date().toISOString();
   if (u2.demande) {
     u2.historique = [...(u2.historique || []).slice(-19), { le: new Date().toISOString(), demande: 'payee (test sans facture)' }];
     u2.demande = null;
@@ -351,11 +357,33 @@ export async function fondateursOrdonnes(env) {
     const l = await env.COFFRE.list({ prefix: 'comptes/u/', cursor: curseur, limit: 1000 });
     for (const o of l.objects || []) {
       const u = await lire(env, o.key.slice('comptes/u/'.length, -5));
-      if (u && u.verifie && u.fondateur && u.fondateur.le) L.push(u);
+      // 474 (Lucas : « les 100 premiers sont automatiquement fondateurs ») : tous les comptes confirmés, sauf admin,
+      // dans l'ordre de création ; plus de réservation à faire
+      if (u && u.verifie && !estAdmin(u)) L.push(u);
     }
     curseur = l.truncated ? l.cursor : undefined;
   } while (curseur);
-  return L.sort((a, b) => String(a.fondateur.le).localeCompare(String(b.fondateur.le)) || String(a.id).localeCompare(String(b.id)));
+  const cle = (u) => (u.fondateur_place ? '0' + String(u.fondateur_place).padStart(4, '0') : '1') + String(u.cree || '');
+  return L.sort((a, b) => cle(a).localeCompare(cle(b)) || String(a.id).localeCompare(String(b.id)));
+}
+// 474 : place fondateur attribuée une fois pour toutes (confirmation de l'adresse, ou première visite d'un compte
+// confirmé avant) ; une place déjà donnée ne change jamais. Retourne vrai si le compte a changé (à écrire).
+export async function attribuerFondateur(env, u) {
+  if (!u || !u.verifie || estAdmin(u) || u.fondateur_place || u.fondateur_calcule) return false;
+  const L = await fondateursOrdonnes(env);
+  const pris = new Set(L.filter((x) => x.fondateur_place).map((x) => x.fondateur_place));
+  const sansPlace = L.filter((x) => !x.fondateur_place);
+  const i = sansPlace.findIndex((x) => x.id === u.id);
+  const maintenant = new Date().toISOString();
+  u.fondateur_calcule = maintenant;
+  if (i >= 0 && pris.size + i < PLACES_FONDATEUR) {
+    let n = 0, k = -1;
+    while (k < i) { n++; if (!pris.has(n)) k++; }         // i-ème numéro libre
+    u.fondateur_place = n;
+    u.fondateur = u.fondateur || { le: maintenant, auto: true };
+    u.historique = [...(u.historique || []).slice(-19), { le: maintenant, fondateur: 'place ' + n + ' (automatique)' }];
+  }
+  return true;
 }
 export function mailOuverture(u, place, c, url) {
   const fr = u.lang !== 'en', ref = referenceVirement(u), prix = eur(PRIX_FONDATEUR);
@@ -364,14 +392,14 @@ export function mailOuverture(u, place, c, url) {
     : [`Account holder: ${c.titulaire || ''}`, `IBAN: ${c.iban}`, ...(c.bic ? [`BIC: ${c.bic}`] : []), `Amount: ${prixEn}`, `Reference (important): ${ref}`];
   const T = fr ? {
     sujet: `L'accès Plus est ouvert : ta place fondateur n° ${place}`,
-    intro: `Merci d'avoir réservé ta place : l'accès Plus de Game Set Algo est ouvert, et tu fais partie des ${PLACES_FONDATEUR} fondateurs (place n° ${place}).`,
+    intro: `L'accès Plus de Game Set Algo est ouvert, et ton compte fait partie des ${PLACES_FONDATEUR} premiers : tu es fondateur (place n° ${place}).`,
     prix: `Ton tarif : ${prix} par mois, à vie, tant que tu renouvelles chaque mois au plus tard ${DELAI_FONDATEUR_J} jours après la fin du précédent. Rien ne se renouvelle tout seul.`,
     e1: "1. Dans la section Plus du site (connecté à ton compte), coche les deux cases « accès immédiat » : ton accès s'ouvrira dès réception du virement.",
     e2: '2. Fais un virement :', e3: "Ton accès s'ouvre dès réception (un virement instantané arrive en quelques secondes) et la facture part par e-mail.",
     bouton: 'Ouvrir la section Plus', cgv: 'Conditions de vente', fin: "Les pronostics restent des probabilités, sans conseil de pari." }
     : {
       sujet: `Plus access is open: your founder spot no. ${place}`,
-      intro: `Thank you for reserving your spot: Game Set Algo Plus access is open, and you are one of the ${PLACES_FONDATEUR} founders (spot no. ${place}).`,
+      intro: `Game Set Algo Plus access is open, and your account is one of the first ${PLACES_FONDATEUR}: you are a founder (spot no. ${place}).`,
       prix: `Your price: ${prixEn} a month, for life, as long as you renew each month no later than ${DELAI_FONDATEUR_J} days after the previous one ends. Nothing renews by itself.`,
       e1: '1. In the Plus section of the site (logged in), tick the two "immediate access" boxes: your access will open as soon as the transfer arrives.',
       e2: '2. Make a bank transfer:', e3: 'Access opens on receipt (an instant transfer arrives within seconds) and the invoice is emailed to you.',
@@ -400,9 +428,9 @@ export async function ouverture(env, b, req) {
   for (let i = 0; i < L.length && envoyes < LOT_OUVERTURE; i++) {
     const u = L[i];
     if (u.ouverture_envoyee) continue;
-    const m = await envoyerMail(env, u.email, mailOuverture(u, i + 1, c, url));
+    const m = await envoyerMail(env, u.email, mailOuverture(u, u.fondateur_place || i + 1, c, url));
     if (!m.ok) { arret = m.raison; break; }
-    u.fondateur_place = i + 1;
+    u.fondateur_place = u.fondateur_place || i + 1;      // 474 : une place déjà attribuée ne change jamais
     u.ouverture_envoyee = new Date().toISOString();
     u.historique = [...(u.historique || []).slice(-19), { le: u.ouverture_envoyee, fondateur: 'ouverture ' + (i + 1) }];
     await ecrire(env, u);
@@ -463,11 +491,9 @@ export const finTarifFondateur = (u) => {
   return a.paye && a.fondateur_tarif && a.jusqu_au ? new Date(Date.parse(a.jusqu_au) + DELAI_FONDATEUR_J * 86400e3).toISOString() : null;
 };
 async function rangFondateur(env, u) {
-  if (!u.fondateur || !u.fondateur.le) return null;
   if (u.fondateur_place) return u.fondateur_place;
-  const L = await fondateursOrdonnes(env);
-  const i = L.findIndex((x) => x.id === u.id);
-  return i >= 0 && i < PLACES_FONDATEUR ? i + 1 : null;
+  await attribuerFondateur(env, u);          // 474 : automatique ; le compte est écrit par l'appelant
+  return u.fondateur_place || null;
 }
 export async function demandeAbonnement(req, env, b) {
   const u = await utilisateur(req, env);
