@@ -1,45 +1,45 @@
 {
-  "n_matchs": 1588,
+  "n_matchs": 1754,
   "candidats": {
     "marche": {
       "decouverte": {
-        "n": 794,
-        "n_actifs": 237,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.608296,
-        "gain": 0.002836,
-        "beta": 0.385998,
-        "erreur_type": 0.232289,
-        "p_value": 0.09657052849943909,
-        "p_holm": 0.8691347564949519
+        "n": 877,
+        "n_actifs": 239,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.602666,
+        "gain": 0.002545,
+        "beta": 0.38423,
+        "erreur_type": 0.232116,
+        "p_value": 0.09785603950302743,
+        "p_holm": 0.8807043555272469
       },
       "confirmation": {
-        "n": 794,
-        "n_actifs": 124,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590676,
-        "gain": -0.000132,
-        "beta_reappris_diagnostic": -0.019379
+        "n": 877,
+        "n_actifs": 129,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583861,
+        "gain": -7.6e-05,
+        "beta_reappris_diagnostic": -0.009883
       },
       "statut": "non_confirme"
     },
     "H13": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 2,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611117,
-        "gain": 1.5e-05,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605198,
+        "gain": 1.3e-05,
         "beta": 0.033894,
         "erreur_type": 0.309612,
         "p_value": 0.9128274691087276,
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590544,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583784,
         "gain": 0.0,
         "beta_reappris_diagnostic": 0.0
       },
@@ -48,10 +48,10 @@
     },
     "H14": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611132,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605212,
         "gain": 0.0,
         "beta": 0.0,
         "erreur_type": 0.316228,
@@ -59,10 +59,10 @@
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 2,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590544,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583784,
         "gain": 0.0,
         "beta_reappris_diagnostic": -0.017037
       },
@@ -71,21 +71,21 @@
     },
     "H15": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 2,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611117,
-        "gain": 1.5e-05,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605198,
+        "gain": 1.3e-05,
         "beta": 0.033894,
         "erreur_type": 0.309612,
         "p_value": 0.9128274691087276,
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590544,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583784,
         "gain": 0.0,
         "beta_reappris_diagnostic": 0.0
       },
@@ -94,22 +94,22 @@
     },
     "H16": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 5,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611054,
-        "gain": 7.7e-05,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605142,
+        "gain": 7e-05,
         "beta": 0.0762,
         "erreur_type": 0.300179,
         "p_value": 0.7996111195918558,
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 3,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590635,
-        "gain": -9.1e-05,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583866,
+        "gain": -8.2e-05,
         "beta_reappris_diagnostic": -0.08601
       },
       "statut": "non_confirme",
@@ -117,22 +117,22 @@
     },
     "H16B": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 4,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.610921,
-        "gain": 0.000211,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605021,
+        "gain": 0.000191,
         "beta": 0.126633,
         "erreur_type": 0.303785,
         "p_value": 0.6767882568309266,
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 3,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590697,
-        "gain": -0.000153,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583923,
+        "gain": -0.000139,
         "beta_reappris_diagnostic": -0.08601
       },
       "statut": "non_confirme",
@@ -140,22 +140,22 @@
     },
     "H17": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 1,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611098,
-        "gain": 3.4e-05,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605181,
+        "gain": 3.1e-05,
         "beta": -0.051505,
         "erreur_type": 0.312351,
         "p_value": 0.8690273537578113,
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 1,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590602,
-        "gain": -5.8e-05,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583837,
+        "gain": -5.3e-05,
         "beta_reappris_diagnostic": 0.089083
       },
       "statut": "non_confirme",
@@ -163,10 +163,10 @@
     },
     "H18": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611132,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605212,
         "gain": 0.0,
         "beta": 0.0,
         "erreur_type": 0.316228,
@@ -174,10 +174,10 @@
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590544,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583784,
         "gain": 0.0,
         "beta_reappris_diagnostic": 0.0
       },
@@ -186,10 +186,10 @@
     },
     "H19": {
       "decouverte": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.611132,
-        "log_loss_avec": 0.611132,
+        "log_loss_base": 0.605212,
+        "log_loss_avec": 0.605212,
         "gain": 0.0,
         "beta": 0.0,
         "erreur_type": 0.316228,
@@ -197,10 +197,10 @@
         "p_holm": 1.0
       },
       "confirmation": {
-        "n": 794,
+        "n": 877,
         "n_actifs": 0,
-        "log_loss_base": 0.590544,
-        "log_loss_avec": 0.590544,
+        "log_loss_base": 0.583784,
+        "log_loss_avec": 0.583784,
         "gain": 0.0,
         "beta_reappris_diagnostic": 0.0
       },
@@ -215,5 +215,5 @@
     "Un mouvement de cotes ne démontre ni information privilégiée ni pari certain.",
     "Aucune réinjection dans les probabilités indépendantes."
   ],
-  "genere_le": "2026-11-23T16:05:38.521185+00:00"
+  "genere_le": "2026-11-26T17:31:56.623732+00:00"
 }

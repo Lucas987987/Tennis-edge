@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-23T16:04:50+00:00",
+ "genere_le": "2026-11-26T17:31:05+00:00",
  "regle": "par signal et par circuit, règle cumulée : en place → retiré si, depuis son adoption, sur au moins 300 matchs concernés, le gain propre est négatif de plus de 2 erreurs types ; en attente → adopté si, sur au moins 300 matchs, il est positif de plus de 2 erreurs types ; compteurs remis à zéro à chaque changement ; un signal adopté ne touche que son circuit",
  "semaine": {
   "forme_service|ATP": {
@@ -113,14 +113,14 @@
    "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.0136"
   },
   "elo_service_retour|CH": {
-   "adopte": true,
-   "matchs_semaine": 246,
-   "gain_semaine": 0.00482,
-   "depuis": "2026-11-12",
-   "matchs_total": 361,
-   "gain_total": 0.0092,
-   "erreur_type_total": 0.00354,
-   "raison": "CH · semaine du 2026-11-16 : 246 matchs, gain 0.00482 ; depuis le début : 361 matchs, gain 0.0092"
+   "adopte": false,
+   "matchs_semaine": 0,
+   "gain_semaine": null,
+   "depuis": "2026-11-23",
+   "matchs_total": 0,
+   "gain_total": null,
+   "erreur_type_total": null,
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None"
   },
   "forme_set|ATP": {
    "adopte": false,
@@ -631,10 +631,11 @@
    "raison": "WTA · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 6 matchs, gain 0.0136 — depuis le 2026-11-12, erreur type 0.014 : en attente"
   },
   "elo_service_retour|CH": {
-   "adopte": true,
    "depuis": "2026-11-23",
-   "stabilite": "adopté",
-   "raison": "CH · semaine du 2026-11-16 : 246 matchs, gain 0.00482 ; depuis le début : 361 matchs, gain 0.0092 — depuis le 2026-11-12, erreur type 0.00354 : positif de 2 erreurs types sur ≥ 300 matchs, adopté"
+   "adopte": true,
+   "direct": false,
+   "stabilite": "en place",
+   "raison": "CH · semaine du 2026-11-16 : 0 matchs, gain None ; depuis le début : 0 matchs, gain None — depuis le 2026-11-23, erreur type None : en place"
   },
   "forme_set|ATP": {
    "adopte": false,

@@ -1,67 +1,67 @@
 {
- "genere_le": "2026-11-23T16:04:52+00:00",
- "jour": "2026-11-23",
+ "genere_le": "2026-11-26T17:31:07+00:00",
+ "jour": "2026-11-26",
  "regle": "groupe justifié si pente ≤ reste − 0,10 avec ≥ 100 matchs (6 semaines) ; deux semaines de suite pour entrer comme pour sortir ; semaine trop pauvre : inchangé",
- "matchs": 1612,
+ "matchs": 1790,
  "semaine": {
   "favoris_opposes": {
-   "matchs": 283,
+   "matchs": 328,
    "assez": true,
-   "pente_groupe": 0.678,
-   "pente_reste": 1.001,
+   "pente_groupe": 0.723,
+   "pente_reste": 1.01,
    "justifie": true,
-   "reussite_groupe_pct": 52.7
+   "reussite_groupe_pct": 53.4
   },
   "ecart_modeles_10": {
-   "matchs": 407,
+   "matchs": 449,
    "assez": true,
-   "pente_groupe": 1.061,
-   "pente_reste": 0.944,
+   "pente_groupe": 1.027,
+   "pente_reste": 0.974,
    "justifie": false,
-   "reussite_groupe_pct": 72.0
-  },
-  "experience_30": {
-   "matchs": 118,
-   "assez": true,
-   "pente_groupe": 0.655,
-   "pente_reste": 1.063,
-   "justifie": true,
-   "reussite_groupe_pct": 74.6
-  },
-  "experience_60": {
-   "matchs": 241,
-   "assez": true,
-   "pente_groupe": 0.77,
-   "pente_reste": 1.075,
-   "justifie": true,
    "reussite_groupe_pct": 72.6
   },
-  "match_serre": {
-   "matchs": 479,
+  "experience_30": {
+   "matchs": 143,
    "assez": true,
-   "pente_groupe": 0.748,
-   "pente_reste": 0.986,
+   "pente_groupe": 0.662,
+   "pente_reste": 1.078,
    "justifie": true,
-   "reussite_groupe_pct": 52.2
+   "reussite_groupe_pct": 74.8
+  },
+  "experience_60": {
+   "matchs": 288,
+   "assez": true,
+   "pente_groupe": 0.801,
+   "pente_reste": 1.079,
+   "justifie": true,
+   "reussite_groupe_pct": 74.0
+  },
+  "match_serre": {
+   "matchs": 520,
+   "assez": true,
+   "pente_groupe": 0.786,
+   "pente_reste": 0.995,
+   "justifie": true,
+   "reussite_groupe_pct": 52.5
   },
   "gros_favori": {
-   "matchs": 253,
+   "matchs": 303,
    "assez": true,
-   "pente_groupe": 1.006,
-   "pente_reste": 0.961,
+   "pente_groupe": 1.016,
+   "pente_reste": 0.969,
    "justifie": false,
-   "reussite_groupe_pct": 89.7
+   "reussite_groupe_pct": 89.8
   },
   "huitiemes": {
-   "matchs": 270,
+   "matchs": 291,
    "assez": true,
-   "pente_groupe": 0.716,
-   "pente_reste": 1.036,
+   "pente_groupe": 0.791,
+   "pente_reste": 1.03,
    "justifie": true,
-   "reussite_groupe_pct": 64.1
+   "reussite_groupe_pct": 64.6
   },
   "pronostic_bouge": {
-   "matchs": 56,
+   "matchs": 74,
    "assez": false
   }
  },
@@ -77,9 +77,9 @@
    "note": "inactif"
   },
   "experience_30": {
-   "actif": false,
-   "serie": 1,
-   "note": "inactif ; 1/2 vers le changement"
+   "actif": true,
+   "serie": 0,
+   "note": "entré : deux semaines justifiées"
   },
   "experience_60": {
    "actif": true,
@@ -87,9 +87,9 @@
    "note": "actif"
   },
   "match_serre": {
-   "actif": false,
-   "serie": 1,
-   "note": "inactif ; 1/2 vers le changement"
+   "actif": true,
+   "serie": 0,
+   "note": "entré : deux semaines justifiées"
   },
   "gros_favori": {
    "actif": false,
@@ -108,15 +108,15 @@
   }
  },
  "note_v3": {
-  "matchs": 834,
+  "matchs": 1012,
   "assez": true,
   "tiers_bas": {
-   "pente": 0.826,
-   "erreur_pts": 4.92
+   "pente": 0.853,
+   "erreur_pts": 5.23
   },
   "tiers_haut": {
-   "pente": 1.277,
-   "erreur_pts": 7.51
+   "pente": 1.169,
+   "erreur_pts": 7.56
   },
   "tient": false,
   "alerte": true
