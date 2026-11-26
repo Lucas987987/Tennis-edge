@@ -140,7 +140,11 @@ export async function trouverCompte(env, q) {
 }
 export async function virementRecu(env, b, req) {
   const v = vendeur(env);
-  if (!v) return { ok: false, erreur: 'vendeur_absent' };
+  // 26/11/2026 (paquet 471, Lucas : « désactive le blocage facture vendeur temporairement pour que je teste ») : TANT QUE
+  // le secret FACTURE_VENDEUR est absent, la case « test sans facture » de l'administration ouvre l'accès sans créer de
+  // facture ni consommer de numéro. Dès que FACTURE_VENDEUR existe, la case est ignorée : facture obligatoire.
+  const sansFacture = !v && b.test_sans_facture === true;
+  if (!v && !sansFacture) return { ok: false, erreur: 'vendeur_absent' };
   if (!(b.formule in PAYANTES)) return { ok: false, erreur: 'formule' };
   const montant = Math.round(Number(String(b.montant || '').replace(',', '.')) * 100) / 100;
   if (!(montant > 0 && montant < 10000)) return { ok: false, erreur: 'montant' };
@@ -151,6 +155,7 @@ export async function virementRecu(env, b, req) {
   const ri = u.acces_immediat && u.acces_immediat.le ? u.acces_immediat : null;
   if (!ri && b.sans_renonciation !== true) return { ok: false, erreur: 'sans_renonciation' };
   const paye_le = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : jourUtc();
+  if (sansFacture) return virementSansFacture(env, u, b, montant, !!ri);
   const num = await numeroSuivant(env, new Date().getUTCFullYear());
   if (!num) return { ok: false, erreur: 'numero' };
   const r = await donnerAcces(env, u.email, b.formule, null, 'virement ' + num);
@@ -177,6 +182,26 @@ export async function virementRecu(env, b, req) {
     texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(f.periode.au)}.\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
   await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`);
   return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation: !!ri };
+}
+// 471 : test sans facture (FACTURE_VENDEUR absent) — accès ouvert, aucune facture, aucun numéro, marqué sur le compte
+async function virementSansFacture(env, u, b, montant, renonciation) {
+  const r = await donnerAcces(env, u.email, b.formule, null, 'virement (test sans facture)');
+  if (!r.ok) return r;
+  const u2 = await lire(env, u.id);
+  const fondateur = !!b.fondateur;
+  u2.acces = { ...u2.acces, paye: true, montant, formule_payee: b.formule, fondateur_tarif: fondateur, sans_facture: true };
+  if (u2.demande) {
+    u2.historique = [...(u2.historique || []).slice(-19), { le: new Date().toISOString(), demande: 'payee (test sans facture)' }];
+    u2.demande = null;
+  }
+  u2.rappel_fin = null;
+  await ecrire(env, u2);
+  const au = String(u2.acces.jusqu_au || '').slice(0, 10);
+  const m = await envoyerMail(env, u2.email, { sujet: 'Ton accès Plus est ouvert · Game Set Algo',
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:16px;color:#14102e"><p>Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${ESC(dateFr(au))}.</p></div>`,
+    texte: `Merci ! Ton virement est bien reçu : ton accès Plus est ouvert jusqu'au ${dateFr(au)}.` });
+  await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · SANS FACTURE (test, FACTURE_VENDEUR absent)`);
+  return { ok: true, numero: null, sans_facture: true, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation };
 }
 const dateFr = (d) => String(d || '').slice(0, 10).split('-').reverse().join('/');
 // 403 : la facture dit ce qu'il en est du droit de rétractation (anciennes factures : rien)
