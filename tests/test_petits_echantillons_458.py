@@ -29,3 +29,17 @@ def test_note_joueur_20_matchs():
     import note_par_match as NP
     assert PJ.MIN_NOTE == 20 and PJ.MIN_GROUPE == 10
     assert NP.MIN_MATCHS_JOUEUR == 5                                                     # le critère de la note du match garde 5
+
+
+def test_forme_sans_signal_459():
+    # 26/11/2026 (paquet 459) : forme récente — le fait, sans ✅/⚠️, et rien dans « Ce qu'il faut retenir »
+    assert 'présente la meilleure dynamique récente' not in H
+    assert "r.ecart >= 1 ? '✅'" not in H
+    assert "l.push(`▪️ ${N[i]} : ${r.victoires} victoires sur ses ${r.matchs} derniers matchs" in H
+
+
+def test_peu_documentes_460():
+    # 26/11/2026 (paquet 460) : seulement sous 500 points, en info neutre, sans badge dans la liste
+    assert 'const DOC_PEU = 500, DOC_TRES_PEU = 500;' in H
+    assert "peuDocumentes(m).forEach(x=>L_.push({ sens:'info', txt: t('es_tres_peu'" in H
+    assert 'class="badge peu"' not in H
