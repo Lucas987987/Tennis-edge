@@ -374,6 +374,46 @@ test('478 : la tâche planifiée choisit le pouls ou le quotidien selon le cron'
   assert.match(w, /crons = \["17 7 \* \* \*", "7 \* \* \* \*"\]/);
 });
 
+test('479 : compteurs anonymes — liste fermée, bornes, une fois par visiteur pour appareil/pays/provenance, compactés le lendemain', async () => {
+  const { env, C } = monde();
+  const V = await import('./ventes.js');
+  const req = (ua = 'Mozilla/5.0 (Linux; Android 14) Mobile', ip = '1.2.3.4') => {
+    const r = new Request(SITE + '/stats/evt', { method: 'POST', headers: { 'User-Agent': ua, 'CF-Connecting-IP': ip } });
+    Object.defineProperty(r, 'cf', { value: { country: 'FR' } });
+    return r;
+  };
+  // nettoyage : événements inconnus ignorés, valeurs bornées, provenance réduite au nom de domaine
+  const n = V.nettoyerEvenements({ e: { fiche: 999, piratage: 5 }, f: { '2026-11-27_a_b': 3, '<x>': 1 }, m: 9, r: 'WWW.X.com', l: 'fr' });
+  assert.deepEqual(n.e, { fiche: 50 }); assert.deepEqual(Object.keys(n.f), ['2026-11-27_a_b']); assert.equal(n.m, 2); assert.equal(n.r, 'x.com');
+  assert.equal(V.nettoyerEvenements({ r: 'https://x.com/abc' }).r, null);
+  // robots ignorés
+  assert.equal(await V.compterEvenements(req('Googlebot'), env, { e: { fiche: 1 } }), false);
+  // deux envois du même visiteur : l'appareil, le pays et la provenance ne comptent qu'une fois
+  assert.equal(await V.compterEvenements(req(), env, { e: { fiche: 1, simulation: 1 }, f: { '2026-11-27_a_b': 1 }, m: 1, r: 't.co', l: 'fr' }), true);
+  await V.compterEvenements(req(), env, { e: { fiche: 2 }, f: { '2026-11-27_a_b': 1 }, m: 1, l: 'fr' });
+  await V.compterEvenements(req('Mozilla/5.0 (Windows NT 10.0)', '5.6.7.8'), env, { e: { direct_3d: 1 }, m: 1, l: 'en' });
+  const jour = new Date().toISOString().slice(0, 10);
+  const s = JSON.parse(C.m.get(`stats/evenements/${jour}.json`));
+  assert.equal(s.e.fiche, 3); assert.equal(s.e.simulation, 1); assert.equal(s.e.direct_3d, 1); assert.equal(s.f['2026-11-27_a_b'], 2);
+  assert.equal(s.minutes, 3); assert.equal(s.actifs, 2);
+  assert.deepEqual(s.appareils, { mobile: 1, ordinateur: 1 }); assert.deepEqual(s.pays, { FR: 2 });
+  assert.deepEqual(s.sources, { 't.co': 1, direct: 1 }); assert.deepEqual(s.langues, { fr: 1, en: 1 });
+  assert.ok(!JSON.stringify(s).includes('1.2.3.4'));                                   // jamais l'adresse
+  // le bilan lit ces totaux
+  const L = V.lignesEvenements(s).join('\n');
+  assert.match(L, /Temps : 3 min en tout · 2 min en moyenne \(2 visiteurs actifs\)/);
+  assert.match(L, /Fiches de match ouvertes : 3 · les plus vues : A B \(2\)/);
+  assert.match(L, /Provenance : t\.co 50 %, direct 50 %/);
+  // le lendemain : plus d'empreintes, les totaux restent
+  C.m.set('stats/evenements/2026-01-01.json', JSON.stringify({ ...s, jour: '2026-01-01' }));
+  await V.compacterVisites(env);
+  const vieux = JSON.parse(C.m.get('stats/evenements/2026-01-01.json'));
+  assert.equal(vieux.u, undefined); assert.equal(vieux.actifs, 2); assert.equal(vieux.e.fiche, 3);
+  // la route du worker : 204, seulement sur gamesetalgo.com
+  const r = await worker.fetch(new Request(DEV + '/stats/evt', { method: 'POST', body: '{"e":{"fiche":1}}' }), env, { waitUntil() {} });
+  assert.equal(r.status, 204);
+});
+
 test('384 : le script de la page d’administration est du JavaScript valide', async () => {
   const { pageAdmin } = await import('./comptes.js');
   const s = pageAdmin().split('<script>')[1].split('</script>')[0];

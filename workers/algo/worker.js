@@ -25,7 +25,7 @@
 //    /donnees.json ne sont servis complets qu'à un abonné (ou avec la clé privée) ; les autres reçoivent
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
 import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
-import { compterVisite, quotidien, poulsVisites } from './ventes.js';
+import { compterVisite, quotidien, poulsVisites, compterEvenements } from './ventes.js';
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -836,6 +836,18 @@ export default {
     // 386 : entonnoir privé — une ouverture de la page publique (site.json) sur gamesetalgo.com, sans cookie
     if (url.pathname === '/site.json' && req.method === 'GET' && MARQUES.has(url.hostname) && ctx && ctx.waitUntil)
       ctx.waitUntil(compterVisite(req, env).catch(() => {}));
+    // 479 : compteurs anonymes envoyés par la page (au plus une fois par minute) — gamesetalgo.com seulement
+    if (url.pathname === '/stats/evt' && req.method === 'POST') {
+      if (!MARQUES.has(url.hostname)) return new Response(null, { status: 204 });
+      let b = null; try { b = JSON.parse((await req.text()).slice(0, 4000)); } catch (e) { b = null; }
+      if (ctx && ctx.waitUntil) ctx.waitUntil(compterEvenements(req, env, b).catch(() => {}));
+      return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
+    }
+    // 479 : pages match / joueur / tournoi / bilan ouvertes (totaux du jour)
+    if (req.method === 'GET' && MARQUES.has(url.hostname) && PAGES_SEO.test(url.pathname) && ctx && ctx.waitUntil) {
+      const t_ = (url.pathname.match(/^\/(?:en\/)?(match|joueur|tournoi|bilan)\//) || [])[1];
+      if (t_) ctx.waitUntil(compterEvenements(req, env, { e: { ['page_' + t_]: 1 } }).catch(() => {}));
+    }
     if (url.pathname === '/vendor/status') return vendorStatus(req);
     if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname, env);
     if (url.pathname in MODELES) return modele(req, url.pathname, env);
