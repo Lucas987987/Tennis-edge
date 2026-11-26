@@ -95,6 +95,7 @@ def charger(racine=None):
 
 
 CRITERE_JOUEUR = 'joueur_peu_fiable'
+MIN_MATCHS_JOUEUR = 5      # paquet 452 ; gardé quand l'affichage passe à 20 matchs (paquet 458) : effet appris, ramené vers 0
 
 
 def noms_criteres():
@@ -141,7 +142,7 @@ def x_joueur(idx, home, away, jour):
     notes = []
     for nom in (home, away):
         L = [(p, y) for j, p, y in (idx.get(E.cle(nom)) if nom else None) or [] if j < jour][-fen:]
-        n, _ = note_f(L)
+        n, _ = note_f(L, MIN_MATCHS_JOUEUR)
         if n is not None:
             notes.append(n)
     return (100 - min(notes)) / 100 if notes else 0.0

@@ -987,7 +987,7 @@ const T = {
   typem_aide_fiable:"Les deux modèles sont d'accord et le favori est à 70 % ou plus : sur nos pronostics passés, le favori a gagné 78 à 87 % du temps et nos pourcentages s'y réalisent.",
   typem_aide_standard:'Cas courant : nos pourcentages se réalisent en moyenne, sans plus.',
   typem_aide_fragile:"L'Elo et la simulation ne désignent pas le même favori (ou un autre critère de fragilité vérifié chaque semaine) : sur nos pronostics passés, presque pile ou face.",
-  fiab:'Fiabilité', fiab_aide:"Plus la note est proche de 100, plus nos pourcentages se réalisent tels quels dans ce type de match (circuit, expérience des joueurs, corrections appliquées), mesuré sur des milliers de matchs passés. Ce n'est pas la probabilité que le favori gagne.",
+  fiab:'Fiabilité', fiab_aide:"Note mesurée pour CE match, de 0 à 100 : plus elle est proche de 100, plus nos pourcentages se réalisent tels quels sur ce type de match (circuit, expérience des joueurs, critères du match comme des favoris opposés ou un huitième de finale, fiabilité passée des deux joueurs). Mesurée sur des milliers de matchs rejoués et sur nos matchs publiés, réapprise chaque semaine. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
   son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, choisi pour montrer le type de match prévu : 3 sets si la probabilité de set décisif dépasse nettement la moyenne du circuit (seuil réglé pour que la part de vidéos en 3 sets égale la part réelle du circuit), un tie-break de même ; le favori gagne, dans son scénario le plus fréquent pour ce type de match (sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), avec les jeux et les statistiques médianes. Chaque relance reprend ce même scénario.`,
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
@@ -1359,7 +1359,7 @@ const T = {
   typem_aide_fiable:'Both models agree and the favourite is at 70% or more: in our past forecasts the favourite won 78 to 87% of the time and our percentages came true.',
   typem_aide_standard:'Usual case: our percentages come true on average.',
   typem_aide_fragile:'Elo and the simulation pick different favourites (or another fragility rule checked weekly): close to a coin flip in our past forecasts.',
-  fiab:'Reliability', fiab_aide:'The closer to 100, the more our percentages come true as stated in this type of match (tour, players\' experience, corrections applied), measured on thousands of past matches. This is not the probability that the favourite wins.',
+  fiab:'Reliability', fiab_aide:'Score measured for THIS match, from 0 to 100: the closer to 100, the more our percentages come true as stated on this kind of match (tour, players\' experience, match criteria such as split favourites or a round of 16, both players\' past reliability). Measured on thousands of replayed matches and on our published matches, relearned every week. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
   son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual match drawn from ${fmt(n)} simulations, selected to show the expected type of match: three sets if the deciding-set probability is clearly above the tour average (threshold set so that the share of three-set videos matches the tour's real share), a tie-break likewise; the favourite wins, in their most frequent scenario for that type of match (comfortable or tight straight sets; in three sets, after winning or losing the first set), with median games and statistics. Every replay uses this same scenario.`,
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
@@ -1744,7 +1744,7 @@ function repondre(m, q, j, n){
     case 'jeux_j': return pick(Z.j[j].jeux_j, n);
     case 'ecart': return pick(Z.j[j].ecart, n);
     case 'total': return pick(Z.total, n, Z.total_debut);
-    case 'tb': return Z.tb;
+    case 'tb': return tbMatch(m);
   } return null;
 }
 // 11/11/2026 (paquet 221) — COMMENT LE MATCH PEUT TOURNER (vitrine.scenarios) : les 6 issues regroupées (somme 100 %),
@@ -1811,6 +1811,17 @@ function scenariosListe(m){
   return L_;
 }
 // 25/11/2026 (paquet 454) : un score exact lu du point de vue du VAINQUEUR (« Moller 6-2 6-2 » et non « 2-6 2-6 »)
+// 26/11/2026 (paquet 456) : « au moins un tie-break » — la valeur CORRIGÉE des projections (lignes_algo, correction
+// adoptée sur certains circuits) partout, pour ne plus afficher deux chiffres différents sur la même fiche
+function tbMatch(m){ const k = m && m.lignes_algo; return k && k.tie_break != null ? k.tie_break : (m && m.scenarios && m.scenarios.tiebreak != null ? m.scenarios.tiebreak : (m && m.questions ? m.questions.tb : null)); }
+// 26/11/2026 (paquet 456) : l'heure du calcul de CE match, sur les images et les textes pour X (texte et images d'un même post
+// doivent venir du même calcul : Kicker – Moller du 25/11, images à 16:05 et texte à 18h45, statistiques un peu différentes)
+function calculDe(m){
+  const s = (m && m.calcule_le) || (typeof D !== 'undefined' && D ? (D.pronostics_du || D.genere_le) : null); if (!s) return '';
+  const d = utc(s); if (isNaN(d)) return '';
+  const j = d.toLocaleDateString(loc(),{day:'2-digit',month:'2-digit'}), h = d.toLocaleTimeString(loc(),{hour:'2-digit',minute:'2-digit'});
+  return L==='fr' ? `Chiffres du calcul du ${j} à ${h.replace(':','h')}` : `Figures computed ${j} at ${h}`;
+}
 function scoreVainqueur(x, m){
   const sets = String(x).split(' ').map(t=>t.split('-').map(Number)).filter(t=>t.length===2 && t.every(Number.isFinite));
   if (!sets.length) return String(x);
@@ -1878,7 +1889,7 @@ function rendScenarios(m, sc){
   const lignes = ordre.map(x=>`<li><span class="sc-pt" style="background:var(--p${x.i+1});opacity:${teinte[x.k]}"></span><span class="sc-n">${esc(x.nom)}${x.aide ? `<small>${esc(x.aide)}</small>` : ''}</span><b>${pc0(x.p)}</b></li>`).join('');
   const J = S.jeux || {};
   const reperes = [
-    [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak)],
+    [fr?'Au moins un tie-break':'At least one tie-break', pc0(tbMatch(m))],
     [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec)],
     J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', fr ? `${J.mediane} le plus souvent ; entre ${J.p10} et ${J.p90} dans 8 matchs sur 10` : `${J.mediane} most often; between ${J.p10} and ${J.p90} in 8 matches out of 10`] : null
   ].filter(Boolean);
@@ -1886,7 +1897,7 @@ function rendScenarios(m, sc){
     <div class="sc-barre" aria-hidden="true">${barre}</div>
     <ul class="sc-l">${lignes}</ul>${ligneSetsSecs(m)}
     <div class="es-tuiles sc-tu">${[
-      [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
+      [fr?'Au moins un tie-break':'At least one tie-break', pc0(tbMatch(m)), ''],
       [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
       J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), jeuxParSets(J, fr)] : null
     ].filter(Boolean).map(([k,v,e])=>`<div class="es-t"><small>${esc(k)}</small><b>${esc(v)}</b>${e ? `<em>${esc(e)}</em>` : ''}</div>`).join('')}</div>
@@ -2105,7 +2116,7 @@ function qaCatalogue(m){
   const cles = Object.keys(S).map(x => x.split('-').map(Number)).filter(([h, a]) => h > a).sort((x, y) => x[1] - y[1]);
   for (const [h, a] of cles) add(`sets_${h}${a}`, 'match', {fr:`gagne ${h} sets à ${a}`, en:`wins ${h} sets to ${a}`}, j => ({ p: S[j === 0 ? `${h}-${a}` : `${a}-${h}`] }));
   if (k.set_decisif != null) add('decisif', 'match', {fr:`Match en ${bo5 ? 5 : 3} sets`, en:`Match goes to ${bo5 ? 5 : 3} sets`}, () => ({ p: k.set_decisif }), { sansJ: true });
-  if (Z && Z.tb != null) add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => ({ p: Z.tb }), { sansJ: true });
+  if (tbMatch(m) != null) add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => ({ p: tbMatch(m) }), { sansJ: true });
   // — les jeux et la durée
   const pick = (arr, i, debut) => { const x = Math.floor(i) - (debut || 0); return x < 0 ? 1 : x >= arr.length ? 0 : arr[x]; };
   if (Z) {
@@ -2553,7 +2564,8 @@ function essentielListe(m){
   const sd = m.styles_descriptifs;
   if (sd && Array.isArray(sd.joueurs) && sd.joueurs.length===2){
     const nets = sd.joueurs.map((j,i)=>({ j, i, v: verdictStyle(j.global) })).filter(x=>x.v && x.v.net);
-    if (nets.length) nets.forEach(x=>L_.push({ sens: x.v.sens, txt: `${i18nNom(x.i===0?m.home:m.away)} : ${x.v.texte}.` }));
+    // 26/11/2026 (paquet 458) : présenté comme une information (ni vert ni rouge) — aucun effet du style au-delà de l'Elo
+    if (nets.length) nets.forEach(x=>L_.push({ sens: 'info', txt: `${i18nNom(x.i===0?m.home:m.away)} : ${x.v.texte}.` }));
     else L_.push({ sens:'neutre', txt: t('es_style_rien') });
   }
   return L_;
@@ -2630,6 +2642,7 @@ function postX(m, court_){
     L2.push('🔬 Résultat et statistiques comparés après le match pour mesurer la fiabilité des prédictions.');
     L2.push('📊 Des probabilités calculées sans aucune cote de bookmaker.', '');
     L2.push('👉 Le scénario complet du match : gamesetalgo.com', '');
+    if (calculDe(m)) L2.push(`🕒 ${calculDe(m)}`, '');
     L2.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return L2.join('\n');
   } finally { L = Ls; }
@@ -2856,13 +2869,13 @@ function analyseComplete(m, court_){
     // styles
     if (!court_ && sd && Array.isArray(sd.joueurs)){
       const l = ['🔬 FACE AU STYLE ADVERSE'];
-      sd.joueurs.forEach((j, i) => { const g = j.global; if (!g || !g.n || !j.style_adverse) return;
+      // 26/11/2026 (paquet 458) : bilan seulement à partir de 30 matchs, sans ✅ ni ⚠️ ; plus de « 5 derniers matchs » ni
+      // de ligne dans « Ce qu'il faut retenir » — huit études : les bilans face au style ne prédisent rien au-delà de l'Elo
+      sd.joueurs.forEach((j, i) => { const g = j.global; if (!g || !g.n || g.n < STYLE_MIN_X || !j.style_adverse) return;
         l.push('', `${i ? (fA||'') : (fH||'')} ${N[i].toUpperCase()} FACE AUX ${styleLibPluriel(j.style_adverse).toUpperCase()}`.trim());
-        l.push(`📊 Tous terrains : ${g.victoires} victoires en ${g.n} matchs (${Math.round(g.pct)} %)${g.attendu_pct!=null ? ' · attendu : ' + Math.round(g.attendu_pct) + ' %' : ''}`);
-        const su = j.surface; if (su && su.n >= 15) l.push(`🎾 Sur ${(SURF.fr[m.surface]||'').toLowerCase()} : ${su.victoires} victoires en ${su.n} matchs (${Math.round(su.pct)} %)${su.attendu_pct!=null ? ' · attendu : ' + Math.round(su.attendu_pct) + ' %' : ''}`);
-        const der = (g.derniers||[]).slice(0,5); if (der.length >= 3){ const v = der.filter(x=>x.victoire).length; l.push(`${v >= 3 ? '✅' : '⚠️'} Ses ${der.length} derniers matchs contre ce style : ${v} victoire${v>1?'s':''} / ${der.length - v} défaite${der.length-v>1?'s':''}.`); }
-        if (g.attendu_pct != null && Math.abs(g.pct - g.attendu_pct) >= 5 && g.n >= 30) retenir.push(`${g.pct > g.attendu_pct ? '✅' : '⚠️'} ${N[i]} ${g.pct > g.attendu_pct ? 'fait mieux' : 'fait moins bien'} que prévu face aux ${styleLibPluriel(j.style_adverse)} (${sg(g.pct - g.attendu_pct)} pts sur ${g.n} matchs).`); });
-      if (l.length > 1) bloc(...l, '', 'Taux attendu = d’après le niveau des adversaires affrontés.');
+        l.push(`▪️ Tous terrains : ${g.victoires} victoires en ${g.n} matchs (${Math.round(g.pct)} %)${g.attendu_pct!=null ? ' · attendu : ' + Math.round(g.attendu_pct) + ' %' : ''}`);
+        const su = j.surface; if (su && su.n >= STYLE_MIN_X) l.push(`▪️ Sur ${(SURF.fr[m.surface]||'').toLowerCase()} : ${su.victoires} victoires en ${su.n} matchs (${Math.round(su.pct)} %)${su.attendu_pct!=null ? ' · attendu : ' + Math.round(su.attendu_pct) + ' %' : ''}`); });
+      if (l.length > 1) bloc(...l, '', 'Taux attendu = d’après le niveau des adversaires affrontés. Descriptif : nos études n’ont trouvé aucun effet du style au-delà du niveau des joueurs, et le % ne change pas.');
     }
     // forme et face-à-face
     const re = [0,1].map(i => (av[i?'away':'home']||{}).reussite);
@@ -2921,6 +2934,7 @@ function analyseComplete(m, court_){
     T.push('📊 Après le match, nous comparerons les projections aux statistiques réelles.', '');
     T.push(`🧠 ${nf} simulations indépendantes des cotes des bookmakers.`, '');
     T.push('👉 gamesetalgo.com', '');
+    if (calculDe(m)) T.push(`🕒 ${calculDe(m)}`, '');
     T.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return T.join('\n').replace(/\n{3,}/g, '\n\n');
   } finally { L = Ls; }
@@ -3617,8 +3631,9 @@ function styleLib(code){
 }
 // 28/10/2026 — lecture en clair : un écart n'est « net » que si le chiffre attendu tombe HORS de la fourchette
 // probable (IC 95 %) ; sinon « rien de net », et l'écart reste gris. Moins de 30 matchs : jamais de conclusion.
+const STYLE_MIN = 10, STYLE_MIN_X = 30;   // 26/11/2026 (paquet 458) : pas de % face au style sous 10 matchs ; posts X : 30
 function verdictStyle(b){
-  if (!b || !b.n || typeof b.attendu_pct!=='number') return null;
+  if (!b || !b.n || b.n < STYLE_MIN || typeof b.attendu_pct!=='number') return null;
   const ic = Array.isArray(b.ic95) ? b.ic95 : null;
   const net = !!ic && b.n >= 30 && (b.attendu_pct < ic[0] || b.attendu_pct > ic[1]);
   const sens = !net ? 'neutre' : (b.ecart_pts > 0 ? 'plus' : 'moins');
@@ -3634,6 +3649,7 @@ function barreStyle(b){
 }
 function rendStyleBilan(b,label){
   if (!b || !b.n) return `<div class="style-chiffre"><span>${esc(label)}</span><strong class="style-vide">—</strong><span>${esc(t('styles_vide'))}</span></div>`;
+  if (b.n < STYLE_MIN) return `<div class="style-chiffre"><span>${esc(label)}</span><strong class="style-vide">—</strong><span>${esc(L==='fr' ? `Trop peu de matchs (${fmt(b.n)}) : pas de % affiché sous ${STYLE_MIN} matchs.` : `Too few matches (${fmt(b.n)}): no % shown under ${STYLE_MIN} matches.`)}</span></div>`;
   const alerte = b.n<10 ? 'styles_tres_faible' : (b.n<30 ? 'styles_faible' : '');
   const v = verdictStyle(b);
   return `<div class="style-chiffre"><span>${esc(label)}</span><strong>${pc(b.pct)}</strong><span>${esc(t('styles_vn',b.victoires,b.n))}</span>${barreStyle(b)}${typeof b.attendu_pct==='number'?`<span class="style-att">${esc(t('styles_attendu',b.attendu_pct))} <b class="${v?v.sens:''}">${esc(t('styles_ecart',b.ecart_pts))}</b></span>`:''}${b.ic95?`<span class="style-ic">${esc(t('styles_ic',b.ic95))}</span>`:''}${alerte?`<small class="style-alerte">${esc(t(alerte))}</small>`:''}</div>`;
@@ -8931,7 +8947,7 @@ function modeCarte(){
     <div class="tir"><i style="width:${(p*100).toFixed(1)}%"></i></div>
     <div class="blocs"><div class="bloc"><h2>${esc(t('c_sets'))}</h2>${sets}</div><div class="bloc"><h2>${esc(t('c_scores'))}</h2>${scores}</div></div>
     ${lignes ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('c_feuille'))}</h2><table><thead><tr><th></th><th class="a">${esc(n1)}</th><th class="b">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
-    <div class="pied">${t('c_pied', D.simulations)}</div>${SIGNE}</div>`;
+    <div class="pied">${t('c_pied', D.simulations)}${calculDe(m) ? ` · ${esc(calculDe(m))}` : ''}</div>${SIGNE}</div>`;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
@@ -8972,7 +8988,7 @@ function modeProjections(){
       <div class="pcs">${puces(o.totaux, x => T_('+ de ', 'over ') + v1(x))}</div></div>` : ''}
     ${o.ecarts.length ? `<div class="bloc"><h2>${esc(T_(`${fav} gagne avec plus de… jeux d'écart`, `${fav} wins by more than… games`))}</h2>
       <div class="pcs ${coul(o.fi)}">${puces(o.ecarts, x => '+' + v1(x))}</div></div>` : ''}
-    <div class="pied">${esc(T_('Tout vient des mêmes simulations point par point · ces projections ne changent pas le % de victoire', 'All from the same point-by-point simulations · these projections do not change the win %'))}</div>${SIGNE}</div>`;
+    <div class="pied">${esc(T_('Tout vient des mêmes simulations point par point · ces projections ne changent pas le % de victoire', 'All from the same point-by-point simulations · these projections do not change the win %'))}${calculDe(m) ? ` · ${esc(calculDe(m))}` : ''}</div>${SIGNE}</div>`;
   window.__uid = m.uid;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
