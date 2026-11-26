@@ -12,6 +12,7 @@
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
 import { adminVentes, factureClient, demandeAbonnement, TARIFS, attribuerFondateur } from './ventes.js';
+import { routePush, suivreCompte, clePublique } from './notifs.js';   // 483 : notifications des favoris
 
 export const COOKIE_COMPTE = 'gsa_compte';
 export const FORMULES = Object.freeze({ semaine: 7, mois: 31, trimestre: 92, annee: 366, offert: null, illimite: null,
@@ -82,7 +83,7 @@ function vueCompte(u) {
     acces_immediat: (u.acces_immediat || {}).le || null, fondateur_place: u.fondateur_place || null,   // 474 : toujours visible
     fondateur_perdu: !!u.fondateur_perdu, fondateur_tarif: !!(u.acces || {}).fondateur_tarif,
     demande: u.demande ? { le: u.demande.le, formule: u.demande.formule, montant: u.demande.montant, fondateur: !!u.demande.fondateur } : null,
-    favoris: favorisDe(u) };
+    favoris: favorisDe(u), appareils: Array.isArray(u.push) ? u.push.length : 0 };   // 483
 }
 // 405 : coordonnées de paiement, montrées dans la section Plus au seul fondateur prévenu de l'ouverture
 export const PRIX_FONDATEUR_SITE = 9.99;
@@ -368,6 +369,7 @@ async function supprimer(req, env, b) {
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
   if (!(await verifierMdp(u, b.mdp))) return rep({ ok: false, erreur: 'mdp_faux' }, 403);
   await env.COFFRE.delete(chemin(u.id));
+  await suivreCompte(env, u.id, null);                       // 483 : plus aucune notification
   return rep({ ok: true }, 200, { 'Set-Cookie': `${COOKIE_COMPTE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
 }
 // 26/11/2026 (paquet 476, Lucas) — FAVORIS : joueurs (noms) et matchs (identifiants) gardés sur le compte, gratuit
@@ -388,13 +390,14 @@ async function favoris(req, env, b) {
   F[k] = (b.actif === false ? F[k].filter((x) => x !== cle) : [cle, ...F[k].filter((x) => x !== cle)]).slice(0, FAV_MAX[k]);
   u.favoris = F;
   await ecrire(env, u);
+  if (Array.isArray(u.push) && u.push.length) await suivreCompte(env, u.id, u);   // 483 : l'index des notifications suit
   return rep({ ok: true, favoris: F });
 }
 async function exporter(req, env) {
   const u = await utilisateur(req, env);
   if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
   const garde = ['email', 'cree', 'verifie', 'verifie_le', 'vu', 'acces', 'historique', 'lang', 'fondateur', 'factures', 'acces_immediat',
-    'fondateur_place', 'ouverture_envoyee', 'demande', 'favoris'];
+    'fondateur_place', 'ouverture_envoyee', 'demande', 'favoris', 'push'];
   const d = Object.fromEntries(garde.filter((k) => k in u).map((k) => [k, u[k]]));
   d.mot_de_passe = 'jamais stocké en clair : seulement une empreinte (PBKDF2-SHA256)';
   return new Response(JSON.stringify(d, null, 1), { headers: { ...H, 'Content-Disposition': 'attachment; filename="mes-donnees-gamesetalgo.json"' } });
@@ -411,6 +414,9 @@ export async function apiCompte(req, env, url, cle = false) {
       turnstile: env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY ? String(env.TURNSTILE_SITEKEY) : null });
   }
   if (p === 'export' && req.method === 'GET') return exporter(req, env);
+  if (p === 'push/cle' && req.method === 'GET') {               // 483 : clé publique des notifications
+    try { return rep({ ok: true, cle: await clePublique(env) }); } catch (e) { return rep({ ok: false, erreur: 'defaut' }, 503); }
+  }
   if (p === 'facture' && req.method === 'GET') return factureClient(req, env, url);        // 386 : ses propres factures
   if (req.method !== 'POST') return rep({ ok: false, erreur: 'methode' }, 405);
   if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
@@ -429,6 +435,11 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'acces_immediat') return accesImmediat(req, env, b);
   if (p === 'abonnement') return demandeAbonnement(req, env, b);
   if (p === 'favoris') return favoris(req, env, b);
+  if (p === 'push') {                                           // 483 : notifications du téléphone (abonnés Plus)
+    const u = await utilisateur(req, env);
+    if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+    return routePush(env, u, b, rep);
+  }
   return rep({ ok: false, erreur: 'inconnu' }, 404);
 }
 
