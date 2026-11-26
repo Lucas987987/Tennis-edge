@@ -626,50 +626,42 @@ def match_type(brut, traces=None, vainqueur=0, moyennes=None):
             candidats.append((i, ligne))
     if not candidats:
         return None
-    # 04/11/2026 (demande de Lucas) : la vidéo suit la FORME la plus probable du match. Parmi les victoires du
-    # favori : d'abord le nombre de sets le plus fréquent (à égalité, le moins de sets), puis tie-break seulement
-    # si plus de la moitié de ces matchs en ont un. Avant, un match à 40 % de 3 sets et 45 % de tie-break pouvait
-    # montrer un 3 sets avec tie-break (le médoïde ne contraignait pas la forme).
-    nb = {}
-    for _, ligne in candidats:
-        nb[len(ligne[4])] = nb.get(len(ligne[4]), 0) + 1
-    if moyennes:
-        # 04/11/2026 (Lucas) : le type de match prévu, comparé à la moyenne du circuit (MOYENNES_FORME). Le Monte
-        # Carlo se joue au meilleur des 3 : la majorité ne donnait jamais 3 sets (plafond ~45–50 %), alors qu'un
-        # match sur trois va au set décisif.
-        p3 = sum(1 for ligne in brut if len(ligne[4]) == 3) / len(brut)
-        ptb = sum(1 for ligne in brut if a_un_tiebreak(ligne[4])) / len(brut)
-        n_sets = 3 if p3 >= moyennes[0] else 2
-        tb = ptb >= moyennes[1]
-        if n_sets not in nb:
-            n_sets = max(nb, key=lambda k: (nb[k], -k))
-        meme_sets = [c for c in candidats if len(c[1][4]) == n_sets]
-        avec_tb = sum(1 for c in meme_sets if a_un_tiebreak(c[1][4]))
-        regle = {'p_3_sets': round(p3, 4), 'p_tie_break': round(ptb, 4), 'seuil_3_sets': round(moyennes[0], 4),
-                 'seuil_tie_break': round(moyennes[1], 4), 'regle': 'au-dessus du seuil du circuit (moyenne + marge)'}
-    else:
-        n_sets = max(nb, key=lambda k: (nb[k], -k))
-        meme_sets = [c for c in candidats if len(c[1][4]) == n_sets]
-        avec_tb = sum(1 for c in meme_sets if a_un_tiebreak(c[1][4]))
-        tb = 2 * avec_tb > len(meme_sets)
-        regle = {'regle': 'forme la plus fréquente des victoires du favori'}
-    candidats = [c for c in meme_sets if a_un_tiebreak(c[1][4]) == tb] or meme_sets
-    # 12/11/2026 (paquet 244, demande de Lucas : « les vidéos fidèles aux scénarios du match ») — à forme égale, le
-    # SCÉNARIO le plus fréquent du favori (mêmes groupes que les scénarios publiés, scenarios_match.issue) : en sets
-    # secs, « sans trembler » (chaque set à 6-2 ou mieux, paquet 267) ou « accrochés » ; en 3 sets, après avoir gagné ou perdu le 1er.
+    # 26/11/2026 (paquet 488, Lucas : « peu importe que ce soit en 3 sets, il faut que ce soit fidèle aux scénarios
+    # envisagés ») — LA VIDÉO JOUE LE SCÉNARIO LE PLUS PROBABLE DU FAVORI, tel que la fiche le publie : parmi ses
+    # victoires simulées, le groupe le plus fréquent des trois publiés (« sans trembler », « accrochés », « en 3 sets »,
+    # scenarios_match.issue) ; en 3 sets, « remontée » si elle est plus fréquente que « après avoir gagné le 1er ».
+    # Puis, dans ce scénario, tie-break seulement si plus de la moitié de ses matchs en ont un, et le match médoïde.
+    # Avant (paquets 230–244) : la forme passait d'abord par un seuil fixe de 3 sets / tie-break (moyenne du circuit),
+    # qui faisait varier la part de vidéos en 3 sets de 9 % à 58 % selon les semaines, sans lien avec les scénarios.
+    # « moyennes » (seuils du circuit) n'est plus utilisé ; gardé dans la signature.
     import scenarios_match as SM
-    part_forme = round(100.0 * len(candidats) / len(brut), 1)
     par = {}
     for c in candidats:
         g, rem = SM.issue([tuple(x) for x in c[1][4]], vainqueur)
-        par.setdefault('remontee' if rem else g, []).append(c)
-    scen = max(par, key=lambda k: (len(par[k]), k == 'accroche')) if par else None
-    part_scen = round(100.0 * len(par[scen]) / len(brut), 1) if scen else None
-    candidats = par.get(scen) or candidats
-    forme = dict(regle, sets=n_sets, tie_break=tb,
-                 part_sets_pct=round(100.0 * nb[n_sets] / sum(nb.values()), 1),
-                 part_tie_break_pct=round(100.0 * avec_tb / len(meme_sets), 1),
-                 part_forme_pct=part_forme, scenario=scen, part_scenario_pct=part_scen)
+        par.setdefault(g, {'tous': [], 'remontee': []})
+        par[g]['tous'].append(c)
+        if rem:
+            par[g]['remontee'].append(c)
+    publie = max(par, key=lambda k: (len(par[k]['tous']), k == 'accroche'))
+    choisis = par[publie]['tous']
+    scen = publie
+    if publie == 'long':
+        rem = par['long']['remontee']
+        ir = {c[0] for c in rem}
+        non = [c for c in choisis if c[0] not in ir]
+        scen, choisis = ('remontee', rem) if len(rem) > len(non) else ('long', non)
+    avec_tb = sum(1 for c in choisis if a_un_tiebreak(c[1][4]))
+    tb = 2 * avec_tb > len(choisis)
+    n_sets = 3 if publie == 'long' else 2
+    part_forme = round(100.0 * len(par[publie]['tous']) / len(brut), 1)
+    candidats = [c for c in choisis if a_un_tiebreak(c[1][4]) == tb] or choisis
+    part_scen = round(100.0 * len(candidats) / len(brut), 1)
+    nb_sets = sum(1 for ligne in brut if len(ligne[4]) == n_sets)
+    forme = {'regle': 'scénario le plus probable du favori, comme sur la fiche', 'sets': n_sets, 'tie_break': tb,
+             'scenario_publie': publie, 'part_scenario_publie_pct': part_forme,
+             'part_tie_break_pct': round(100.0 * avec_tb / len(choisis), 1) if choisis else 0.0,
+             'part_forme_pct': part_forme, 'scenario': scen, 'part_scenario_pct': part_scen,
+             'part_sets_pct': round(100.0 * nb_sets / len(brut), 1)}
     groupe = [ligne for _, ligne in candidats]
     F = []
     for j in (0, 1):

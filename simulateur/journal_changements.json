@@ -2676,6 +2676,13 @@
    "paquet": 479,
    "quoi": "MESURE D'AUDIENCE ANONYME DÉTAILLÉE (paquet 479, Lucas : « un maximum d'informations sur ce qui se passe sur le site, de façon anonyme pour ne pas tracer les gens »). En plus des visiteurs uniques du jour, la page envoie au plus une fois par minute de simples compteurs : fiches de matchs ouvertes, simulations lancées, direct 3D, questions à l'algo (avant le match et en direct), favoris, section Plus vue, minutes passées quand la page est affichée ; les pages match, joueur, tournoi et bilan sont comptées par le serveur. Une fois par visiteur et par jour : appareil (mobile ou ordinateur), pays déduit par l'hébergeur, langue et nom du site de provenance. Aucun cookie, aucun identifiant, rien de rattaché au compte ; les empreintes du jour sont effacées le lendemain, seuls les totaux restent. Confidentialité mise à jour. Le % de victoire ne change pas.",
    "garde_fou": "Aucun : mesure et affichage seulement."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 488,
+   "quoi": "VIDÉO DU MATCH FIDÈLE AUX SCÉNARIOS DE LA FICHE (paquet 488, Lucas : « peu importe que ce soit en 3 sets, il faut que ce soit fidèle aux scénarios envisagés »). La vidéo joue maintenant le scénario le plus probable du favori, celui que la fiche annonce : sets secs sans trembler, sets secs accrochés ou 3 sets (après avoir gagné ou perdu le 1er set) ; un tie-break seulement si la plupart des matchs de ce scénario en ont un ; puis le match aux jeux et statistiques médians. Avant, le nombre de sets passait d'abord par un seuil fixe de probabilité de 3 sets par circuit : la part de vidéos en 3 sets variait de 9 % à 58 % selon les semaines en Challenger (30 à 37 % de matchs réellement en 3 sets), sans lien avec le scénario annoncé. Constat sur 1 384 matchs : les scénarios de la fiche sont bien étalonnés (sets secs accrochés 27,9 % annoncés, 28,1 % réels ; 3 sets après avoir gagné le 1er 16,7 % / 17,2 % ; remontée 8,5 % / 8,2 %). Le % de victoire ne change pas.",
+   "garde_fou": "Rien ne change au calcul du % ni des scénarios ; la vidéo reste un match réellement tiré parmi les simulations, et le choix est contrôlé par les tests (scénario publié le plus probable pour le favori)."
   }
  ]
 }
