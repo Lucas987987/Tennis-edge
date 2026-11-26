@@ -1,72 +1,72 @@
 {
- "genere_le": "2026-11-26T07:56:34+00:00",
+ "genere_le": "2026-11-26T21:18:10+00:00",
  "paquet": 452,
- "itf_hommes_dans_le_rejeu": 0,
+ "itf_hommes_dans_le_rejeu": 57230,
  "jugement": {
   "matchs_challenger": 16191,
   "peu_documentes": 2327,
-  "peu_documentes_dont_moins_de_30_matchs_elo": 2327,
+  "peu_documentes_dont_moins_de_30_matchs_elo": 1177,
   "V0": {
    "apprentissage": {
     "matchs": 1200,
     "touches": 1200,
-    "gain": -0.01551,
-    "erreur_type": 0.00864
+    "gain": -0.038,
+    "erreur_type": 0.01056
    },
    "jugement": {
     "matchs": 1127,
     "touches": 1127,
-    "gain": -0.00799,
-    "erreur_type": 0.00811
+    "gain": -0.01898,
+    "erreur_type": 0.01003
    },
-   "pente_reapprise": 1.235,
+   "pente_reapprise": 1.11,
    "jugement_avec_pente_reapprise": {
     "matchs": 1127,
     "touches": 1127,
-    "gain": 0.00484,
-    "erreur_type": 0.00227
+    "gain": 0.00369,
+    "erreur_type": 0.00131
    }
   },
   "V1": {
    "apprentissage": {
     "matchs": 1200,
-    "touches": 1200,
-    "gain": -0.01551,
-    "erreur_type": 0.00864
+    "touches": 621,
+    "gain": -0.01833,
+    "erreur_type": 0.00783
    },
    "jugement": {
     "matchs": 1127,
-    "touches": 1127,
-    "gain": -0.00799,
-    "erreur_type": 0.00811
+    "touches": 556,
+    "gain": -0.00981,
+    "erreur_type": 0.00739
    },
-   "pente_reapprise": 1.235,
+   "pente_reapprise": 1.144,
    "jugement_avec_pente_reapprise": {
     "matchs": 1127,
-    "touches": 1127,
-    "gain": 0.00484,
-    "erreur_type": 0.00227
+    "touches": 556,
+    "gain": 0.00243,
+    "erreur_type": 0.00126
    }
   },
   "V1_contre_V0": {
    "apprentissage": {
     "matchs": 1200,
-    "v1_moins_v0": 0.0,
-    "erreur_type": 0.0
+    "v1_moins_v0": 0.01967,
+    "erreur_type": 0.00713
    },
    "jugement": {
     "matchs": 1127,
-    "v1_moins_v0": 0.0,
-    "erreur_type": 0.0
+    "v1_moins_v0": 0.00917,
+    "erreur_type": 0.0068
    }
   },
   "pente_reelle_jugee": {
-   "peu_documentes": 1.301,
-   "dont_moins_de_30_matchs_elo": 1.301,
-   "dont_30_matchs_elo_et_plus": null
+   "peu_documentes": 1.235,
+   "dont_moins_de_30_matchs_elo": 1.237,
+   "dont_30_matchs_elo_et_plus": 1.232
   },
   "Q1_signal_nuisible": true,
-  "Q2_V1_retenu": false
+  "Q2_V1_retenu": true
  },
  "direct": {
   "moins_de_30_matchs_elo": {
@@ -77,11 +77,11 @@
    "favori_reel_pct": 81.9
   },
   "30_matchs_elo_et_plus": {
-   "matchs": 131,
-   "gain_du_signal": 0.0322,
-   "erreur_type": 0.0169,
-   "favori_annonce_pct": 77.1,
-   "favori_reel_pct": 74.0
+   "matchs": 134,
+   "gain_du_signal": 0.0316,
+   "erreur_type": 0.0165,
+   "favori_annonce_pct": 76.7,
+   "favori_reel_pct": 73.9
   }
  },
  "en_production": false,
@@ -89,7 +89,7 @@
   "date": "2026-11-25",
   "statut": "production",
   "paquet": 452,
-  "quoi": "NOTE DE FIABILITÉ DES JOUEURS DANS LA NOTE DU MATCH, ET LE SIGNAL « DOCUMENTATION FAIBLE » AVEC LES RÉSULTATS ITF (paquet 452, Lucas : « on pourrait intégrer la note de fiabilité du joueur également » ; « si on a plus d'informations, documentation faible n'a plus lieu d'être pour certains matchs »). 1) EN PLACE : la note par match (paquet 451) prend un critère de plus, « joueur peu fiable » = (100 − la plus basse des notes de fiabilité des deux joueurs) / 100 ; la note d'un joueur compare nos % annoncés pour lui sur ses 20 derniers matchs publiés à ses victoires (au moins 5 matchs) et n'utilise que ses matchs d'avant le jour du match. Son effet est appris chaque lundi avec les autres critères, ramené vers « aucun effet » tant que les matchs sont peu nombreux (premier apprentissage : 450 matchs concernés, facteur 0,91 pour une note de 0). 2) ÉTUDE : le signal « documentation faible » avec les résultats ITF — Le signal écarte le % de 50 % (pente 1,844) en Challenger quand le joueur le moins vu a moins de 500 points de service ; il a été appris avant que l'Elo ait les résultats ITF hommes et le départ ITF à 1000, et les points de service ne comptent pas les matchs ITF. Nouvelle étude simulateur/etude_documentation_itf.py, sur le rejeu Challenger comme en production : le signal tel qu'en place, et limité aux joueurs qui ont aussi moins de 30 matchs dans l'Elo (ITF compris). Règle écrite dans l'en-tête avant tout essai : apprise du 01/01 au 30/09/2025, jugée une fois du 01/10/2025 au 31/05/2026 ; signal nuisible s'il fait perdre sur les deux périodes (≥ 1 000 matchs) ; version limitée retenue si elle gagne au moins 0,001 par match sur le signal en place, dans le même sens sur les deux périodes. RÉSULTAT (jugé du 01/10/2025 au 31/05/2026 sur 1127 matchs Challenger peu documentés) : signal en place -0,00799 ± 0,00811 par match (apprentissage -0,01551) ; limité aux joueurs à moins de 30 matchs Elo -0,00799 ± 0,00811 ; écart 0,0 ± 0,0. Q1 (signal nuisible) : oui ; Q2 (limiter aux joueurs peu connus de l'Elo) : non retenu. Proposé à Lucas ; rien n'est changé par ce paquet. Le % de victoire ne change pas.",
+  "quoi": "NOTE DE FIABILITÉ DES JOUEURS DANS LA NOTE DU MATCH, ET LE SIGNAL « DOCUMENTATION FAIBLE » AVEC LES RÉSULTATS ITF (paquet 452, Lucas : « on pourrait intégrer la note de fiabilité du joueur également » ; « si on a plus d'informations, documentation faible n'a plus lieu d'être pour certains matchs »). 1) EN PLACE : la note par match (paquet 451) prend un critère de plus, « joueur peu fiable » = (100 − la plus basse des notes de fiabilité des deux joueurs) / 100 ; la note d'un joueur compare nos % annoncés pour lui sur ses 20 derniers matchs publiés à ses victoires (au moins 5 matchs) et n'utilise que ses matchs d'avant le jour du match. Son effet est appris chaque lundi avec les autres critères, ramené vers « aucun effet » tant que les matchs sont peu nombreux (premier apprentissage : 450 matchs concernés, facteur 0,91 pour une note de 0). 2) ÉTUDE : le signal « documentation faible » avec les résultats ITF — Le signal écarte le % de 50 % (pente 1,844) en Challenger quand le joueur le moins vu a moins de 500 points de service ; il a été appris avant que l'Elo ait les résultats ITF hommes et le départ ITF à 1000, et les points de service ne comptent pas les matchs ITF. Nouvelle étude simulateur/etude_documentation_itf.py, sur le rejeu Challenger comme en production : le signal tel qu'en place, et limité aux joueurs qui ont aussi moins de 30 matchs dans l'Elo (ITF compris). Règle écrite dans l'en-tête avant tout essai : apprise du 01/01 au 30/09/2025, jugée une fois du 01/10/2025 au 31/05/2026 ; signal nuisible s'il fait perdre sur les deux périodes (≥ 1 000 matchs) ; version limitée retenue si elle gagne au moins 0,001 par match sur le signal en place, dans le même sens sur les deux périodes. RÉSULTAT (jugé du 01/10/2025 au 31/05/2026 sur 1127 matchs Challenger peu documentés) : signal en place -0,01898 ± 0,01003 par match (apprentissage -0,038) ; limité aux joueurs à moins de 30 matchs Elo -0,00981 ± 0,00739 ; écart 0,00917 ± 0,0068. Q1 (signal nuisible) : oui ; Q2 (limiter aux joueurs peu connus de l'Elo) : retenu. Proposé à Lucas ; rien n'est changé par ce paquet. Le % de victoire ne change pas.",
   "garde_fou": "Critère joueur : même garde-fou que la note par match (chaque lundi, retour à l'ancienne note si la nouvelle décrit moins bien la réalité). Étude : le signal « documentation faible » reste en place tel quel tant que Lucas n'a pas décidé ; limite : l'Elo seul, sans la simulation ni les autres signaux. 0 requête d'API."
  }
 }

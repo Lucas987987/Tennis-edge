@@ -1206,8 +1206,10 @@ const T = {
   plus_exemple:"Voir un exemple : le match du jour, offert en entier",
   plus_preuve:(n, b) => `Aujourd'hui : <b>${n} matchs</b> analysés, dont un offert.` + (b ? ` Sur les 30 derniers jours : <b>${b.pct} de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.` : ''),
   fd_place:n=>`Tu es fondateur n° ${n} : 9,99 € par mois, à vie, tant que tu renouvelles chaque mois au plus tard 7 jours après la fin du précédent.`,
+  rib_mail:r=>`Les coordonnées du virement t'ont été envoyées par e-mail (regarde aussi dans les indésirables). Ta référence : ${r}. Ton accès s'ouvre dès réception du virement.`,
+  rib_choisir:"Choisis ta durée dans « S'abonner » : les coordonnées du virement t'arrivent aussitôt par e-mail.", rib_renvoyer:"Renvoyer l'e-mail",
+  rib_ok:'E-mail renvoyé.', rib_attente:'Déjà renvoyé il y a peu : réessaie dans quelques minutes.', rib_err:'Envoi impossible, réessaie dans un instant.',
   fd_pay_titre:'Payer par virement', fd_pay_texte:"Ton accès s'ouvre dès réception du virement (un virement instantané arrive en quelques secondes). La facture part par e-mail.",
-  fd_pay_lignes:(p) => [`Titulaire : ${p.titulaire}`, `IBAN : ${p.iban}`, ...(p.bic ? [`BIC : ${p.bic}`] : []), `Montant : ${String(p.montant.toFixed(2)).replace('.', ',')} €`, `Libellé (important) : ${p.reference}`],
   fd_pay_cgv:'Conditions de vente', fd_pay_avant:"Commence par cocher l'accès immédiat ci-dessus.",
   verrou_commence:"Le match a commencé : le % de l'algo d'avant match est affiché. Le détail (sets, scores, scénarios, statistiques) reste réservé à l'accès Plus.",
   fd_titre:'Offre fondateurs',
@@ -1583,8 +1585,10 @@ const T = {
   plus_exemple:'See an example: the match of the day, free in full',
   plus_preuve:(n, b) => `Today: <b>${n} matches</b> analysed, one of them free.` + (b ? ` Over the last 30 days: <b>${b.pct} of winners found</b> across ${b.n} matches, every miss included.` : ''),
   fd_place:n=>`You are founder no. ${n}: €9.99 a month, for life, as long as you renew each month no later than 7 days after the previous one ends.`,
+  rib_mail:r=>`The transfer details were sent to you by email (check your spam folder too). Your reference: ${r}. Access opens as soon as the transfer arrives.`,
+  rib_choisir:'Choose your duration under "Subscribe": the transfer details reach you by email straight away.', rib_renvoyer:'Resend the email',
+  rib_ok:'Email sent again.', rib_attente:'Already resent a moment ago: try again in a few minutes.', rib_err:'Could not send, try again in a moment.',
   fd_pay_titre:'Pay by bank transfer', fd_pay_texte:'Access opens as soon as the transfer arrives (an instant transfer takes seconds). The invoice is emailed to you.',
-  fd_pay_lignes:(p) => [`Account holder: ${p.titulaire}`, `IBAN: ${p.iban}`, ...(p.bic ? [`BIC: ${p.bic}`] : []), `Amount: €${p.montant.toFixed(2)}`, `Reference (important): ${p.reference}`],
   fd_pay_cgv:'Terms of sale', fd_pay_avant:'Start by ticking immediate access above.',
   verrou_commence:"The match has started: the algo's pre-match % is shown. The details (sets, scores, scenarios, stats) stay reserved for Plus access.",
   fd_titre:'Founders offer',
@@ -9302,8 +9306,10 @@ const euros = x => L === 'fr' ? Number(x).toFixed(2).replace('.', ',') + ' €' 
 function blocPaiement(){
   if (!COMPTE || !PAIEMENT || !(COMPTE.fondateur_place || COMPTE.demande)) return '';
   const avant = COMPTE.acces_immediat ? '' : `<p class="msg" style="margin:6px 0 0">${esc(t('fd_pay_avant'))}</p>`;
-  const corps = PAIEMENT.iban ? `<p style="margin:6px 0 0">${esc(t('fd_pay_texte'))}</p><div class="iban">${t('fd_pay_lignes', PAIEMENT).map(esc).join('<br>')}</div>`
-    : `<p style="margin:6px 0 0">${esc(t('ab_sans_iban', PAIEMENT.reference))}</p>`;
+  // 484 (Lucas) : le RIB n'apparaît jamais sur le site ; il part par e-mail (bouton pour le renvoyer)
+  const corps = PAIEMENT.demande
+    ? `<p style="margin:6px 0 0">${esc(t('rib_mail', PAIEMENT.reference))}</p><p style="margin:6px 0 0"><button type="button" class="btn" data-rib="1">${esc(t('rib_renvoyer'))}</button> <span id="rib-msg" role="status"></span></p>`
+    : `<p style="margin:6px 0 0">${esc(t('rib_choisir'))}</p>`;
   return `<div class="fd-pay"><h3 style="margin:0 0 6px">${esc(t('fd_pay_titre'))}</h3>${avant}${corps}
     <p style="margin:8px 0 0"><a href="#cgv">${esc(t('fd_pay_cgv'))}</a></p></div>`;
 }
@@ -9456,6 +9462,10 @@ async function actionNotifs(k, b){
   finally { if (b) b.disabled = false; }
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-nt]'); if (b) { e.preventDefault(); actionNotifs(b.dataset.nt, b); } });
+// 484 : renvoyer par e-mail les coordonnées du virement (jamais affichées sur le site)
+document.addEventListener('click', e => { const b = e.target.closest('[data-rib]'); if (!b) return; e.preventDefault(); b.disabled = true;
+  apiCompte('rib', {}).then(o => { b.disabled = false; const z = document.getElementById('rib-msg');
+    if (z) z.textContent = t(o.ok ? 'rib_ok' : o.erreur === 'attente' ? 'rib_attente' : 'rib_err'); }); });
 function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
 function ouvrirCompte(vue, msg, ok, jeton){
   if (vue === 'inscription') stat('inscription_ouverte');           // 479
