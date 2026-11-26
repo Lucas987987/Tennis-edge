@@ -1214,6 +1214,12 @@ def compacter(doc, p_min=DISTRIBUTION_P_MIN):
         D_ = m.get('distribution_scores')
         if not D_:
             continue
+        if m.get('distribution_reste') is not None and m.get('scenarios'):
+            # 25/11/2026 (paquet 454) : match COMMENCÉ gardé de la version précédente (garder_commences) — sa distribution
+            # est déjà coupée (scores sous 0,1 %, surtout les 3 sets) ; ses scénarios et questions, calculés au passage
+            # précédent sur la distribution complète, sont gardés tels quels. Avant : recalculés sur la distribution
+            # coupée (Kicker – Moller, 25/11 : « Kicker en 3 sets : 0 % » pour 13 % au score en sets).
+            continue
         m['questions'] = questions(D_)          # 05/11/2026 : sur la distribution complète, avant de la couper
         m['scenarios'] = scenarios(D_, m.get('sets'))   # paquet 221 ; paquet 325 : cohérents avec le score en sets
         garde = [r for r in D_ if float(r['probabilite']) >= p_min] or D_[:1]
