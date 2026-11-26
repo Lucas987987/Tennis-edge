@@ -317,7 +317,7 @@ jobs:
           python3 scripts/pages_seo.py . _site/algo || echo "::warning::pages des matchs et des joueurs non construites"
           # 23/11/2026 (paquet 391) : appli installable (manifeste, service worker, icônes) et page découpée (script et
           # style dans des fichiers à empreinte, gardés un an par le navigateur). Échec : la page reste d'un seul tenant.
-          cp algo/manifest.webmanifest algo/sw.js algo/icone-192.png algo/icone-512.png algo/icone-maskable-512.png algo/apple-touch-icon.png _site/algo/
+          cp algo/manifest.webmanifest algo/sw.js algo/badge-96.png algo/icone-192.png algo/icone-512.png algo/icone-maskable-512.png algo/apple-touch-icon.png _site/algo/
           python3 scripts/decouper_page.py _site/algo || { echo "::warning::page non découpée, publiée d'un seul tenant"; cp algo/index.html _site/algo/index.html; }
           if ls algo/polices/*.woff2 >/dev/null 2>&1; then
             mkdir -p _site/algo/polices && cp algo/polices/*.woff2 algo/polices/OFL.txt _site/algo/polices/
