@@ -1,0 +1,767 @@
+{
+ "genere_le": "2026-11-26T09:54:05+00:00",
+ "paquet": 465,
+ "regle": "case par case (circuit × tranche de documentation du joueur le moins vu : moins de 500, 500 à 1 500, 1 500 à 3 000, 3 000 points et plus) : pente du % final apprise sur le 01/01/2025 → 31/05/2026 (au moins 300 matchs), jugée une seule fois sur le 01/06/2024 → 31/12/2024 ; retenue si au moins 1 000 matchs de la case jugés, gain de log loss ≥ 0,001 par match, même sens sur les deux périodes (pente apprise sur la période jugée du même côté de 1 et gagnant aussi sur l'apprentissage) et gain de plus de 2 erreurs types ; sous 1 000 matchs jugés, aucune décision ; variante « une seule pente par circuit » publiée pour comparaison, même règle",
+ "apprentissage": [
+  "2025-01-01",
+  "2026-06-01"
+ ],
+ "jugement_une_seule_fois": [
+  "2024-06-01",
+  "2025-01-01"
+ ],
+ "periode_jugee": "les résultats ITF hommes du dépôt commencent en juin 2024 : le rejeu comme en production ne peut pas remonter plus haut ; juin → décembre 2024 est la seule période rejouable que les études 230, 320, 448, 452 et 462 n'ont pas utilisée. Réserves écrites avant tout résultat : en Challenger l'Elo n'y a que 0 à 7 mois de résultats ITF (contrôle « Elo en chauffe » publié) ; en ATP et en WTA les poids du mélange en place ont été appris sur des matchs de 2024 → janvier 2026, ce qui joue contre le candidat, et des pentes de l'Elo seul y ont déjà été publiées sur 2023 → 2026 (320, 448) : période neuve pour le mélange et pour les tranches de points, pas vierge de tout",
+ "itf_hommes_dans_le_rejeu": 57230,
+ "profils_refaits": 97,
+ "en_place": {
+  "CH": {
+   "elo": 0.7815,
+   "simulation": 0.2378,
+   "pente_doc": 1.11,
+   "fmd": {
+    "pente": 0.775,
+    "de": 500,
+    "a": 1500
+   },
+   "surfaces": {
+    "Clay": 1.065
+   }
+  },
+  "ATP": {
+   "elo": 0.7339,
+   "simulation": 0.3036,
+   "pente_doc": null,
+   "fmd": null,
+   "surfaces": {}
+  },
+  "WTA": {
+   "elo": 0.7815,
+   "simulation": 0.2378,
+   "pente_doc": null,
+   "fmd": null,
+   "surfaces": {}
+  }
+ },
+ "correction_non_rejouee": "correction Challenger « correct » × 1,142 (correction_niveaux.json) : non rejouée, car le niveau de fiabilité du match vient de nos pronostics publiés et n'existe pas avant octobre 2026 ; les matchs qu'elle toucherait (Challenger de niveau « correct », toutes tranches) sont jugés ici sans elle",
+ "jugement": {
+  "ATP": {
+   "matchs": 5177,
+   "matchs_apprentissage": 3764,
+   "matchs_jugement": 1413,
+   "tranches": {
+    "moins_de_500": {
+     "apprentissage": {
+      "matchs": 16,
+      "favori_annonce_pct": 86.6,
+      "favori_reel_pct": 87.5,
+      "log_loss": 0.2995
+     },
+     "jugement": {
+      "matchs": 3,
+      "favori_annonce_pct": 82.9,
+      "favori_reel_pct": 100.0,
+      "log_loss": 0.19099
+     },
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "500_a_1500": {
+     "apprentissage": {
+      "matchs": 21,
+      "favori_annonce_pct": 74.6,
+      "favori_reel_pct": 71.4,
+      "log_loss": 0.53376
+     },
+     "jugement": {
+      "matchs": 14,
+      "favori_annonce_pct": 74.6,
+      "favori_reel_pct": 78.6,
+      "log_loss": 0.37575
+     },
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "1500_a_3000": {
+     "apprentissage": {
+      "matchs": 31,
+      "favori_annonce_pct": 78.1,
+      "favori_reel_pct": 74.2,
+      "log_loss": 0.60224,
+      "pente": 0.648,
+      "pente_erreur_type": 0.274
+     },
+     "jugement": {
+      "matchs": 21,
+      "favori_annonce_pct": 76.0,
+      "favori_reel_pct": 81.0,
+      "log_loss": 0.44686
+     },
+     "pente_du_melange_nu_apprentissage": 0.648,
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "3000_et_plus": {
+     "apprentissage": {
+      "matchs": 3696,
+      "favori_annonce_pct": 66.9,
+      "favori_reel_pct": 66.7,
+      "log_loss": 0.60566,
+      "pente": 0.963,
+      "pente_erreur_type": 0.044
+     },
+     "jugement": {
+      "matchs": 1375,
+      "favori_annonce_pct": 66.9,
+      "favori_reel_pct": 64.9,
+      "log_loss": 0.60999,
+      "pente": 0.929,
+      "pente_erreur_type": 0.071
+     },
+     "pente_du_melange_nu_apprentissage": 0.963,
+     "pente_apprise": 0.963,
+     "sens": "resserrer",
+     "gain_apprentissage": {
+      "matchs": 3696,
+      "gain": 9e-05,
+      "erreur_type": 0.00023
+     },
+     "gain_jugement": {
+      "matchs": 1375,
+      "gain": 0.00028,
+      "erreur_type": 0.00038
+     },
+     "erreurs_types": 0.74,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 0.929,
+      "gain_sur_l_apprentissage": {
+       "matchs": 3696,
+       "gain": 1e-05,
+       "erreur_type": 0.00044
+      }
+     },
+     "verdict": "non retenu",
+     "raisons": [
+      "gain jugé sous 0,001",
+      "gain jugé à 2 erreurs types ou moins"
+     ]
+    }
+   },
+   "une_seule_pente": {
+    "apprentissage": {
+     "matchs": 3764,
+     "favori_annonce_pct": 67.1,
+     "favori_reel_pct": 66.9,
+     "log_loss": 0.60393,
+     "pente": 0.959,
+     "pente_erreur_type": 0.043
+    },
+    "jugement": {
+     "matchs": 1413,
+     "favori_annonce_pct": 67.2,
+     "favori_reel_pct": 65.3,
+     "log_loss": 0.60435,
+     "pente": 0.948,
+     "pente_erreur_type": 0.07
+    },
+    "pente_du_melange_nu_apprentissage": 0.959,
+    "pente_apprise": 0.959,
+    "sens": "resserrer",
+    "gain_apprentissage": {
+     "matchs": 3764,
+     "gain": 0.00012,
+     "erreur_type": 0.00025
+    },
+    "gain_jugement": {
+     "matchs": 1413,
+     "gain": 0.00019,
+     "erreur_type": 0.00041
+    },
+    "erreurs_types": 0.46,
+    "sens_inverse": {
+     "pente_apprise_sur_la_periode_jugee": 0.948,
+     "gain_sur_l_apprentissage": {
+      "matchs": 3764,
+      "gain": 0.00011,
+      "erreur_type": 0.00032
+     }
+    },
+    "verdict": "non retenu",
+    "raisons": [
+     "gain jugé sous 0,001",
+     "gain jugé à 2 erreurs types ou moins"
+    ]
+   },
+   "toutes_les_tranches_jugement": {
+    "matchs": 1413,
+    "gain": 0.00017,
+    "erreur_type": 0.00037
+   },
+   "tranches_moins_une_seule_pente_jugement": {
+    "matchs": 1413,
+    "gain": -2e-05,
+    "erreur_type": 4e-05
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 3764,
+     "pente_elo_seul": 0.957,
+     "erreur_type": 0.043
+    },
+    "jugement": {
+     "matchs": 1413,
+     "pente_elo_seul": 0.917,
+     "erreur_type": 0.067
+    },
+    "jugement_06_08_2024": {
+     "matchs": 848,
+     "pente_elo_seul": 0.937,
+     "erreur_type": 0.087
+    },
+    "jugement_09_12_2024": {
+     "matchs": 565,
+     "pente_elo_seul": 0.886,
+     "erreur_type": 0.106
+    },
+    "ecart_en_erreurs_types": -0.5,
+    "en_chauffe": false
+   },
+   "cases_retenues": []
+  },
+  "WTA": {
+   "matchs": 5159,
+   "matchs_apprentissage": 3786,
+   "matchs_jugement": 1373,
+   "tranches": {
+    "moins_de_500": {
+     "apprentissage": {
+      "matchs": 62,
+      "favori_annonce_pct": 75.2,
+      "favori_reel_pct": 67.7,
+      "log_loss": 0.53617,
+      "pente": 0.92,
+      "pente_erreur_type": 0.247
+     },
+     "jugement": {
+      "matchs": 54,
+      "favori_annonce_pct": 71.7,
+      "favori_reel_pct": 68.5,
+      "log_loss": 0.54661,
+      "pente": 1.078,
+      "pente_erreur_type": 0.319
+     },
+     "pente_du_melange_nu_apprentissage": 0.92,
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "500_a_1500": {
+     "apprentissage": {
+      "matchs": 116,
+      "favori_annonce_pct": 70.8,
+      "favori_reel_pct": 75.0,
+      "log_loss": 0.50398,
+      "pente": 1.362,
+      "pente_erreur_type": 0.263
+     },
+     "jugement": {
+      "matchs": 54,
+      "favori_annonce_pct": 67.4,
+      "favori_reel_pct": 75.9,
+      "log_loss": 0.49795,
+      "pente": 2.0,
+      "pente_erreur_type": 0.604
+     },
+     "pente_du_melange_nu_apprentissage": 1.362,
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "1500_a_3000": {
+     "apprentissage": {
+      "matchs": 220,
+      "favori_annonce_pct": 67.5,
+      "favori_reel_pct": 71.8,
+      "log_loss": 0.56414,
+      "pente": 1.244,
+      "pente_erreur_type": 0.201
+     },
+     "jugement": {
+      "matchs": 92,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 66.3,
+      "log_loss": 0.58321,
+      "pente": 1.17,
+      "pente_erreur_type": 0.315
+     },
+     "pente_du_melange_nu_apprentissage": 1.244,
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 300 matchs pour apprendre"
+     ]
+    },
+    "3000_et_plus": {
+     "apprentissage": {
+      "matchs": 3388,
+      "favori_annonce_pct": 66.3,
+      "favori_reel_pct": 67.0,
+      "log_loss": 0.60476,
+      "pente": 1.03,
+      "pente_erreur_type": 0.048
+     },
+     "jugement": {
+      "matchs": 1173,
+      "favori_annonce_pct": 65.9,
+      "favori_reel_pct": 66.2,
+      "log_loss": 0.60231,
+      "pente": 1.089,
+      "pente_erreur_type": 0.086
+     },
+     "pente_du_melange_nu_apprentissage": 1.03,
+     "pente_apprise": 1.03,
+     "sens": "étirer",
+     "gain_apprentissage": {
+      "matchs": 3388,
+      "gain": 6e-05,
+      "erreur_type": 0.00018
+     },
+     "gain_jugement": {
+      "matchs": 1173,
+      "gain": 0.00027,
+      "erreur_type": 0.00029
+     },
+     "erreurs_types": 0.93,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 1.089,
+      "gain_sur_l_apprentissage": {
+       "matchs": 3388,
+       "gain": -0.00016,
+       "erreur_type": 0.00054
+      }
+     },
+     "verdict": "non retenu",
+     "raisons": [
+      "gain jugé sous 0,001",
+      "pas de gain en sens inverse",
+      "gain jugé à 2 erreurs types ou moins"
+     ]
+    }
+   },
+   "une_seule_pente": {
+    "apprentissage": {
+     "matchs": 3786,
+     "favori_annonce_pct": 66.7,
+     "favori_reel_pct": 67.5,
+     "log_loss": 0.59819,
+     "pente": 1.05,
+     "pente_erreur_type": 0.045
+    },
+    "jugement": {
+     "matchs": 1373,
+     "favori_annonce_pct": 66.2,
+     "favori_reel_pct": 66.6,
+     "log_loss": 0.59474,
+     "pente": 1.122,
+     "pente_erreur_type": 0.079
+    },
+    "pente_du_melange_nu_apprentissage": 1.05,
+    "pente_apprise": 1.05,
+    "sens": "étirer",
+    "gain_apprentissage": {
+     "matchs": 3786,
+     "gain": 0.00017,
+     "erreur_type": 0.00029
+    },
+    "gain_jugement": {
+     "matchs": 1373,
+     "gain": 0.00058,
+     "erreur_type": 0.00044
+    },
+    "erreurs_types": 1.32,
+    "sens_inverse": {
+     "pente_apprise_sur_la_periode_jugee": 1.122,
+     "gain_sur_l_apprentissage": {
+      "matchs": 3786,
+      "gain": -0.00016,
+      "erreur_type": 0.0007
+     }
+    },
+    "verdict": "non retenu",
+    "raisons": [
+     "gain jugé sous 0,001",
+     "pas de gain en sens inverse",
+     "gain jugé à 2 erreurs types ou moins"
+    ]
+   },
+   "toutes_les_tranches_jugement": {
+    "matchs": 1373,
+    "gain": 0.00048,
+    "erreur_type": 0.00029
+   },
+   "tranches_moins_une_seule_pente_jugement": {
+    "matchs": 1373,
+    "gain": -0.0001,
+    "erreur_type": 0.00016
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 3786,
+     "pente_elo_seul": 1.036,
+     "erreur_type": 0.045
+    },
+    "jugement": {
+     "matchs": 1373,
+     "pente_elo_seul": 1.127,
+     "erreur_type": 0.08
+    },
+    "jugement_06_08_2024": {
+     "matchs": 775,
+     "pente_elo_seul": 1.204,
+     "erreur_type": 0.108
+    },
+    "jugement_09_12_2024": {
+     "matchs": 598,
+     "pente_elo_seul": 1.03,
+     "erreur_type": 0.117
+    },
+    "ecart_en_erreurs_types": 0.99,
+    "en_chauffe": false
+   },
+   "cases_retenues": []
+  },
+  "CH": {
+   "matchs": 22586,
+   "matchs_apprentissage": 16191,
+   "matchs_jugement": 6395,
+   "tranches": {
+    "moins_de_500": {
+     "apprentissage": {
+      "matchs": 2327,
+      "favori_annonce_pct": 73.8,
+      "favori_reel_pct": 75.8,
+      "log_loss": 0.49458,
+      "pente": 1.174,
+      "pente_erreur_type": 0.049
+     },
+     "jugement": {
+      "matchs": 1018,
+      "favori_annonce_pct": 69.2,
+      "favori_reel_pct": 74.3,
+      "log_loss": 0.52788,
+      "pente": 1.395,
+      "pente_erreur_type": 0.094
+     },
+     "pente_du_melange_nu_apprentissage": 1.342,
+     "pente_apprise": 1.174,
+     "sens": "étirer",
+     "gain_apprentissage": {
+      "matchs": 2327,
+      "gain": 0.00289,
+      "erreur_type": 0.00149
+     },
+     "gain_jugement": {
+      "matchs": 1018,
+      "gain": 0.00704,
+      "erreur_type": 0.00185
+     },
+     "erreurs_types": 3.81,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 1.395,
+      "gain_sur_l_apprentissage": {
+       "matchs": 2327,
+       "gain": -0.00104,
+       "erreur_type": 0.00338
+      }
+     },
+     "verdict": "non retenu",
+     "raisons": [
+      "pas de gain en sens inverse"
+     ]
+    },
+    "500_a_1500": {
+     "apprentissage": {
+      "matchs": 2149,
+      "favori_annonce_pct": 67.7,
+      "favori_reel_pct": 69.4,
+      "log_loss": 0.57777,
+      "pente": 1.13,
+      "pente_erreur_type": 0.06
+     },
+     "jugement": {
+      "matchs": 928,
+      "favori_annonce_pct": 65.8,
+      "favori_reel_pct": 68.2,
+      "log_loss": 0.60014,
+      "pente": 1.111,
+      "pente_erreur_type": 0.097
+     },
+     "pente_du_melange_nu_apprentissage": 1.128,
+     "pente_apprise": 1.13,
+     "sens": "étirer",
+     "gain_apprentissage": {
+      "matchs": 2149,
+      "gain": 0.00116,
+      "erreur_type": 0.00101
+     },
+     "gain_jugement": {
+      "matchs": 928,
+      "gain": 0.00071,
+      "erreur_type": 0.00145
+     },
+     "erreurs_types": 0.49,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 1.111,
+      "gain_sur_l_apprentissage": {
+       "matchs": 2149,
+       "gain": 0.00113,
+       "erreur_type": 0.00086
+      }
+     },
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 1000 matchs jugés (928)"
+     ]
+    },
+    "1500_a_3000": {
+     "apprentissage": {
+      "matchs": 2049,
+      "favori_annonce_pct": 65.7,
+      "favori_reel_pct": 67.0,
+      "log_loss": 0.60202,
+      "pente": 1.121,
+      "pente_erreur_type": 0.066
+     },
+     "jugement": {
+      "matchs": 794,
+      "favori_annonce_pct": 65.5,
+      "favori_reel_pct": 67.5,
+      "log_loss": 0.61436,
+      "pente": 1.018,
+      "pente_erreur_type": 0.102
+     },
+     "pente_du_melange_nu_apprentissage": 1.149,
+     "pente_apprise": 1.121,
+     "sens": "étirer",
+     "gain_apprentissage": {
+      "matchs": 2049,
+      "gain": 0.00085,
+      "erreur_type": 0.00088
+     },
+     "gain_jugement": {
+      "matchs": 794,
+      "gain": -0.0006,
+      "erreur_type": 0.00154
+     },
+     "erreurs_types": -0.39,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 1.018,
+      "gain_sur_l_apprentissage": {
+       "matchs": 2049,
+       "gain": 0.00024,
+       "erreur_type": 0.00013
+      }
+     },
+     "verdict": "aucune décision",
+     "raisons": [
+      "moins de 1000 matchs jugés (794)"
+     ]
+    },
+    "3000_et_plus": {
+     "apprentissage": {
+      "matchs": 9666,
+      "favori_annonce_pct": 62.8,
+      "favori_reel_pct": 63.7,
+      "log_loss": 0.63504,
+      "pente": 1.077,
+      "pente_erreur_type": 0.035
+     },
+     "jugement": {
+      "matchs": 3655,
+      "favori_annonce_pct": 63.7,
+      "favori_reel_pct": 64.4,
+      "log_loss": 0.63504,
+      "pente": 1.002,
+      "pente_erreur_type": 0.053
+     },
+     "pente_du_melange_nu_apprentissage": 1.111,
+     "pente_apprise": 1.077,
+     "sens": "étirer",
+     "gain_apprentissage": {
+      "matchs": 9666,
+      "gain": 0.00025,
+      "erreur_type": 0.00023
+     },
+     "gain_jugement": {
+      "matchs": 3655,
+      "gain": -0.00027,
+      "erreur_type": 0.00041
+     },
+     "erreurs_types": -0.66,
+     "sens_inverse": {
+      "pente_apprise_sur_la_periode_jugee": 1.002,
+      "gain_sur_l_apprentissage": {
+       "matchs": 9666,
+       "gain": 1e-05,
+       "erreur_type": 1e-05
+      }
+     },
+     "verdict": "non retenu",
+     "raisons": [
+      "gain jugé sous 0,001",
+      "la pente apprise sur la période jugée n'est pas du même côté de 1",
+      "gain jugé à 2 erreurs types ou moins"
+     ]
+    }
+   },
+   "une_seule_pente": {
+    "apprentissage": {
+     "matchs": 16191,
+     "favori_annonce_pct": 65.4,
+     "favori_reel_pct": 66.6,
+     "log_loss": 0.60307,
+     "pente": 1.115,
+     "pente_erreur_type": 0.024
+    },
+    "jugement": {
+     "matchs": 6395,
+     "favori_annonce_pct": 65.1,
+     "favori_reel_pct": 66.9,
+     "log_loss": 0.61035,
+     "pente": 1.098,
+     "pente_erreur_type": 0.038
+    },
+    "pente_du_melange_nu_apprentissage": 1.169,
+    "pente_apprise": 1.115,
+    "sens": "étirer",
+    "gain_apprentissage": {
+     "matchs": 16191,
+     "gain": 0.00074,
+     "erreur_type": 0.0003
+    },
+    "gain_jugement": {
+     "matchs": 6395,
+     "gain": 0.00052,
+     "erreur_type": 0.00048
+    },
+    "erreurs_types": 1.08,
+    "sens_inverse": {
+     "pente_apprise_sur_la_periode_jugee": 1.098,
+     "gain_sur_l_apprentissage": {
+      "matchs": 16191,
+      "gain": 0.00073,
+      "erreur_type": 0.00025
+     }
+    },
+    "verdict": "non retenu",
+    "raisons": [
+     "gain jugé sous 0,001",
+     "gain jugé à 2 erreurs types ou moins"
+    ]
+   },
+   "toutes_les_tranches_jugement": {
+    "matchs": 6395,
+    "gain": 0.001,
+    "erreur_type": 0.00047
+   },
+   "tranches_moins_une_seule_pente_jugement": {
+    "matchs": 6395,
+    "gain": 0.00048,
+    "erreur_type": 0.00015
+   },
+   "elo_seul": {
+    "apprentissage": {
+     "matchs": 16191,
+     "pente_elo_seul": 1.078,
+     "erreur_type": 0.023
+    },
+    "jugement": {
+     "matchs": 6395,
+     "pente_elo_seul": 1.05,
+     "erreur_type": 0.037
+    },
+    "jugement_06_08_2024": {
+     "matchs": 3052,
+     "pente_elo_seul": 1.048,
+     "erreur_type": 0.056
+    },
+    "jugement_09_12_2024": {
+     "matchs": 3343,
+     "pente_elo_seul": 1.052,
+     "erreur_type": 0.049
+    },
+    "ecart_en_erreurs_types": -0.64,
+    "en_chauffe": false
+   },
+   "cases_retenues": []
+  }
+ },
+ "nos_matchs_publies": {
+  "lu": true,
+  "circuits": {
+   "ATP": {
+    "matchs": 204,
+    "favori_annonce_pct": 66.6,
+    "favori_reel_pct": 67.2,
+    "log_loss": 0.61088,
+    "pente": 0.97,
+    "pente_erreur_type": 0.189,
+    "deja_corriges_par": {},
+    "pente_unique_du_rejeu": 0.959,
+    "gain_de_la_pente_unique_du_rejeu": {
+     "matchs": 204,
+     "gain": 6e-05,
+     "erreur_type": 0.00109
+    }
+   },
+   "WTA": {
+    "matchs": 186,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 67.7,
+    "log_loss": 0.58408,
+    "pente": 1.297,
+    "pente_erreur_type": 0.248,
+    "deja_corriges_par": {},
+    "pente_unique_du_rejeu": 1.05,
+    "gain_de_la_pente_unique_du_rejeu": {
+     "matchs": 186,
+     "gain": 0.00135,
+     "erreur_type": 0.00096
+    }
+   },
+   "CH": {
+    "matchs": 1353,
+    "favori_annonce_pct": 67.4,
+    "favori_reel_pct": 67.0,
+    "log_loss": 0.59186,
+    "pente": 0.978,
+    "pente_erreur_type": 0.073,
+    "deja_corriges_par": {
+     "correction_niveaux.json": 51,
+     "corrections_chercheur.json": 57
+    },
+    "pente_unique_du_rejeu": 1.115,
+    "gain_de_la_pente_unique_du_rejeu": {
+     "matchs": 1353,
+     "gain": -0.00121,
+     "erreur_type": 0.00122
+    }
+   }
+  }
+ },
+ "limites": "simulation de base (profils ajustés aux adversaires, refaits tous les 7 jours), sans les couches du lundi (facteurs, modèle d'arbres, profils hiérarchiques) ni les autres signaux ; la correction Challenger « correct » n'est pas rejouée ; documentation comptée sur l'archive, à la date de début du tournoi ; en Challenger, l'Elo de la période jugée n'a que 0 à 7 mois de résultats ITF",
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-26",
+  "statut": "etude",
+  "paquet": 465,
+  "quoi": "UNE PENTE DU % FINAL PAR CIRCUIT ET PAR TRANCHE DE DOCUMENTATION ? (paquet 465, Lucas : « On peut adapter les règles en fonction du nombre de points et du circuit »). L'étude 462 n'a pas retenu un poids de la simulation par documentation, mais une simple pente sur le mélange gagnait dans toutes les tranches du Challenger sur sa période jugée (1,14 sous 500 points, 1,06 de 500 à 1 500, 1,12 de 1 500 à 3 000, 1,02 au-delà), et l'analyse 448 relancée avec les résultats ITF hommes donne un Elo seul un peu timide en Challenger (1,078). Ces chiffres ont déjà été vus : ils ne peuvent pas servir de jugement. Nouvelle étude simulateur/etude_pente_melange.py : le % final devient σ(a · logit p), une pente a par circuit (ATP, WTA, Challenger) et par tranche de documentation du joueur le moins vu au jour du match (moins de 500 points de service, 500 à 1 500, 1 500 à 3 000, 3 000 et plus). Rejeu comme en production, celui de l'étude 462 réutilisé tel quel sur des dates élargies (Elo de production avec les résultats ITF hommes, simulation de base, profils refaits tous les 7 jours sur les seuls tournois terminés avant le match). Base = ce qui est déjà en service : poids du mélange, pente 1,11 de la documentation faible, favori le moins documenté, pente 1,065 du Challenger sur terre ; la correction Challenger « correct » × 1,142 n'est pas rejouable (le niveau de fiabilité vient de nos pronostics publiés et n'existe pas avant octobre 2026) : les matchs qu'elle toucherait sont jugés sans elle. PÉRIODE NEUVE : les résultats ITF hommes du dépôt commencent en juin 2024, donc la seule période rejouable que les études 230, 320, 448, 452 et 462 n'ont pas utilisée est juin → décembre 2024. Règle écrite dans l'en-tête avant tout résultat, case par case : pente apprise du 01/01/2025 au 31/05/2026, jugée une seule fois du 01/06/2024 au 31/12/2024 ; retenue si au moins 1 000 matchs de la case jugés, gain de log loss d'au moins 0,001 par match, même sens sur les deux périodes (pente apprise sur la période jugée du même côté de 1 et gagnant aussi sur l'apprentissage) et gain de plus de 2 erreurs types ; sous 1 000 matchs jugés, aucune décision. Variante publiée pour comparaison : une seule pente par circuit. Réserves écrites avant tout résultat : en Challenger, l'Elo de la période jugée n'a que 0 à 7 mois de résultats ITF (contrôle « Elo en chauffe » publié) ; en ATP et en WTA, les poids du mélange ont été appris sur des matchs de 2024 → janvier 2026. Rapport public : simulateur/rapport_pente_melange.json (comptes et moyennes, aucun nom). RÉSULTAT : ATP (3764 matchs appris, 1413 jugés) — moins de 500 points : 16 matchs appris, 3 jugés — aucune décision (moins de 300 matchs pour apprendre) · 500 à 1 500 points : 21 matchs appris, 14 jugés — aucune décision (moins de 300 matchs pour apprendre) · 1 500 à 3 000 points : 31 matchs appris, 21 jugés — aucune décision (moins de 300 matchs pour apprendre) · 3 000 points et plus : pente 0,963 apprise sur 3696 matchs, 1375 jugés, gain 0,00028 ± 0,00038 (sens inverse : pente 0,929, gain 0,00001 ± 0,00044) — non retenu (gain jugé sous 0,001 ; gain jugé à 2 erreurs types ou moins) · une seule pente pour le circuit : pente 0,959 apprise sur 3764 matchs, 1413 jugés, gain 0,00019 ± 0,00041 (sens inverse : pente 0,948, gain 0,00011 ± 0,00032) — non retenu (gain jugé sous 0,001 ; gain jugé à 2 erreurs types ou moins) · une pente par tranche moins une seule pente, période jugée : -0,00002 ± 0,00004 ; WTA (3786 matchs appris, 1373 jugés) — moins de 500 points : 62 matchs appris, 54 jugés — aucune décision (moins de 300 matchs pour apprendre) · 500 à 1 500 points : 116 matchs appris, 54 jugés — aucune décision (moins de 300 matchs pour apprendre) · 1 500 à 3 000 points : 220 matchs appris, 92 jugés — aucune décision (moins de 300 matchs pour apprendre) · 3 000 points et plus : pente 1,03 apprise sur 3388 matchs, 1173 jugés, gain 0,00027 ± 0,00029 (sens inverse : pente 1,089, gain -0,00016 ± 0,00054) — non retenu (gain jugé sous 0,001 ; pas de gain en sens inverse ; gain jugé à 2 erreurs types ou moins) · une seule pente pour le circuit : pente 1,05 apprise sur 3786 matchs, 1373 jugés, gain 0,00058 ± 0,00044 (sens inverse : pente 1,122, gain -0,00016 ± 0,0007) — non retenu (gain jugé sous 0,001 ; pas de gain en sens inverse ; gain jugé à 2 erreurs types ou moins) · une pente par tranche moins une seule pente, période jugée : -0,0001 ± 0,00016 ; Challenger (16191 matchs appris, 6395 jugés) — moins de 500 points : pente 1,174 apprise sur 2327 matchs, 1018 jugés, gain 0,00704 ± 0,00185 (sens inverse : pente 1,395, gain -0,00104 ± 0,00338) — non retenu (pas de gain en sens inverse) · 500 à 1 500 points : pente 1,13 apprise sur 2149 matchs, 928 jugés, gain 0,00071 ± 0,00145 (sens inverse : pente 1,111, gain 0,00113 ± 0,00086) — aucune décision (moins de 1000 matchs jugés (928)) · 1 500 à 3 000 points : pente 1,121 apprise sur 2049 matchs, 794 jugés, gain -0,0006 ± 0,00154 (sens inverse : pente 1,018, gain 0,00024 ± 0,00013) — aucune décision (moins de 1000 matchs jugés (794)) · 3 000 points et plus : pente 1,077 apprise sur 9666 matchs, 3655 jugés, gain -0,00027 ± 0,00041 (sens inverse : pente 1,002, gain 0,00001 ± 0,00001) — non retenu (gain jugé sous 0,001 ; la pente apprise sur la période jugée n'est pas du même côté de 1 ; gain jugé à 2 erreurs types ou moins) · une seule pente pour le circuit : pente 1,115 apprise sur 16191 matchs, 6395 jugés, gain 0,00052 ± 0,00048 (sens inverse : pente 1,098, gain 0,00073 ± 0,00025) — non retenu (gain jugé sous 0,001 ; gain jugé à 2 erreurs types ou moins) · une pente par tranche moins une seule pente, période jugée : 0,00048 ± 0,00015 ; Elo seul : pente 1,05 sur la période jugée contre 1,078 sur l'apprentissage (pas d'écart au-delà de 2 erreurs types). Cases retenues : aucune ; pente unique retenue : aucun circuit. Proposé à Lucas ; rien n'est changé par ce paquet. Confirmation seulement, nos matchs publiés (ils portent déjà les corrections en place) : ATP 204 matchs, pente du % publié 0,97 ± 0,189 ; WTA 186 matchs, pente du % publié 1,297 ± 0,248 ; Challenger 1353 matchs, pente du % publié 0,978 ± 0,073. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans l'algo. Une case ou un circuit retenu sera proposé à Lucas dans un paquet suivant : pente appliquée en dernier, jamais multipliée par une correction de pente déjà en place sur le même match (Challenger « correct », terre), les deux % gardés dans la fiche, retrait par la règle cumulée (300 matchs concernés, gain négatif de plus de 2 erreurs types). Limites : simulation de base, sans les couches du lundi (facteurs, modèle d'arbres, profils hiérarchiques) ni les autres signaux : la pente apprise au rejeu n'est qu'un point de départ pour le % publié. 0 requête d'API. Retrait de l'étude : supprimer simulateur/etude_pente_melange.py, simulateur/journal_ajouts/paquet_465.json, simulateur/tests/test_etude_pente_melange.py et .github/workflows/etude_pente_melange.yml."
+ }
+}
