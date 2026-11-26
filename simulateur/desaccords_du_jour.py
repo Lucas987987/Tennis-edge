@@ -33,14 +33,10 @@ def p_pinnacle(c):
         return None
 
 
-def type_match(m, p):
-    f = m.get('fiabilite') or {}
-    pe, ps = (m.get('stats') or {}).get('p_home'), (m.get('simulation') or {}).get('p_home')
-    if f.get('fragile_criteres') or (pe is not None and ps is not None and (pe >= .5) != (ps >= .5)):
-        return 'fragile'
-    if pe is not None and ps is not None and abs(pe - ps) < .10 and max(p, 1 - p) >= .70:
-        return 'fiable'
-    return 'standard'
+def niveau_fiabilite(m):
+    """26/11/2026 (paquet 463) : la pastille « fiable / standard / fragile » est retirée ; on affiche le niveau de la note
+    de fiabilité mesurée match par match (fragile < 78, prudent < 85, correct < 93, solide)."""
+    return (m.get('fiabilite') or {}).get('niveau') or 'inconnu'
 
 
 def _utc(s):
@@ -100,7 +96,7 @@ def lister(doc, maintenant, closing=None):
             continue
         out.append({'heure': debut.astimezone(PARIS).strftime('%H:%M'), 'circuit': m['circuit'], 'tournoi': m.get('tournoi'),
                     'home': m['home'], 'away': m['away'], 'p_algo': p, 'p_pin': q, 'oppose': oppose,
-                    'type': type_match(m, p)})
+                    'niveau': niveau_fiabilite(m)})
     return sorted(out, key=lambda x: (x['heure'], x['home']))
 
 
@@ -110,15 +106,15 @@ def message(L, maintenant):
     if not L:
         return f"<b>🔎 Désaccords algo / Pinnacle — {jour}</b>\nAucun match du jour avec des favoris opposés ou 10 points d'écart."
     T = [f"<b>🔎 Désaccords algo / Pinnacle — {jour}</b> ({len(L)} matchs, cotes = loupe privée)"]
-    ic = {'fiable': '🟢', 'standard': '⚪', 'fragile': '🟠'}
+    ic = {'solide': '🟢', 'correct': '🟢', 'prudent': '⚪', 'fragile': '🟠'}
     for x in L:
         fa = x['home'] if x['p_algo'] >= .5 else x['away']
         fp = x['home'] if x['p_pin'] >= .5 else x['away']
         pa, pp = max(x['p_algo'], 1 - x['p_algo']), max(x['p_pin'], 1 - x['p_pin'])
         quoi = 'favoris opposés' if x['oppose'] else f"écart {round(100 * abs(x['p_algo'] - x['p_pin']))} pts"
-        T.append(f"{ic[x['type']]} {x['heure']} {x['circuit']} · {court(x['home'])} – {court(x['away'])} : "
-                 f"algo {court(fa)} {round(100 * pa)} % · Pinnacle {court(fp)} {round(100 * pp)} % ({quoi}, match {x['type']})")
-    T.append("🟠 fragile = l'algo lui-même hésite : un match ouvert, pas un avantage. Rien n'est validé avant 30 matchs (CLV).")
+        T.append(f"{ic.get(x['niveau'], '⚪')} {x['heure']} {x['circuit']} · {court(x['home'])} – {court(x['away'])} : "
+                 f"algo {court(fa)} {round(100 * pa)} % · Pinnacle {court(fp)} {round(100 * pp)} % ({quoi}, fiabilité {x['niveau']})")
+    T.append("🟠 fiabilité fragile = nos % se réalisent moins bien sur ce type de match, pas un avantage. Rien n'est validé avant 30 matchs (CLV).")
     return '\n'.join(T)
 
 

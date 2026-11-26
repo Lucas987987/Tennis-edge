@@ -46,7 +46,7 @@
 :root{--wv:255,255,255}
 html[data-theme="light"]{--bg:#F4F2FB;--bg2:#ECE8F8;--panel:#FFFFFF;--line:rgba(30,20,80,.14);--line2:rgba(30,20,80,.26);--ink:#1B1640;--dim:#5C5788;--p1:#0A7FA3;--p2:#C21F78;--ball:#6F9500;--ok:#0E8A57;--ko:#C92A4D;--wv:30,20,80;color-scheme:light}
 html[data-theme="light"] body{background:radial-gradient(900px 520px at 50% -120px,#DAD1FB 0%,transparent 70%),var(--bg)}
-html[data-theme="light"] .typem.fiable{color:#0E7A4C}html[data-theme="light"] .typem.fragile{color:#C2412D}
+
 html[data-theme="light"] .panel{box-shadow:0 6px 22px rgba(40,20,120,.08)}
 .borne,.cj-c,.arcade{color:#F4F1FF;--wv:255,255,255;--ink:#F4F1FF;--dim:#ABA3D6;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.2);--bg:#0E0A24;--ok:#45F0A0;--ko:#FF6B86;--ball:#D4FF3A}
 header.top{flex-wrap:wrap}.reglages{flex-wrap:wrap;justify-content:flex-end}
@@ -129,8 +129,6 @@ h2{font-family:var(--disp);font-weight:400;font-size:1.45rem;line-height:1.15;ma
 .duelx .cj{color:var(--dim);font-size:.9rem;font-family:var(--cond);font-variant-numeric:tabular-nums}
 .fiab{display:flex;align-items:center;gap:7px;margin-top:10px;color:var(--dim);font-size:.86rem;flex-wrap:wrap}
 .fiab b{color:var(--ball);font-family:var(--cond);font-size:1rem}.fiab small{flex-basis:100%;font-size:.78rem}
-.typem{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:700;border:1px solid currentColor}
-.typem.fiable{color:#7CE3A6}.typem.standard{color:var(--dim)}.typem.fragile{color:#FF9A8B}
 .tir{display:flex;height:12px;border-radius:999px;overflow:hidden;margin:12px 0 8px;background:var(--p2);box-shadow:0 0 14px rgba(255,79,174,.35)}
 .tir i{display:block;height:100%;background:var(--p1);box-shadow:0 0 14px rgba(46,230,255,.5)}
 .fiche h3{font-size:1rem;margin:14px 16px 4px;font-weight:600}
@@ -983,10 +981,6 @@ const T = {
   vg_ligne:(l,p,r,c)=>`${l} : annoncé ${p} % en moyenne, arrivé ${r} % (${c}).`, vg_tous:'tous circuits',
   vg_set1:n=>`1er set gagné par ${n}`, vg_tb:'Au moins un tie-break', vg_sd:'Set décisif', vg_total:x=>`Plus de ${x} jeux`, vg_hand:x=>`Favori à −${x} jeux`,
   vg_xp:'Un joueur a moins de 100 matchs : ses statistiques de service prévues sont moins sûres (fourchette respectée environ 70 % du temps au lieu de 80 %).',
-  typem_fiable:'Match fiable', typem_standard:'Match standard', typem_fragile:'Match fragile',
-  typem_aide_fiable:"Les deux modèles sont d'accord et le favori est à 70 % ou plus : sur nos pronostics passés, le favori a gagné 78 à 87 % du temps et nos pourcentages s'y réalisent.",
-  typem_aide_standard:'Cas courant : nos pourcentages se réalisent en moyenne, sans plus.',
-  typem_aide_fragile:"L'Elo et la simulation ne désignent pas le même favori (ou un autre critère de fragilité vérifié chaque semaine) : sur nos pronostics passés, presque pile ou face.",
   fiab:'Fiabilité', fiab_aide:"Note mesurée pour CE match, de 0 à 100 : plus elle est proche de 100, plus nos pourcentages se réalisent tels quels sur ce type de match (circuit, expérience des joueurs, critères du match comme des favoris opposés ou un huitième de finale, fiabilité passée des deux joueurs). Mesurée sur des milliers de matchs rejoués et sur nos matchs publiés, réapprise chaque semaine. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
   son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, choisi pour montrer le type de match prévu : 3 sets si la probabilité de set décisif dépasse nettement la moyenne du circuit (seuil réglé pour que la part de vidéos en 3 sets égale la part réelle du circuit), un tie-break de même ; le favori gagne, dans son scénario le plus fréquent pour ce type de match (sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), avec les jeux et les statistiques médianes. Chaque relance reprend ce même scénario.`,
@@ -1355,10 +1349,6 @@ const T = {
   vg_ligne:(l,p,r,c)=>`${l}: forecast ${p}% on average, happened ${r}% (${c}).`, vg_tous:'all tours',
   vg_set1:n=>`First set won by ${n}`, vg_tb:'At least one tie-break', vg_sd:'Deciding set', vg_total:x=>`Over ${x} games`, vg_hand:x=>`Favourite −${x} games`,
   vg_xp:'One player has fewer than 100 matches: their forecast serve stats are less certain (range met about 70% of the time instead of 80%).',
-  typem_fiable:'Reliable match', typem_standard:'Standard match', typem_fragile:'Fragile match',
-  typem_aide_fiable:'Both models agree and the favourite is at 70% or more: in our past forecasts the favourite won 78 to 87% of the time and our percentages came true.',
-  typem_aide_standard:'Usual case: our percentages come true on average.',
-  typem_aide_fragile:'Elo and the simulation pick different favourites (or another fragility rule checked weekly): close to a coin flip in our past forecasts.',
   fiab:'Reliability', fiab_aide:'Score measured for THIS match, from 0 to 100: the closer to 100, the more our percentages come true as stated on this kind of match (tour, players\' experience, match criteria such as split favourites or a round of 16, both players\' past reliability). Measured on thousands of replayed matches and on our published matches, relearned every week. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
   son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual match drawn from ${fmt(n)} simulations, selected to show the expected type of match: three sets if the deciding-set probability is clearly above the tour average (threshold set so that the share of three-set videos matches the tour's real share), a tie-break likewise; the favourite wins, in their most frequent scenario for that type of match (comfortable or tight straight sets; in three sets, after winning or losing the first set), with median games and statistics. Every replay uses this same scenario.`,
@@ -3587,11 +3577,6 @@ function rendTextes(){
   if (typeof rendFondateurs === 'function' && !document.getElementById('fondateurs').hidden) rendFondateurs();
   boutonSon();
 }
-// 05/11/2026 — type de match (vitrine.type_de_match) : fiable / standard / fragile
-function rendType(m){
-  const k = m && m.type_match; if (!k) return '';
-  return `<span class="typem ${esc(k)}" title="${esc(t('typem_aide_' + k))}">${esc(t('typem_' + k))}</span>`;
-}
 // te-incertitude-fiabilite-v1 : indicateur de sensibilité propre au match.
 function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
@@ -3992,7 +3977,7 @@ function rendMdj(){
 
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
-        ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
+        <div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendReussite(m)}
         ${rendCartes(m)}
         <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${(VIDEO_ICI || ADMIN) ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${(VIDEO_ICI || ADMIN) && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
@@ -8139,7 +8124,7 @@ function rendListe(){
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
-      ${rendType(m)}${rendFiabilite(m.fiabilite)}
+      ${rendFiabilite(m.fiabilite)}
     </span></a></li>`; };
   ul.innerHTML = notePlus + (termines.length && circuit!=='LIVE' ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '') + visibles.map(ligneMatch).join('');
   const more = document.getElementById('liste-more');
