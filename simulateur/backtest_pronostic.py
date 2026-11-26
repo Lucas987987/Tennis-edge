@@ -203,7 +203,10 @@ def resultats_itf(racine, ids_feuilles=()):
     sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
     try:
         import resultats_itf as RI
-    except ImportError:
+    except ImportError as e:
+        # 26/11/2026 (paquet 464) : plus jamais en silence — des études ont tourné sur GitHub sans résultats ITF parce que
+        # scripts/feuilles_match.py (importé par resultats_itf.py) manquait au sparse-checkout
+        print('ATTENTION résultats ITF non lus :', type(e).__name__, getattr(e, 'name', ''), file=sys.stderr)
         return []
     ids = set(ids_feuilles or ())
     brut = RI.lire_tout(racine)
