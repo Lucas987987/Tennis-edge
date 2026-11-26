@@ -2536,6 +2536,13 @@
    "paquet": 453,
    "quoi": "SIGNAL « DOCUMENTATION FAIBLE » DU CHALLENGER : PENTE 1,844 → 1,11 (paquet 453, décision de Lucas après l'étude 452). Quand le joueur le moins vu a moins de 500 points de service, le % était écarté de 50 % avec la pente 1,844, apprise avant que l'Elo ait les résultats ITF hommes et le départ ITF à 1000. Sur le rejeu Challenger comme en production, elle faisait perdre (−0,019 ± 0,010 de log loss par match peu documenté, 1 127 matchs jugés d'octobre 2025 à mai 2026 ; −0,038 sur janvier–septembre 2025). La pente réapprise sur janvier–septembre 2025, 1,11, gagne +0,0037 ± 0,0013 sur la période jugée et +0,0012 sur l'autre. Contrôle dans l'autre sens : la pente apprise sur la période jugée (1,235), appliquée à janvier–septembre 2025, ne gagne rien (−0,0002 ± 0,0029) : l'Elo n'est que légèrement trop prudent sur ces matchs, et la bonne pente varie d'une période à l'autre. Le % change sur les matchs Challenger peu documentés : il est moins écarté de 50 %.",
    "garde_fou": "Retrait habituel du signal (simulateur/fantomes_circuits.py, chaque lundi : deux semaines de suite pires sur nos matchs, Telegram privé). Retour à la main : « pente » dans simulateur/rapport_documentation.json (ancienne valeur gardée dans « pente_avant »)."
+  },
+  {
+   "date": "2026-11-25",
+   "statut": "site",
+   "paquet": 454,
+   "quoi": "ANALYSE COMPLÈTE POUR X : SCÉNARIOS FAUX SUR LES MATCHS COMMENCÉS, CORRIGÉS (paquet 454, relevé par Lucas sur Kicker – Moller du 25/11 : « Kicker en 3 sets : 0 % » alors que le score en sets lui donnait 13 %). Cause : un match commencé est gardé tel qu'il était affiché (garder_commences) avec sa distribution des scores déjà coupée sous 0,1 % ; au passage suivant, ses scénarios et ses questions étaient RECALCULÉS sur cette distribution coupée, où les matchs en 3 sets, très dispersés, avaient disparu (5 matchs sur 180 dans la version du 22/11). Corrigé : un match déjà compacté garde ses scénarios et ses questions, calculés sur la distribution complète ; et si une distribution coupée arrive quand même, la masse d'un score en sets absent est remise dans le bon scénario (« en 3 sets »), sa part « après avoir perdu le 1er set » n'étant alors pas affichée. Lisibilité : les scores exacts sont écrits du point de vue du vainqueur (« Moller 6-2 6-2 » et non « 2-6 2-6 »). Le % de victoire ne change pas.",
+   "garde_fou": "Descriptif seulement. Test : tests/test_scenarios_coupes.py."
   }
  ]
 }

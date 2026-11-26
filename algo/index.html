@@ -1804,9 +1804,18 @@ function scenariosListe(m){
   const aide = {net: fr ? 'chaque set à 6-2 ou mieux : au moins 2 breaks d\'avance' : 'every set 6-2 or better: at least 2 breaks up',
                 accroche: fr ? 'au moins un set à 6-3, 6-4, 7-5 ou 7-6 : un seul break a pu suffire' : 'at least one set 6-3, 6-4, 7-5 or 7-6: a single break may have been enough'};
   const L_ = [];
+  // 25/11/2026 (paquet 454) : 3 sets complétés depuis le score en sets (scores exacts coupés) → part « remontée » non connue, pas affichée
+  const est = new Set(S.estime || []);
   S.j.forEach((o,i)=>['net','accroche','long'].forEach(k=>L_.push({i, k, p:o[k], nom:lib[k](N[i]),
-    aide: k==='long' ? (o.remontee >= 0.005 ? (fr ? `dont ${pc0(o.remontee)} après avoir perdu le 1er set` : `incl. ${pc0(o.remontee)} after losing the 1st set`) : '') : aide[k]})));
+    aide: k==='long' ? (o.remontee >= 0.005 && !est.has(i ? '1-2' : '2-1') ? (fr ? `dont ${pc0(o.remontee)} après avoir perdu le 1er set` : `incl. ${pc0(o.remontee)} after losing the 1st set`) : '') : aide[k]})));
   return L_;
+}
+// 25/11/2026 (paquet 454) : un score exact lu du point de vue du VAINQUEUR (« Moller 6-2 6-2 » et non « 2-6 2-6 »)
+function scoreVainqueur(x, m){
+  const sets = String(x).split(' ').map(t=>t.split('-').map(Number)).filter(t=>t.length===2 && t.every(Number.isFinite));
+  if (!sets.length) return String(x);
+  const h = sets.filter(([a,b])=>a>b).length, a_ = sets.length - h, vH = h > a_;
+  return `${court(vH ? m.home : m.away)} ${sets.map(([a,b])=>vH ? `${a}-${b}` : `${b}-${a}`).join(' ')}`;
 }
 function scenarioIndice(m){
   const L_ = scenariosListe(m); if (!L_) return '';
@@ -2579,7 +2588,7 @@ function postX(m, court_){
       L2.push(`↩️ Victoire de ${outC} : ${pct(pO)}`, '');
     }
     const sc = (m.scores_probables||[]).slice(0,3);
-    if (sc.length){ L2.push('🎯 Scores exacts les plus fréquents :'); sc.forEach(([x,v])=>L2.push(`• ${x} : ${pct1(v)}`)); L2.push(''); }
+    if (sc.length){ L2.push('🎯 Scores exacts les plus fréquents :'); sc.forEach(([x,v])=>L2.push(`• ${scoreVainqueur(x, m)} : ${pct1(v)}`)); L2.push(''); }
     const f = m.feuille_prevue;
     if (f && f[0] && f[1]){
       L2.push('📈 STATISTIQUES PRÉDITES', `${H} / ${A}`, '');
@@ -2783,7 +2792,7 @@ function analyseComplete(m, court_){
       if (G && G.net && G.net.n >= 60) T.splice(T.length - 1, 0, `🔍 Vérifié sur nos matchs passés : ${['net','accroche','long','remontee','gagne_apres_set1'].filter(x=>G[x] && G[x].verdict==='juste').length} scénarios sur 5 tombent juste.`);
     }
     const sc = (m.scores_probables||[]).slice(0,3);
-    if (sc.length && !court_) bloc('🎯 Scores exacts les plus fréquents :', ...sc.map(([x,v])=>`• ${x} : ${pct1(v)}`));
+    if (sc.length && !court_) bloc('🎯 Scores exacts les plus fréquents :', ...sc.map(([x,v])=>`• ${scoreVainqueur(x, m)} : ${pct1(v)}`));
     // duel service / retour
     const du = m.duel;
     if (du && Array.isArray(du.joueurs) && du.joueurs.length === 2){
