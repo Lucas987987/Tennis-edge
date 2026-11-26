@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""12/11/2026 (paquet 244) — la vidéo montre le scénario le plus fréquent du favori (mêmes groupes que le post)."""
+"""12/11/2026 (paquet 244) — la vidéo montre le scénario le plus fréquent du favori (mêmes groupes que le post).
+26/11/2026 (paquet 488) : le plus probable des trois scénarios publiés, sans seuil de forme."""
 import os
 import random
 import sys
@@ -35,14 +36,15 @@ class Video(unittest.TestCase):
             v, g = mt['vainqueur'], groupe(mt['sets'], mt['vainqueur'])
             J = S['j'][v]
             self.assertEqual(mt['forme']['scenario'], g)
-            if g in ('net', 'accroche'):
-                autre = 'accroche' if g == 'net' else 'net'
-                self.assertGreaterEqual(J[g], J[autre] - 0.01, (mt['score'], J))
-            else:
+            # 488 : le groupe publié de la vidéo est le plus probable des trois publiés pour le favori
+            pub = 'long' if g in ('long', 'remontee') else g
+            for autre in ('net', 'accroche', 'long'):
+                self.assertGreaterEqual(J[pub], J[autre] - 0.01, (mt['score'], J))
+            if pub == 'long':
                 rem, non = J['remontee'], J['long'] - J['remontee']
                 self.assertGreaterEqual(rem if g == 'remontee' else non, (non if g == 'remontee' else rem) - 0.01, (mt['score'], J))
 
-    def test_la_forme_reste_la_regle_d_avant(self):
+    def test_forme_coherente(self):
         rnd = random.Random(5)
         mt = MS.simuler(profil(rnd), profil(rnd), 0.8, 2, 6000, 0.15, cle='f', circuit='ATP')['match_type']
         f = mt['forme']
@@ -52,8 +54,8 @@ class Video(unittest.TestCase):
 
     def test_texte_d_aide(self):
         s = open(os.path.join(ICI, '..', 'algo', 'index.html'), encoding='utf-8').read()
-        self.assertIn('dans son scénario le plus fréquent pour ce type de match', s)
-        self.assertIn('in their most frequent scenario for that type of match', s)
+        self.assertIn('le scénario le plus probable du favori, celui que la fiche annonce', s)
+        self.assertIn('the favourite’s most likely scenario, the one the match page shows', s)
 
 
 if __name__ == '__main__':
