@@ -11,7 +11,7 @@
 // CLE_PRIVEE), HttpOnly, Secure, SameSite=Lax, 90 jours ; un changement de mot de passe ferme toutes les sessions.
 // Liens envoyés par e-mail (vérification, nouveau mot de passe) : signés, valables 48 h / 1 h, à usage unique.
 
-import { adminVentes, factureClient, demandeAbonnement, TARIFS, attribuerFondateur } from './ventes.js';
+import { adminVentes, factureClient, demandeAbonnement, TARIFS, attribuerFondateur, renvoyerRib } from './ventes.js';
 import { routePush, suivreCompte, clePublique } from './notifs.js';   // 483 : notifications des favoris
 
 export const COOKIE_COMPTE = 'gsa_compte';
@@ -92,10 +92,10 @@ function paiementDe(u, env) {
   if (!u || !u.verifie) return null;
   const montant = u.demande ? u.demande.montant : (u.fondateur_place && !u.fondateur_perdu ? PRIX_FONDATEUR_SITE : null);   // 474
   if (montant == null) return null;
-  let c = null;
-  try { c = JSON.parse(env.VIREMENT || 'null'); } catch (e) { c = null; }
-  if (!c || !c.iban) return u.demande ? { iban: null, montant, reference: referenceVirement(u) } : null;
-  return { titulaire: c.titulaire || '', iban: c.iban, bic: c.bic || '', montant, reference: referenceVirement(u) };
+  // 484 (Lucas : « je ne veux pas que mon RIB apparaisse directement sur le site ; les futurs abonnés reçoivent les
+  // informations par mail ») : JAMAIS les coordonnées bancaires dans la réponse au navigateur. Elles partent seulement
+  // par e-mail (demande d'abonnement, ouverture fondateurs, rappels, et le bouton « Renvoyer l'e-mail »).
+  return { iban: null, montant, reference: referenceVirement(u), demande: !!u.demande };
 }
 
 // --------------------------------------------------------------------------------------------- session
@@ -434,6 +434,7 @@ export async function apiCompte(req, env, url, cle = false) {
   if (p === 'fondateur') return fondateur(req, env, b);
   if (p === 'acces_immediat') return accesImmediat(req, env, b);
   if (p === 'abonnement') return demandeAbonnement(req, env, b);
+  if (p === 'rib') return renvoyerRib(req, env);                  // 484 : coordonnées du virement renvoyées par e-mail
   if (p === 'favoris') return favoris(req, env, b);
   if (p === 'push') {                                           // 483 : notifications du téléphone (abonnés Plus)
     const u = await utilisateur(req, env);

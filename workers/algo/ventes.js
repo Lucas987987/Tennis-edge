@@ -536,6 +536,23 @@ export function mailDemande(u, d, c, url) {
 // mois est payé au plus tard DELAI_FONDATEUR_J jours après la fin du précédent. Un accès payé au tarif fondateur, fini
 // depuis plus longtemps, le fait perdre pour de bon (u.fondateur_perdu, gardé sur le compte). Le premier paiement d'une
 // place fondateur n'a pas de délai (aucun accès payé avant).
+// 26/11/2026 (paquet 484, Lucas : « les futurs abonnés reçoivent les informations par mail ») — le site n'affiche plus
+// jamais le RIB : « Renvoyer l'e-mail » renvoie l'e-mail de la demande en cours (montant, coordonnées, référence).
+// Une fois toutes les 10 minutes au plus par compte.
+export const RIB_DELAI_MIN = 10;
+export async function renvoyerRib(req, env) {
+  const u = await utilisateur(req, env);
+  if (!u) return rep({ ok: false, erreur: 'connexion' }, 401);
+  if (!u.verifie || !u.demande) return rep({ ok: false, erreur: 'requete' }, 400);
+  if (u.rib_envoye && Date.now() - Date.parse(u.rib_envoye) < RIB_DELAI_MIN * 60e3) return rep({ ok: false, erreur: 'attente' }, 429);
+  u.rib_envoye = new Date().toISOString();
+  await ecrire(env, u);
+  const url = String(env.SITE_URL || 'https://gamesetalgo.com');
+  let mail = { ok: false };
+  try { mail = await envoyerMail(env, u.email, mailDemande(u, { ...u.demande, acces_immediat: !!u.acces_immediat }, coordonnees(env), url)); } catch (e) { /* signalé */ }
+  return rep({ ok: !!mail.ok, erreur: mail.ok ? undefined : 'defaut' });
+}
+
 export function fondateurPerdu(u, maintenant = Date.now()) {
   if (!u) return false;
   if (u.fondateur_perdu) return true;

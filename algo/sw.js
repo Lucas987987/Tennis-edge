@@ -64,7 +64,7 @@ self.addEventListener('push', (e) => {
   try { m = e.data ? e.data.json() : {}; } catch (x) { m = { texte: e.data ? e.data.text() : '' }; }
   const titre = String(m.titre || 'Game Set Algo').slice(0, 120);
   e.waitUntil(self.registration.showNotification(titre, {
-    body: String(m.texte || '').slice(0, 300), icon: 'icone-192.png', badge: 'icone-192.png',
+    body: String(m.texte || '').slice(0, 300), icon: 'icone-192.png', badge: 'badge-96.png',   // 484 : petite icône de la barre = balle blanche sur fond transparent (Android n'en garde que la forme)
     tag: m.tag || 'gsa', renotify: true, data: { url: typeof m.url === 'string' && m.url.startsWith('/') ? m.url : '/' } }));
 });
 self.addEventListener('notificationclick', (e) => {

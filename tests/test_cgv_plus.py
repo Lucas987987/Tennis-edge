@@ -38,7 +38,8 @@ def test_section_plus_tableau_et_preuve():
 
 def test_paiement_seulement_pour_le_fondateur_prevenu():
     seg = _seg('function blocPaiement', '// 23/11/2026 (paquet 384')
-    assert 'COMPTE.fondateur_place' in seg and 'PAIEMENT' in seg and 'map(esc)' in seg
+    assert 'COMPTE.fondateur_place' in seg and 'PAIEMENT' in seg
+    assert 'iban' not in seg.lower()                       # 484 : le RIB part seulement par e-mail
     assert re.search(r"PAIEMENT = o\.paiement \|\| null", PAGE)
 
 
