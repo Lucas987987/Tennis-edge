@@ -2578,6 +2578,13 @@
    "paquet": 459,
    "quoi": "FORME RÉCENTE DANS LES POSTS X : LE FAIT, SANS SIGNAL (paquet 459, accord de Lucas). « X victoires sur ses 40 derniers matchs, pour Y attendues » portait un ✅ dès 1 victoire au-dessus de l'attendu (plus de la moitié des joueurs) et « présente la meilleure dynamique récente » entrait dans « Ce qu'il faut retenir » dès 2 victoires d'écart entre les deux joueurs. Or l'écart sur 40 matchs est surtout du hasard (environ 3 victoires d'écart type) : sur 221 joueurs du 22/11, 13 (6 %) étaient à 6 victoires ou plus de l'attendu, à peu près ce que donne le hasard seul ; et l'Elo tient déjà compte de ces résultats. La ligne reste, sans ✅ ni ⚠️, avec la mention qu'elle ne change pas le %, et plus rien sur la forme dans « Ce qu'il faut retenir ». Le % de victoire ne change pas.",
    "garde_fou": "Affichage seulement. Test : tests/test_petits_echantillons_458.py."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "site",
+   "paquet": 460,
+   "quoi": "MESSAGE « PEU DOCUMENTÉ » REVU (paquet 460, Lucas). Il s'affichait en rouge pour tout joueur à moins de 1 500 points de service connus (un joueur sur deux le 22/11 : 159 sur 298), avec « c'est la tranche où l'algo se trompe le plus » pour 500 à 1 500 points — une affirmation démentie par trois études (paquets 187, 368, 375). Et les matchs ITF, sans feuille de statistiques, n'y comptaient pas, alors que l'Elo les intègre depuis le 28/10. Désormais : rien entre 500 et 1 500 points ; sous 500 points, une information neutre (« peu de statistiques de service connues ; sa simulation s'appuie surtout sur son niveau Elo, résultats ITF compris ; la note de fiabilité du match en tient compte ») ; plus de badge « peu documenté » dans la liste des matchs. Le % de victoire ne change pas.",
+   "garde_fou": "Affichage seulement. Test : tests/test_petits_echantillons_458.py."
   }
  ]
 }

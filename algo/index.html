@@ -1015,7 +1015,7 @@ const T = {
   es_raisons:r=>`Pourquoi : ${r}.`, es_raisons_donnees:'Pourquoi : nouveaux résultats et nouvelles données des joueurs.',
   es_premier:(p,n,d)=>`Premier pronostic : ${n} ${p}${d ? ' (' + d + ')' : ''}`,
   es_peu:(n,b,fem)=>`${n} est peu ${fem?'documentée':'documenté'} (${fmt(b)} balles de service) : c’est la tranche où l’algo se trompe le plus, prudence.`,
-  es_tres_peu:(n,b,fem)=>`${n} est très peu ${fem?'documentée':'documenté'} (${fmt(b)} balles de service) : estimation surtout fondée sur son classement et ses résultats.`,
+  es_tres_peu:(n,b,fem)=>`${n} : peu de statistiques de service connues (${fmt(b)} points) ; sa simulation s’appuie surtout sur son niveau Elo, résultats ITF compris. La note de fiabilité du match en tient compte.`,
   es_duree:d=>`Durée prévue ${d}.`, es_style_rien:'Aucun écart net contre le style adverse.',
   es_abandon:(n,j)=>`${n} a abandonné un match il y a ${j} jours : sur nos données, le risque d’abandon double (environ 3 % contre 1,5 %).`,
   act_m:(n,m,b)=>`${n} : ${m} match${m>1?'s':''} en 30 jours${b?` (${fmt(b)} balles de service)`:''}`,
@@ -1387,7 +1387,7 @@ const T = {
   es_raisons:r=>`Why: ${r}.`, es_raisons_donnees:'Why: new results and new player data.',
   es_premier:(p,n,d)=>`First forecast: ${n} ${p}${d ? ' (' + d + ')' : ''}`,
   es_peu:(n,b)=>`${n} has little data (${fmt(b)} service points): the band where the model errs most, be careful.`,
-  es_tres_peu:(n,b)=>`${n} has very little data (${fmt(b)} service points): estimate mostly from ranking and results.`,
+  es_tres_peu:(n,b)=>`${n}: few known service stats (${fmt(b)} points); the simulation relies mostly on their Elo level, ITF results included. The match reliability score takes it into account.`,
   es_duree:d=>`Expected length ${d}.`, es_style_rien:'No clear gap against the opponent’s style.',
   es_abandon:(n,j)=>`${n} retired from a match ${j} days ago: in our data the retirement risk doubles (about 3% vs 1.5%).`,
   act_m:(n,m,b)=>`${n}: ${m} match${m>1?'es':''} in 30 days${b?` (${fmt(b)} service points)`:''}`,
@@ -2356,7 +2356,10 @@ function rythmeTexte(r,m){
   return { txt, sens: 'info' };
 }
 // 28/10/2026 — L'ESSENTIEL : les conclusions des cartes en quelques lignes, en tête de la fiche (les cartes restent).
-const DOC_PEU = 1500, DOC_TRES_PEU = 500;   // balles de service effectives (tranche 500–1 500 : l'algo s'y trompe le plus)
+// 26/11/2026 (paquet 460, Lucas) : seulement sous 500 points de service, en information neutre. La tranche 500–1 500
+// (« l'algo s'y trompe le plus ») a été démentie par trois études (paquets 187, 368, 375) ; le message touchait un joueur
+// sur deux ; et les matchs ITF, sans feuille de statistiques, n'y comptaient pas alors que l'Elo les intègre.
+const DOC_PEU = 500, DOC_TRES_PEU = 500;   // balles de service effectives
 function peuDocumentes(m){
   const d = m.documentation; if (!Array.isArray(d)) return [];
   return [0,1].filter(i=>d[i]!=null && d[i] < DOC_PEU).map(i=>({ nom: i===0?m.home:m.away, balles: d[i] }));
@@ -2552,7 +2555,7 @@ function essentielListe(m){
     L_.push({ sens:'info', txt: t('es_vitesse', cl, dec(v,1), vc.cpi_officiel, vc.annee, vc.annee === utc(m.debut).getUTCFullYear()) });
   }
   const ev = evolutionTexte(m); if (ev) L_.push({ sens:'info', txt: ev });
-  peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
+  peuDocumentes(m).forEach(x=>L_.push({ sens:'info', txt: t('es_tres_peu', x.nom, x.balles, fem) }));
   (m.abandon_recent||[]).forEach((j,i)=>{ if (j!=null) L_.push({ sens:'moins', txt: t('es_abandon', i===0?m.home:m.away, j) }); });
   const ac = activiteTexte(m); if (ac) L_.push(ac);
   const sv = serviceTexte(m); if (sv) L_.push(sv);
@@ -8130,7 +8133,7 @@ function rendListe(){
   const ligneMatch = m=>{ if (m.verrou) return ligneVerrou(m); const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${quand(m.debut)}</span><span>
-      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
