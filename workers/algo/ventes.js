@@ -50,8 +50,65 @@ export async function compterVisite(req, env) {
     if (r) return;
   }
 }
+// 26/11/2026 (paquet 479, Lucas : « un maximum d'informations sur ce qui se passe sur le site, de façon anonyme pour
+// ne pas tracer les gens ») — ÉVÉNEMENTS ANONYMES : la page envoie, au plus une fois par minute, des COMPTEURS (fiches
+// ouvertes, simulations, direct 3D, Demande à l'algo, favoris…) et une minute de présence si l'onglet est visible. Aucun
+// cookie, aucun identifiant : la même empreinte du jour que les visites (effacée le lendemain) sert seulement à compter
+// les visiteurs actifs et à ne compter qu'une fois par visiteur l'appareil, le pays (Cloudflare), la langue et la
+// provenance (nom de domaine seul). Ne sont gardés que des totaux par jour. Liste fermée d'événements, valeurs bornées.
+export const EVENEMENTS = Object.freeze(['fiche', 'simulation', 'direct_3d', 'demande_algo', 'demande_algo_direct', 'favori',
+  'filtre_favoris', 'filtre_circuit', 'inscription_ouverte', 'section_plus_vue', 'bilan_vu', 'fiche_verrouillee', 'langue_changee',
+  'page_match', 'page_joueur', 'page_tournoi', 'page_bilan']);
+const UID_OK = /^[a-z0-9_-]{5,140}$/, DOM_OK = /^[a-z0-9.-]{3,80}$/;
+const appareil = (ua) => /Mobi|Android|iPhone|iPad/i.test(ua || '') ? 'mobile' : 'ordinateur';
+export function nettoyerEvenements(b) {
+  const out = { e: {}, f: {}, m: 0, r: null, l: null };
+  if (!b || typeof b !== 'object') return out;
+  for (const [k, v] of Object.entries(b.e || {}).slice(0, 30)) if (EVENEMENTS.includes(k)) out.e[k] = Math.max(0, Math.min(50, Math.floor(Number(v) || 0)));
+  for (const [k, v] of Object.entries(b.f || {}).slice(0, 20)) if (UID_OK.test(k)) out.f[k] = Math.max(0, Math.min(20, Math.floor(Number(v) || 0)));
+  out.m = Math.max(0, Math.min(2, Math.floor(Number(b.m) || 0)));
+  if (typeof b.r === 'string') { const d = b.r.toLowerCase().replace(/^www\./, ''); if (DOM_OK.test(d)) out.r = d; }
+  if (b.l === 'fr' || b.l === 'en') out.l = b.l;
+  return out;
+}
+export async function compterEvenements(req, env, brut) {
+  if (!env.COFFRE || !env.CLE_PRIVEE || ROBOT.test(req.headers.get('User-Agent') || '')) return false;
+  const x = nettoyerEvenements(brut);
+  if (!Object.keys(x.e).length && !Object.keys(x.f).length && !x.m) return false;
+  const jour = jourUtc(), cle = `stats/evenements/${jour}.json`, h = await empreinteJour(env, req, jour);
+  const pays = String((req.cf && req.cf.country) || '').toUpperCase().slice(0, 2) || null, dev = appareil(req.headers.get('User-Agent'));
+  for (let essai = 0; essai < 4; essai++) {
+    const o = await env.COFFRE.get(cle);
+    let s = { jour, e: {}, f: {}, minutes: 0, u: [], actifs: 0, appareils: {}, pays: {}, langues: {}, sources: {} };
+    try { if (o) s = { ...s, ...JSON.parse(await o.text()) }; } catch (e) { /* repart de zéro */ }
+    for (const [k, v] of Object.entries(x.e)) s.e[k] = (s.e[k] || 0) + v;
+    for (const [k, v] of Object.entries(x.f)) s.f[k] = (s.f[k] || 0) + v;
+    s.minutes = (s.minutes || 0) + x.m;
+    if (Array.isArray(s.u) && !s.u.includes(h) && s.u.length < 50000) {          // une fois par visiteur et par jour
+      s.u.push(h); s.actifs = s.u.length;
+      s.appareils[dev] = (s.appareils[dev] || 0) + 1;
+      if (pays) s.pays[pays] = (s.pays[pays] || 0) + 1;
+      if (x.l) s.langues[x.l] = (s.langues[x.l] || 0) + 1;
+      const src = x.r || 'direct'; s.sources[src] = (s.sources[src] || 0) + 1;
+    } else if (x.r && Array.isArray(s.u)) {
+      // provenance connue plus tard dans la journée : rien (un visiteur = une provenance, la première)
+    }
+    const r = await env.COFFRE.put(cle, JSON.stringify(s), o ? { onlyIf: { etagMatches: o.etag } } : {});
+    if (r) return true;
+  }
+  return false;
+}
 // Le lendemain : on ne garde que les totaux (les empreintes du jour sont effacées).
 export async function compacterVisites(env) {
+  try {                                                         // 479 : événements, mêmes règles
+    const l2 = await env.COFFRE.list({ prefix: 'stats/evenements/' });
+    for (const o of l2.objects || []) {
+      const jour = o.key.slice('stats/evenements/'.length, -5);
+      if (jour >= jourUtc()) continue;
+      const b = await env.COFFRE.get(o.key);
+      try { const x = JSON.parse(await b.text()); if (Array.isArray(x.u)) { x.actifs = x.u.length; delete x.u; await env.COFFRE.put(o.key, JSON.stringify(x)); } } catch (e) { /* laissé */ }
+    }
+  } catch (e) { /* le lendemain */ }
   const l = await env.COFFRE.list({ prefix: 'stats/visites/' });
   for (const o of l.objects || []) {
     const jour = o.key.slice('stats/visites/'.length, -5);
@@ -543,9 +600,31 @@ export async function poulsVisites(env, maintenant = Date.now()) {
   const nouveaux = uniques - base;
   if (nouveaux <= 0) return { envoye: false, uniques };
   const h = new Date(maintenant).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
-  const ok = await telegramSite(env, `👀 Game Set Algo · +${nouveaux} visiteur${nouveaux > 1 ? 's' : ''} (à ${h}) · aujourd'hui : ${uniques} visiteur${uniques > 1 ? 's' : ''}, ${vues} ouverture${vues > 1 ? 's' : ''} de page`);
+  const ev = (await lireJson_(env, `stats/evenements/${jour}.json`)) || {}, fiches = (ev.e || {}).fiche || 0;
+  const actifs = ev.actifs ?? (ev.u || []).length, moy = actifs ? Math.round((ev.minutes || 0) / actifs) : null;
+  const ok = await telegramSite(env, `👀 Game Set Algo · +${nouveaux} visiteur${nouveaux > 1 ? 's' : ''} (à ${h}) · aujourd'hui : ${uniques} visiteur${uniques > 1 ? 's' : ''}, ${vues} ouverture${vues > 1 ? 's' : ''} de page`
+    + (fiches ? `, ${fiches} fiche${fiches > 1 ? 's' : ''} de match` : '') + (moy != null ? ` · temps moyen ${moy} min` : ''));
   if (ok) await env.COFFRE.put('stats/pouls.json', JSON.stringify({ jour, uniques, le: new Date(maintenant).toISOString() }));
   return { envoye: ok, nouveaux, uniques };
+}
+// 479 : ce que les visiteurs ont fait la veille (totaux anonymes)
+const LIB_EV = { simulation: 'simulations lancées', direct_3d: 'directs en 3D', demande_algo: '« Demande à l’algo »', demande_algo_direct: 'dont en direct',
+  favori: 'favoris', inscription_ouverte: 'formulaires d’inscription ouverts', section_plus_vue: 'section Plus vue', fiche_verrouillee: 'fiches Plus verrouillées vues',
+  page_match: 'pages match', page_joueur: 'pages joueur', page_tournoi: 'pages tournoi', page_bilan: 'pages bilan' };
+const titreUid = (u) => String(u).replace(/^\d{4}-\d{2}-\d{2}_/, '').split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, n);
+export function lignesEvenements(ev) {
+  if (!ev) return [];
+  const E = ev.e || {}, actifs = ev.actifs ?? (ev.u || []).length, L = [];
+  L.push(`Temps : ${ev.minutes || 0} min en tout` + (actifs ? ` · ${Math.round((ev.minutes || 0) / actifs)} min en moyenne (${actifs} visiteurs actifs)` : ''));
+  if (E.fiche) L.push(`Fiches de match ouvertes : ${E.fiche}` + (top(ev.f, 3).length ? ` · les plus vues : ${top(ev.f, 3).map(([u, n]) => `${titreUid(u)} (${n})`).join(', ')}` : ''));
+  const act = Object.entries(LIB_EV).filter(([k]) => E[k]).map(([k, lib]) => `${lib} ${E[k]}`);
+  if (act.length) L.push(`Actions : ${act.join(' · ')}`);
+  const pc = (o) => { const t = Object.values(o || {}).reduce((a, b) => a + b, 0); return t ? top(o, 4).map(([k, v]) => `${k} ${Math.round(100 * v / t)} %`).join(', ') : ''; };
+  if (pc(ev.sources)) L.push(`Provenance : ${pc(ev.sources)}`);
+  if (pc(ev.appareils)) L.push(`Appareils : ${pc(ev.appareils)}`);
+  if (pc(ev.pays)) L.push(`Pays : ${pc(ev.pays)}`);
+  return L;
 }
 export async function bilanVeille(env, maintenant = Date.now()) {
   const hier = jourUtc(maintenant - 86400e3), v = (await lireJson_(env, `stats/visites/${hier}.json`)) || {};
@@ -557,7 +636,8 @@ export async function bilanVeille(env, maintenant = Date.now()) {
   const txt = [`📊 Game Set Algo · bilan d'hier (${hier.split('-').reverse().slice(0, 2).join('/')})`,
     `Visiteurs : ${uniques} (${vues} ouvertures de page) · 7 jours : ${sept}`,
     `Comptes : +${C.filter((c) => de(c.cree)).length} créés, +${C.filter((c) => de(c.cree) && c.verifie).length} confirmés · total ${C.length} (${C.filter((c) => c.verifie).length} confirmés)`,
-    `Fondateurs : ${fond} / ${PLACES_FONDATEUR} · Plus payés : ${C.filter((c) => c.abonne && c.paye).length} · demandes en attente : ${C.filter((c) => c.demande).length}`].join('\n');
+    `Fondateurs : ${fond} / ${PLACES_FONDATEUR} · Plus payés : ${C.filter((c) => c.abonne && c.paye).length} · demandes en attente : ${C.filter((c) => c.demande).length}`,
+    ...lignesEvenements((await lireJson_(env, `stats/evenements/${hier}.json`)) || null)].join('\n');
   return telegramSite(env, txt);
 }
 export async function quotidien(env) {
