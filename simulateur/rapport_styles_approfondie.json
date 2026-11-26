@@ -1,0 +1,447 @@
+{
+ "genere_le": "2026-11-26T21:42:44+00:00",
+ "paquet": 457,
+ "itf_hommes_dans_le_rejeu": 57230,
+ "regle": "profil continu à 8 mesures par joueur (matchs des tournois commencés avant), 28 rencontres antisymétriques ajoutées au logit de l'Elo de production ; ATP et WTA : appris 2018–2022, jugé une fois 2023 → mai 2026 ; Challenger : appris 01–09/2025, jugé une fois 10/2025 → mai 2026 ; retenu par circuit si gain ≥ 0,001 par match concerné sur ≥ 1 000 matchs concernés jugés, gain positif sur la seconde partie de l'apprentissage et dans le sens inverse",
+ "mesures": [
+  "aces",
+  "1res balles dedans",
+  "points gagnés derrière la 1re",
+  "points gagnés derrière la 2e",
+  "doubles fautes",
+  "retour de 1re gagné",
+  "retour de 2e gagné",
+  "secondes par point"
+ ],
+ "essais_fictifs": [
+  300.0,
+  300.0,
+  180.0,
+  120.0,
+  300.0,
+  180.0,
+  120.0,
+  600.0
+ ],
+ "demi_vie_jours": 365.0,
+ "points_de_service_minimum": 500.0,
+ "lambdas_essayes": [
+  10.0,
+  30.0,
+  100.0,
+  300.0,
+  1000.0,
+  3000.0
+ ],
+ "etude": {
+  "circuits": {
+   "ATP": {
+    "apprentissage": "2018-01-01 → 2023-01-01 (exclu)",
+    "jugement": "2023-01-01 → 2026-06-01 (exclu)",
+    "matchs_apprentissage": 11601,
+    "matchs_juges": 9233,
+    "concernes_apprentissage": 11517,
+    "concernes_juges": 9183,
+    "lambda_choisi": 1000.0,
+    "choix_de_lambda_dans_l_apprentissage": {
+     "10": {
+      "matchs": 5094,
+      "gain": -0.00139,
+      "erreur_type": 0.00129
+     },
+     "30": {
+      "matchs": 5094,
+      "gain": -0.00106,
+      "erreur_type": 0.00123
+     },
+     "100": {
+      "matchs": 5094,
+      "gain": -0.00035,
+      "erreur_type": 0.00108
+     },
+     "300": {
+      "matchs": 5094,
+      "gain": 0.00044,
+      "erreur_type": 0.00084
+     },
+     "1000": {
+      "matchs": 5094,
+      "gain": 0.00084,
+      "erreur_type": 0.00054
+     },
+     "3000": {
+      "matchs": 5094,
+      "gain": 0.00068,
+      "erreur_type": 0.00033
+     }
+    },
+    "gain_seconde_partie_apprentissage": {
+     "matchs": 5094,
+     "gain": 0.00084,
+     "erreur_type": 0.00054
+    },
+    "gain_la_ou_c_est_appris_ne_compte_pas": {
+     "matchs": 11517,
+     "gain": 0.00176,
+     "erreur_type": 0.00042
+    },
+    "gain_juge": {
+     "matchs": 9183,
+     "gain": -0.00058,
+     "erreur_type": 0.00054
+    },
+    "gain_sens_inverse": {
+     "matchs": 11517,
+     "gain": -0.00055,
+     "erreur_type": 0.00043
+    },
+    "gain_juge_rapporte_a_tous_les_matchs": -0.00058,
+    "gain_juge_par_surface": {
+     "Clay": {
+      "matchs": 3076,
+      "gain": -0.00066,
+      "erreur_type": 0.00089
+     },
+     "Grass": {
+      "matchs": 915,
+      "gain": -0.00201,
+      "erreur_type": 0.00182
+     },
+     "Hard": {
+      "matchs": 5192,
+      "gain": -0.00029,
+      "erreur_type": 0.00073
+     }
+    },
+    "taille_des_poids": 0.0962,
+    "rencontres_aux_poids_les_plus_forts": [
+     {
+      "mesures": "points gagnés derrière la 2e × secondes par point",
+      "poids": 0.0436
+     },
+     {
+      "mesures": "retour de 1re gagné × retour de 2e gagné",
+      "poids": -0.0309
+     },
+     {
+      "mesures": "points gagnés derrière la 2e × doubles fautes",
+      "poids": -0.0298
+     }
+    ],
+    "meme_sens_sur_les_deux_periodes": false,
+    "retenu": false,
+    "raisons": [
+     "gain jugé sous 0,001",
+     "gain non positif dans le sens inverse"
+    ]
+   },
+   "WTA": {
+    "apprentissage": "2018-01-01 → 2023-01-01 (exclu)",
+    "jugement": "2023-01-01 → 2026-06-01 (exclu)",
+    "matchs_apprentissage": 10529,
+    "matchs_juges": 8837,
+    "concernes_apprentissage": 10003,
+    "concernes_juges": 8521,
+    "lambda_choisi": 3000.0,
+    "choix_de_lambda_dans_l_apprentissage": {
+     "10": {
+      "matchs": 4408,
+      "gain": -0.00244,
+      "erreur_type": 0.00151
+     },
+     "30": {
+      "matchs": 4408,
+      "gain": -0.00223,
+      "erreur_type": 0.00148
+     },
+     "100": {
+      "matchs": 4408,
+      "gain": -0.00171,
+      "erreur_type": 0.00139
+     },
+     "300": {
+      "matchs": 4408,
+      "gain": -0.00089,
+      "erreur_type": 0.00125
+     },
+     "1000": {
+      "matchs": 4408,
+      "gain": 0.00021,
+      "erreur_type": 0.00098
+     },
+     "3000": {
+      "matchs": 4408,
+      "gain": 0.00084,
+      "erreur_type": 0.00066
+     }
+    },
+    "gain_seconde_partie_apprentissage": {
+     "matchs": 4408,
+     "gain": 0.00084,
+     "erreur_type": 0.00066
+    },
+    "gain_la_ou_c_est_appris_ne_compte_pas": {
+     "matchs": 10003,
+     "gain": 0.00223,
+     "erreur_type": 0.00048
+    },
+    "gain_juge": {
+     "matchs": 8521,
+     "gain": 0.00066,
+     "erreur_type": 0.00054
+    },
+    "gain_sens_inverse": {
+     "matchs": 10003,
+     "gain": 0.00107,
+     "erreur_type": 0.00045
+    },
+    "gain_juge_rapporte_a_tous_les_matchs": 0.00064,
+    "gain_juge_par_surface": {
+     "Clay": {
+      "matchs": 2385,
+      "gain": 0.00176,
+      "erreur_type": 0.00107
+     },
+     "Grass": {
+      "matchs": 862,
+      "gain": 0.00072,
+      "erreur_type": 0.00163
+     },
+     "Hard": {
+      "matchs": 5274,
+      "gain": 0.00015,
+      "erreur_type": 0.00068
+     }
+    },
+    "taille_des_poids": 0.0591,
+    "rencontres_aux_poids_les_plus_forts": [
+     {
+      "mesures": "aces × retour de 2e gagné",
+      "poids": 0.0271
+     },
+     {
+      "mesures": "1res balles dedans × doubles fautes",
+      "poids": 0.0234
+     },
+     {
+      "mesures": "retour de 1re gagné × retour de 2e gagné",
+      "poids": -0.0234
+     }
+    ],
+    "meme_sens_sur_les_deux_periodes": true,
+    "retenu": false,
+    "raisons": [
+     "gain jugé sous 0,001"
+    ]
+   },
+   "CH": {
+    "apprentissage": "2025-01-01 → 2025-10-01 (exclu)",
+    "jugement": "2025-10-01 → 2026-06-01 (exclu)",
+    "matchs_apprentissage": 8749,
+    "matchs_juges": 7442,
+    "concernes_apprentissage": 7071,
+    "concernes_juges": 5793,
+    "lambda_choisi": 3000.0,
+    "choix_de_lambda_dans_l_apprentissage": {
+     "10": {
+      "matchs": 3375,
+      "gain": -0.00233,
+      "erreur_type": 0.00171
+     },
+     "30": {
+      "matchs": 3375,
+      "gain": -0.00214,
+      "erreur_type": 0.00164
+     },
+     "100": {
+      "matchs": 3375,
+      "gain": -0.0017,
+      "erreur_type": 0.00149
+     },
+     "300": {
+      "matchs": 3375,
+      "gain": -0.0011,
+      "erreur_type": 0.00127
+     },
+     "1000": {
+      "matchs": 3375,
+      "gain": -0.00043,
+      "erreur_type": 0.00094
+     },
+     "3000": {
+      "matchs": 3375,
+      "gain": -9e-05,
+      "erreur_type": 0.00061
+     }
+    },
+    "gain_seconde_partie_apprentissage": {
+     "matchs": 3375,
+     "gain": -9e-05,
+     "erreur_type": 0.00061
+    },
+    "gain_la_ou_c_est_appris_ne_compte_pas": {
+     "matchs": 7071,
+     "gain": 0.0016,
+     "erreur_type": 0.0004
+    },
+    "gain_juge": {
+     "matchs": 5793,
+     "gain": 5e-05,
+     "erreur_type": 0.00045
+    },
+    "gain_sens_inverse": {
+     "matchs": 7071,
+     "gain": 7e-05,
+     "erreur_type": 0.00035
+    },
+    "gain_juge_rapporte_a_tous_les_matchs": 4e-05,
+    "gain_juge_par_surface": {
+     "Clay": {
+      "matchs": 2413,
+      "gain": 0.00029,
+      "erreur_type": 0.00065
+     },
+     "Hard": {
+      "matchs": 3380,
+      "gain": -0.00013,
+      "erreur_type": 0.00061
+     }
+    },
+    "taille_des_poids": 0.0497,
+    "rencontres_aux_poids_les_plus_forts": [
+     {
+      "mesures": "doubles fautes × secondes par point",
+      "poids": -0.0237
+     },
+     {
+      "mesures": "points gagnés derrière la 2e × secondes par point",
+      "poids": 0.0199
+     },
+     {
+      "mesures": "doubles fautes × retour de 1re gagné",
+      "poids": 0.0151
+     }
+    ],
+    "meme_sens_sur_les_deux_periodes": false,
+    "retenu": false,
+    "raisons": [
+     "gain jugé sous 0,001",
+     "gain non positif sur la seconde partie de l'apprentissage"
+    ],
+    "note": "fenêtre « comme en production » : les résultats ITF hommes sont dans l'Elo ; 9 mois d'apprentissage seulement"
+   }
+  },
+  "challenger_archive_2018_2022_puis_2023_pour_memoire": {
+   "apprentissage": "2018-01-01 → 2023-01-01 (exclu)",
+   "jugement": "2023-01-01 → 2026-06-01 (exclu)",
+   "matchs_apprentissage": 38074,
+   "matchs_juges": 37396,
+   "concernes_apprentissage": 30564,
+   "concernes_juges": 29699,
+   "lambda_choisi": 3000.0,
+   "choix_de_lambda_dans_l_apprentissage": {
+    "10": {
+     "matchs": 12989,
+     "gain": -0.00123,
+     "erreur_type": 0.00047
+    },
+    "30": {
+     "matchs": 12989,
+     "gain": -0.00117,
+     "erreur_type": 0.00046
+    },
+    "100": {
+     "matchs": 12989,
+     "gain": -0.001,
+     "erreur_type": 0.00043
+    },
+    "300": {
+     "matchs": 12989,
+     "gain": -0.00075,
+     "erreur_type": 0.00038
+    },
+    "1000": {
+     "matchs": 12989,
+     "gain": -0.00046,
+     "erreur_type": 0.0003
+    },
+    "3000": {
+     "matchs": 12989,
+     "gain": -0.00026,
+     "erreur_type": 0.00021
+    }
+   },
+   "gain_seconde_partie_apprentissage": {
+    "matchs": 12989,
+    "gain": -0.00026,
+    "erreur_type": 0.00021
+   },
+   "gain_la_ou_c_est_appris_ne_compte_pas": {
+    "matchs": 30564,
+    "gain": 0.00051,
+    "erreur_type": 0.00013
+   },
+   "gain_juge": {
+    "matchs": 29699,
+    "gain": 0.0001,
+    "erreur_type": 0.00015
+   },
+   "gain_sens_inverse": {
+    "matchs": 30564,
+    "gain": -5e-05,
+    "erreur_type": 0.00016
+   },
+   "gain_juge_rapporte_a_tous_les_matchs": 8e-05,
+   "gain_juge_par_surface": {
+    "Clay": {
+     "matchs": 14025,
+     "gain": -7e-05,
+     "erreur_type": 0.00021
+    },
+    "Grass": {
+     "matchs": 979,
+     "gain": -0.00019,
+     "erreur_type": 0.0009
+    },
+    "Hard": {
+     "matchs": 14695,
+     "gain": 0.00029,
+     "erreur_type": 0.00023
+    }
+   },
+   "taille_des_poids": 0.0515,
+   "rencontres_aux_poids_les_plus_forts": [
+    {
+     "mesures": "doubles fautes × secondes par point",
+     "poids": -0.017
+    },
+    {
+     "mesures": "aces × doubles fautes",
+     "poids": 0.0166
+    },
+    {
+     "mesures": "points gagnés derrière la 2e × retour de 1re gagné",
+     "poids": 0.0157
+    }
+   ],
+   "meme_sens_sur_les_deux_periodes": false,
+   "pour_memoire": true,
+   "lecture_si_c_etait_la_regle": [
+    "gain jugé sous 0,001",
+    "gain non positif sur la seconde partie de l'apprentissage",
+    "gain non positif dans le sens inverse"
+   ],
+   "note": "POUR MÉMOIRE, NE DÉCIDE DE RIEN : avant juin 2024 l'archive n'a pas les résultats ITF hommes, l'Elo du Challenger y est faussé"
+  },
+  "retenus": [],
+  "verdict": "NON RETENU sur aucun circuit : le profil continu et ses 28 rencontres n'ajoutent rien à l'Elo ; les styles restent une information descriptive"
+ },
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-26",
+  "statut": "etude",
+  "paquet": 457,
+  "quoi": "STYLES DE JEU, ÉTUDE PLUS POUSSÉE : UN PROFIL CONTINU À 8 MESURES ET TOUTES SES RENCONTRES DEUX À DEUX (paquet 457, Lucas : « On est d'accord que l'étude des styles de jeu ne donne pas d'avantage ? On peut faire tourner une étude plus poussée ? »). Les études précédentes (paires de catégories de styles, bilans contre le style adverse, effet propre au joueur contre une catégorie, une interaction service–retour écrite à la main) rangeaient les joueurs dans 5 catégories ou supposaient d'avance la forme de l'effet ; aucune n'a été retenue. Nouvelle étude simulateur/etude_styles_approfondie.py : chaque joueur est décrit avant le match par 8 mesures continues (aces, 1res balles dedans, points gagnés derrière la 1re et la 2e, doubles fautes, retour de 1re et de 2e, secondes par point), en écart à la moyenne de son circuit et de la surface, avec les seuls matchs des tournois commencés avant ; le modèle apprend lui-même les 28 rencontres de mesures (forme antisymétrique : aucun effet propre au joueur, seulement un profil contre un profil) et les ajoute à l'Elo de production rejoué match par match. Règle écrite dans l'en-tête avant tout essai : ATP et WTA appris sur 2018–2022 et jugés une fois sur 2023 → mai 2026 ; Challenger appris du 01/01 au 30/09/2025 et jugé une fois du 01/10/2025 au 31/05/2026 (avant juin 2024 l'archive n'a pas les résultats ITF hommes) ; retenu par circuit seulement si le gain atteint 0,001 de log loss par match concerné sur au moins 1 000 matchs concernés, dans le même sens sur les deux périodes. RÉSULTAT (jugé une fois ; gain = log loss de l'Elo seul − log loss corrigée, positif = mieux) : ATP : 9183 matchs concernés jugés, gain -0,00058 ± 0,00054 par match (seconde partie de l'apprentissage 0,00084, sens inverse -0,00055), non retenu ; WTA : 8521 matchs concernés jugés, gain 0,00066 ± 0,00054 par match (seconde partie de l'apprentissage 0,00084, sens inverse 0,00107), non retenu ; Challenger : 5793 matchs concernés jugés, gain 0,00005 ± 0,00045 par match (seconde partie de l'apprentissage -0,00009, sens inverse 0,00007), non retenu. Verdict : NON RETENU sur aucun circuit : le profil continu et ses 28 rencontres n'ajoutent rien à l'Elo ; les styles restent une information descriptive. Rien n'est changé par ce paquet. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans le % de victoire. Une seule candidate, réglée uniquement sur la période d'apprentissage et jugée une seule fois. Limite : l'Elo seul, sans la simulation ni les signaux. Aucune cote n'est lue. 0 requête d'API."
+ }
+}
