@@ -500,12 +500,26 @@ def _par_fiabilite(points_niv):
     le match (tel qu'enregistré, jamais recalculé) : vainqueurs trouvés, % annoncé en moyenne pour le favori, n.
     Descriptif : rien n'est conclu sous 100 matchs (« assez » = False), la page le dit."""
     out = {}
-    for niv in reversed(NIVEAUX_FIABILITE):            # solide d'abord
+    for niv in NIVEAUX_BILAN:            # 26/11/2026 (paquet 468) : seulement « normal » et « fragile » (anciens niveaux retirés)
         L = points_niv.get(niv) or []
         if L:
             out[niv] = dict(_mesures(L), confiance_pct=round(100 * sum(max(p, 1 - p) for p, _ in L) / len(L), 1),
                             assez=len(L) >= 100)
     return out
+
+
+def fiabilite_reference(racine):
+    """26/11/2026 (paquet 468) : tableau « fragile / normal » sur tous nos matchs terminés, classés hors échantillon
+    (simulateur/note_par_match.py, reference_deux_niveaux, recalculé chaque lundi). Comptes et moyennes seulement."""
+    d = (_lire(os.path.join(racine, 'simulateur', 'note_par_match.json')) or {}).get('reference_deux_niveaux')
+    if not isinstance(d, dict) or not d.get('normal'):
+        return None
+    garder = ('n', 'vainqueurs', 'pct', 'confiance_pct', 'assez')
+    niv = lambda x: {k: x[k] for k in garder if k in x} if isinstance(x, dict) else None
+    return {'matchs': d.get('matchs'), 'calcule_le': d.get('calcule_le'),
+            'normal': niv(d.get('normal')), 'fragile': niv(d.get('fragile')),
+            'par_circuit': {c: {k: niv(v.get(k)) for k in ('normal', 'fragile') if v.get(k)}
+                            for c, v in (d.get('par_circuit') or {}).items()}}
 
 
 def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
@@ -584,6 +598,7 @@ def rejoue(racine):
 
 
 NIVEAUX_FIABILITE = ('fragile', 'normal', 'prudent', 'correct', 'solide')   # 464 : « normal » (deux niveaux mesurés)
+NIVEAUX_BILAN = ('normal', 'fragile')     # 468 : le tableau public ne montre plus prudent / correct / solide
 
 
 def perte_attendue(p):
@@ -1130,6 +1145,7 @@ def construire(racine, maintenant=None):
             'fiabilite_stats': fiabilite_stats(racine, analyse_am),
             'desaccords': desaccords(racine, analyse_am),
             'validation_fiabilite': validation_fiabilite(resultats),
+            'fiabilite_reference': fiabilite_reference(racine),
             'qualite_donnees': qualite_donnees(racine, resultats),
             'rejoue': rejoue(racine),
             'live_reevaluation': live_reevaluation(racine)}

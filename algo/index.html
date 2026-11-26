@@ -1048,7 +1048,7 @@ const T = {
   rs_bouton:'Résumé du match', rs_attente:'Le résumé (prévu contre arrivé) s’affiche dès que le résultat et la feuille de match sont reçus.',
   fiab_toutes:'Toutes', fiab_filtre_label:'Niveau de fiabilité', fiab_filtre_plus:'Le tri par fiabilité est réservé à l’accès Plus.',
   fiab_filtre_vide:'Aucun match de ce niveau de fiabilité pour l’instant.',
-  bf_titre:'Réussite par niveau de fiabilité', bf_sous:'Niveau annoncé avant chaque match, jamais recalculé. La fiabilité ne dit pas si le favori va gagner : elle dit si le % annoncé se réalise. Comparez donc le % annoncé et le % trouvé de chaque ligne.',
+  bf_titre:'Réussite par niveau de fiabilité', bf_sous:n=>`Nos ${n} matchs terminés, chacun classé « normal » ou « fragile » par la note apprise sur les AUTRES matchs (jamais sur lui-même), toutes périodes confondues. « Fragile » : sur ce type de match, le favori gagne moins souvent qu’annoncé ; « normal » : le % annoncé se réalise. La fiabilité ne dit pas si le favori va gagner : comparez le % annoncé et le % trouvé de chaque ligne. Recalculé chaque lundi.`, bf_direct:(n,p)=>`annoncés avant le match depuis le 26/11 : ${n} (${p} trouvés)`, bf_direct0:'annoncés avant le match depuis le 26/11 : aucun terminé pour l’instant',
   bf_niveau:'Fiabilité', bf_annonce:'% annoncé', bf_trouve:'Vainqueurs trouvés', bf_peu:'moins de 100 matchs : trop tôt pour conclure',
   ds_titre:'Elo et simulation en désaccord', ds_sous:'Les matchs où l’Elo et la simulation ne désignent pas le même vainqueur : qui avait raison, et l’algo affiché. Ce sont les arbres, jugés chaque lundi, qui apprennent quoi en faire.',
   ds_n:(d,n)=>`${fmt(d)} désaccords sur ${fmt(n)} matchs`, ds_sim:'Simul.', ds_aff:'Affiché',
@@ -1416,7 +1416,7 @@ const T = {
   rs_bouton:'Match summary', rs_attente:'The summary (forecast against what happened) appears as soon as the result and match sheet arrive.',
   fiab_toutes:'All', fiab_filtre_label:'Reliability level', fiab_filtre_plus:'Sorting by reliability is part of Plus access.',
   fiab_filtre_vide:'No match at this reliability level yet.',
-  bf_titre:'Hit rate by reliability level', bf_sous:'Level announced before each match, never recalculated. Reliability does not say whether the favourite will win: it says whether the announced % comes true. So compare the announced % and the called % on each line.',
+  bf_titre:'Hit rate by reliability level', bf_sous:n=>`Our ${n} finished matches, each one rated “normal” or “fragile” by the score learned on the OTHER matches (never on itself), all periods together. “Fragile”: on this kind of match the favourite wins less often than shown; “normal”: the shown % comes true. Reliability does not say whether the favourite will win: compare the announced % and the called % on each line. Recomputed every Monday.`, bf_direct:(n,p)=>`announced before the match since 26/11: ${n} (${p} called)`, bf_direct0:'announced before the match since 26/11: none finished yet',
   bf_niveau:'Reliability', bf_annonce:'Announced %', bf_trouve:'Winners called', bf_peu:'fewer than 100 matches: too early to conclude',
   ds_titre:'Elo and simulation disagree', ds_sous:'Matches where Elo and the simulation pick different winners: who was right, and the published forecast. The trees, judged every Monday, learn what to do with it.',
   ds_n:(d,n)=>`${fmt(d)} disagreements out of ${fmt(n)} matches`, ds_sim:'Sim.', ds_aff:'Published',
@@ -8335,7 +8335,7 @@ function rendBilan(){
     <div><div class="k">${esc(t('vainqueurs'))}</div><div class="v">${pc(g.pct)}</div><div class="k">${fmt(g.vainqueurs)} / ${fmt(g.n)}</div></div>
     <div><div class="k">${esc(t('brier'))}</div><div class="v">${dec(g.brier,3)}</div><div class="k">${esc(t('brier_aide'))}</div></div>
   </div>${C ? '' : `<div class="circ"><span style="color:var(--dim)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`}`;
-  rendBilanFiab(C ? C.par_fiabilite : B.par_fiabilite);
+  rendBilanFiab(C ? C.par_fiabilite : B.par_fiabilite, circBilan);
   rendBilanTranches(C ? C.tranches : B.tranches);
   const cv = courbeSvg((C ? C.courbe : B.courbe)||[]);
   const cb = document.getElementById('bilan-curve'); cb.innerHTML = cv; cb.hidden = !cv;
@@ -8350,14 +8350,17 @@ function rendBilan(){
   const more = document.getElementById('bilan-more');
   if (res.length > nRes){ more.hidden=false; more.textContent=t('voir_plus', Math.min(20,res.length-nRes)); more.onclick=()=>{ nRes+=20; rendBilan(); }; } else more.hidden=true;
 }
-// 24/11/2026 (paquet 420, Lucas) : % de réussite par niveau de fiabilité annoncé avant le match (vitrine.bilan)
-function rendBilanFiab(PF){
+// 26/11/2026 (paquet 468, Lucas) : tableau « normal / fragile » — tous nos matchs terminés classés hors échantillon
+// (note_par_match.reference_deux_niveaux), plus les niveaux annoncés avant le match depuis le 26/11 (vitrine.bilan)
+function rendBilanFiab(PF, circ){
   const el = document.getElementById('bilan-fiab'); if (!el) return;
-  const niv = ['solide','correct','prudent','normal','fragile'].filter(k=>PF && PF[k]);
+  const R0 = D.fiabilite_reference || null, R = !R0 ? null : (circ && circ!=='TOUS' ? (R0.par_circuit||{})[circ] : R0);
+  const niv = ['normal','fragile'].filter(k=>(R && R[k]) || (PF && PF[k]));
   el.hidden = !niv.length; if (!niv.length) { el.innerHTML = ''; return; }
-  el.innerHTML = `<h3 class="cv-h" style="margin-top:0">${esc(t('bf_titre'))}</h3><p class="cv-p">${esc(t('bf_sous'))}</p>
-    <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('bf_niveau'))}</th><th>${esc(t('bf_annonce'))}</th><th>${esc(t('bf_trouve'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PF[k];
-      return `<tr${v.assez?'':' style="opacity:.6"'}><td>${esc(t('niv_'+k))}<br><span class="cv-n">${esc(t('cv_m',v.n))}${v.assez?'':' · '+esc(t('bf_peu'))}</span></td><td>${pc(v.confiance_pct)}</td><td><b>${pc(v.pct)}</b><br><span class="cv-n">${fmt(v.vainqueurs)} / ${fmt(v.n)}</span></td></tr>`;}).join('')}</tbody></table></div>`;
+  const direct = k => { const v = PF && PF[k]; return v ? t('bf_direct', fmt(v.n), pc(v.pct)) : t('bf_direct0'); };
+  el.innerHTML = `<h3 class="cv-h" style="margin-top:0">${esc(t('bf_titre'))}</h3><p class="cv-p">${esc(t('bf_sous', fmt((R0||{}).matchs||0)))}</p>
+    <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('bf_niveau'))}</th><th>${esc(t('bf_annonce'))}</th><th>${esc(t('bf_trouve'))}</th></tr></thead><tbody>${niv.map(k=>{const v=(R&&R[k])||{};
+      return `<tr${v.assez?'':' style="opacity:.6"'}><td>${esc(t('niv_'+k))}<br><span class="cv-n">${v.n?esc(t('cv_m',v.n)):''}${v.n&&!v.assez?' · '+esc(t('bf_peu')):''}</span><br><span class="cv-n">${esc(direct(k))}</span></td><td>${v.n?pc(v.confiance_pct):'—'}</td><td><b>${v.n?pc(v.pct):'—'}</b><br><span class="cv-n">${v.n?`${fmt(v.vainqueurs)} / ${fmt(v.n)}`:''}</span></td></tr>`;}).join('')}</tbody></table></div>`;
 }
 function rendSuivi(){
   const B = D.validation_fiabilite || {}, g = B.global;
