@@ -344,9 +344,12 @@ def evaluer(match, historique):
                   'pente_ancienne': round(a_anc, 4), 'note_par_match': nm['note'], 'pente_du_match': nm['pente_du_match'],
                   'pente_de_base': nm['pente_de_base'], 'effets_criteres': nm['effets_criteres'], 'sens': nm['sens'],
                   'joueur_peu_fiable': nm.get('joueur_peu_fiable'),
-                  'methode': 'par_match_451'}
+                  'methode': 'par_match_451', 'niveau_note': niveau_v3(nm['note'])}
         note = nm['note']
-    return {**ancien, 'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
+    # paquet 464 : deux niveaux mesurés (fragile / normal) quand la note par match est en place ; les quatre niveaux de
+    # la note restent dans « niveau_note » (descriptif), la correction Challenger vise toujours « niveau_correction »
+    niv = nm.get('niveau_mesure') if nm and nm.get('niveau_mesure') else (niveau_v3(note) if v3 is not None else niveau_v1)
+    return {**ancien, 'note': note, 'niveau': niv, 'categorie': cat, 'version': k,
             'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
             'fragile_desaccord_modeles': fragile_force, 'fragile_criteres': criteres,
             'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,
