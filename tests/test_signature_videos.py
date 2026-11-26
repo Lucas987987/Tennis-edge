@@ -16,7 +16,7 @@ class Signature(unittest.TestCase):
 
     def test_partout(self):
         self.assertIn('<div class="f3-fin" hidden></div>${SIGNE}</div>`;', HTML)            # vidéo 3D (et résumé)
-        self.assertIn("<div class=\"pied\">${t('c_pied', D.simulations)}</div>${SIGNE}</div>`;", HTML)   # carte de stats
+        self.assertIn("<div class=\"pied\">${t('c_pied', D.simulations)}${calculDe(m) ? ` · ${esc(calculDe(m))}` : ''}</div>${SIGNE}</div>`;", HTML)   # carte de stats (paquet 456 : heure du calcul)
         self.assertIn("${esc(t('b_pied'))}</div>${SIGNE}</div>`;", HTML)                     # carte bilan
         self.assertIn("${esc(t('s_pied'))}</div>${SIGNE}</div>`;", HTML)                     # carte de la semaine
         self.assertIn('.film .te-signe{', HTML)

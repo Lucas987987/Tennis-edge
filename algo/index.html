@@ -1744,7 +1744,7 @@ function repondre(m, q, j, n){
     case 'jeux_j': return pick(Z.j[j].jeux_j, n);
     case 'ecart': return pick(Z.j[j].ecart, n);
     case 'total': return pick(Z.total, n, Z.total_debut);
-    case 'tb': return Z.tb;
+    case 'tb': return tbMatch(m);
   } return null;
 }
 // 11/11/2026 (paquet 221) — COMMENT LE MATCH PEUT TOURNER (vitrine.scenarios) : les 6 issues regroupées (somme 100 %),
@@ -1811,6 +1811,17 @@ function scenariosListe(m){
   return L_;
 }
 // 25/11/2026 (paquet 454) : un score exact lu du point de vue du VAINQUEUR (« Moller 6-2 6-2 » et non « 2-6 2-6 »)
+// 26/11/2026 (paquet 456) : « au moins un tie-break » — la valeur CORRIGÉE des projections (lignes_algo, correction
+// adoptée sur certains circuits) partout, pour ne plus afficher deux chiffres différents sur la même fiche
+function tbMatch(m){ const k = m && m.lignes_algo; return k && k.tie_break != null ? k.tie_break : (m && m.scenarios && m.scenarios.tiebreak != null ? m.scenarios.tiebreak : (m && m.questions ? m.questions.tb : null)); }
+// 26/11/2026 (paquet 456) : l'heure du calcul de CE match, sur les images et les textes pour X (texte et images d'un même post
+// doivent venir du même calcul : Kicker – Moller du 25/11, images à 16:05 et texte à 18h45, statistiques un peu différentes)
+function calculDe(m){
+  const s = (m && m.calcule_le) || (typeof D !== 'undefined' && D ? (D.pronostics_du || D.genere_le) : null); if (!s) return '';
+  const d = utc(s); if (isNaN(d)) return '';
+  const j = d.toLocaleDateString(loc(),{day:'2-digit',month:'2-digit'}), h = d.toLocaleTimeString(loc(),{hour:'2-digit',minute:'2-digit'});
+  return L==='fr' ? `Chiffres du calcul du ${j} à ${h.replace(':','h')}` : `Figures computed ${j} at ${h}`;
+}
 function scoreVainqueur(x, m){
   const sets = String(x).split(' ').map(t=>t.split('-').map(Number)).filter(t=>t.length===2 && t.every(Number.isFinite));
   if (!sets.length) return String(x);
@@ -1878,7 +1889,7 @@ function rendScenarios(m, sc){
   const lignes = ordre.map(x=>`<li><span class="sc-pt" style="background:var(--p${x.i+1});opacity:${teinte[x.k]}"></span><span class="sc-n">${esc(x.nom)}${x.aide ? `<small>${esc(x.aide)}</small>` : ''}</span><b>${pc0(x.p)}</b></li>`).join('');
   const J = S.jeux || {};
   const reperes = [
-    [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak)],
+    [fr?'Au moins un tie-break':'At least one tie-break', pc0(tbMatch(m))],
     [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec)],
     J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', fr ? `${J.mediane} le plus souvent ; entre ${J.p10} et ${J.p90} dans 8 matchs sur 10` : `${J.mediane} most often; between ${J.p10} and ${J.p90} in 8 matches out of 10`] : null
   ].filter(Boolean);
@@ -1886,7 +1897,7 @@ function rendScenarios(m, sc){
     <div class="sc-barre" aria-hidden="true">${barre}</div>
     <ul class="sc-l">${lignes}</ul>${ligneSetsSecs(m)}
     <div class="es-tuiles sc-tu">${[
-      [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
+      [fr?'Au moins un tie-break':'At least one tie-break', pc0(tbMatch(m)), ''],
       [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
       J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), jeuxParSets(J, fr)] : null
     ].filter(Boolean).map(([k,v,e])=>`<div class="es-t"><small>${esc(k)}</small><b>${esc(v)}</b>${e ? `<em>${esc(e)}</em>` : ''}</div>`).join('')}</div>
@@ -2105,7 +2116,7 @@ function qaCatalogue(m){
   const cles = Object.keys(S).map(x => x.split('-').map(Number)).filter(([h, a]) => h > a).sort((x, y) => x[1] - y[1]);
   for (const [h, a] of cles) add(`sets_${h}${a}`, 'match', {fr:`gagne ${h} sets à ${a}`, en:`wins ${h} sets to ${a}`}, j => ({ p: S[j === 0 ? `${h}-${a}` : `${a}-${h}`] }));
   if (k.set_decisif != null) add('decisif', 'match', {fr:`Match en ${bo5 ? 5 : 3} sets`, en:`Match goes to ${bo5 ? 5 : 3} sets`}, () => ({ p: k.set_decisif }), { sansJ: true });
-  if (Z && Z.tb != null) add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => ({ p: Z.tb }), { sansJ: true });
+  if (tbMatch(m) != null) add('tb', 'match', {fr:'Au moins un tie-break', en:'At least one tie-break'}, () => ({ p: tbMatch(m) }), { sansJ: true });
   // — les jeux et la durée
   const pick = (arr, i, debut) => { const x = Math.floor(i) - (debut || 0); return x < 0 ? 1 : x >= arr.length ? 0 : arr[x]; };
   if (Z) {
@@ -2630,6 +2641,7 @@ function postX(m, court_){
     L2.push('🔬 Résultat et statistiques comparés après le match pour mesurer la fiabilité des prédictions.');
     L2.push('📊 Des probabilités calculées sans aucune cote de bookmaker.', '');
     L2.push('👉 Le scénario complet du match : gamesetalgo.com', '');
+    if (calculDe(m)) L2.push(`🕒 ${calculDe(m)}`, '');
     L2.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return L2.join('\n');
   } finally { L = Ls; }
@@ -2921,6 +2933,7 @@ function analyseComplete(m, court_){
     T.push('📊 Après le match, nous comparerons les projections aux statistiques réelles.', '');
     T.push(`🧠 ${nf} simulations indépendantes des cotes des bookmakers.`, '');
     T.push('👉 gamesetalgo.com', '');
+    if (calculDe(m)) T.push(`🕒 ${calculDe(m)}`, '');
     T.push(`${tag} #GameSetAlgo #Tennis #Prediction`);
     return T.join('\n').replace(/\n{3,}/g, '\n\n');
   } finally { L = Ls; }
@@ -8931,7 +8944,7 @@ function modeCarte(){
     <div class="tir"><i style="width:${(p*100).toFixed(1)}%"></i></div>
     <div class="blocs"><div class="bloc"><h2>${esc(t('c_sets'))}</h2>${sets}</div><div class="bloc"><h2>${esc(t('c_scores'))}</h2>${scores}</div></div>
     ${lignes ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('c_feuille'))}</h2><table><thead><tr><th></th><th class="a">${esc(n1)}</th><th class="b">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
-    <div class="pied">${t('c_pied', D.simulations)}</div>${SIGNE}</div>`;
+    <div class="pied">${t('c_pied', D.simulations)}${calculDe(m) ? ` · ${esc(calculDe(m))}` : ''}</div>${SIGNE}</div>`;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
@@ -8972,7 +8985,7 @@ function modeProjections(){
       <div class="pcs">${puces(o.totaux, x => T_('+ de ', 'over ') + v1(x))}</div></div>` : ''}
     ${o.ecarts.length ? `<div class="bloc"><h2>${esc(T_(`${fav} gagne avec plus de… jeux d'écart`, `${fav} wins by more than… games`))}</h2>
       <div class="pcs ${coul(o.fi)}">${puces(o.ecarts, x => '+' + v1(x))}</div></div>` : ''}
-    <div class="pied">${esc(T_('Tout vient des mêmes simulations point par point · ces projections ne changent pas le % de victoire', 'All from the same point-by-point simulations · these projections do not change the win %'))}</div>${SIGNE}</div>`;
+    <div class="pied">${esc(T_('Tout vient des mêmes simulations point par point · ces projections ne changent pas le % de victoire', 'All from the same point-by-point simulations · these projections do not change the win %'))}${calculDe(m) ? ` · ${esc(calculDe(m))}` : ''}</div>${SIGNE}</div>`;
   window.__uid = m.uid;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
