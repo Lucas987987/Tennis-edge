@@ -1,0 +1,76 @@
+name: Étude - styles de jeu, profil continu et rencontres deux à deux (paquet 457)
+
+# 26/11/2026 — paquet 457 (Lucas : « On est d'accord que l'étude des styles de jeu ne donne pas d'avantage ? On peut
+# faire tourner une étude plus poussée ? »). Un profil continu à 8 mesures par joueur et ses 28 rencontres, ajoutés à
+# l'Elo de production rejoué. Règle écrite dans l'en-tête de simulateur/etude_styles_approfondie.py (ATP et WTA :
+# apprise 2018–2022, jugée une fois 2023 → 05/2026 ; Challenger : apprise 01–09/2025, jugée une fois 10/2025 →
+# 05/2026). Se lance tout seul quand le paquet arrive sur main (ou à la main). Écrit
+# simulateur/rapport_styles_approfondie.json et l'entrée 457 du journal. 0 requête d'API. Rien n'entre dans l'algo.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_styles_approfondie.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s simulateur/tests -p 'test_etude_styles_approfondie.py'
+      - name: Apprendre puis juger une seule fois, circuit par circuit
+        run: |
+          set -euo pipefail
+          python simulateur/etude_styles_approfondie.py /tmp/sackmann . | tee /tmp/styles_approfondie.log
+          cp simulateur/rapport_styles_approfondie.json /tmp/rapport_styles_approfondie.json
+          echo '### Styles de jeu, étude plus poussée (paquet 457, étude seule)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/styles_approfondie.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            # À chaque essai, main tel qu'il est maintenant, puis NOTRE rapport et NOTRE entrée (l'entrée du
+            # paquet 457 est remplacée si elle existe déjà), jamais de rebase sur le journal.
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_styles_approfondie.json simulateur/rapport_styles_approfondie.json
+            python simulateur/etude_styles_approfondie.py --journal-depuis-rapport /tmp/rapport_styles_approfondie.json
+            git add -- simulateur/rapport_styles_approfondie.json simulateur/journal_changements.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 457, styles de jeu en profil continu (rapport et journal)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1

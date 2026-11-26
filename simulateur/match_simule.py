@@ -360,6 +360,8 @@ def feuille_derivee(st_j, st_adv):
             'balles_break_obtenues': st_adv[BPF], 'breaks': st_adv[BPF] - st_adv[BPS],
             'balles_break_sauvees': st_j[BPS], 'balles_break_subies': st_j[BPF],
             'jeux_service_gagnes_pct': 100 * st_j[SGW] / st_j[SG] if st_j[SG] else None,
+            # 26/11/2026 (paquet 455) : % de points gagnés au service, pour le duel service / retour du site
+            'points_service_pct': 100 * (st_j[W1] + st_j[W2]) / sv if sv else None,
             'points_gagnes': st_j[PTS], 'jeux': st_j[JEUX]}
 
 
@@ -385,7 +387,8 @@ def elargir(cle, r):
 
 
 CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
-                'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
+                'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux',
+                'points_service_pct')
 
 
 CONTEXTE_COLS = ('sim_gazon', 'sim_terre', 'sim_wta', 'sim_5sets', 'elo_gazon', 'elo_terre', 'elo_wta', 'elo_5sets')

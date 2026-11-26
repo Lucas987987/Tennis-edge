@@ -35,7 +35,10 @@ def test_historique_dit_qu_il_ne_change_pas_le_pct():
         assert mot not in c, mot
 
 
-def test_joueurs_perf_json(tmp_path):
+def test_joueurs_perf_json(tmp_path, monkeypatch):
+    sys.path.insert(0, str(R / 'scripts'))
+    import performance_joueurs as PJ
+    monkeypatch.setattr(PJ, 'MIN_NOTE', 5)                     # paquet 458 : seuil d'affichage 20 ; mécanique testée à 5
     ms = [{'uid': f'2026-11-{20 - i:02d}_aa_x{i}', 'debut': f'2026-11-{20 - i:02d}T10:00', 'home': 'Aaa Bbb', 'away': f'Xx{i}',
            'tournoi': 'T', 'circuit': 'CH', 'surface': 'Clay', 'premier': {'combinaison': {'p_home': 0.6}},
            'reel': {'gagnant': 'home' if i % 2 else 'away', 'score': '6-4 6-4', 'sets': '2-0'}} for i in range(6)]

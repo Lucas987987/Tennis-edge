@@ -1,0 +1,275 @@
+{
+ "genere_le": "2026-11-26T07:55:09+00:00",
+ "paquet": 456,
+ "nature": "étude seule : rien n'entre dans l'algo",
+ "indice": "irrégularité du joueur = Σ(y − p)² / Σ p(1 − p) sur ses 40 derniers matchs, rétrécie vers 1 (a priori 15 matchs) ; indice du match = moyenne des (I − 1) des deux joueurs, bornée à [-0.5 ; 1.0] ; correction : logit × exp(β · indice)",
+ "itf_hommes_dans_le_rejeu": 0,
+ "matchs_rejoues": 115670,
+ "jugement": {
+  "ATP": {
+   "archive": {
+    "beta_appris": -0.8811,
+    "beta_reappris_sur_jugement": -0.6984,
+    "pente_a_indice_0_5": 0.644,
+    "apprentissage": {
+     "matchs": 11601,
+     "gain": 0.00084,
+     "erreur_type": 0.00041,
+     "brier_avant": 0.20967,
+     "brier_apres": 0.20941
+    },
+    "jugement": {
+     "matchs": 9233,
+     "gain": 0.00032,
+     "erreur_type": 0.00034,
+     "brier_avant": 0.20955,
+     "brier_apres": 0.20945
+    },
+    "quintiles_jugement": {
+     "Q1": {
+      "matchs": 1846,
+      "indice_moyen": -0.083,
+      "favori_annonce_pct": 69.9,
+      "favori_reel_pct": 68.2,
+      "outsider_annonce_pct": 30.1,
+      "outsider_reel_pct": 31.8
+     },
+     "Q2": {
+      "matchs": 1847,
+      "indice_moyen": -0.021,
+      "favori_annonce_pct": 67.0,
+      "favori_reel_pct": 65.7,
+      "outsider_annonce_pct": 33.0,
+      "outsider_reel_pct": 34.3
+     },
+     "Q3": {
+      "matchs": 1846,
+      "indice_moyen": 0.017,
+      "favori_annonce_pct": 66.9,
+      "favori_reel_pct": 66.8,
+      "outsider_annonce_pct": 33.1,
+      "outsider_reel_pct": 33.2
+     },
+     "Q4": {
+      "matchs": 1847,
+      "indice_moyen": 0.057,
+      "favori_annonce_pct": 66.8,
+      "favori_reel_pct": 64.5,
+      "outsider_annonce_pct": 33.2,
+      "outsider_reel_pct": 35.5
+     },
+     "Q5": {
+      "matchs": 1847,
+      "indice_moyen": 0.137,
+      "favori_annonce_pct": 69.0,
+      "favori_reel_pct": 66.7,
+      "outsider_annonce_pct": 31.0,
+      "outsider_reel_pct": 33.3
+     }
+    },
+    "passe": false
+   },
+   "retenu": false
+  },
+  "WTA": {
+   "archive": {
+    "beta_appris": -1.5841,
+    "beta_reappris_sur_jugement": -0.7424,
+    "pente_a_indice_0_5": 0.453,
+    "apprentissage": {
+     "matchs": 10529,
+     "gain": 0.00081,
+     "erreur_type": 0.00038,
+     "brier_avant": 0.20774,
+     "brier_apres": 0.20753
+    },
+    "jugement": {
+     "matchs": 8837,
+     "gain": -6e-05,
+     "erreur_type": 0.00044,
+     "brier_avant": 0.20589,
+     "brier_apres": 0.20588
+    },
+    "quintiles_jugement": {
+     "Q1": {
+      "matchs": 1767,
+      "indice_moyen": -0.104,
+      "favori_annonce_pct": 68.1,
+      "favori_reel_pct": 68.5,
+      "outsider_annonce_pct": 31.9,
+      "outsider_reel_pct": 31.5
+     },
+     "Q2": {
+      "matchs": 1767,
+      "indice_moyen": -0.05,
+      "favori_annonce_pct": 66.4,
+      "favori_reel_pct": 68.3,
+      "outsider_annonce_pct": 33.6,
+      "outsider_reel_pct": 31.7
+     },
+     "Q3": {
+      "matchs": 1768,
+      "indice_moyen": -0.018,
+      "favori_annonce_pct": 66.1,
+      "favori_reel_pct": 68.0,
+      "outsider_annonce_pct": 33.9,
+      "outsider_reel_pct": 32.0
+     },
+     "Q4": {
+      "matchs": 1767,
+      "indice_moyen": 0.016,
+      "favori_annonce_pct": 65.4,
+      "favori_reel_pct": 66.4,
+      "outsider_annonce_pct": 34.6,
+      "outsider_reel_pct": 33.6
+     },
+     "Q5": {
+      "matchs": 1768,
+      "indice_moyen": 0.079,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 65.0,
+      "outsider_annonce_pct": 33.8,
+      "outsider_reel_pct": 35.0
+     }
+    },
+    "passe": false
+   },
+   "retenu": false
+  },
+  "CH": {
+   "archive": {
+    "beta_appris": -0.6411,
+    "beta_reappris_sur_jugement": -1.2553,
+    "pente_a_indice_0_5": 0.726,
+    "apprentissage": {
+     "matchs": 38074,
+     "gain": 0.00011,
+     "erreur_type": 8e-05,
+     "brier_avant": 0.21919,
+     "brier_apres": 0.21917
+    },
+    "jugement": {
+     "matchs": 37396,
+     "gain": 0.00036,
+     "erreur_type": 8e-05,
+     "brier_avant": 0.21778,
+     "brier_apres": 0.21765
+    },
+    "quintiles_jugement": {
+     "Q1": {
+      "matchs": 7479,
+      "indice_moyen": -0.07,
+      "favori_annonce_pct": 66.5,
+      "favori_reel_pct": 66.7,
+      "outsider_annonce_pct": 33.5,
+      "outsider_reel_pct": 33.3
+     },
+     "Q2": {
+      "matchs": 7479,
+      "indice_moyen": -0.02,
+      "favori_annonce_pct": 65.6,
+      "favori_reel_pct": 66.2,
+      "outsider_annonce_pct": 34.4,
+      "outsider_reel_pct": 33.8
+     },
+     "Q3": {
+      "matchs": 7479,
+      "indice_moyen": 0.012,
+      "favori_annonce_pct": 65.0,
+      "favori_reel_pct": 65.8,
+      "outsider_annonce_pct": 35.0,
+      "outsider_reel_pct": 34.2
+     },
+     "Q4": {
+      "matchs": 7479,
+      "indice_moyen": 0.048,
+      "favori_annonce_pct": 65.1,
+      "favori_reel_pct": 65.1,
+      "outsider_annonce_pct": 34.9,
+      "outsider_reel_pct": 34.9
+     },
+     "Q5": {
+      "matchs": 7480,
+      "indice_moyen": 0.112,
+      "favori_annonce_pct": 64.8,
+      "favori_reel_pct": 61.9,
+      "outsider_annonce_pct": 35.2,
+      "outsider_reel_pct": 38.1
+     }
+    },
+    "passe": false
+   },
+   "comme_en_production": {
+    "beta_appris": -1.6074,
+    "beta_reappris_sur_jugement": -0.6998,
+    "pente_a_indice_0_5": 0.448,
+    "apprentissage": {
+     "matchs": 8749,
+     "gain": 0.00086,
+     "erreur_type": 0.00044,
+     "brier_avant": 0.22109,
+     "brier_apres": 0.22074
+    },
+    "jugement": {
+     "matchs": 7442,
+     "gain": -8e-05,
+     "erreur_type": 0.00045,
+     "brier_avant": 0.21106,
+     "brier_apres": 0.2111
+    },
+    "quintiles_jugement": {
+     "Q1": {
+      "matchs": 1488,
+      "indice_moyen": -0.075,
+      "favori_annonce_pct": 66.8,
+      "favori_reel_pct": 67.7,
+      "outsider_annonce_pct": 33.2,
+      "outsider_reel_pct": 32.3
+     },
+     "Q2": {
+      "matchs": 1488,
+      "indice_moyen": -0.025,
+      "favori_annonce_pct": 65.8,
+      "favori_reel_pct": 67.9,
+      "outsider_annonce_pct": 34.2,
+      "outsider_reel_pct": 32.1
+     },
+     "Q3": {
+      "matchs": 1489,
+      "indice_moyen": 0.008,
+      "favori_annonce_pct": 65.4,
+      "favori_reel_pct": 68.0,
+      "outsider_annonce_pct": 34.6,
+      "outsider_reel_pct": 32.0
+     },
+     "Q4": {
+      "matchs": 1488,
+      "indice_moyen": 0.044,
+      "favori_annonce_pct": 65.5,
+      "favori_reel_pct": 67.3,
+      "outsider_annonce_pct": 34.5,
+      "outsider_reel_pct": 32.7
+     },
+     "Q5": {
+      "matchs": 1489,
+      "indice_moyen": 0.11,
+      "favori_annonce_pct": 65.0,
+      "favori_reel_pct": 65.6,
+      "outsider_annonce_pct": 35.0,
+      "outsider_reel_pct": 34.4
+     }
+    },
+    "passe": false
+   },
+   "retenu": false
+  }
+ },
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-26",
+  "statut": "etude",
+  "paquet": 456,
+  "quoi": "LES JOUEURS IRRÉGULIERS RENDENT-ILS NOS % TROP SÛRS ? (paquet 456, étude de fiabilité). L'Elo traduit un écart de niveau en % de la même façon pour tous les joueurs ; certains ont pourtant des résultats plus en dents de scie que leur niveau ne le laisse attendre. Nouvelle étude simulateur/etude_irregularite.py : pour chaque joueur, connu avant le match, l'irrégularité de ses 40 derniers matchs (écarts au % Elo annoncé pour lui, rapportés à ce que le hasard seul donnerait, rétrécie vers « normal » quand il a peu joué) ; pour un match, la moyenne des deux joueurs ; correction étudiée : le % rapproché de 50 % (ou écarté) selon cet indice. Règle écrite dans l'en-tête avant tout essai, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → mai 2026, Elo réglé comme la production ; retenu si le gain de log loss atteint 0,001 et 2 erreurs types sur au moins 1 000 matchs, avec le même sens sur les deux périodes ; le Challenger doit aussi passer le contrôle comme en production (résultats ITF hommes compris : appris de janvier à septembre 2025, jugé d'octobre 2025 à mai 2026). Rapport public : simulateur/rapport_irregularite.json (comptes seulement, aucun nom). RÉSULTAT : ATP : β -0,88 (réappris -0,7), 9233 matchs jugés, gain 0,00032 ± 0,00034, Brier 0,20955 → 0,20945 ; joueurs les plus irréguliers : outsider 33,3 % réels pour 31,0 % annoncés — non retenu ; WTA : β -1,58 (réappris -0,74), 8837 matchs jugés, gain -6e-05 ± 0,00044, Brier 0,20589 → 0,20588 ; joueurs les plus irréguliers : outsider 35,0 % réels pour 33,8 % annoncés — non retenu ; Challenger : β -0,64 (réappris -1,26), 37396 matchs jugés, gain 0,00036 ± 8e-05, Brier 0,21778 → 0,21765 ; joueurs les plus irréguliers : outsider 38,1 % réels pour 35,2 % annoncés ; contrôle comme en production 7442 matchs, gain -8e-05 ± 0,00045 — non retenu. Aucun circuit retenu : l'Elo traite déjà correctement les joueurs irréguliers ; la piste est close. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé à Lucas dans un paquet suivant, avec la règle de retrait cumulée (300 matchs concernés, 2 erreurs types). Limite : l'Elo seul, sans la simulation ni les signaux. 0 requête d'API. Retrait de l'étude : supprimer simulateur/etude_irregularite.py, simulateur/journal_ajouts/paquet_456.json, simulateur/tests/test_etude_irregularite.py et .github/workflows/etude_irregularite.yml."
+ }
+}

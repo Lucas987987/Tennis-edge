@@ -163,7 +163,7 @@ def recaler_feuille(c, fp, fq, coefs=None):
 
 
 CLES_PLUS = ('gagnes_1re_pct', 'gagnes_2e_pct', 'jeux_service_gagnes_pct', 'balles_break_obtenues', 'breaks',
-             'points_gagnes')
+             'points_gagnes', 'points_service_pct')
 
 
 def _feuille_plus(v):
@@ -1123,7 +1123,9 @@ def construire(racine, maintenant=None):
             json.dump(analyse_am, f, ensure_ascii=False, indent=1)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
-    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
+    for l_ in lignes:                           # 26/11/2026 (paquet 456) : heure du calcul de CE match (images et textes)
+        l_.setdefault('calcule_le', pron.get('genere_le'))
+    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)   # les matchs gardés gardent leur heure de calcul
     bilan_tout = bilan(resultats)
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
@@ -1213,6 +1215,12 @@ def compacter(doc, p_min=DISTRIBUTION_P_MIN):
     for m in doc.get('matchs') or []:
         D_ = m.get('distribution_scores')
         if not D_:
+            continue
+        if m.get('distribution_reste') is not None and m.get('scenarios'):
+            # 25/11/2026 (paquet 454) : match COMMENCÉ gardé de la version précédente (garder_commences) — sa distribution
+            # est déjà coupée (scores sous 0,1 %, surtout les 3 sets) ; ses scénarios et questions, calculés au passage
+            # précédent sur la distribution complète, sont gardés tels quels. Avant : recalculés sur la distribution
+            # coupée (Kicker – Moller, 25/11 : « Kicker en 3 sets : 0 % » pour 13 % au score en sets).
             continue
         m['questions'] = questions(D_)          # 05/11/2026 : sur la distribution complète, avant de la couper
         m['scenarios'] = scenarios(D_, m.get('sets'))   # paquet 221 ; paquet 325 : cohérents avec le score en sets
