@@ -190,15 +190,23 @@ export function masquer(email) {
   const [l, d] = String(email || '').split('@');
   return d ? `${l.slice(0, 2)}***@${d}` : '***';
 }
-export async function alerte(env, texte) {
-  if (!env.TELEGRAM_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
+// 26/11/2026 (paquet 478, Lucas : « un canal Telegram privé pour ne voir que les choses du site ») : si le secret
+// TELEGRAM_SITE_CHAT_ID existe, tout ce qui vient du site (comptes, demandes, virements, visites) part dans ce canal ;
+// sinon, comme avant, dans TELEGRAM_CHAT_ID. Même bot (TELEGRAM_TOKEN), ajouté administrateur du canal.
+export const canalSite = (env) => env.TELEGRAM_SITE_CHAT_ID || env.TELEGRAM_CHAT_ID || null;
+export async function telegramSite(env, texte) {
+  const chat = canalSite(env);
+  if (!env.TELEGRAM_TOKEN || !chat) return false;
   try {
     const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(3000),
-      body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: `👤 Game Set Algo · ${texte}`, disable_web_page_preview: true }),
+      body: JSON.stringify({ chat_id: chat, text: texte, disable_web_page_preview: true }),
     });
     return r.ok;
   } catch (e) { return false; }
+}
+export async function alerte(env, texte) {
+  return telegramSite(env, `👤 Game Set Algo · ${texte}`);
 }
 async function quotaJour(env) {
   const cle = `comptes/envois/${new Date().toISOString().slice(0, 10)}.json`;
@@ -579,6 +587,22 @@ async function utiliserCode(req, env, b) {
 
 // --------------------------------------------------------------------------------------------- administration
 // Seulement sur l'adresse workers.dev, avec la clé privée (cookie du Lab ou en-tête X-Cle) : voir worker.js.
+// 478 : canaux où le bot a été ajouté ou a vu un message (getUpdates, sans accusé de réception : rien n'est consommé ;
+// aucun autre outil du dépôt n'utilise getUpdates ni de webhook pour ce bot). Le jeton n'est jamais renvoyé.
+async function canauxTelegram(env) {
+  if (!env.TELEGRAM_TOKEN) return { ok: false, erreur: 'TELEGRAM_TOKEN absent' };
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/getUpdates?allowed_updates=${encodeURIComponent('["channel_post","my_chat_member","message"]')}`,
+      { signal: AbortSignal.timeout(5000) });
+    const o = await r.json();
+    const vus = new Map();
+    for (const u of (o && o.result) || []) {
+      const c = (u.channel_post || u.my_chat_member || u.message || {}).chat;
+      if (c && c.id && (c.type === 'channel' || c.type === 'supergroup' || c.type === 'group')) vus.set(String(c.id), { id: String(c.id), titre: String(c.title || c.type), type: c.type });
+    }
+    return { ok: true, chats: [...vus.values()], actuel: env.TELEGRAM_SITE_CHAT_ID ? String(env.TELEGRAM_SITE_CHAT_ID) : null };
+  } catch (e) { return { ok: false, erreur: 'telegram injoignable' }; }
+}
 export async function listeComptes(env) {
   const out = [];
   let curseur;
@@ -617,6 +641,7 @@ export function pageAdmin() {
 button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff9a}.non{color:#ff4fae}small{color:#a99fd6}</style></head><body>
 <h2>Comptes abonnés</h2>
 <div class="c"><b>Entonnoir</b><div id="en"><small>…</small></div></div>
+<div class="c"><b>Canal Telegram du site</b><br><small>Comptes, demandes, virements, visites (une fois par heure s'il y a du nouveau, et le bilan de la veille chaque matin). 1) Crée un canal privé et ajoute le bot comme administrateur. 2) Publie un message dans le canal. 3) « Chercher mes canaux », copie l'identifiant (-100…) dans le secret GitHub TELEGRAM_SITE_CHAT_ID, relance « Déployer le worker algo ». 4) « Envoyer un test ».</small><div style="margin-top:8px"><button id="tgc">Chercher mes canaux</button> <button id="tgt">Envoyer un test</button></div><p id="tgr"></p></div>
 <div class="c"><b>Virement reçu</b><br><small>Donne l'accès, crée la facture numérotée et l'envoie au client.</small>
 <input id="vc" type="text" placeholder="e-mail ou référence (GSA-…)"><select id="vf"><option value="semaine">Semaine</option><option value="mois" selected>Mois</option><option value="trimestre">Trimestre</option><option value="annee">Année</option></select>
 <input id="vm" type="text" inputmode="decimal" placeholder="montant reçu (€), ex. 9,99"><input id="vd" type="date"><label style="display:block;margin:6px 0"><input id="vfo" type="checkbox" style="width:auto"> tarif fondateur</label><label style="display:block;margin:6px 0"><input id="vsr" type="checkbox" style="width:auto"> sans renonciation (le client n'a pas demandé l'accès immédiat : il garde 14 jours de rétractation, remboursement intégral)</label><label style="display:block;margin:6px 0"><input id="vtf" type="checkbox" style="width:auto"> test sans facture (seulement tant que le secret FACTURE_VENDEUR est absent : accès ouvert, aucune facture)</label>
@@ -655,6 +680,8 @@ if(o.ok){vrBox(true,'✅ Virement validé : '+(o.sans_facture?'SANS facture (tes
 else if(o.erreur==='doublon'){vrBox(false,'⚠️ Un virement a déjà été validé pour ce compte à '+String(o.le||'').slice(11,16)+' UTC. Rien n’a été fait.');const b=document.createElement('button');b.textContent='Valider quand même (2e mois)';b.style.marginTop='8px';b.onclick=()=>vbEnvoi(true);$('vr').appendChild(document.createElement('br'));$('vr').appendChild(b);}
 else vrBox(false,'❌ Refusé : '+(ERR_V[o.erreur]||o.erreur));charger();factures();entonnoir();}).catch(()=>{$('vb').disabled=false;$('vb').textContent='Valider le virement';vrBox(false,'❌ Erreur réseau : rien n’a été validé.');});};
 $('vb').onclick=()=>{if(!vbArme){const f=$('vf').options[$('vf').selectedIndex].text;vbArme=setTimeout(()=>{vbArme=null;$('vb').textContent='Valider le virement';$('vb').style.background='';},10000);$('vb').textContent='Confirmer : '+f+' · '+($('vm').value||'?')+' € · '+($('vc').value||'?')+($('vtf').checked?' · sans facture':'');$('vb').style.background='#FF9A3D';return;}clearTimeout(vbArme);vbEnvoi(false);};
+$('tgc').onclick=()=>{$('tgr').textContent='…';fetch('/compte/admin/api/telegram',{cache:'no-store'}).then(r=>r.json()).then(o=>{if(!o.ok){$('tgr').textContent='Refusé : '+(o.erreur||'?');return;}$('tgr').textContent=(o.actuel?'Canal actuel : '+o.actuel+'. ':'Aucun canal du site : les messages partent dans le Telegram privé habituel. ')+(o.chats.length?'Trouvés : '+o.chats.map(c=>c.titre+' → '+c.id).join(' · '):'Aucun canal trouvé : ajoute le bot comme administrateur et publie un message dans le canal, puis réessaie.');});};
+$('tgt').onclick=()=>{fetch('/compte/admin/api/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.json()).then(o=>{$('tgr').textContent=o.ok?'✅ Message de test envoyé'+(o.site?' dans le canal du site.':' dans le Telegram privé habituel (TELEGRAM_SITE_CHAT_ID absent).'):'❌ Échec de l’envoi.';});};
 const ERR_V={vendeur_absent:'secret FACTURE_VENDEUR absent : coche « test sans facture » pour tester, ou pose le secret',fondateur_perdu:'tarif fondateur perdu (dernier mois fondateur fini depuis plus de 7 jours) : décoche « tarif fondateur »',sans_renonciation:'ce client n’a pas coché l’accès immédiat (section Plus). Demande-lui de le faire, ou coche « sans renonciation ».'};
 const ERR_O={vendeur_absent:'secret FACTURE_VENDEUR absent',coordonnees_absentes:'secret VIREMENT absent (titulaire, iban, bic)',aucun_fondateur:'aucun fondateur confirmé'};
 function ouv(mode){$('or').textContent='…';fetch('/compte/admin/api/ouverture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode})}).then(r=>r.json()).then(o=>{if(!o.ok){$('or').textContent='Refusé : '+(ERR_O[o.erreur]||o.erreur);return;}
@@ -672,6 +699,12 @@ export async function adminComptes(req, env, url) {
     'X-Robots-Tag': 'noindex', 'X-Frame-Options': 'DENY',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'" } });
   if (p === '/compte/admin/api/liste' && req.method === 'GET') return rep({ ok: true, comptes: await listeComptes(env) });
+  if (p === '/compte/admin/api/telegram' && req.method === 'GET') return rep(await canauxTelegram(env));          // 478
+  if (p === '/compte/admin/api/telegram' && req.method === 'POST') {
+    if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
+    const ok = await telegramSite(env, '✅ Game Set Algo · test : les messages du site arrivent bien ici.');
+    return rep({ ok, site: !!env.TELEGRAM_SITE_CHAT_ID });
+  }
   if (p === '/compte/admin/api/codes' && req.method === 'GET') return rep({ ok: true, codes: await listeCodes(env) });
   if (p === '/compte/admin/api/codes' && req.method === 'POST') {
     if (!memeOrigine(req)) return rep({ ok: false, erreur: 'origine' }, 403);
