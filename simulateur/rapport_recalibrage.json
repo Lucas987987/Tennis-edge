@@ -1,7 +1,7 @@
 {
   "populations_separees": true,
   "direct": {
-    "n": 1592,
+    "n": 1758,
     "semaines": 6,
     "population": "premiers pronostics figés et résultats ultérieurs",
     "marche_utilise": false,
@@ -59,7 +59,7 @@
     "champion_actif_modifie": false
   },
   "rejoue": {
-    "n": 6650,
+    "n": 6841,
     "semaines": 17,
     "population": "premiers pronostics figés et résultats ultérieurs",
     "marche_utilise": false,
@@ -227,24 +227,24 @@
       },
       {
         "train_n": 6248,
-        "test_n": 402,
+        "test_n": 593,
         "semaines_test": [
           "2026-S47",
           "2026-S48"
         ],
-        "champion_log_loss": 0.6146855690847864,
+        "champion_log_loss": 0.5993072669461277,
         "challengers": {
           "logistique": {
-            "log_loss": 0.6160526437804176,
-            "gain": -0.001367074695631132
+            "log_loss": 0.5993028832923307,
+            "gain": 4.383653796957709e-06
           },
           "contraction_hierarchique": {
-            "log_loss": 0.6156482799769682,
-            "gain": -0.0009627108921818062
+            "log_loss": 0.5993783672115015,
+            "gain": -7.110026537382463e-05
           },
           "isotone": {
-            "log_loss": 0.6503426031881956,
-            "gain": -0.035657034103409146
+            "log_loss": 0.6230557901000228,
+            "gain": -0.023748523153895085
           }
         }
       }
@@ -252,15 +252,15 @@
     "decisions": {
       "logistique": {
         "adopte": false,
-        "gain_log_loss_pondere": -0.0022340253228011996,
-        "fenetres_positives": 2,
+        "gain_log_loss_pondere": -0.0020823577722898358,
+        "fenetres_positives": 3,
         "fenetres": 8,
         "statut": "confirmation",
         "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
       },
       "contraction_hierarchique": {
         "adopte": false,
-        "gain_log_loss_pondere": -0.002122787660274785,
+        "gain_log_loss_pondere": -0.0020065342105687277,
         "fenetres_positives": 4,
         "fenetres": 8,
         "statut": "confirmation",
@@ -268,7 +268,7 @@
       },
       "isotone": {
         "adopte": false,
-        "gain_log_loss_pondere": -0.05416970882177887,
+        "gain_log_loss_pondere": -0.05252767785427493,
         "fenetres_positives": 0,
         "fenetres": 8,
         "statut": "confirmation",
@@ -277,7 +277,7 @@
     },
     "champion_actif_modifie": false
   },
-  "n": 1592,
+  "n": 1758,
   "decisions": {
     "logistique": {
       "adopte": false,
@@ -305,5 +305,5 @@
     }
   },
   "regle_populations": "le direct et le rejoué ne sont jamais agrégés ; aucune promotion automatique",
-  "genere_le": "2026-11-23T16:05:27.639026+00:00"
+  "genere_le": "2026-11-26T17:31:46.736780+00:00"
 }

@@ -1,9 +1,9 @@
 {
-  "genere_le": "2026-11-23T14:21:29.715536+00:00",
+  "genere_le": "2026-11-26T15:43:41.091051+00:00",
   "coupure_decouverte_confirmation": "2025-01-01",
   "matchs_selectionnes": 2000,
   "regle": "Challenger choisi sur découverte ; adoption seulement après confirmation, marge et deux semaines.",
-  "champion_compare": "champion",
+  "champion_compare": "recent",
   "candidats": {
     "champion": {
       "reglage": {
@@ -328,35 +328,35 @@
   },
   "decision": {
     "adopte": true,
-    "raison": "gain confirmation +0.001709 ; profils peu documentés validés — adopté : mieux 2 semaines de suite",
+    "raison": "gain confirmation -0.001709 ; profils peu documentés non validés — en place ; à confirmer pour sortir (1/2)",
     "ll": {
-      "avec": 0.657239,
-      "sans": 0.658948
+      "avec": 0.658948,
+      "sans": 0.657239
     },
     "controles_sous_groupes": {
       "peu_documente": {
-        "n": 512,
-        "gain_log_loss": 0.005376,
-        "delta_brier": -0.001795,
-        "brier_avec": 0.225327,
-        "brier_sans": 0.227122,
+        "n": 444,
+        "gain_log_loss": -0.005376,
+        "delta_brier": 0.001795,
+        "brier_avec": 0.227122,
+        "brier_sans": 0.225327,
         "minimum_matchs": 30,
-        "ok": true
+        "ok": false
       },
       "tres_peu_documente": {
-        "n": 236,
-        "gain_log_loss": 0.007609,
-        "delta_brier": -0.00302,
-        "brier_avec": 0.248212,
-        "brier_sans": 0.251232,
+        "n": 206,
+        "gain_log_loss": -0.007609,
+        "delta_brier": 0.00302,
+        "brier_avec": 0.251232,
+        "brier_sans": 0.248212,
         "minimum_matchs": 30,
-        "ok": true
+        "ok": false
       }
     },
     "demi_vie": 180,
     "prior_mult": 1.0,
     "challenger": "recent",
-    "adopte_brut": true,
-    "stabilite": "adopté : mieux 2 semaines de suite"
+    "adopte_brut": false,
+    "stabilite": "en place ; à confirmer pour sortir (1/2)"
   }
 }

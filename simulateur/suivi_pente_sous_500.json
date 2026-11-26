@@ -1,0 +1,109 @@
+{
+ "genere_le": "2026-11-26T17:31:09+00:00",
+ "matchs_lus": 83,
+ "definition": "% publié contre le même étiré (σ(1,174 · logit p)) sur les Challengers dont le joueur le moins vu avait moins de 500 points de service au moment du pronostic. Le % affiché ne change pas.",
+ "candidat": {
+  "matchs": 26,
+  "pente_en_plus": 1.174,
+  "gain_log_loss": 0.00646,
+  "erreur_type": 0.0098,
+  "gain_1re_moitie": -0.00461,
+  "gain_2de_moitie": 0.01752,
+  "pente_du_publie": null,
+  "pente_erreur_type": null,
+  "a_proposer": false,
+  "regle": "proposé à Lucas (jamais appliqué automatiquement) si ≥ 1000 matchs, gain ≥ 0.001, gain − 2 erreurs types > 0 et gain > 0 sur les deux moitiés"
+ },
+ "par_tranche": {
+  "ATP": {
+   "moins de 500": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "500 à 1 500": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "1 500 à 3 000": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "3 000 et plus": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   }
+  },
+  "WTA": {
+   "moins de 500": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "500 à 1 500": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "1 500 à 3 000": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   },
+   "3 000 et plus": {
+    "matchs": 0,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": null,
+    "favori_gagnant_pct": null
+   }
+  },
+  "CH": {
+   "moins de 500": {
+    "matchs": 26,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": 78.1,
+    "favori_gagnant_pct": 76.9
+   },
+   "500 à 1 500": {
+    "matchs": 14,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": 67.9,
+    "favori_gagnant_pct": 64.3
+   },
+   "1 500 à 3 000": {
+    "matchs": 13,
+    "pente_du_publie": null,
+    "erreur_type": null,
+    "favori_annonce_pct": 66.1,
+    "favori_gagnant_pct": 61.5
+   },
+   "3 000 et plus": {
+    "matchs": 30,
+    "pente_du_publie": 0.856,
+    "erreur_type": 0.481,
+    "favori_annonce_pct": 65.5,
+    "favori_gagnant_pct": 63.3
+   }
+  }
+ }
+}

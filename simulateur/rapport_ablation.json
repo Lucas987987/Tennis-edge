@@ -1,5 +1,5 @@
 {
- "n": 1592,
+ "n": 1758,
  "semaines": 6,
  "source": "premiers pronostics pré-match figés",
  "population": "mêmes matchs pour les quatre modèles ; abandons, forfaits et entrées incomplètes exclus",
@@ -11,82 +11,82 @@
  "avertissement": "Moins de 8 semaines : intervalles exploratoires, pas une preuve de supériorité.",
  "modeles": {
   "elo": {
-   "n": 1592,
-   "log_loss": 0.60541,
-   "brier": 0.21005,
-   "reussite_pct": 67.21106
+   "n": 1758,
+   "log_loss": 0.59832,
+   "brier": 0.20688,
+   "reussite_pct": 67.97497
   },
   "simulation": {
-   "n": 1592,
-   "log_loss": 0.61794,
-   "brier": 0.21485,
-   "reussite_pct": 65.51508
+   "n": 1758,
+   "log_loss": 0.61701,
+   "brier": 0.21409,
+   "reussite_pct": 65.92719
   },
   "combinaison_base": {
-   "n": 1592,
-   "log_loss": 0.60246,
-   "brier": 0.20821,
-   "reussite_pct": 66.64573
+   "n": 1758,
+   "log_loss": 0.59733,
+   "brier": 0.20584,
+   "reussite_pct": 67.23549
   },
   "pipeline_complet": {
-   "n": 1592,
-   "log_loss": 0.60125,
-   "brier": 0.20818,
-   "reussite_pct": 66.20603
+   "n": 1758,
+   "log_loss": 0.59489,
+   "brier": 0.20545,
+   "reussite_pct": 66.83732
   }
  },
  "comparaisons": {
   "pipeline_complet_contre_elo": {
    "difference": {
-    "log_loss": 0.00416,
-    "brier": 0.00187
+    "log_loss": 0.00343,
+    "brier": 0.00143
    },
    "ic95": {
     "log_loss": {
-     "bas": -0.00231,
-     "haut": 0.01046
+     "bas": -0.00254,
+     "haut": 0.00992
     },
     "brier": {
-     "bas": -0.00068,
-     "haut": 0.00445
+     "bas": -0.00113,
+     "haut": 0.00401
     }
    },
    "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
   },
   "pipeline_complet_contre_simulation": {
    "difference": {
-    "log_loss": 0.01669,
-    "brier": 0.00668
+    "log_loss": 0.02212,
+    "brier": 0.00864
    },
    "ic95": {
     "log_loss": {
-     "bas": 0.00652,
-     "haut": 0.02473
+     "bas": 0.00896,
+     "haut": 0.03906
     },
     "brier": {
-     "bas": 0.00294,
-     "haut": 0.00941
+     "bas": 0.0039,
+     "haut": 0.01477
     }
    },
    "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
   },
   "pipeline_complet_contre_combinaison_base": {
    "difference": {
-    "log_loss": 0.00121,
-    "brier": 4e-05
+    "log_loss": 0.00244,
+    "brier": 0.00039
    },
    "ic95": {
     "log_loss": {
-     "bas": -0.00534,
-     "haut": 0.00678
+     "bas": -0.00366,
+     "haut": 0.00803
     },
     "brier": {
-     "bas": -0.00184,
-     "haut": 0.00186
+     "bas": -0.00132,
+     "haut": 0.00222
     }
    },
    "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
   }
  },
- "genere_le": "2026-11-23T16:05:08+00:00"
+ "genere_le": "2026-11-26T17:31:27+00:00"
 }

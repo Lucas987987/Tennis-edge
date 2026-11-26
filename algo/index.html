@@ -2232,7 +2232,7 @@ function brancherQuestion(m){
   }));
   const premier = panneau.querySelector('[data-qa-theme]');
   remplir(premier ? premier.dataset.qaTheme : 'match');
-  [q, j, n].forEach(x => x.addEventListener('input', maj)); maj();
+  [q, j, n].forEach(x => x.addEventListener('input', () => { stat(mode === 'live' ? 'demande_algo_direct' : 'demande_algo'); maj(); })); maj();   // 479
   // 26/11/2026 (paquet 470, Lucas : « demander une information en live, recalculée par rapport au vrai déroulé du
   // match ») — en direct, les thèmes Match et Jeux sont recalculés depuis le score réel (qaLive) ; Stats et Historique
   // restent ceux d'avant le match et le disent. Le % publié avant le match ne change pas.
@@ -3533,6 +3533,7 @@ function Arcade(root, m, opts){
     return () => { const q = M.pLive(S); return (q<=0||q>=1) ? q : sig(logit(q)+decal); };
   }
   async function jouer(seedVoulu){
+    stat('simulation');                                             // 479
     const mon = ++jeton, vivant = () => mon === jeton;
     let seed = seedVoulu != null ? seedVoulu : (opts.seed != null && mon === 1 ? opts.seed : null);
     enCoursTop = false;
@@ -4091,6 +4092,7 @@ function rendMdj(){
   document.getElementById('mdj-sous').textContent = t(estJour ? 'mdj_sous' : 'sim_sous');
   document.getElementById('retour-mdj').hidden = estJour || !idJour;
   if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t(demande ? 'sim_indisponible' : 'mdj_vide'))}</div>`; return; }
+  if (!estJour) statFiche(m.uid, !!m.verrou);                       // 479 : fiche ouverte par le visiteur (compteur anonyme)
   if (m.verrou){ zone.innerHTML = panneauVerrou(m); return; }      // 377 : réservé à l'accès Plus
   const p = m.p_home;
   const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0));
@@ -4232,6 +4234,32 @@ function majBoutonTiroirs(){
   const tous = [...f.querySelectorAll(':scope > .tiroir')];
   b.textContent = t(tous.some(d => !d.open) ? 'tr_ouvrir' : 'tr_replier');
 }
+// 26/11/2026 (paquet 479, Lucas : « un maximum d'informations, de façon anonyme pour ne pas tracer les gens ») —
+// COMPTEURS ANONYMES : la page additionne ce que fait le visiteur (fiches ouvertes, simulations, direct 3D, Demande à
+// l'algo, favoris…) et une minute de présence quand l'onglet est visible, puis envoie ces seuls totaux au plus une fois
+// par minute (et en quittant la page). Ni cookie, ni identifiant, ni stockage dans le navigateur ; la provenance n'est
+// que le nom du site d'où l'on arrive. Seulement sur gamesetalgo.com.
+var STAT = { e: {}, f: {}, m: 0, envoye: false, dernierFiche: null, vus: {} };      // var : appelable sans risque avant cette ligne
+function stat(type, n = 1){ if (!STAT) return; STAT.e[type] = (STAT.e[type] || 0) + n; }
+function statFiche(uid, verrou){ if (!STAT || !uid || STAT.dernierFiche === uid) return; STAT.dernierFiche = uid; STAT.f[uid] = (STAT.f[uid] || 0) + 1; stat(verrou ? 'fiche_verrouillee' : 'fiche'); }
+function statEnvoyer(balise){
+  if (!/(^|\.)gamesetalgo\.com$/.test(location.hostname)) return;
+  if (!Object.keys(STAT.e).length && !Object.keys(STAT.f).length && !STAT.m) return;
+  const b = { e: STAT.e, f: STAT.f, m: STAT.m, l: L };
+  if (!STAT.envoye) { try { const d = document.referrer ? new URL(document.referrer).hostname : ''; if (d && d !== location.hostname) b.r = d; } catch(e) { /* rien */ } }
+  STAT.e = {}; STAT.f = {}; STAT.m = 0; STAT.envoye = true;
+  const corps = JSON.stringify(b);
+  try { if (balise && navigator.sendBeacon && navigator.sendBeacon('/stats/evt', new Blob([corps], { type: 'application/json' }))) return; } catch(e) { /* repli */ }
+  fetch('/stats/evt', { method: 'POST', body: corps, headers: { 'Content-Type': 'application/json' }, keepalive: true, credentials: 'omit' }).catch(() => {});
+}
+setInterval(() => { if (document.visibilityState === 'visible') STAT.m = Math.min(2, STAT.m + 1); statEnvoyer(false); }, 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') statEnvoyer(true); });
+document.addEventListener('click', e => { if (e.target.closest('.circuits [data-circuit]')) stat('filtre_circuit'); }, true);
+try {
+  const vu = (id, type) => { const el = document.getElementById(id); if (!el || !('IntersectionObserver' in window)) return;
+    const o = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting) && !STAT.vus[type]) { STAT.vus[type] = true; stat(type); o.disconnect(); } }, { threshold: .3 }); o.observe(el); };
+  addEventListener('DOMContentLoaded', () => { vu('plus', 'section_plus_vue'); const bh = document.getElementById('bilan-h'); if (bh) { bh.closest('section').id = bh.closest('section').id || 'bilan-section'; vu(bh.closest('section').id, 'bilan_vu'); } });
+} catch(e) { /* navigateur ancien : rien */ }
 // 26/11/2026 (paquet 476, Lucas) — FAVORIS : joueurs et matchs, gardés sur le compte (gratuit compris). Ne donne
 // accès à rien de réservé au Plus : un favori ne fait que trier, filtrer et marquer. Sans système de comptes (copie
 // GitHub Pages), aucune étoile n'est montrée.
@@ -4255,6 +4283,7 @@ function majEtoiles(){
 function favoriAction(b){
   if (!COMPTE) return ouvrirCompte('inscription', t('fav_compte'), true);
   const type = b.dataset.fav, cle = b.dataset.cle, actif = b.getAttribute('aria-pressed') !== 'true', k = type === 'joueur' ? 'joueurs' : 'matchs';
+  if (actif) stat('favori');                                         // 479
   const avant = JSON.parse(JSON.stringify(FAVS())), F = JSON.parse(JSON.stringify(avant));
   F[k] = actif ? [cle, ...(F[k] || []).filter(x => x !== cle)] : (F[k] || []).filter(x => x !== cle);
   COMPTE.favoris = F; majEtoiles(); if (D) rendListe();
@@ -4263,7 +4292,7 @@ function favoriAction(b){
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-fav]'); if (b) { e.preventDefault(); e.stopPropagation(); return favoriAction(b); }
   const f = e.target.closest('#fav-filtre'); if (f) { if (!COMPTE) return ouvrirCompte('inscription', t('fav_compte'), true);
-    filtreFav = !filtreFav; nListe = 30; majEtoiles(); if (D) rendListe(); }
+    filtreFav = !filtreFav; nListe = 30; majEtoiles(); if (D) rendListe(); if (filtreFav) stat('filtre_favoris'); }
 }, true);
 function matchsFiltres(){
   const q = recherche.trim().toLocaleLowerCase(loc());
@@ -7840,7 +7869,7 @@ function svgCourbe(m, courbe){
 // 426 — GRAND ÉCRAN du direct : API plein écran quand le navigateur l'accepte (Android), sinon le panneau couvre la page
 // (iPhone). Le panneau garde ses mises à jour : seul son habillage change. Échap / bouton « Quitter » / geste retour.
 function entrerPlein(el, uid){
-  LIVE.plein = uid; document.documentElement.classList.add('pe-ouvert');
+  LIVE.plein = uid; document.documentElement.classList.add('pe-ouvert'); stat('direct_3d');   // 479
   try { const f = el.requestFullscreen || el.webkitRequestFullscreen; if (f) { const pr = f.call(el, { navigationUI: 'hide' }); if (pr && pr.catch) pr.catch(() => {}); } } catch (e) {}
   try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
   rendMatchLive();
@@ -8657,10 +8686,10 @@ function texteLegal(page, e){
     <h3>Responsible gambling</h3><p>Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France: 09 74 75 13 13.</p>
     <h3>Intellectual property</h3><p>© Game Set Algo unless stated otherwise. 3D characters: Quaternius (CC0); motion data: Mixamo (Adobe), embedded; fonts: SIL Open Font License.</p>${maj}`;
   if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
-    <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, pas de mesure d'audience, aucun traceur publicitaire.</p>
+    <p>En résumé : un compte facultatif, un seul cookie (celui qui vous garde connecté), pas de cookie publicitaire, une mesure d'audience anonyme (des totaux par jour, sans cookie), aucun traceur publicitaire.</p>
     <h3>Votre compte (facultatif)</h3><p>Pour créer un compte, nous enregistrons votre adresse e-mail et votre mot de passe, qui n'est jamais gardé en clair : seule une empreinte chiffrée (PBKDF2) est conservée. S'y ajoutent les dates d'inscription, de confirmation et de dernière connexion, et l'état de votre accès Plus (formule, dates, code utilisé), ainsi que les joueurs et matchs que vous mettez en favoris (pour trier et filtrer la liste). Ces données servent uniquement à gérer votre compte et votre accès (exécution du service demandé). Elles sont stockées dans un espace privé chez Cloudflare. Vous pouvez à tout moment, depuis « Mon compte », télécharger vos données, changer de mot de passe ou supprimer votre compte : il est alors effacé immédiatement. Un compte jamais confirmé est effacé après 30 jours.</p>
     <h3>E-mails</h3><p>Les e-mails du compte (confirmation de l'adresse, nouveau mot de passe) sont envoyés par Brevo (Sendinblue SAS, France), qui traite votre adresse pour ce seul envoi, sur des serveurs situés dans l'Union européenne. Aucune lettre d'information ne vous est envoyée sans votre accord. Si votre compte reçoit une place fondateur (les 100 premiers comptes confirmés), nous gardons son numéro et sa date d'attribution, et pouvons vous écrire à l'ouverture du paiement.</p>
-    <h3>Mesure d'audience</h3><p>Pour savoir combien de personnes ouvrent le site, notre serveur compte les ouvertures de la page, sans cookie ni traceur : une empreinte du jour, calculée à partir de l'adresse IP et du navigateur avec une clé qui change chaque jour, évite de compter deux fois la même visite. Ces empreintes sont effacées le lendemain ; seuls les totaux par jour sont gardés.</p>
+    <h3>Mesure d'audience</h3><p>Pour savoir combien de personnes ouvrent le site, notre serveur compte les ouvertures de la page, sans cookie ni traceur : une empreinte du jour, calculée à partir de l'adresse IP et du navigateur avec une clé qui change chaque jour, évite de compter deux fois la même visite. Pour savoir ce qui intéresse, la page envoie aussi, au plus une fois par minute, de simples compteurs : fiches de matchs ouvertes, simulations lancées, direct 3D, questions à l'algo, favoris ajoutés, minutes passées sur la page quand elle est affichée. Le serveur y ajoute, une fois par visiteur et par jour, le type d'appareil (mobile ou ordinateur), le pays déduit par notre hébergeur, la langue du site et le nom du site d'où vous arrivez (jamais l'adresse complète). Rien n'est rattaché à votre compte ni à votre personne. Les empreintes sont effacées le lendemain ; seuls les totaux par jour sont gardés.</p>
     <h3>Paiements et factures</h3><p>Quand vous payez par virement, nous gardons le montant, la date, la formule et la facture émise. Les factures sont conservées 10 ans, comme l'impose la loi, même si le compte est supprimé. Quelques jours avant la fin d'un accès payé, un e-mail de rappel vous est envoyé.</p>
     <h3>Notifications internes</h3><p>L'éditeur reçoit une notification privée (Telegram) quand un compte est créé, confirmé (avec sa place fondateur éventuelle) ou utilise un code. L'adresse e-mail y est masquée (deux premiers caractères et domaine).</p>
     <h3>Cookie de connexion</h3><p>Un seul cookie, « gsa_compte », vous garde connecté (90 jours au plus) : il est strictement nécessaire au service que vous demandez et ne sert à rien d'autre ; il est supprimé à la déconnexion.</p>
@@ -8672,7 +8701,7 @@ function texteLegal(page, e){
     : `<h2>Privacy</h2><p>An optional account, a single cookie (to keep you logged in), no advertising cookie, no analytics, no advertising tracker.</p>
     <h3>Your account (optional)</h3><p>We store your email address and your password, never in clear text (only a PBKDF2 hash), the dates of sign-up, confirmation and last login, the state of your Plus access (plan, dates, code used), and the players and matches you mark as favourites (to sort and filter the list). They are used only to run your account and access, stored privately at Cloudflare. From "My account" you can download your data, change your password or delete your account, which is erased immediately. An account never confirmed is erased after 30 days.</p>
     <h3>Emails</h3><p>Account emails (address confirmation, new password) are sent by Brevo (Sendinblue SAS, France), on servers in the European Union, for that purpose only. No newsletter without your consent. If you reserve a founders spot, we keep the reservation date and email you to confirm it, then when payment opens; cancelling the reservation in the Plus section stops these emails.</p>
-    <h3>Audience measurement</h3><p>To know how many people open the site, our server counts page openings, with no cookie or tracker: a daily fingerprint computed from the IP address and browser with a key that changes every day avoids counting the same visit twice. Fingerprints are erased the next day; only daily totals are kept.</p>
+    <h3>Audience measurement</h3><p>To know how many people open the site, our server counts page openings, with no cookie or tracker: a daily fingerprint computed from the IP address and browser with a key that changes every day avoids counting the same visit twice. To know what people find useful, the page also sends, at most once a minute, plain counters: match pages opened, simulations started, 3D live, questions to the algorithm, favourites added, minutes spent on the page while it is shown. Once per visitor and per day, the server adds the device type (mobile or desktop), the country inferred by our host, the site language and the name of the site you came from (never the full address). Nothing is linked to your account or to you. Fingerprints are erased the next day; only daily totals are kept.</p>
     <h3>Payments and invoices</h3><p>When you pay by bank transfer, we keep the amount, date, plan and invoice. Invoices are kept for 10 years as required by law, even if the account is deleted. A few days before a paid access ends, a reminder email is sent.</p>
     <h3>Internal notifications</h3><p>The publisher receives a private notification (Telegram) when an account is created, confirmed (with its founder spot, if any) or uses a code. The email address is masked (first two characters and domain).</p>
     <h3>Login cookie</h3><p>A single cookie, "gsa_compte", keeps you logged in (90 days at most). It is strictly necessary and removed when you log out.</p>
@@ -9373,6 +9402,7 @@ function blocMonAbonnement(){
 }
 function fermerCompte(){ document.getElementById('compte-fond').hidden = true; }
 function ouvrirCompte(vue, msg, ok, jeton){
+  if (vue === 'inscription') stat('inscription_ouverte');           // 479
   const boite = document.getElementById('compte-boite'), fond = document.getElementById('compte-fond');
   const champ = (id, lib, type, ac) => `<label for="${id}">${esc(lib)}</label><input id="${id}" type="${type}" autocomplete="${ac}" ${type==='email'?'inputmode="email"':''} required>`;
   const m = msg ? `<p class="msg ${ok?'ok':'ko'}" role="status">${esc(msg)}</p>` : '';
