@@ -131,14 +131,15 @@ def detail(c, sport, e, etiquette, journal):
     return {'manches': len(m), 'points': pts[0] + pts[1], 'pbp_code': code, 'pbp_points': n}
 
 
-def sonder(cle, aujourdhui=None, ouvrir=None, journal=print):
+def sonder(cle, aujourdhui=None, ouvrir=None, journal=print, noms=NOMS_SPORT):
+    """noms : les noms possibles du sport (26/11 : réutilisé pour le badminton)."""
     c = Client(cle, ouvrir)
     hier = (aujourdhui or dt.date.today()) - dt.timedelta(days=1)
     res = {'sport': None}
 
     # 1. le nom du sport
     idx = None
-    for s in NOMS_SPORT:
+    for s in noms:
         code, doc = c.get(f"/api/{s}/calendar/{hier.day}/{hier.month}/{hier.year}/categories")
         journal(f"1. « {s} » : HTTP {code}")
         if code == 200 and ligues(doc):
@@ -149,7 +150,7 @@ def sonder(cle, aujourdhui=None, ouvrir=None, journal=print):
             res['abonnement'] = False
             break
     if not res['sport']:
-        journal(f"Bilan : tennis de table introuvable — {c.n} requêtes, codes {c.codes}, quota restant {c.reste}")
+        journal(f"Bilan : {noms[0]} introuvable — {c.n} requêtes, codes {c.codes}, quota restant {c.reste}")
         return res
     sport = res['sport']
 
