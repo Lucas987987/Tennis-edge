@@ -1,24 +1,24 @@
 {
- "genere_le": "2026-11-25T18:10:21+00:00",
+ "genere_le": "2026-11-26T17:53:15+00:00",
  "paquet": 272,
  "fenetre_jours": 30,
  "regle": "résolu                 — présent dans Tennis_Edge_Lab/live/pronostics_resultats.json ;   adversaire fictif      — « R16P3 », « QF7 »… (vainqueur à venir ; filtré depuis le 04/11, restes du journal) ;   doublon reprogrammé    — même paire de joueurs sous un autre uid à moins de 48 h (match déplacé) : une seule fois                            dans les bilans, rien à réparer ;   abandon / forfait      — feuille TennisApi « Retired » / « Walkover » : volontairement non jugés ;   annulé ou reporté      — feuille « Canceled », « Postponed »… ;   feuille terminée non résolue — feuille « Ended » trouvée mais pas de résultat : DÉFAUT à corriger ;   adversaire remplacé    — pas de feuille pour la paire, mais un des joueurs a joué un autre adversaire à ± 3 h de                            l'horaire prévu (repêché, forfait remplacé) : le match annoncé n'a pas eu lieu ;   aucune feuille         — rien du tout : TROU DE COLLECTE (ou match pas encore relevé). Aussi : paires affichées deux fois sur le site (algo/donnees.json) et paires résolues deux fois (bilans faussés). ALERTE (Telegram privé) si, sur la veille, « aucune feuille » + « feuille terminée non résolue » dépassent 10 % des matchs réels (hors adversaires fictifs et doublons), ou si une paire est résolue deux fois.",
- "matchs": 2256,
+ "matchs": 2208,
  "causes": {
-  "résolu": 1533,
+  "résolu": 1486,
   "adversaire fictif": 151,
-  "doublon reprogrammé": 446,
-  "abandon / forfait": 55,
+  "doublon reprogrammé": 443,
+  "abandon / forfait": 54,
   "annulé ou reporté": 0,
   "feuille terminée non résolue": 0,
-  "adversaire remplacé": 35,
-  "aucune feuille": 36
+  "adversaire remplacé": 34,
+  "aucune feuille": 40
  },
  "par_circuit": {
   "ATP": {
-   "résolu": 174,
+   "résolu": 161,
    "adversaire fictif": 38,
-   "doublon reprogrammé": 66,
+   "doublon reprogrammé": 57,
    "abandon / forfait": 4,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
@@ -26,9 +26,9 @@
    "aucune feuille": 0
   },
   "WTA": {
-   "résolu": 140,
+   "résolu": 123,
    "adversaire fictif": 32,
-   "doublon reprogrammé": 33,
+   "doublon reprogrammé": 32,
    "abandon / forfait": 5,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
@@ -36,37 +36,32 @@
    "aucune feuille": 7
   },
   "CH": {
-   "résolu": 1219,
+   "résolu": 1202,
    "adversaire fictif": 81,
-   "doublon reprogrammé": 347,
-   "abandon / forfait": 46,
+   "doublon reprogrammé": 354,
+   "abandon / forfait": 45,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 22,
-   "aucune feuille": 29
+   "adversaire remplacé": 21,
+   "aucune feuille": 33
   }
  },
- "defauts_pct": 2.2,
+ "defauts_pct": 2.5,
  "veille": {
-  "jour": "2026-11-24",
+  "jour": "2026-11-25",
   "causes": {
-   "résolu": 65,
+   "résolu": 39,
    "adversaire fictif": 0,
-   "doublon reprogrammé": 30,
-   "abandon / forfait": 2,
+   "doublon reprogrammé": 12,
+   "abandon / forfait": 1,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 0,
-   "aucune feuille": 1
+   "aucune feuille": 5
   },
-  "defauts_pct": 1.5
+  "defauts_pct": 11.1
  },
  "par_jour": {
-  "2026-11-12": {
-   "matchs": 40,
-   "resolus": 30,
-   "defauts_pct": 0.0
-  },
   "2026-11-13": {
    "matchs": 34,
    "resolus": 32,
@@ -119,22 +114,29 @@
   },
   "2026-11-23": {
    "matchs": 133,
-   "resolus": 74,
+   "resolus": 73,
    "defauts_pct": 3.8
   },
   "2026-11-24": {
    "matchs": 98,
-   "resolus": 65,
-   "defauts_pct": 1.5
+   "resolus": 66,
+   "defauts_pct": 0.0
   },
   "2026-11-25": {
-   "matchs": 13,
-   "resolus": 10,
-   "defauts_pct": 8.3
+   "matchs": 57,
+   "resolus": 39,
+   "defauts_pct": 11.1
+  },
+  "2026-11-26": {
+   "matchs": 10,
+   "resolus": 8,
+   "defauts_pct": 20.0
   }
  },
  "paires_resolues_deux_fois": 0,
  "paires_en_double_sur_le_site": 0,
- "alerte": [],
+ "alerte": [
+  "veille : 11.1 % de matchs sans résultat exploitable (seuil 10 %)"
+ ],
  "descriptif": "le % de victoire ne change pas"
 }
