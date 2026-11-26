@@ -2592,6 +2592,13 @@
    "paquet": 461,
    "quoi": "NOTE DE FIABILITÉ PAR MATCH : PENTES DE BASE DU CHALLENGER CORRIGÉES (paquet 461). Les pentes de base du Challenger (paquets 450–451 : 1,031, 1,034, 1,005, puis celle du circuit) venaient d'un rejeu fait sur une copie des données vieille de quatre jours. Relancées sur GitHub avec les données à jour, l'analyse 448 donne, pour l'Elo de production seul sur 01/2025 → 05/2026 (résultats ITF hommes compris) : moins de 30 matchs 1,046, 30–99 0,944, 100–299 0,887, 300 et plus 0,829 (circuit 0,961), et l'étude 449 n'est PAS retenue (gain jugé +0,0032 ± 0,0006 mais pas le même sens dans l'autre sens : −0,0002 ± 0,0011). Les pentes de base du Challenger prennent ces valeurs mesurées ; les effets des critères et l'ajustement sur nos matchs publiés sont réappris sur 1 487 matchs (favoris_opposes × 0,909, ecart_modeles_10 × 1,062, experience_30 × 0,814, experience_60 × 0,98, match_serre × 0,901, gros_favori × 1,124, huitiemes × 0,893, pronostic_bouge × 0,824, joueur_peu_fiable × 1,026). Les entrées 448 et 449 du journal reprennent les chiffres des études relancées sur GitHub. Le % de victoire ne change pas.",
    "garde_fou": "Même garde-fou que la note par match (chaque lundi, retour à l'ancienne note si la nouvelle décrit moins bien la réalité). Désormais, les études sont calculées sur les données à jour de GitHub."
+  },
+  {
+   "date": "2026-11-26",
+   "statut": "production",
+   "paquet": 463,
+   "quoi": "PASTILLE « MATCH FIABLE / STANDARD / FRAGILE » RETIRÉE (paquet 463, décision de Lucas). La pastille venait d'une règle du 05/11 : « fragile » dès qu'un critère de fragilité en vigueur était rempli (favoris opposés, un joueur à moins de 60 matchs, huitièmes de finale). Le jeudi des Challengers, presque tous les matchs sont des huitièmes : la page n'affichait que des « Match fragile », parfois à côté d'une note de fiabilité de 90/100 et plus. Depuis le paquet 451, la note mesurée match par match intègre déjà ces critères avec leur effet réel (huitièmes × 0,893, moins de 60 matchs × 0,98…) : la pastille comptait deux fois les mêmes critères et contredisait la note. Seule la note de fiabilité et son niveau (fragile < 78, prudent < 85, correct < 93, solide) restent affichés ; le suivi privé des écarts du jour affiche aussi ce niveau. Le % de victoire ne change pas.",
+   "garde_fou": "Aucun : affichage seulement. La note de fiabilité garde son propre garde-fou (chaque lundi, dès 200 matchs jugés)."
   }
  ]
 }
