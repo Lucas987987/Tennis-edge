@@ -29,3 +29,10 @@ def test_note_joueur_20_matchs():
     import note_par_match as NP
     assert PJ.MIN_NOTE == 20 and PJ.MIN_GROUPE == 10
     assert NP.MIN_MATCHS_JOUEUR == 5                                                     # le critère de la note du match garde 5
+
+
+def test_forme_sans_signal_459():
+    # 26/11/2026 (paquet 459) : forme récente — le fait, sans ✅/⚠️, et rien dans « Ce qu'il faut retenir »
+    assert 'présente la meilleure dynamique récente' not in H
+    assert "r.ecart >= 1 ? '✅'" not in H
+    assert "l.push(`▪️ ${N[i]} : ${r.victoires} victoires sur ses ${r.matchs} derniers matchs" in H
