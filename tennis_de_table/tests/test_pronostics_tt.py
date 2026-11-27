@@ -73,6 +73,41 @@ class T(unittest.TestCase):
         self.assertEqual(self.reg['pentes'], {'International': 1.249})          # Allemagne : hors produit
         self.assertEqual(self.reg['recalees'], ['International', 'Poland'])
 
+    def test_reglages_507_oubli_et_face_a_face(self):
+        self.assertEqual(self.reg['oubli'], {'famille': 'O2', 'reglage': 30, 'ligues': ['International']})
+        self.assertEqual(self.reg['face_a_face'], {'Poland': {'k': 20, 'b': 3.1004}})
+
+    def test_face_a_face_en_pologne_seulement(self):
+        mod = PT.Modele(PT.ET.matchs(self.dir), self.reg)
+        h, a = 3, 4
+        sx, n = mod.face(h, a)
+        self.assertGreater(n, 0)
+        x = mod.predire('Poland', h, a, 3)
+        self.assertEqual(x['rencontres'], n)
+        sans = PT.Modele.__new__(PT.Modele)
+        sans.__dict__.update(mod.__dict__)
+        sans.reg = dict(self.reg, face_a_face={})
+        p0 = sans.predire('Poland', h, a, 3)['p_h']
+        attendu = PT._sg(PT._lg(p0) + 3.1004 * sx / (n + 20))
+        self.assertAlmostEqual(x['p_h'], round(attendu, 4), places=3)
+        self.assertNotIn('rencontres', mod.predire('International', h, a, 3))
+        # un match du jour entre eux : le bilan de la paire avance d'une rencontre
+        m = PT.ET.match_de(ev(9, 'Poland', h, a, T0, statut='finished', g=1, manches=[[11, 1], [11, 2], [11, 3]]))
+        mod.ajouter([m])
+        self.assertEqual(mod.face(h, a)[1], n + 1)
+        self.assertGreater(mod.face(h, a)[0], sx)
+
+    def test_elo_qui_oublie_a_l_international(self):
+        mod = PT.Modele(PT.ET.matchs(self.dir), self.reg)
+        x = mod.predire('International', 5, 17, 3)
+        p_oubli = PT.ET.proba(mod.elo_oubli(5), mod.elo_oubli(17))
+        self.assertAlmostEqual(x['p_h'], round(PT._sg(1.249 * PT._lg(p_oubli)), 4), places=4)
+        y = mod.predire('Poland', 5, 17, 3)                      # la Pologne garde l'Elo E2 (plus le face-à-face)
+        sx, n = mod.face(5, 17)
+        p_e2 = PT.ET.proba(mod.elo(5)[0], mod.elo(17)[0])
+        attendu = PT._sg(PT._lg(p_e2) + 3.1004 * sx / (n + 20)) if n else p_e2
+        self.assertAlmostEqual(y['p_h'], round(attendu, 4), places=4)
+
     def test_prediction_coherente(self):
         for lg in ('Poland', 'International'):
             for n in (3, 4):

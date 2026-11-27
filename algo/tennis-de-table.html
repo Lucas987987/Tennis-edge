@@ -135,6 +135,8 @@ const T={
   bons:'bons vainqueurs',annonceMoy:'annoncé en moyenne',scores:'score exact trouvé',dec:(a,r)=>`manche décisive annoncée ${a} %, réelle ${r} %`,
   tranche:'% annoncé au favori',matchs:'matchs',annonceCol:'annoncé',reel:'réel',tot:'Trop tôt pour conclure : moins de 30 matchs jugés.',
   rienBilan:'Le bilan commence avec les premiers matchs terminés.',
+  rencontres:n=>n?`Rencontres précédentes entre eux : ${n} (elles entrent dans le %).`:'Première rencontre entre eux.',
+  nouveautes:"Depuis le 27 novembre 2026 : en Pologne, le % tient aussi compte des rencontres passées entre les deux joueurs ; à l'International, l'Elo oublie plus vite l'ancien niveau d'un joueur resté longtemps sans jouer. Deux réglages retenus par des études jugées une seule fois.",
   methodeT:'Comment ça marche',
   methode:"Un Elo propre au tennis de table, appris sur plus de 1,4 million de matchs collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Le score le plus probable vient d’une simulation manche par manche ancrée sur ce %, recalée sur la fréquence réelle de chaque score dans la ligue. Chaque réglage a été appris sur une période, puis jugé une seule fois sur la suivante. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
   maj:d=>`Mis à jour le ${d}.`,
@@ -161,6 +163,8 @@ const T={
   bons:'right winners',annonceMoy:'predicted on average',scores:'exact score found',dec:(a,r)=>`deciding game predicted ${a}%, actual ${r}%`,
   tranche:'% given to the favourite',matchs:'matches',annonceCol:'predicted',reel:'actual',tot:'Too early to conclude: fewer than 30 matches judged.',
   rienBilan:'The record starts with the first finished matches.',
+  rencontres:n=>n?`Previous meetings between them: ${n} (they count in the %).`:'First meeting between them.',
+  nouveautes:'Since 27 November 2026: in Poland the % also uses the past meetings between the two players; in International, the Elo forgets faster the old level of a player who has not played for a long time. Two settings kept by studies judged only once.',
   methodeT:'How it works',
   methode:'A table tennis Elo, learned on more than 1.4 million matches collected since 2021 and updated after every match, gives the win %. The most likely score comes from a game-by-game simulation anchored on that %, recalibrated on how often each score really happens in the league. Every setting was learned on one period, then judged once on the next. The algorithm is independent. The prediction is frozen at the scheduled start time: that is the one we judge.',
   maj:d=>`Updated ${d}.`,
@@ -209,6 +213,7 @@ function detail(m){const L=T[lang],fh=m.p_h>=.5,n=m.format||3;
   m.scores.slice(0,4).forEach((s,i)=>{h+=`<span class="${i?'':'top'}">${s[0]}-${s[1]} · ${pc(s[2])} %</span>`;});
   h+=`</div><div>${L.decisive(pc(m.decisive))}</div>`;
   if(m.n_h!=null)h+=`<div class="note">${L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang))}</div>`;
+  if(m.rencontres!=null)h+=`<div class="note">${esc(L.rencontres(m.rencontres))}</div>`;
   h+=`<div class="note">${m.format_source==='habituel'?L.habituel(n):m.format_suppose?L.suppose(n):L.format(n)}</div>`;
   return h;}
 
@@ -234,7 +239,8 @@ function bilan(){const L=T[lang],B=(D.bilan||{})[ligue];let h=`<h2>${L.bilanT}</
 
 function rendre(){const L=T[lang];document.documentElement.lang=lang;
   $('titre').innerHTML=L.titre;$('sous').textContent=L.sous;$('b-lang').textContent=lang==='fr'?'EN':'FR';
-  $('pied').textContent=L.pied;$('methode').innerHTML=`<h2 style="margin-top:0">${L.methodeT}</h2><p style="margin:0">${esc(L.methode)}</p>`;
+  $('pied').textContent=L.pied;$('methode').innerHTML=`<h2 style="margin-top:0">${L.methodeT}</h2><p style="margin:0">${esc(L.methode)}</p>`
+    +(D&&D.modele&&(D.modele.changements||[]).length?`<p class="note" style="margin:8px 0 0">${esc(L.nouveautes)}</p>`:'');
   if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
   $('maj').textContent=L.maj(dateLongue(D.genere_le));
   $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="/#plus">${L.sabonner}</a></div>`;
