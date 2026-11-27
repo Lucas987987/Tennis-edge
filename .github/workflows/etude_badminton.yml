@@ -1,0 +1,64 @@
+name: Étude Elo badminton
+
+# 27/11/2026 (Lucas, première étape du badminton) — un Elo entité par entité (joueur en simple, paire en double) sur
+# les résultats collectés (historique/badminton/), jugé UNE SEULE FOIS du 01/01/2023 au dernier jour (règle écrite dans
+# l'en-tête de badminton/etude_elo_badminton.py avant tout essai). Les fonctions de l'Elo viennent de
+# tennis_de_table/elo_tt.py. Rien n'est publié sur le site. Le rapport ne contient que des comptes et des moyennes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-badminton
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /badminton/
+            /tennis_de_table/elo_tt.py
+            /historique/badminton/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s badminton/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python badminton/etude_elo_badminton.py . | tee /tmp/elo_badminton.log
+          cp badminton/rapport_elo_badminton.json /tmp/rapport_elo_badminton.json
+          { echo '### Elo du badminton'; sed 's/^/    /' /tmp/elo_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Étape 2 (grille élargie, pente apprise, doubles au joueur)
+        run: |
+          set -euo pipefail
+          python badminton/etude_etape2_badminton.py . | tee /tmp/etape2_badminton.log
+          cp badminton/rapport_etape2_badminton.json /tmp/rapport_etape2_badminton.json
+          { echo '### Badminton, étape 2'; sed 's/^/    /' /tmp/etape2_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_elo_badminton.json badminton/rapport_elo_badminton.json
+            cp /tmp/rapport_etape2_badminton.json badminton/rapport_etape2_badminton.json
+            git add -- badminton/rapport_elo_badminton.json badminton/rapport_etape2_badminton.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Études Elo badminton (rapports)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1

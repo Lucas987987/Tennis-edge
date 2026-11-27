@@ -24,3 +24,10 @@ def test_worker_notifications_tt():
     w = lire('workers', 'algo', 'worker.js')
     assert 'notifsTT(env)' in w and "import { notifsDirect, notifsMatin, notifsTT } from './notifs.js'" in w
     assert 'workers/algo/test_notifs_tt.mjs' in lire('.github', 'workflows', 'deploy_algo.yml')
+
+
+def test_post_du_jour_513():
+    y = lire('.github', 'workflows', 'pronostics_tennis_de_table.yml')
+    assert '${{ secrets.TELEGRAM_TOKEN }}' in y and '${{ secrets.TELEGRAM_CHAT_ID }}' in y
+    h = lire('algo', 'tennis-de-table.html')
+    assert 'function rendPost(){' in h and 'MOI.admin||(MOI.compte&&MOI.compte.admin)' in h

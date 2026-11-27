@@ -118,13 +118,14 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 <h1 id="titre">L'algo du <b>tennis de table</b></h1>
 <p class="sous" id="sous"></p>
 <div id="bandeau"></div>
+<div id="post-admin"></div>
 <div class="onglets" role="tablist" id="onglets"></div>
 <div class="filtre"><button class="btn" id="b-fav" type="button" aria-pressed="false"></button><span id="fav-msg" role="status"></span></div>
 <div id="bilan-haut"></div>
 <div id="contenu"><p class="vide" id="charge"></p></div>
 <section class="panel" id="plus" hidden></section>
 <section class="panel" id="methode"></section>
-<footer><p id="maj"></p><p id="pied"></p></footer>
+<footer><p id="maj"></p><p><a href="/tennis-de-table/matchs">Matchs terminés</a> · <a href="/tennis-de-table/joueurs">Joueurs</a></p><p id="pied"></p></footer>
 </div>
 <script>
 (function(){
@@ -304,7 +305,7 @@ function rendre(){const L=T[lang];document.documentElement.lang=lang;
   if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
   $('maj').textContent=L.maj(dateLongue(D.genere_le));
   $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="#plus">${L.sabonner}</a></div>`;
-  rendPlus();
+  rendPlus();rendPost();
   const ligues=D.ligues||['International','Poland'];if(!ligue||!ligues.includes(ligue))ligue=ligues[0];
   $('onglets').innerHTML=ligues.map(l=>{const n=(D.matchs||[]).filter(m=>m.ligue===l&&m.statut!=='termine').length;
     return `<button role="tab" aria-selected="${l===ligue}" data-l="${l}">${esc(L.ligue[l]||l)} · ${n}</button>`;}).join('');
@@ -342,6 +343,14 @@ function rendPlus(){const L=T[lang],z=$('plus');
     +`<div class="actions">${boutons}</div>`
     +`<h3 style="margin:16px 0 6px">${esc(L.fdT)}</h3><p style="margin:0">${esc(L.fd)}</p>`;
   z.hidden=false;}
+// 513 (Lucas : « le tennis de table sur X et Telegram ») — l'administrateur voit le post du jour, prêt à copier (il part
+// aussi chaque matin sur son Telegram privé). Personne d'autre ne le voit.
+function rendPost(){const z=$('post-admin'),adm=MOI&&(MOI.admin||(MOI.compte&&MOI.compte.admin));
+  if(!adm||!D||!D.post_du_jour){z.innerHTML='';delete z.dataset.v;return;}
+  if(z.dataset.v===D.post_du_jour)return;z.dataset.v=D.post_du_jour;
+  z.innerHTML=`<div class="panel"><h2 style="margin-top:0">📝 Post du jour · X et Telegram</h2><textarea id="post-txt" rows="12" readonly style="width:100%;box-sizing:border-box;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:12px;padding:10px;font:inherit;font-size:.88rem"></textarea><p style="display:flex;gap:10px;align-items:center;margin:8px 0 0"><button class="btn" type="button" id="post-copier">Copier</button><small id="post-nb"></small></p></div>`;
+  $('post-txt').textContent=D.post_du_jour;$('post-nb').textContent=D.post_du_jour.length+' caractères';
+  $('post-copier').onclick=()=>{try{navigator.clipboard.writeText(D.post_du_jour).then(()=>{$('post-nb').textContent='Copié ✓';});}catch(e){$('post-txt').select();}};}
 function chargerMoi(){fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(o=>{if(o&&o.ok!==false){MOI=o;
   lireFavoris(o.compte&&o.compte.favoris);if(D)rendre();else rendPlus();}}).catch(()=>{});}
 
