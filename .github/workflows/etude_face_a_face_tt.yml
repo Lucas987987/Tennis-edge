@@ -1,0 +1,57 @@
+name: Étude face-à-face tennis de table
+
+# 27/11/2026 (paquet 503, Lucas : « fais les 4 ») — face-à-face : les rencontres passées de la même paire (résidus contre
+# le % en production, rétrécis) apportent-elles quelque chose au-delà de l'Elo ? International et Pologne, jugés UNE
+# SEULE FOIS du 01/10/2025 au dernier jour (règle dans l'en-tête de tennis_de_table/etude_face_a_face_tt.py, écrite
+# avant tout essai). Rien n'est publié sur le site ; le rapport et le journal ne contiennent que des comptes, des
+# coefficients et des moyennes (aucun nom, aucun identifiant).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-face-a-face-tt
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python tennis_de_table/etude_face_a_face_tt.py . | tee /tmp/face_a_face_tt.log
+          cp tennis_de_table/rapport_face_a_face_tt.json /tmp/rapport_face_a_face_tt.json
+          { echo '### Tennis de table, face-à-face (paquet 503)'; sed 's/^/    /' /tmp/face_a_face_tt.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_face_a_face_tt.json tennis_de_table/rapport_face_a_face_tt.json
+            git add -- tennis_de_table/rapport_face_a_face_tt.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude face-à-face tennis de table (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
