@@ -14,6 +14,9 @@ Ce que l'algo annonce, et d'où cela vient (rien d'autre n'entre) :
     favori, rétrécie vers la distribution ancrée avec un poids de 50 matchs), sur tout l'historique.
 Le vainqueur annoncé et le % ne dépendent jamais du scénario. Aucune cote n'est lue, nulle part.
 
+Format (3 ou 4 manches gagnantes, paquet 502) : annoncé par la source, sinon 3 en Pologne (toujours), sinon le format
+habituel du tour quand l'étude du format (etude_format_tt.py) l'a retenu, sinon 3 « supposé ». Jamais dans le %.
+
 Ligues : International et Pologne (choix de Lucas). Écartées : les compétitions par équipes (le score y compte des
 rencontres, pas des manches).
 
@@ -45,6 +48,7 @@ sys.path.insert(0, ICI)
 sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
 import elo_tt as ET  # noqa: E402
 import etude_etape3_tt as E3  # noqa: E402
+import format_tt as FT  # noqa: E402
 
 PAQUET = 499
 SPORT = 'table-tennis'
@@ -208,6 +212,20 @@ def veille_collectee(racine, jour):
     return bool(((e.get('jours') or {}).get(jour.isoformat()) or {}).get('complet'))
 
 
+def format_du_match(r):
+    """(manches gagnantes, source) — 502 : annoncé par la source ; sinon la Pologne (toujours 3 : 197 409 matchs sur
+    197 409 en 2025–2026) ; sinon le format habituel du tour appris par l'étude du format (si retenue) ; sinon 3 supposé.
+    Ne change jamais le %."""
+    if r.get('format') in (3, 4):
+        return r['format'], 'source'
+    if r.get('ligue') == 'Poland':
+        return 3, 'ligue'
+    T = FT.table_retenue()
+    if T and r.get('ligue') == 'International':
+        return FT.predire(T, r.get('tournoi'), r.get('tour')), 'habituel'
+    return 3, 'suppose'
+
+
 def equipe(r):
     return bool(EQUIPES.search(str(r.get('tournoi') or '')))
 
@@ -241,8 +259,8 @@ def mettre_a_jour(etat, lignes, mod, maintenant):
         if r.get('tour'):
             x['tour'] = r['tour']
         if s == A_VENIR and int(r['t']) > ts and not x.get('fige'):   # avant l'heure prévue, le pronostic suit l'Elo
-            n = r.get('format') or 3
-            x['format'], x['format_suppose'] = n, not r.get('format')
+            n, src = format_du_match(r)
+            x['format'], x['format_suppose'], x['format_source'] = n, src == 'suppose', src
             x.update(mod.predire(r['ligue'], r['h'][0], r['a'][0], n), maj=ts)
         if s in (EN_COURS, TERMINE):
             x['manches'] = r.get('manches') or []
@@ -308,7 +326,8 @@ def choisir_offerts(etat, maintenant):
 
 
 # ------------------------------------------------------------------ fichiers du site
-AFFICHE = ('id', 'ligue', 't', 'tournoi', 'tour', 'h', 'a', 'statut', 'format', 'format_suppose', 'manches')
+AFFICHE = ('id', 'ligue', 't', 'tournoi', 'tour', 'h', 'a', 'statut', 'format', 'format_suppose', 'format_source',
+           'manches')
 PRONOSTIC = ('p_h', 'scores', 'decisive', 'n_h', 'n_a', 'maj', 'g', 'bon', 'score_trouve', 'decisive_reelle')
 
 
