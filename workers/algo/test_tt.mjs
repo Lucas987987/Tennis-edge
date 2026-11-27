@@ -81,3 +81,21 @@ test('514 : pages de référencement du tennis de table servies depuis R2, plan 
   assert.equal((await lire('/tennis-de-table/match/abc'))[0], 404);
   assert.match((await lire('/robots.txt'))[1], /Sitemap: https:\/\/gamesetalgo\.com\/sitemap-tt\.xml/);
 });
+
+test('520 : badminton — page servie, /bad.json complet pour Plus, version libre pour les autres', async () => {
+  const env = monde();
+  env.COFFRE.m.set('site/algo/badminton.html', '<h1>bad</h1>');
+  env.COFFRE.m.set('site/algo/bad.json', '{"acces":"plus","sport":"bad"}');
+  env.COFFRE.m.set('site/algo/bad_libre.json', '{"acces":"libre","sport":"bad"}');
+  assert.equal(PUBLICS['/badminton'], 'badminton.html');
+  assert.equal(RESERVES['/bad.json'], 'bad.json');
+  assert.equal(LIBRES['/bad.json'], 'bad_libre.json');
+  assert.ok(PAGES_SITEMAP.includes('/badminton'));
+  const p = await worker.fetch(new Request(SITE + '/badminton', { headers: { Accept: 'text/html' } }), env);
+  assert.equal(p.status, 200);
+  assert.match(await p.text(), /<h1>bad<\/h1>/);
+  const r = await worker.fetch(new Request(SITE + '/bad.json'), env);
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('X-Acces'), 'libre');
+  assert.deepEqual(await r.json(), { acces: 'libre', sport: 'bad' });
+});
