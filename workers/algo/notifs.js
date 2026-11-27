@@ -20,6 +20,7 @@
 // Rien n'est envoyé hors abonnés Plus. Aucune cote. Le journal n'écrit ni adresse ni clé.
 // Retrait : retirer le cron « * * * * * » de wrangler.toml (plus aucun envoi) ; les appareils restent enregistrés.
 import { lire, ecrire, abonne } from './comptes.js';
+import { pctDirect } from './moteur.js';   // 511 : le % en direct de la page, dans la notification de fin de set
 
 const te = new TextEncoder();
 export const VAPID_R2 = 'notifs/vapid.json', INDEX_R2 = 'notifs/index.json', ETAT_R2 = 'notifs/etat.json';
@@ -162,7 +163,8 @@ export const TXT = {
     set_t: (j, s) => `Set ${s} pour ${j}`, set: (sc) => `Sets : ${sc}`,
     fin_t: (g, p) => `🏁 ${g} bat ${p}`,
     fin: (sc, algo) => `${sc}. ${algo}`,
-    algo_ok: (j, p) => `L'algo le donnait gagnant à ${p} % ✅`, algo_ko: (j, p) => `L'algo donnait ${j} à ${p} % ❌` },
+    algo_ok: (j, p) => `L'algo le donnait gagnant à ${p} % ✅`, algo_ko: (j, p) => `L'algo donnait ${j} à ${p} % ❌`,
+    direct: (j, p) => `L'algo donne maintenant ${j} gagnant à ${p} %` },
   en: { pret_t: 'Game Set Algo', pret: 'Notifications on: you will hear about your favourites.', essai: 'Test passed: notifications arrive.',
     matin_t: '⭐ Your favourites play today', matin: (L) => L.join(' · ') + '. The algo\'s forecast is online.',
     ligne: (j, h, adv) => `${j} at ${h} vs ${adv}`,
@@ -171,7 +173,8 @@ export const TXT = {
     set_t: (j, s) => `Set ${s} to ${j}`, set: (sc) => `Sets: ${sc}`,
     fin_t: (g, p) => `🏁 ${g} beats ${p}`,
     fin: (sc, algo) => `${sc}. ${algo}`,
-    algo_ok: (j, p) => `The algo had them winning at ${p}% ✅`, algo_ko: (j, p) => `The algo had ${j} at ${p}% ❌` },
+    algo_ok: (j, p) => `The algo had them winning at ${p}% ✅`, algo_ko: (j, p) => `The algo had ${j} at ${p}% ❌`,
+    direct: (j, p) => `The algo now has ${j} winning at ${p}%` },
 };
 
 // ------------------------------------------------------------------ rapprochement direct ↔ liste du site (comme la page)
@@ -239,7 +242,11 @@ export function message(e, m, lang, pct) {
   const url = '/#match=' + encodeURIComponent(m.uid), tag = 'gsa-' + m.uid;
   if (e.type === 'debut') return { titre: T.debut_t, texte: T.debut(m), url, tag };
   if (e.type === 'break') return { titre: T.brk_t(nom(e.qui)), texte: `${m.home} – ${m.away} · ${T.brk(nom(e.qui), e.score, e.set)}`, url, tag };
-  if (e.type === 'set') return { titre: T.set_t(nom(e.qui), e.set), texte: `${m.home} – ${m.away} · ${e.score} · ${T.set(e.sets)}`, url, tag };
+  if (e.type === 'set') {
+    // 511 : le % en direct de la page (même moteur) après le set, si on a pu le calculer
+    const d = Number.isFinite(e.p_direct) ? (e.p_direct >= 0.5 ? T.direct(m.home, Math.round(e.p_direct * 100)) : T.direct(m.away, Math.round((1 - e.p_direct) * 100))) : '';
+    return { titre: T.set_t(nom(e.qui), e.set), texte: `${m.home} – ${m.away} · ${e.score} · ${T.set(e.sets)}` + (d ? ` · ${d}` : ''), url, tag };
+  }
   if (e.type === 'fin') {
     const g = nom(e.qui), p = nom(e.qui === 'h' ? 'a' : 'h');
     let algo = '';
@@ -264,8 +271,19 @@ let SITE_MEMOIRE = null;
 async function listeSite(env, maintenant) {
   if (SITE_MEMOIRE && maintenant - SITE_MEMOIRE.le < 5 * 60e3) return SITE_MEMOIRE.matchs;
   const { doc } = await lireJson(env, 'site/algo/site.json');
-  SITE_MEMOIRE = { le: maintenant, matchs: (doc && doc.matchs) || [] };
+  SITE_MEMOIRE = { le: maintenant, matchs: (doc && doc.matchs) || [], sigma: ((doc && doc.live_reevaluation) || {}).sigma || {} };
   return SITE_MEMOIRE.matchs;
+}
+// 511 : le % en direct après un set — même moteur que la page ; la feuille de stats seulement si le coffre en a une
+// récente (gardée pour les visiteurs, /live/stats) : jamais de requête TennisApi pour une notification.
+export async function pctApresSet(env, m, x, inverse, maintenant = Date.now()) {
+  try {
+    let stats = null;
+    const { doc } = await lireJson(env, `live/stats/${x.id}.json`);
+    if (doc && doc.stats && maintenant - (doc.maj || 0) < 10 * 60e3) stats = doc.stats;
+    const p = pctDirect(m, { x, inverse }, (SITE_MEMOIRE && SITE_MEMOIRE.sigma) || {}, stats);
+    return Number.isFinite(p) ? p : null;
+  } catch (e) { return null; }
 }
 export const viderSiteMemoire = () => { SITE_MEMOIRE = null; };
 
@@ -311,7 +329,10 @@ export async function notifsDirect(env, lireDirect, maintenant = Date.now()) {
     const r = relier(site, x);
     if (!r || !interesses(I, r.m).length) continue;
     const c = oriente(x, r.inverse), k = String(x.id), p = etat.matchs[k];
-    for (const ev of evenements(r.m, p ? p.s : null, c, r.m.meilleur_des)) pour(r.m, ev, r.m.p_home);
+    for (const ev of evenements(r.m, p ? p.s : null, c, r.m.meilleur_des)) {
+      if (ev.type === 'set') ev.p_direct = await pctApresSet(env, r.m, x, r.inverse, maintenant);   // 511
+      pour(r.m, ev, r.m.p_home);
+    }
     if (!p || JSON.stringify(p.s) !== JSON.stringify(c) || maintenant - (p.vu || 0) > 30 * 60e3) etat.matchs[k] = { uid: r.m.uid, s: c, vu: maintenant };
   }
   for (const x of direct.termines || []) {
