@@ -64,3 +64,12 @@ class Etude(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Ecartes(unittest.TestCase):
+    def test_egalite_et_formats_rares_ecartes(self):
+        M = [(0, '2025-10-02', 'X', 1, 2, 0, 0.5, 2, (2, 2)), (0, '2025-10-02', 'X', 1, 2, 1, 0.6, 5, (5, 1)),
+             (0, '2025-10-02', 'X', 1, 2, 1, 0.6, 3, (3, 1))]
+        L = E3.lignes(M, [0.6, 0.6, 0.6], {}, [0, 1, 2])
+        self.assertEqual(len(L), 1)
+        self.assertEqual(L[0][3], ('F', 1))
