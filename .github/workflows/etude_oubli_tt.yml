@@ -1,0 +1,57 @@
+name: Étude Elo qui oublie tennis de table
+
+# 27/11/2026 (paquet 503, Lucas : « fais les 4 ») — un Elo qui oublie plus vite (K plafonné par le bas, ou n qui fond avec
+# l'inactivité) fait-il mieux que le % en production (Elo E2 + pente par ligue) ? Réglé sur l'apprentissage, jugé UNE
+# SEULE FOIS du 01/10/2025 au dernier jour, International et Pologne (règle dans l'en-tête de
+# tennis_de_table/etude_oubli_tt.py, écrite avant tout essai). Rien n'est publié sur le site ; le rapport et le journal
+# ne contiennent que des comptes, des réglages et des log loss.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-oubli-tt
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python tennis_de_table/etude_oubli_tt.py . | tee /tmp/oubli_tt.log
+          cp tennis_de_table/rapport_oubli_tt.json /tmp/rapport_oubli_tt.json
+          { echo '### Tennis de table, un Elo qui oublie (paquet 503)'; sed 's/^/    /' /tmp/oubli_tt.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_oubli_tt.json tennis_de_table/rapport_oubli_tt.json
+            git add -- tennis_de_table/rapport_oubli_tt.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude Elo qui oublie tennis de table (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
