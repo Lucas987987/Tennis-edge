@@ -140,7 +140,10 @@ def historique_fait(etat, aujourdhui, debut=DEBUT):
     return all((aujourdhui - d).days <= 2 for d in a_faire(etat, aujourdhui, debut))
 
 
-def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=None):
+def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=None, collecter=None, nom='tennis de table'):
+    """collecter, nom (paquet 508) : même passage pour un autre sport (collecte_badminton.py) — collecter(c, d) renvoie
+    {id: ligne} des matchs du jour d, ou None si le jour est à redemander."""
+    collecter = collecter or collecter_jour
     etat = lire_etat(dossier)
     etat.setdefault('jours', {})
     # 27/11/2026 (paquet 501) : « un passage par jour » ne dépend plus de l'heure exacte de départ. Avant, seul un run
@@ -149,7 +152,7 @@ def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=No
     # à partir de 6 h UTC fait le passage du jour (noté dans etat.json), les suivants du même jour sautent.
     deja = etat.get('passage_quotidien') == aujourdhui.isoformat()
     if heure is not None and (heure < HEURE_QUOTIDIENNE or deja) and historique_fait(etat, aujourdhui, debut):
-        journal(f"tennis de table : historique complet, un seul passage par jour (à partir de {HEURE_QUOTIDIENNE} h UTC)"
+        journal(f"{nom} : historique complet, un seul passage par jour (à partir de {HEURE_QUOTIDIENNE} h UTC)"
                 + (', déjà fait aujourd\'hui' if deja else ''))
         return {'jours': 0, 'matchs': 0, 'manques': 0, 'arret': None, 'saute': True}
     if heure is None or heure >= HEURE_QUOTIDIENNE:
@@ -158,7 +161,7 @@ def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=No
     par_ligue = {}
     try:
         for d in a_faire(etat, aujourdhui, debut):
-            recs = collecter_jour(c, d)
+            recs = collecter(c, d)
             if recs is None:
                 manques += 1
                 continue
@@ -177,7 +180,7 @@ def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=No
     J = etat['jours']
     complets = sum(1 for v in J.values() if v.get('complet'))
     attendus = (aujourdhui - dt.timedelta(days=1) - debut).days + 1
-    journal(f"tennis de table : {faits} jours collectés ({matchs} matchs), {manques} jours à redemander"
+    journal(f"{nom} : {faits} jours collectés ({matchs} matchs), {manques} jours à redemander"
             + (f", arrêt : {arret}" if arret else ''))
     journal(f"  par ligue : {dict(sorted(par_ligue.items(), key=lambda x: -x[1]))}")
     journal(f"  historique : {complets}/{attendus} jours complets depuis {debut}, "
