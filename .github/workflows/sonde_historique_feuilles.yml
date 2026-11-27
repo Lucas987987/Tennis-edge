@@ -1,0 +1,28 @@
+name: Sonde historique des feuilles (lecture seule)
+
+# 27/11/2026 (paquet 492) — le fournisseur a-t-il les feuilles de match (statistiques + point par point) des années
+# passées ? 5 jours de 2023 à 2026, ATP, WTA, Challenger, ITF Men. AllSportsApi (formule Pro), 70 requêtes au plus,
+# quota de TennisApi non touché. Rien n'est écrit dans le dépôt ; le journal ne montre que des comptes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/sonde_historique_feuilles.py
