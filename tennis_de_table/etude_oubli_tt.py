@@ -58,10 +58,11 @@ MIN_JUGES, MARGE, ERREURS_TYPES = 1000, 0.001, 2.0
 JOUR_S = 86400.0
 
 
-def rejouer_oubli(M, a, c, w=0.0, s=20.0, plafond=None, demi_vie=None):
+def rejouer_oubli(M, a, c, w=0.0, s=20.0, plafond=None, demi_vie=None, etat=None):
     """Elo E2 de ET.rejouer (même logique, même ordre), avec un K qui oublie : plafond (O1) = n plafonné à N ;
-    demi_vie (O2) = n réduit de moitié tous les H jours sans match. Renvoie les p (pour h) AVANT chaque match."""
-    R, N, T = {}, {}, {}
+    demi_vie (O2) = n réduit de moitié tous les H jours sans match. Renvoie les p (pour h) AVANT chaque match.
+    etat (paquet 507, production) : comme ET.rejouer — rempli à la fin ('R', 'N', 'T'), et repris s'il est déjà plein."""
+    R, N, T = ({}, {}, {}) if etat is None or 'R' not in etat else (dict(etat['R']), dict(etat['N']), dict(etat['T']))
     P = []
     ap = P.append
     for m in M:
@@ -93,6 +94,8 @@ def rejouer_oubli(M, a, c, w=0.0, s=20.0, plafond=None, demi_vie=None):
         R[h] = rh + kh * d
         R[b] = rb - kb * d
         N[h], N[b] = nh + 1, nb + 1
+    if etat is not None:
+        etat['R'], etat['N'], etat['T'] = R, N, T
     return P
 
 
