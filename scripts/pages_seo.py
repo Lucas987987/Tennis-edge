@@ -901,7 +901,7 @@ def construire(doc, dossier, maintenant=None, bilans=None, donnees=None):
     S.reperes = PJ.reperes(S.bilans)
     S.a_venir = matchs_a_venir(donnees, {m['uid'] for m in S.matchs}, maintenant)
     jour = maintenant[:10]
-    entrees = [('/', jour), ('/methode.html', jour), ('/apropos.html', jour)]
+    entrees = [('/', jour), ('/methode.html', jour), ('/apropos.html', jour), ('/tennis-de-table', jour)]   # 499
     for L in LANGUES:
         d = dossier if L == 'fr' else os.path.join(dossier, 'en')
         p = pre(L)
