@@ -101,7 +101,10 @@ def ligne_lue(r, jour=None):
     if max(mh, ma) != 2 or mh == ma or (r['g'] == 1) != (mh > ma):
         return None, 'vainqueur_incoherent'
     ph, pa = sum(x for x, _ in M), sum(y for _, y in M)
-    return {'id': r.get('id'), 't': int(r.get('t') or 0), 'jour': jour, 'h': h[0], 'a': a[0],
+    noms = (tuple(x.strip() for x in str(h[1]).split('/')), tuple(x.strip() for x in str(a[1]).split('/'))) if dh else None
+    if noms and (len(noms[0]) != 2 or len(noms[1]) != 2 or not all(noms[0] + noms[1])):
+        noms = None                                    # paire illisible : reste une entité (étape 2, joueurs du double)
+    return {'id': r.get('id'), 't': int(r.get('t') or 0), 'jour': jour, 'h': h[0], 'a': a[0], 'noms': noms,
             'y': 1 if r['g'] == 1 else 0, 'part': ph / (ph + pa), 'double': dh,
             'sexe': sexe_du_nom(r.get('tournoi')), 'hors': hors_circuit(r.get('tournoi'))}, None
 
@@ -138,8 +141,9 @@ def ranger_epreuves(L):
 
 def lire(racine='.', dossier=DOSSIER):
     """Lit tout l'historique. Renvoie (M, comptes) :
-    M = [(t, jour, épreuve, id_h, id_a, y, part_points_h, hors_circuit, lue_par)] trié par début (y = 1 si h gagne ;
-        les 7 premières cases sont celles qu'attend elo_tt.rejouer) ;
+    M = [(t, jour, épreuve, id_h, id_a, y, part_points_h, hors_circuit, lue_par, noms)] trié par début (y = 1 si h
+        gagne ; les 7 premières cases sont celles qu'attend elo_tt.rejouer ; noms = ((j1, j2), (j3, j4)), les deux
+        joueurs de chaque paire en double, None en simple — étape 2 ; aucun nom n'est jamais écrit dans un rapport) ;
     comptes = lignes lues, matchs gardés, écarts par motif, façon de lire l'épreuve."""
     L, vus, ecarts, lues = [], set(), collections.Counter(), 0
     for p in sorted(glob.glob(os.path.join(racine, dossier, '20*', '20*.jsonl.gz'))):
@@ -166,7 +170,7 @@ def lire(racine='.', dossier=DOSSIER):
                 vus.add(m['id'])
                 L.append(m)
     ranger_epreuves(L)
-    M = [(m['t'], m['jour'], m['epreuve'], m['h'], m['a'], m['y'], m['part'], m['hors'], m['lue_par']) for m in L]
+    M = [(m['t'], m['jour'], m['epreuve'], m['h'], m['a'], m['y'], m['part'], m['hors'], m['lue_par'], m['noms']) for m in L]
     M.sort(key=lambda x: (x[0], str(x[3]), str(x[4])))
     comptes = {'lignes_lues': lues, 'matchs_gardes': len(M), 'matchs_ecartes': sum(ecarts.values()),
                'ecartes_par_motif': dict(sorted(ecarts.items())),
