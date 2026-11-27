@@ -8,8 +8,9 @@ LECTURE SEULE. Rien n'est écrit dans le dépôt : tout est dans le journal du r
 comptes, des tailles et des noms de compétitions (jamais la clé, jamais de cote, jamais un nom de joueur).
 
 Source : AllSportsApi (formule Pro jusqu'au ~26/12/2026 : c'est pendant ce mois qu'un historique peut être collecté).
-Pour chaque sport (badminton, volley-ball, beach-volley, fléchettes, snooker, basket-ball), AU PLUS une douzaine de
-requêtes :
+Pour chaque sport (badminton, volley-ball, beach-volley, fléchettes, snooker, basket-ball), AU PLUS une vingtaine de
+requêtes (deuxième version, 27/11 : le premier passage interrogeait l'index du calendrier, qui n'existe que pour le tennis
+et le tennis de table — 404 partout) :
   1. hier : combien de matchs, dans quelles catégories (pays / circuits) ;
   2. l'historique : y a-t-il des matchs il y a 1, 2, 3, 4 et 5 ans (et combien) ?
   3. la plus grosse catégorie d'hier (pour le basket : aussi « USA » et l'Europe) : les compétitions, les matchs
@@ -25,10 +26,15 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import allsports as AS  # noqa: E402
 
-SPORTS = (('badminton', ('badminton',)), ('volley-ball', ('volleyball',)), ('beach-volley', ('beach-volley', 'beachvolley')),
+SPORTS = (('badminton', ('badminton',)), ('volley-ball', ('volleyball',)), ('beach-volley', ('beach-volley', 'beach-volleyball')),
           ('fléchettes', ('darts',)), ('snooker', ('snooker',)), ('basket-ball', ('basketball',)))
 ANNEES = (1, 2, 3, 4, 5)
-BASKET_EN_PLUS = ('usa', 'europe', 'international', 'france', 'spain')
+# 505bis : l'index du calendrier par catégories n'existe que pour le tennis et le tennis de table (premier passage : 404
+# partout). Pour les autres sports, la doc d'AllSportsApi donne les matchs d'un jour par sport
+# (/api/{sport}/matches/{j}/{m}/{a} ou /api/{sport}/events/{j}/{m}/{a}) et la liste des catégories
+# (/api/{sport}/tournament/categories), puis les matchs d'un jour par catégorie.
+JOUR = ('matches', 'events')
+CATEGORIES_VISEES = ('international', 'europe', 'usa', 'world', 'france', 'spain', 'italy', 'poland', 'england', 'germany')
 
 
 def categories(doc):
@@ -55,8 +61,21 @@ def termines(doc):
     return [e for e in (doc or {}).get('events') or [] if (e.get('status') or {}).get('type') == 'finished']
 
 
-def _jour(c, slug, d):
-    return c.get(f'/api/{slug}/calendar/{d.day}/{d.month}/{d.year}/categories')
+def matchs_du_jour(c, slug, d, chemins=JOUR):
+    """(chemin qui marche, [événements]) — None si aucun chemin ne répond."""
+    for ch in chemins:
+        code, doc = c.get(f'/api/{slug}/{ch}/{d.day}/{d.month}/{d.year}')
+        if code == 200 and isinstance(doc, dict):
+            return ch, (doc.get('events') or [])
+    return None, []
+
+
+def par_categorie(E):
+    out = {}
+    for e in E:
+        cat = ((e.get('tournament') or {}).get('category') or {}).get('name') or '?'
+        out[cat] = out.get(cat, 0) + 1
+    return sorted(out.items(), key=lambda x: -x[1])
 
 
 def categorie(c, slug, nom_cat, cat_id, d, journal):
@@ -106,36 +125,39 @@ def detail(c, slug, e, basket, journal):
 
 def sonder_sport(c, nom, slugs, hier, journal):
     journal(f"== {nom}")
-    slug, idx = None, None
-    for s in slugs:
-        code, doc = _jour(c, s, hier)
-        if code == 200 and categories(doc):
-            slug, idx = s, doc
+    for slug in slugs:
+        code, doc = c.get(f'/api/{slug}/tournament/categories')
+        cats = [(str((x or {}).get('name') or '?'), (x or {}).get('id')) for x in (doc or {}).get('categories') or []] \
+            if code == 200 and isinstance(doc, dict) else []
+        journal(f"   « {slug} » : catégories HTTP {code}, {len(cats)} catégories")
+        if code == 200:
             break
-        journal(f"   « {s} » : HTTP {code}, rien")
-    if not slug:
+    else:
         return {'sport': nom, 'trouve': False}
-    L = categories(idx)
-    total = sum(x[2] for x in L)
-    journal(f"   « {slug} » hier ({hier}) : {total} matchs dans {len(L)} catégories : "
-            + ', '.join(f'{n} {k}' for n, _, k in L[:12]))
+    ch, E = matchs_du_jour(c, slug, hier)
+    T = [e for e in E if (e.get('status') or {}).get('type') == 'finished']
     hist = {}
-    for k in ANNEES:
-        d = hier.replace(year=hier.year - k)
-        code, doc = _jour(c, slug, d)
-        Lk = categories(doc) if code == 200 else []
-        hist[k] = sum(x[2] for x in Lk)
-        journal(f"   il y a {k} an(s) ({d}) : HTTP {code}, {hist[k]} matchs dans {len(Lk)} catégories")
-    basket = slug == 'basketball'
-    choix = [L[0]] if L else []
-    if basket:
-        choix += [x for x in L[1:] if any(m in x[0].lower() for m in BASKET_EN_PLUS)][:3]
-    T = []
-    for n, i, _ in choix:
-        T = categorie(c, slug, n, i, hier, journal) or T
+    if ch:
+        journal(f"   hier ({hier}, /{ch}/) : {len(E)} matchs dont {len(T)} terminés : "
+                + ', '.join(f'{k} {v}' for k, v in par_categorie(E)[:12]))
+        for k in ANNEES:
+            d = hier.replace(year=hier.year - k)
+            _, Ek = matchs_du_jour(c, slug, d, (ch,))
+            hist[k] = len(Ek)
+            journal(f"   il y a {k} an(s) ({d}) : {len(Ek)} matchs ; " + ', '.join(f'{a} {b}' for a, b in par_categorie(Ek)[:4]))
+    else:
+        journal("   pas de liste des matchs du jour : par catégorie")
+    visees = [x for x in cats if x[1] and any(m in x[0].lower() for m in CATEGORIES_VISEES)][:4]
+    for n, i in visees:
+        Tc = categorie(c, slug, n, i, hier, journal)
+        T = T or Tc
+        if not ch:
+            d = hier.replace(year=hier.year - 3)
+            code, doc = c.get(f'/api/{slug}/category/{i}/events/{d.day}/{d.month}/{d.year}')
+            journal(f"     {n} il y a 3 ans : HTTP {code}, {len((doc or {}).get('events') or [])} matchs")
     if T:
-        detail(c, slug, T[0], basket, journal)
-    return {'sport': nom, 'trouve': True, 'hier': total, 'historique': hist}
+        detail(c, slug, T[0], slug == 'basketball', journal)
+    return {'sport': nom, 'trouve': True, 'hier': len(E), 'historique': hist}
 
 
 def sonder(c, aujourdhui=None, journal=print):

@@ -10,23 +10,31 @@ sys.path.insert(0, os.path.join(R, 'scripts'))
 import sonde_sports as SS  # noqa: E402
 
 
+EV = {'id': 9, 'status': {'type': 'finished'},
+      'tournament': {'uniqueTournament': {'name': 'Coupe X'}, 'category': {'name': 'International'}},
+      'homeTeam': {'name': 'Joueur Secret'}, 'awayTeam': {'name': 'Autre Secret'}, 'roundInfo': {'name': 'Final'},
+      'homeScore': {'period1': 21, 'period2': 18, 'period3': 21}, 'awayScore': {'period1': 15, 'period2': 21, 'period3': 19}}
+
+
 class Faux:
+    """Les matchs du jour existent pour le basket (/matches/) ; pour les autres, seulement par catégorie."""
+
     def __init__(self):
         self.urls, self.octets = [], 0
 
     def get(self, chemin):
         self.urls.append(chemin)
         self.octets += 2048
-        if '/beach-volley/' in chemin or '/beachvolley/' in chemin:
+        if '/beach-volley' in chemin:
             return 404, None
-        if chemin.endswith('/categories'):
-            return 200, {'categories': [{'category': {'id': 1, 'name': 'International'}, 'totalEvents': 40},
-                                        {'category': {'id': 2, 'name': 'USA'}, 'totalEvents': 12}]}
-        if '/events/' in chemin:
-            e = {'id': 9, 'status': {'type': 'finished'}, 'tournament': {'uniqueTournament': {'name': 'Coupe X'}},
-                 'homeTeam': {'name': 'Joueur Secret'}, 'awayTeam': {'name': 'Autre Secret'}, 'roundInfo': {'name': 'Final'},
-                 'homeScore': {'period1': 21, 'period2': 18, 'period3': 21}, 'awayScore': {'period1': 15, 'period2': 21, 'period3': 19}}
-            return 200, {'events': [e, dict(e, id=10, status={'type': 'notstarted'})]}
+        if chemin.endswith('/tournament/categories'):
+            return 200, {'categories': [{'id': 1, 'name': 'International'}, {'id': 2, 'name': 'USA'}, {'id': 3, 'name': 'Peru'}]}
+        if '/basketball/matches/' in chemin:
+            return 200, {'events': [EV, dict(EV, id=10, status={'type': 'notstarted'})]}
+        if '/matches/' in chemin or chemin.split('/')[3:4] == ['events']:
+            return 404, None
+        if '/category/' in chemin and '/events/' in chemin:
+            return 200, {'events': [EV, dict(EV, id=10, status={'type': 'notstarted'})]}
         if chemin.endswith('/lineups'):
             return 200, {'home': {'players': [{'statistics': {'secondsPlayed': 600}}, {}]}, 'away': {'players': [{}]}}
         return 200, {'statistics': [{'groups': [1, 2, 3]}]}
@@ -40,9 +48,10 @@ def test_sonde():
     assert [r['sport'] for r in res] == [s for s, _ in SS.SPORTS]
     assert next(r for r in res if r['sport'] == 'beach-volley')['trouve'] is False
     b = next(r for r in res if r['sport'] == 'basket-ball')
-    assert b['hier'] == 52 and b['historique'][5] == 52
+    assert b['hier'] == 2 and b['historique'][5] == 2
     assert 'temps de jeu connu pour 1' in txt and 'Coupe X 2' in txt and 'tour connu 1/1' in txt
-    assert len(c.urls) <= 75
+    assert 'il y a 3 ans : HTTP 200' in txt                          # badminton : historique par catégorie
+    assert len(c.urls) <= 120
 
 
 def test_workflow_lecture_seule():
