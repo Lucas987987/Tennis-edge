@@ -223,7 +223,7 @@ export function evenements(m, p, c, meilleurDes = 3) {
     const gagnant = dh === 1 ? 'h' : 'a';
     const decisif = i >= 0 && (p.h[i] || 0) === 6 && (p.a[i] || 0) === 6;
     if (i >= 0 && !decisif && gagnant !== p.srv && !setFini(c.h[i] || 0, c.a[i] || 0))
-      E.push({ type: 'break', qui: gagnant, set: i + 1, score: gagnant === 'h' ? `${c.h[i]}-${c.a[i] || 0}` : `${c.a[i] || 0}-${c.h[i]}` });
+      E.push({ type: 'break', qui: gagnant, set: i + 1, score: `${c.h[i] || 0}-${c.a[i] || 0}` });   // 519 : dans l'ordre des noms
   }
   // fin de set (sauf le set qui finit le match : le résultat le dira)
   for (let n = gp.h + gp.a + 1; n <= gc.h + gc.a; n++) {
@@ -232,7 +232,8 @@ export function evenements(m, p, c, meilleurDes = 3) {
     const qui = g > o ? 'h' : 'a';
     const apres = { h: c.h.slice(0, n), a: c.a.slice(0, n) }, w = setsGagnes(apres);
     if (w.h >= aGagner || w.a >= aGagner) continue;
-    E.push({ type: 'set', qui, set: n, sets: `${w.h}-${w.a}`, score: qui === 'h' ? `${g}-${o}` : `${o}-${g}` });
+    // 519 (Lucas : « le score devrait apparaître 4-6 au lieu de 6-4 ») : le score du set dans l'ordre des noms du message
+    E.push({ type: 'set', qui, set: n, sets: `${w.h}-${w.a}`, score: `${g}-${o}` });
   }
   return E;
 }
@@ -274,13 +275,20 @@ async function listeSite(env, maintenant) {
   SITE_MEMOIRE = { le: maintenant, matchs: (doc && doc.matchs) || [], sigma: ((doc && doc.live_reevaluation) || {}).sigma || {} };
   return SITE_MEMOIRE.matchs;
 }
-// 511 : le % en direct après un set — même moteur que la page ; la feuille de stats seulement si le coffre en a une
-// récente (gardée pour les visiteurs, /live/stats) : jamais de requête TennisApi pour une notification.
-export async function pctApresSet(env, m, x, inverse, maintenant = Date.now()) {
+// 511 : le % en direct après un set — même moteur que la page.
+// 519 (Lucas : « la notification est partie vite et le site a mis à jour le % gagnant, qui apparaît différent ») : la
+// page calcule son % avec la feuille de stats du match (points gagnés au service) ; sans elle, le moteur garde le %
+// d'avant le match et les deux % diffèrent. lireStats (donné par le worker) passe par /live/stats : la même feuille que
+// la page (gardée 60 s, partagée avec les visiteurs, plafond du jour et réserve du quota respectés), au plus une
+// requête par fin de set d'un match suivi. Sans lireStats : la feuille du coffre si elle a moins de 10 min.
+export async function pctApresSet(env, m, x, inverse, maintenant = Date.now(), lireStats = null) {
   try {
     let stats = null;
-    const { doc } = await lireJson(env, `live/stats/${x.id}.json`);
-    if (doc && doc.stats && maintenant - (doc.maj || 0) < 10 * 60e3) stats = doc.stats;
+    if (lireStats) { try { stats = (await lireStats(x.id)) || null; } catch (e) { stats = null; } }
+    if (!stats) {
+      const { doc } = await lireJson(env, `live/stats/${x.id}.json`);
+      if (doc && doc.stats && maintenant - (doc.maj || 0) < 10 * 60e3) stats = doc.stats;
+    }
     const p = pctDirect(m, { x, inverse }, (SITE_MEMOIRE && SITE_MEMOIRE.sigma) || {}, stats);
     return Number.isFinite(p) ? p : null;
   } catch (e) { return null; }
@@ -312,7 +320,7 @@ async function distribuer(env, I, etat, envois, ttl, journal) {
 }
 
 // ------------------------------------------------------------------ chaque minute : le direct
-export async function notifsDirect(env, lireDirect, maintenant = Date.now()) {
+export async function notifsDirect(env, lireDirect, maintenant = Date.now(), lireStats = null) {
   if (!env.COFFRE) return { envoyes: 0 };
   const { doc: I } = await lireJson(env, INDEX_R2);
   if (!I || !I.u || !Object.keys(I.u).length) return { envoyes: 0, rien: true };   // aucun appareil : rien du tout
@@ -330,7 +338,7 @@ export async function notifsDirect(env, lireDirect, maintenant = Date.now()) {
     if (!r || !interesses(I, r.m).length) continue;
     const c = oriente(x, r.inverse), k = String(x.id), p = etat.matchs[k];
     for (const ev of evenements(r.m, p ? p.s : null, c, r.m.meilleur_des)) {
-      if (ev.type === 'set') ev.p_direct = await pctApresSet(env, r.m, x, r.inverse, maintenant);   // 511
+      if (ev.type === 'set') ev.p_direct = await pctApresSet(env, r.m, x, r.inverse, maintenant, lireStats);   // 511 ; 519
       pour(r.m, ev, r.m.p_home);
     }
     if (!p || JSON.stringify(p.s) !== JSON.stringify(c) || maintenant - (p.vu || 0) > 30 * 60e3) etat.matchs[k] = { uid: r.m.uid, s: c, vu: maintenant };

@@ -841,6 +841,12 @@ async function liveDetail(req, env, url, genre) {
   return rep(o);
 }
 export const liveStats = (req, env, url) => liveDetail(req, env, url, 'stats');
+// 519 : la feuille de stats d'un match pour le % des notifications de fin de set — la même que la page (/live/stats)
+export async function statsPourNotifs(env, id) {
+  const u = new URL(`https://gamesetalgo.com/live/stats?id=${encodeURIComponent(id)}`);
+  const o = await (await liveStats(new Request(u), env, u)).json();
+  return (o && o.stats) || null;
+}
 export const livePoints = (req, env, url) => liveDetail(req, env, url, 'points');
 
 export default {
@@ -852,7 +858,7 @@ export default {
     if (c === '* * * * *') {
       // 510 : le tennis de table toutes les 5 minutes (sa page n'est refaite qu'une fois par heure ; rien si rien de neuf)
       const tt = new Date((event && event.scheduledTime) || Date.now()).getUTCMinutes() % 5 === 2 ? notifsTT(env).catch(() => null) : null;
-      return ctx.waitUntil(Promise.all([notifsDirect(env, () => directPourNotifs(env)).catch(() => null), tt]));
+      return ctx.waitUntil(Promise.all([notifsDirect(env, () => directPourNotifs(env), Date.now(), (id) => statsPourNotifs(env, id)).catch(() => null), tt]));
     }
     if (c === '7 * * * *') return ctx.waitUntil(poulsVisites(env));
     ctx.waitUntil(Promise.all([quotidien(env), notifsMatin(env).catch(() => null)]));
