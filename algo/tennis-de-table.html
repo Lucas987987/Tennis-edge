@@ -127,6 +127,7 @@ const T={
   decisive:p=>`Manche décisive : ${p} %`,suivis:(a,b)=>`Matchs suivis par l'algo : ${a} et ${b}`,
   suppose:n=>`Format supposé : ${n} manches gagnantes (non annoncé par la source) ; il ne change pas le %.`,
   format:n=>`${n} manches gagnantes`,
+  habituel:n=>`${n} manches gagnantes : le format habituel de ce tour (non annoncé par la source) ; il ne change pas le %.`,
   enCoursScore:'Score au dernier passage',
   bon:'L’algo avait vu juste',faux:'L’algo s’est trompé',annonce:(n,p)=>`favori annoncé : ${n} (${p} %)`,
   scoreTrouve:'score exact trouvé',
@@ -152,6 +153,7 @@ const T={
   decisive:p=>`Deciding game: ${p}%`,suivis:(a,b)=>`Matches tracked by the algorithm: ${a} and ${b}`,
   suppose:n=>`Assumed format: first to ${n} games (not given by the source); it does not change the %.`,
   format:n=>`first to ${n} games`,
+  habituel:n=>`First to ${n} games: the usual format for this round (not given by the source); it does not change the %.`,
   enCoursScore:'Score at the last update',
   bon:'The algorithm got it right',faux:'The algorithm got it wrong',annonce:(n,p)=>`predicted favourite: ${n} (${p}%)`,
   scoreTrouve:'exact score found',
@@ -207,7 +209,7 @@ function detail(m){const L=T[lang],fh=m.p_h>=.5,n=m.format||3;
   m.scores.slice(0,4).forEach((s,i)=>{h+=`<span class="${i?'':'top'}">${s[0]}-${s[1]} · ${pc(s[2])} %</span>`;});
   h+=`</div><div>${L.decisive(pc(m.decisive))}</div>`;
   if(m.n_h!=null)h+=`<div class="note">${L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang))}</div>`;
-  h+=`<div class="note">${m.format_suppose?L.suppose(n):L.format(n)}</div>`;
+  h+=`<div class="note">${m.format_source==='habituel'?L.habituel(n):m.format_suppose?L.suppose(n):L.format(n)}</div>`;
   return h;}
 
 function section(titre,L,cle,groupe){
