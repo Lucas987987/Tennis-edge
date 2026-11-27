@@ -154,7 +154,7 @@ def load_closes():
                 _croises_resolus += 1
                 if ct_croise < ct:
                     ct = ct_croise
-            records.append(r)
+            records.append(mk.cle_index(r))   # 504 : champs de l'index seulement (machine coupée sinon)
             home = r.get('home_team') or r.get('home') or ''
             away = r.get('away_team') or r.get('away') or ''
             for key, name in (('home_curve', home), ('away_curve', away)):
