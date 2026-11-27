@@ -754,6 +754,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .list .finished-group > details > .list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
 .list .finished-group > details > .list > li{border-top:1px solid var(--line)}
 /* Arena : bouton visible dans la barre du haut, y compris sur mobile */
+.tt-nav{background:var(--panel)!important;color:var(--ink)!important;border:1px solid var(--ball)!important;box-shadow:none!important}   /* 509 : lien vers le tennis de table */
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
 /* 24/11/2026 (paquet 408, Lucas) : l'Arena est en développement — le bouton le dit et ne mène plus nulle part */
 button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inline-flex}
@@ -815,6 +816,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <div class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></div>
     <div class="reglages">
       <button type="button" class="compte-b" id="b-compte" hidden></button>
+      <a class="arena-nav tt-nav" href="/tennis-de-table" data-t="tt_btn">🏓 Tennis de table</a>
       <span class="arena-w"><button type="button" class="arena-nav" id="b-arena" aria-expanded="false" aria-controls="arena-bulle" data-t="arena_btn"></button><span class="arena-bulle" id="arena-bulle" role="status" hidden data-t="arena_msg"></span></span>
       <button type="button" class="ico" id="b-regl" aria-expanded="false" aria-controls="menu-regl" aria-label="Réglages / Settings">⚙️</button>
       <div class="menu-regl" id="menu-regl" hidden>
@@ -955,7 +957,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
-    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a> · <a href="/matchs" data-t="lg_matchs"></a> · <a href="/joueurs" data-t="lg_joueurs"></a> · <a href="/tournois" data-t="lg_tournois"></a> · <a href="/bilans" data-t="lg_bilans"></a></p>
+    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a> · <a href="/matchs" data-t="lg_matchs"></a> · <a href="/joueurs" data-t="lg_joueurs"></a> · <a href="/tournois" data-t="lg_tournois"></a> · <a href="/bilans" data-t="lg_bilans"></a> · <a href="/tennis-de-table" data-t="lg_tt"></a></p>
   </footer>
   <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
@@ -1261,6 +1263,7 @@ const T = {
   pwa_installer:"📲 Installer l'appli sur ce téléphone",
   pwa_ios:"📲 Installer l'appli : touche Partager (le carré avec une flèche vers le haut), puis « Sur l'écran d'accueil ».",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
+  tt_btn:'🏓 Tennis de table', lg_tt:'Tennis de table',   // 509
   arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente', lg_matchs:'Matchs analysés', lg_joueurs:'Joueurs', lg_tournois:'Tournois', lg_bilans:'Bilans de la semaine',
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
@@ -1642,6 +1645,7 @@ const T = {
   pwa_installer:'📲 Install the app on this phone',
   pwa_ios:'📲 Install the app: tap Share (the square with an upward arrow), then "Add to Home Screen".',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
+  tt_btn:'🏓 Table tennis', lg_tt:'Table tennis',   // 509
   arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale', lg_matchs:'Analysed matches', lg_joueurs:'Players', lg_tournois:'Tournaments', lg_bilans:'Weekly records',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
@@ -9637,6 +9641,8 @@ function brancherCompte(){
     COMPTES_DISPO = true; majEtoiles();                                     // 476 : favoris
     if (D) { rendMdj(); rendListe(); }
     if (o.admin) { chargerInterne(); lienAdmin(); }
+    // 509 : la page du tennis de table renvoie ici pour créer un compte ou se connecter (?compte=inscription|connexion)
+    if (['inscription', 'connexion'].includes(Q.get('compte'))) ouvrirCompte(COMPTE ? 'moi' : Q.get('compte'));
     if (Q.get('verifier')) apiCompte('verifier', { jeton: Q.get('verifier') }).then(r => r.ok ? location.replace(location.pathname + '?bienvenue=1') : ouvrirCompte('message', erreurCompte(r.erreur)));
     else if (Q.get('reinit')) ouvrirCompte('reinit', '', false, Q.get('reinit'));
     else if (Q.get('bienvenue')) { const bv = Q.get('bienvenue'); ouvrirCompte('message', t(bv === 'reinit' ? 'cp_reinit_ok' : bv === 'code' ? 'cp_code_ok' : 'cp_bienvenue'), true); history.replaceState(null, '', location.pathname); }
