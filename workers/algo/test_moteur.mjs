@@ -67,3 +67,26 @@ test('511 : la notification de fin de set dit le % en direct ; sans % calculé, 
   assert.equal(vieux, sans);                                  // feuille trop vieille : comme sans feuille
   assert.equal(reseau, 0);
 });
+
+test('519 : set gagné par le second nommé → score dans l\'ordre des noms (4-6) ; % avec la feuille fraîche de la page', async () => {
+  const m = { uid: 'a_b', home: 'Juan La Serna', away: 'Genaro Olivieri', p_home: 0.58, circuit: 'CH',
+    simulation: { a: 0.64, b: 0.63, sets_gagnants: 2 } };
+  const p = { h: [4], a: [5], srv: 'h' }, c = { h: [4, 0], a: [6, 0], srv: 'a' };
+  const E = N.evenements(m, p, c, 3);
+  assert.equal(E.length, 1);
+  assert.deepEqual([E[0].type, E[0].qui, E[0].score, E[0].sets], ['set', 'a', '4-6', '0-1']);
+  assert.match(N.message(E[0], m, 'fr').texte, /^Juan La Serna – Genaro Olivieri · 4-6 · Sets : 0-1$/);
+  // la feuille fraîche (même source que la page) l'emporte sur l'absence de feuille au coffre
+  const env = { COFFRE: { get: async () => null } };
+  const x = { id: 5, score_home: { sets: [4, 0], point: '0' }, score_away: { sets: [6, 0], point: '0' }, serveur: 'home' };
+  const feuille = { firstServeAccuracy: [20, 40, 30, 40], servicePointsScored: [18, null, 30, null] };
+  let demandes = 0;
+  const sans = await N.pctApresSet(env, m, x, false, 1e12);
+  const avec = await N.pctApresSet(env, m, x, false, 1e12, async (id) => { demandes++; assert.equal(id, 5); return feuille; });
+  const attendu = MO.pctDirect(m, { x, inverse: false }, {}, feuille);
+  assert.equal(demandes, 1);
+  assert.equal(avec, attendu);
+  assert.ok(Number.isFinite(sans) && Number.isFinite(avec));
+  const panne = await N.pctApresSet(env, m, x, false, 1e12, async () => { throw new Error('x'); });
+  assert.equal(panne, sans);                                  // feuille indisponible : comme avant
+});
