@@ -126,9 +126,17 @@ def historique_fait(etat, aujourdhui, debut=DEBUT):
 def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=None):
     etat = lire_etat(dossier)
     etat.setdefault('jours', {})
-    if heure is not None and heure != HEURE_QUOTIDIENNE and historique_fait(etat, aujourdhui, debut):
-        journal(f"tennis de table : historique complet, un seul passage par jour (vers {HEURE_QUOTIDIENNE} h UTC)")
+    # 27/11/2026 (paquet 501) : « un passage par jour » ne dépend plus de l'heure exacte de départ. Avant, seul un run
+    # parti entre 6 h et 7 h UTC collectait ; GitHub retarde souvent les tâches planifiées, et le run de 6 h 23 parti
+    # après 7 h a sauté la journée (dernier ajout le 26/11 au soir, le 26/11 jamais rangé). Désormais : le premier run
+    # à partir de 6 h UTC fait le passage du jour (noté dans etat.json), les suivants du même jour sautent.
+    deja = etat.get('passage_quotidien') == aujourdhui.isoformat()
+    if heure is not None and (heure < HEURE_QUOTIDIENNE or deja) and historique_fait(etat, aujourdhui, debut):
+        journal(f"tennis de table : historique complet, un seul passage par jour (à partir de {HEURE_QUOTIDIENNE} h UTC)"
+                + (', déjà fait aujourd\'hui' if deja else ''))
         return {'jours': 0, 'matchs': 0, 'manques': 0, 'arret': None, 'saute': True}
+    if heure is None or heure >= HEURE_QUOTIDIENNE:
+        etat['passage_quotidien'] = aujourdhui.isoformat()
     faits, matchs, manques, arret = 0, 0, 0, None
     par_ligue = {}
     try:
@@ -148,6 +156,7 @@ def passage(c, aujourdhui, dossier=DOSSIER, journal=print, debut=DEBUT, heure=No
                 par_ligue[r['ligue']] = par_ligue.get(r['ligue'], 0) + 1
     except AS.Arret as e:
         arret = str(e)
+    ecrire_etat(etat, dossier)                    # 501 : le passage du jour est noté même sans jour à ranger
     J = etat['jours']
     complets = sum(1 for v in J.values() if v.get('complet'))
     attendus = (aujourdhui - dt.timedelta(days=1) - debut).days + 1
