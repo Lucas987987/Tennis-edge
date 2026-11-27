@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E0A24">
+<!-- 27/11/2026 (paquet 520, Lucas : « oui » à la page du badminton) — circuits BWF. Données : /bad.json (le worker sert
+     la version complète aux comptes Plus, bad_libre.json aux autres), produites par badminton/pronostics_badminton.py.
+     Même thème et mêmes réglages (te_theme, te_lang) que le site. -->
+<script>(function(){try{var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Game Set Algo — badminton : % de victoire de chaque match</title>
+<meta name="description" content="L'algo du badminton : % de victoire et bilan public de chaque match des circuits BWF, simples et doubles.">
+<link rel="canonical" href="https://gamesetalgo.com/badminton">
+<meta property="og:url" content="https://gamesetalgo.com/badminton"><meta property="og:site_name" content="Game Set Algo">
+<meta property="og:title" content="Game Set Algo — badminton">
+<meta property="og:description" content="% de victoire et bilan public de chaque match de badminton (circuits BWF).">
+<meta property="og:type" content="website"><meta property="og:image" content="https://gamesetalgo.com/partage.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@font-face{font-family:"Bungee";font-weight:400;font-display:swap;src:url(polices/bungee-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(polices/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(polices/barlow-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(polices/barlow-condensed-600.woff2) format("woff2")}
+:root{--bg:#0E0A24;--bg2:#160F38;--panel:#1B1342;--wv:255,255,255;--line:rgba(var(--wv),.12);--line2:rgba(var(--wv),.2);
+  --ink:#F4F1FF;--dim:#ABA3D6;--p1:#2EE6FF;--p2:#FF4FAE;--ball:#D4FF3A;--ok:#45F0A0;--ko:#FF6B86;
+  --disp:"Bungee","Russo One","Arial Black",Impact,sans-serif;--cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --r-lg:18px;--r-sm:10px;color-scheme:dark}
+html[data-theme="light"]{--bg:#F4F2FB;--bg2:#ECE8F8;--panel:#FFFFFF;--wv:30,20,80;--ink:#1B1640;--dim:#5C5788;--p1:#0A7FA3;
+  --p2:#C21F78;--ball:#6F9500;--ok:#0E8A57;--ko:#C92A4D;color-scheme:light}
+*{box-sizing:border-box}
+html{font-size:16px;background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:Barlow,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;
+  -webkit-font-smoothing:antialiased;background:radial-gradient(900px 520px at 50% -120px,#2A1B6B 0%,transparent 70%),var(--bg)}
+html[data-theme="light"] body{background:radial-gradient(900px 520px at 50% -120px,#DAD1FB 0%,transparent 70%),var(--bg)}
+a{color:var(--p1)}
+.wrap{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.marque{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-size:.95rem}
+.marque i{width:22px;height:22px;border-radius:50%;background:var(--ball);display:inline-block;box-shadow:0 0 12px var(--ball)}
+.reg{margin-left:auto;display:flex;gap:6px}
+.btn{font:600 .85rem var(--cond);letter-spacing:.03em;color:var(--ink);background:var(--panel);border:1px solid var(--line2);
+  border-radius:999px;padding:6px 12px;cursor:pointer;text-decoration:none}
+h1{font-family:var(--disp);font-weight:400;font-size:1.7rem;line-height:1.1;margin:18px 0 6px}
+h1 b{color:var(--ball);font-weight:400}
+.sous{color:var(--dim);margin:0 0 14px}
+.onglets{display:flex;gap:8px;margin:10px 0 14px}
+.onglets button{flex:1;font:600 1rem var(--cond);padding:10px;border-radius:var(--r-sm);border:1px solid var(--line2);
+  background:var(--panel);color:var(--dim);cursor:pointer}
+.onglets button[aria-selected="true"]{color:var(--bg);background:var(--ball);border-color:var(--ball)}
+.panel{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:12px 14px;margin:0 0 14px}
+h2{font:600 1.05rem var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:18px 0 8px}
+.offert{border-color:var(--ball);box-shadow:0 0 0 1px var(--ball) inset}
+.etiq{display:inline-block;font:600 .75rem var(--cond);letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;
+  border-radius:999px;background:var(--ball);color:#0E0A24}
+.m{border-top:1px solid var(--line);padding:10px 0}
+.m:first-child{border-top:0}
+.m-haut{display:flex;gap:8px;align-items:baseline;color:var(--dim);font-size:.82rem}
+.m-haut .h{font:600 .95rem var(--cond);color:var(--ink);min-width:3em}
+.m-haut .tr{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.duel{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-top:4px;cursor:pointer}
+.j{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.j.f{color:var(--ink)}.j.o{color:var(--dim)}
+.pc{font:600 1.05rem var(--cond);text-align:right}
+.pc1{color:var(--p1)}.pc2{color:var(--p2)}
+.barre{grid-column:1/-1;height:6px;border-radius:3px;background:var(--p2);overflow:hidden;margin-top:4px}
+.barre span{display:block;height:100%;background:var(--p1)}
+.verrou{grid-column:1/-1;font-size:.85rem;color:var(--dim);margin-top:2px}
+.verrou a{font-weight:600}
+.det{margin-top:8px;padding:10px 12px;border-radius:var(--r-sm);background:rgba(var(--wv),.05);font-size:.9rem}
+.det[hidden]{display:none}
+.sc{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sc span{font:600 .9rem var(--cond);padding:3px 9px;border-radius:999px;border:1px solid var(--line2)}
+.sc span.top{border-color:var(--ball);color:var(--ball)}
+.note{color:var(--dim);font-size:.8rem}
+.res{font:600 .95rem var(--cond)}
+.ok{color:var(--ok)}.ko{color:var(--ko)}
+.plus{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.plus p{margin:0;flex:1 1 220px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:5px 4px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+th:first-child{white-space:normal}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:600}
+.chiffres{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 10px}
+.chiffres div{background:rgba(var(--wv),.05);border-radius:var(--r-sm);padding:8px 10px}
+.chiffres b{display:block;font:400 1.35rem var(--disp);color:var(--ball)}
+.chiffres small{color:var(--dim)}
+.plusde{width:100%;margin-top:8px}
+footer{color:var(--dim);font-size:.8rem;margin-top:24px}
+.vide{color:var(--dim);font-size:.9rem;padding:6px 0}
+/* 510 : favoris */
+.etoile{background:none;border:0;color:var(--dim);font-size:1.05rem;cursor:pointer;padding:0 2px;line-height:1}
+.etoile[aria-pressed="true"]{color:var(--ball)}
+.suivre{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.suivre .btn{font-size:.78rem;padding:4px 10px}
+.suivre .btn[aria-pressed="true"]{border-color:var(--ball);color:var(--ball)}
+.filtre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}.filtre .btn[aria-pressed="true"]{background:var(--ball);color:#0E0A24;border-color:var(--ball)}
+#fav-msg{font-size:.82rem;color:var(--dim)}
+/* 509 : l'accès Plus, comme sur la page du tennis */
+#plus h2{margin-top:0}.prix{margin:8px 0 0}.prix .fd{color:var(--ball)}.preuve{color:var(--dim);font-size:.88rem;margin:8px 0}
+.comp td.p,.comp th.p{background:rgba(var(--wv),.05)}.comp .oui{color:var(--ok);text-align:center}.comp .non{color:var(--dim);text-align:center}
+.comp td,.comp th{text-align:center;white-space:normal}.comp td:first-child,.comp th:first-child{text-align:left;width:50%}.comp small{font-size:.78rem}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn.go{background:var(--ball);color:#0E0A24;border-color:var(--ball)}
+</style></head>
+<body>
+<div class="wrap">
+<header>
+  <a class="marque" href="/"><i></i>Game Set Algo</a>
+  <div class="reg">
+    <a class="btn" href="/" id="l-tennis">Tennis</a>
+    <a class="btn" href="/tennis-de-table" id="l-tt">Ping</a>
+    <button class="btn" id="b-lang" type="button">EN</button>
+    <button class="btn" id="b-theme" type="button" aria-label="Thème">◐</button>
+  </div>
+</header>
+<h1 id="titre">L'algo du <b>badminton</b></h1>
+<p class="sous" id="sous"></p>
+<div id="bandeau"></div>
+<div class="onglets" role="tablist" id="onglets" style="flex-wrap:wrap"></div>
+<div id="bilan-haut"></div>
+<div id="contenu"><p class="vide" id="charge"></p></div>
+<section class="panel" id="plus" hidden></section>
+<section class="panel" id="methode"></section>
+<footer><p id="maj"></p><p id="pied"></p></footer>
+</div>
+<script>
+(function(){
+'use strict';
+const T={
+ fr:{titre:"L'algo du <b>badminton</b>",
+  sous:"Le % de victoire de chaque match des circuits BWF, simples et doubles. Un bilan public, erreurs comprises.",
+  charge:'Chargement des matchs…',erreur:'Matchs indisponibles pour le moment, réessayez dans un instant.',
+  tout:'Tout',ep:{'simple messieurs':'Simple messieurs','simple dames':'Simple dames','double messieurs':'Double messieurs','double dames':'Double dames','double mixte':'Double mixte'},
+  avenir:'À venir',encours:'En cours',termines:'Terminés (24 h)',aucun:'Aucun match pour le moment.',
+  offert:'Match offert du jour',verrou:'Pronostic réservé à <a href="#plus">Game Set Algo Plus</a>',
+  bandeau:'Avec Game Set Algo Plus : le % de tous les matchs avant leur début. Sans abonnement : un match offert chaque jour, le % des matchs commencés et tout le bilan.',
+  sabonner:'Découvrir Plus',plusde:n=>`Afficher ${n} matchs de plus`,
+  fav:(n,p)=>`L'algo voit ${n} gagner à ${p} %.`,suivis:(a,b)=>`Matchs suivis par l'algo : ${a} et ${b} (en double : le joueur le moins suivi de chaque paire).`,
+  prog:"L'heure est celle du programme : les matchs s'enchaînent sur un court, le début réel est souvent plus tard.",
+  ddames:"Double dames : l'algo y est trop prudent (ses favoris gagnent plus souvent qu'annoncé). Le % n'est pas retouché.",
+  bon:'L’algo avait vu juste',faux:'L’algo s’est trompé',annonce:(n,p)=>`favori annoncé : ${n} (${p} %)`,
+  bilanT:'Le bilan',depuis:d=>`Depuis le ${d}, chaque pronostic figé à l'heure prévue du match est comparé au résultat.`,
+  bons:'bons vainqueurs',annonceMoy:'annoncé en moyenne',
+  tranche:'% annoncé au favori',matchs:'matchs',annonceCol:'annoncé',reel:'réel',tot:'Trop tôt pour conclure : moins de 30 matchs jugés.',
+  rienBilan:'Le bilan commence avec les premiers matchs terminés.',
+  plusT:'Accès Plus',
+  plusTexte:"Un seul accès, tout compris : le tennis, le tennis de table et le badminton. Un match de badminton offert chaque jour.",
+  prix:(t,e)=>`<b>${e(t.mois)} par mois</b> · ${e(t.trimestre)} les 3 mois · ${e(t.annee)} l’année · ${e(t.semaine)} la semaine<br><span class="fd">Fondateurs : <b>9,99 € par mois, à vie</b>, pour les 100 premiers comptes confirmés.</span>`,
+  preuve:(n,b)=>`Aujourd'hui : <b>${n} matchs</b> analysés, dont un offert.`+(b?` Depuis le ${b.d} : <b>${b.p} % de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.`:''),
+  compTete:['','Gratuit','Plus'],
+  comp:[['Le match offert du jour, en entier',true,true],['% de victoire de tous les matchs',['une fois le match commencé'],['avant le match']],
+    ['Tout l’accès Plus du tennis et du tennis de table',false,true],['Bilan public, toutes les erreurs comprises',true,true]],
+  fdT:'Offre fondateurs',
+  fd:"Les 100 premiers comptes confirmés sont fondateurs, automatiquement : l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Rien à réserver : crée ton compte et confirme ton adresse.",
+  creer:'Créer un compte',connexion:'Se connecter',abonner:"S'abonner",
+  methodeT:'Comment ça marche',
+  methode:"Un Elo propre au badminton, appris sur plus de 65 000 matchs des circuits BWF collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Il compte la part des points gagnés, pas seulement le vainqueur, et en double chaque joueur a sa propre note : une paire nouvelle profite du passé de ses deux joueurs. Chaque réglage a été appris sur 2021–2022, puis jugé une seule fois de 2023 à novembre 2026 : 71 % de bons vainqueurs. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
+  maj:d=>`Mis à jour le ${d}.`,
+  pied:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
+  aujourdhui:"Aujourd'hui",demain:'Demain',hier:'Hier'},
+ en:{titre:'The <b>badminton</b> algorithm',
+  sous:'Win % for every match on the BWF tours, singles and doubles. A public record, mistakes included.',
+  charge:'Loading matches…',erreur:'Matches unavailable right now, please try again shortly.',
+  tout:'All',ep:{'simple messieurs':"Men's singles",'simple dames':"Women's singles",'double messieurs':"Men's doubles",'double dames':"Women's doubles",'double mixte':'Mixed doubles'},
+  avenir:'Upcoming',encours:'Live',termines:'Finished (24 h)',aucun:'No match right now.',
+  offert:'Free match of the day',verrou:'Prediction for <a href="#plus">Game Set Algo Plus</a> members',
+  bandeau:'With Game Set Algo Plus: the % of every match before it starts. Without a subscription: one free match each day, the % of started matches and the full record.',
+  sabonner:'Discover Plus',plusde:n=>`Show ${n} more matches`,
+  fav:(n,p)=>`The algorithm gives ${n} a ${p}% chance to win.`,suivis:(a,b)=>`Matches tracked by the algorithm: ${a} and ${b} (doubles: the less tracked player of each pair).`,
+  prog:'The time is the scheduled one: matches follow each other on a court, the real start is often later.',
+  ddames:"Women's doubles: the algorithm is too cautious there (its favourites win more often than predicted). The % is not adjusted.",
+  bon:'The algorithm got it right',faux:'The algorithm got it wrong',annonce:(n,p)=>`predicted favourite: ${n} (${p}%)`,
+  bilanT:'The record',depuis:d=>`Since ${d}, each prediction, frozen at the scheduled time, is compared with the result.`,
+  bons:'right winners',annonceMoy:'predicted on average',
+  tranche:'% given to the favourite',matchs:'matches',annonceCol:'predicted',reel:'actual',tot:'Too early to conclude: fewer than 30 matches judged.',
+  rienBilan:'The record starts with the first finished matches.',
+  plusT:'Plus access',
+  plusTexte:'One access, everything included: tennis, table tennis and badminton. One free badminton match every day.',
+  prix:(t,e)=>`<b>${e(t.mois)} a month</b> · ${e(t.trimestre)} for 3 months · ${e(t.annee)} a year · ${e(t.semaine)} a week<br><span class="fd">Founders: <b>€9.99 a month, for life</b>, for the first 100 confirmed accounts.</span>`,
+  preuve:(n,b)=>`Today: <b>${n} matches</b> analysed, one of them free.`+(b?` Since ${b.d}: <b>${b.p}% of winners found</b> across ${b.n} matches, every miss included.`:''),
+  compTete:['','Free','Plus'],
+  comp:[['The free match of the day, in full',true,true],['Win % for every match',['once the match has started'],['before the match']],
+    ['All of Plus for tennis and table tennis',false,true],['Public record, every miss included',true,true]],
+  fdT:'Founders offer',
+  fd:"The first 100 confirmed accounts are founders, automatically: Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Nothing to reserve: create your account and confirm your address.",
+  creer:'Create an account',connexion:'Log in',abonner:'Subscribe',
+  methodeT:'How it works',
+  methode:'A badminton Elo, learned on more than 65,000 BWF matches collected since 2021 and updated after every match, gives the win %. It counts the share of points won, not just the winner, and in doubles each player has their own rating: a new pair benefits from both players’ history. Every setting was learned on 2021–2022, then judged once from 2023 to November 2026: 71% of winners found. The algorithm is independent. The prediction is frozen at the scheduled time: that is the one we judge.',
+  maj:d=>`Updated ${d}.`,
+  pied:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
+  aujourdhui:'Today',demain:'Tomorrow',hier:'Yesterday'}};
+let lang='fr';
+try{const q=new URLSearchParams(location.search).get('lang');lang=q||localStorage.getItem('te_lang')||((navigator.language||'fr').startsWith('fr')?'fr':'en');}catch(e){}
+if(!T[lang])lang='fr';
+let D=null,onglet='tout',ouverts=new Set(),montres={},MOI=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pc=p=>Math.round(p*100);
+function heure(t){return new Date(t*1000).toLocaleTimeString(lang==='fr'?'fr-FR':'en-GB',{hour:'2-digit',minute:'2-digit'});}
+function jourDe(t){const d=new Date(t*1000);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function etiquetteJour(t){const L=T[lang],a=new Date(),j=jourDe(t),auj=jourDe(a.getTime()/1000);
+  const dem=jourDe(a.getTime()/1000+86400),hie=jourDe(a.getTime()/1000-86400);
+  if(j===auj)return L.aujourdhui;if(j===dem)return L.demain;if(j===hie)return L.hier;
+  return new Date(t*1000).toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short'});}
+function tournoi(m){const L=T[lang];let s=String(m.tournoi||'').replace(/,\s*(MS|WS|MD|WD|XD|Men|Women|Mixed)[^,]*$/i,'');
+  return s+' · '+(L.ep[m.epreuve]||m.epreuve||'')+(m.tour?' · '+m.tour:'');}
+function dateLongue(iso){try{return new Date(iso).toLocaleString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
+function jourCourt(j){try{return new Date(j+'T12:00:00').toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',year:'numeric'});}catch(e){return j;}}
+function scoreDe(m){const M=m.manches||[];let a=0,b=0;M.forEach(x=>{if(x[0]>x[1])a++;else if(x[1]>x[0])b++;});return [a,b];}
+
+function ligneMatch(m){
+  const L=T[lang],a_p='p_h' in m;
+  let h=`<div class="m" data-id="${esc(m.id)}"><div class="m-haut"><span class="h">${heure(m.t)}</span><span class="tr">${esc(tournoi(m))}</span>`;
+  if(m.statut==='termine'||m.statut==='en_cours'){const s=scoreDe(m);if(s[0]+s[1])h+=`<span class="res">${s[0]}-${s[1]}</span>`;}
+  h+='</div><div class="duel" role="button" tabindex="0">';
+  if(a_p){const p=m.p_h,fh=p>=.5;
+    h+=`<span class="j ${fh?'f':'o'}">${esc(m.h)}</span><span class="pc pc1">${pc(p)} %</span>`
+     +`<span class="j ${fh?'o':'f'}">${esc(m.a)}</span><span class="pc pc2">${100-pc(p)} %</span>`
+     +`<span class="barre"><span style="width:${(p*100).toFixed(1)}%"></span></span>`;}
+  else{h+=`<span class="j f">${esc(m.h)}</span><span></span><span class="j f">${esc(m.a)}</span><span></span>`;
+    if(m.verrou)h+=`<span class="verrou">🔒 ${L.verrou}</span>`;}
+  h+='</div>';
+  if(m.statut==='termine'&&'bon' in m){const fav=m.p_h>=.5?m.h:m.a;
+    h+=`<div class="note"><span class="${m.bon?'ok':'ko'}">${m.bon?'✓ '+L.bon:'✗ '+L.faux}</span> · ${esc(L.annonce(fav,pc(Math.max(m.p_h,1-m.p_h))))}</div>`;}
+  if(a_p){h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}><div>${esc(L.fav(m.p_h>=.5?m.h:m.a,pc(Math.max(m.p_h,1-m.p_h))))}</div>`
+    +(m.n_h!=null?`<div class="note">${esc(L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang)))}</div>`:'')
+    +(m.epreuve==='double dames'?`<div class="note">${esc(L.ddames)}</div>`:'')
+    +(m.statut==='a_venir'?`<div class="note">${esc(L.prog)}</div>`:'')+'</div>';}
+  return h+'</div>';}
+
+function section(titre,L,cle,groupe){
+  if(!L.length)return '';
+  const max=montres[cle]||(cle==='avenir'?25:15),voir=L.slice(0,max);let h=`<h2>${titre}</h2><div class="panel">`,j=null;
+  voir.forEach(m=>{const e=etiquetteJour(m.t);if(groupe&&e!==j){j=e;h+=`<div class="note" style="margin-top:6px">${esc(e)}</div>`;}h+=ligneMatch(m);});
+  if(L.length>max)h+=`<button class="btn plusde" data-plus="${cle}">${T[lang].plusde(Math.min(L.length-max,cle==='avenir'?25:15))}</button>`;
+  return h+'</div>';}
+
+function bilan(){const L=T[lang],B=(D.bilan||{})[onglet];let h=`<h2>${L.bilanT}${onglet!=='tout'?' · '+esc(L.ep[onglet]||onglet):''}</h2><div class="panel">`;
+  if(!B){return h+`<p class="vide">${L.rienBilan}</p></div>`;}
+  h+=`<p class="note">${L.depuis(jourCourt(D.depuis))}</p><div class="chiffres">`
+   +`<div><b>${B.matchs.toLocaleString(lang)}</b><small>${L.matchs}</small></div>`
+   +`<div><b>${B.bons_pct} %</b><small>${L.bons} · ${L.annonceMoy} ${B.annonce_pct} %</small></div></div>`;
+  if(B.matchs<30)h+=`<p class="note">${L.tot}</p>`;
+  if((B.tranches||[]).length){h+=`<table><tr><th>${L.tranche}</th><th>${L.matchs}</th><th>${L.annonceCol}</th><th>${L.reel}</th></tr>`;
+    B.tranches.forEach(t=>{h+=`<tr><td>${t.de}–${t.de===80?100:t.de+10} %</td><td>${t.matchs}</td><td>${t.annonce_pct} %</td><td>${t.reel_pct} %</td></tr>`;});
+    h+='</table>';}
+  return h+'</div>';}
+
+function rendre(){const L=T[lang];document.documentElement.lang=lang;
+  $('titre').innerHTML=L.titre;$('sous').textContent=L.sous;$('b-lang').textContent=lang==='fr'?'EN':'FR';
+  $('pied').textContent=L.pied;$('methode').innerHTML=`<h2 style="margin-top:0">${L.methodeT}</h2><p style="margin:0">${esc(L.methode)}</p>`;
+  if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
+  $('maj').textContent=L.maj(dateLongue(D.genere_le));
+  $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="#plus">${L.sabonner}</a></div>`;
+  rendPlus();
+  const eps=['tout'].concat(D.epreuves||[]);if(!eps.includes(onglet))onglet='tout';
+  const tous=D.matchs||[];
+  $('onglets').innerHTML=eps.map(k=>{const n=tous.filter(m=>(k==='tout'||m.epreuve===k)&&m.statut!=='termine').length;
+    return `<button role="tab" aria-selected="${k===onglet}" data-o="${esc(k)}" style="flex:1 1 30%">${esc(k==='tout'?L.tout:(L.ep[k]||k))} · ${n}</button>`;}).join('');
+  const M=tous.filter(m=>onglet==='tout'||m.epreuve===onglet);
+  const off=M.filter(m=>m.offert&&m.statut!=='termine');
+  const cache=m=>m.offert&&D.acces!=='plus';
+  const av=M.filter(m=>m.statut==='a_venir'&&!cache(m)),ec=M.filter(m=>m.statut==='en_cours'&&!cache(m)),te=M.filter(m=>m.statut==='termine').reverse();
+  let h='';
+  if(off.length&&D.acces!=='plus')h+=`<h2>${L.offert}</h2><div class="panel offert">`+off.map(ligneMatch).join('')+'</div>';
+  h+=section(L.encours,ec,'encours',false)+section(L.avenir,av,'avenir',true)+section(L.termines,te,'termines',true);
+  if(!M.length)h+=`<p class="vide">${L.aucun}</p>`;
+  $('bilan-haut').innerHTML=bilan();
+  $('contenu').innerHTML=h;}
+
+function rendPlus(){const L=T[lang],z=$('plus');
+  if(!D||D.acces==='plus'){z.hidden=true;return;}
+  const e=v=>lang==='fr'?Number(v).toFixed(2).replace('.',',')+' €':'€'+Number(v).toFixed(2);
+  const tf=MOI&&MOI.tarifs,c=MOI&&MOI.compte;
+  const n=(D.matchs||[]).filter(m=>m.statut!=='termine').length,B=(D.bilan||{}).tout;
+  const preuve=n?L.preuve(n,B&&B.matchs>=30?{n:B.matchs.toLocaleString(lang),p:String(B.bons_pct).replace('.',lang==='fr'?',':'.'),d:jourCourt(D.depuis)}:null):'';
+  const cel=(v,cl)=>v===true?`<td class="${cl} oui">✓</td>`:v===false?`<td class="${cl} non">—</td>`:`<td class="${cl}"><small>${esc(v[0])}</small></td>`;
+  const tete=L.compTete;
+  const boutons=c?`<a class="btn go" href="/?compte=connexion">${esc(L.abonner)}</a>`
+    :`<a class="btn go" href="/?compte=inscription">${esc(L.creer)}</a><a class="btn" href="/?compte=connexion">${esc(L.connexion)}</a>`;
+  z.innerHTML=`<h2>${esc(L.plusT)}</h2><p style="margin:0">${esc(L.plusTexte)}</p>`
+    +(tf&&tf.mois!=null?`<p class="prix">${L.prix(tf,e)}</p>`:'')
+    +(preuve?`<p class="preuve">${preuve}</p>`:'')
+    +`<table class="comp"><thead><tr><th>${esc(tete[0])}</th><th>${esc(tete[1])}</th><th class="p">${esc(tete[2])}</th></tr></thead><tbody>`
+    +L.comp.map(r=>`<tr><td>${esc(r[0])}</td>${cel(r[1],'')}${cel(r[2],'p')}</tr>`).join('')+'</tbody></table>'
+    +`<div class="actions">${boutons}</div>`
+    +`<h3 style="margin:16px 0 6px">${esc(L.fdT)}</h3><p style="margin:0">${esc(L.fd)}</p>`;
+  z.hidden=false;}
+function chargerMoi(){fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(o=>{if(o&&o.ok!==false){MOI=o;if(D)rendre();else rendPlus();}}).catch(()=>{});}
+function charger(){fetch('/bad.json',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(d=>{D=d;rendre();}).catch(()=>{if(!D)$('contenu').innerHTML=`<p class="vide">${T[lang].erreur}</p>`;});}
+
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-o]');if(o){onglet=o.dataset.o;rendre();return;}
+  const p=e.target.closest('[data-plus]');if(p){const k=p.dataset.plus;montres[k]=(montres[k]||(k==='avenir'?25:15))+(k==='avenir'?25:15);rendre();return;}
+  const d=e.target.closest('.duel');if(d){const m=d.closest('.m'),x=m&&m.querySelector('.det');if(x){x.hidden=!x.hidden;
+    const id=m.dataset.id;x.hidden?ouverts.delete(id):ouverts.add(id);}}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('duel')){e.preventDefault();e.target.click();}});
+$('b-lang').addEventListener('click',()=>{lang=lang==='fr'?'en':'fr';try{localStorage.setItem('te_lang',lang);}catch(e){}rendre();});
+$('b-theme').addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('te_theme',c);}catch(e){}});
+rendre();charger();chargerMoi();setInterval(charger,5*60*1000);
+})();
+</script>
+</body>
+</html>
