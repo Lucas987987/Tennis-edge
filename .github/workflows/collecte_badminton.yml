@@ -1,0 +1,67 @@
+name: Collecte badminton
+
+# 27/11/2026 (paquet 508, Lucas : « oui ») — résultats de badminton d'AllSportsApi (circuits BWF), du plus récent au
+# 01/01/2021, pendant la formule Pro (avant le ~26/12/2026). Rangé à part dans historique/badminton/ : rien d'autre ne le
+# lit. Un jour complet n'est jamais redemandé ; une fois l'historique fait, un seul passage par jour (à partir de 6 h
+# UTC). Voir l'en-tête de scripts/collecte_badminton.py. Le journal n'affiche que des comptes.
+on:
+  schedule:
+    - cron: '13 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Durée de collecte au plus (minutes)'
+        default: '100'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collecte-badminton
+  cancel-in-progress: false
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/collecte_tennis_de_table.py
+            /scripts/collecte_badminton.py
+            /historique/badminton/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Collecte (récents d abord)
+        timeout-minutes: 110
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          MINUTES: ${{ github.event.inputs.minutes || '100' }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '10'
+        run: python scripts/collecte_badminton.py "$MINUTES" | tee /tmp/bad.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Badminton'; sed 's/^/    /' /tmp/bad.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique/badminton
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Badminton $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
