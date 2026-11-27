@@ -14,14 +14,20 @@ Le journal COMPLET part, si les secrets sont là :
     (/lab/journaux/…, avec la clé) ;
   • sur le Telegram privé, en cas d'échec seulement (les 3 500 derniers caractères).
 --copie FICHIER (ou --ajout FICHIER) : écrit aussi la sortie complète dans ce fichier (comme « | tee » / « | tee -a »).
+--pouls MINUTES (paquet 500, Steam pipeline coupé deux fois pendant validation_report.py sans rien laisser au journal) :
+  toutes les MINUTES, une ligne technique dans le journal public — durée, mémoire du script, mémoire libre de la machine,
+  dernier repère « ::progres:: » écrit par le script (numéro de bloc seulement). Les lignes « ::progres:: » ne sont
+  jamais affichées autrement ; aucun chiffre privé n'y figure.
 Le code de sortie est celui de la commande.
-Usage : python scripts/discret.py [--copie F | --ajout F] -- python scripts/etude.py arg1 arg2
+Usage : python scripts/discret.py [--copie F | --ajout F] [--pouls MIN] -- python scripts/etude.py arg1 arg2
 """
 import datetime as dt
 import os
 import re
 import subprocess
 import sys
+import threading
+import time
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 GARDE = re.compile(r'^::(error|warning)(\s[^:]*)?::')
@@ -72,10 +78,69 @@ def vers_telegram(titre, texte):
         return False
 
 
+def _ko(cle, chemin):
+    """Valeur en Ko d'une ligne « Cle: 123 kB » de /proc (None si illisible : hors Linux, processus fini)."""
+    try:
+        with open(chemin, encoding='ascii', errors='replace') as f:
+            for l in f:
+                if l.startswith(cle + ':'):
+                    return int(l.split()[1])
+    except (OSError, ValueError, IndexError):
+        pass
+    return None
+
+
+def _go(ko):
+    if ko is None:
+        return '?'
+    return f"{ko // 1024} Mo" if ko < 1048576 else f"{ko / 1048576:.1f} Go".replace('.', ',')
+
+
+def pouls_ligne(nom, debut, pid, repere):
+    return (f"discret · {nom} · {int((time.monotonic() - debut) // 60)} min · mémoire du script "
+            f"{_go(_ko('VmRSS', f'/proc/{pid}/status'))} (pic {_go(_ko('VmHWM', f'/proc/{pid}/status'))}) · "
+            f"mémoire libre {_go(_ko('MemAvailable', '/proc/meminfo'))}" + (f" · {repere}" if repere else ''))
+
+
+def executer(args, pouls=None, ecrire=print):
+    """(code, sortie). Sortie lue au fil de l'eau ; avec pouls (minutes), une ligne technique à intervalle régulier."""
+    env = dict(os.environ, PYTHONUNBUFFERED='1') if pouls else None
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    morceaux, etat, fini = [], {'repere': ''}, threading.Event()
+    nom, debut = nom_script(args), time.monotonic()
+
+    def battre():
+        while not fini.wait(pouls * 60):
+            ecrire(pouls_ligne(nom, debut, p.pid, etat['repere']))
+            sys.stdout.flush()
+    t = threading.Thread(target=battre, daemon=True) if pouls else None
+    if t:
+        t.start()
+    for b in iter(p.stdout.readline, b''):
+        morceaux.append(b)
+        if b.startswith(b'::progres::'):
+            etat['repere'] = b[len(b'::progres::'):].decode('utf-8', 'replace').strip()[:40]
+    code = p.wait()
+    fini.set()
+    if t:
+        try:
+            import resource
+            pic = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss      # Ko sous Linux
+        except (ImportError, OSError):
+            pic = None
+        ecrire(f"discret · {nom} · {int((time.monotonic() - debut) // 60)} min · fin (code {code}) · pic de mémoire "
+               f"{_go(pic)} · mémoire libre {_go(_ko('MemAvailable', '/proc/meminfo'))}"
+               + (f" · {etat['repere']}" if etat['repere'] else ''))
+    return code, b''.join(morceaux).decode('utf-8', errors='replace')
+
+
 def main(argv):
     args = argv[1:]
-    copie, mode = None, 'w'
-    while args and args[0] in ('--copie', '--ajout'):
+    copie, mode, pouls = None, 'w', None
+    while args and args[0] in ('--copie', '--ajout', '--pouls'):
+        if args[0] == '--pouls':
+            pouls, args = float(args[1]), args[2:]
+            continue
         mode = 'a' if args[0] == '--ajout' else 'w'
         copie, args = args[1], args[2:]
     if args and args[0] == '--':
@@ -83,8 +148,7 @@ def main(argv):
     if not args:
         print('usage : discret.py [--copie F | --ajout F] -- commande …')
         return 2
-    p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    sortie = p.stdout.decode('utf-8', errors='replace')
+    code, sortie = executer(args, pouls)
     if copie:
         with open(copie, mode, encoding='utf-8') as f:
             f.write(sortie)
@@ -94,14 +158,14 @@ def main(argv):
     wf = re.sub(r'[^A-Za-z0-9_.-]+', '_', os.environ.get('GITHUB_WORKFLOW', 'local'))[:60]
     cle = f"prive/site/Tennis_Edge_Lab/journaux/{jour}/{wf}-{os.environ.get('GITHUB_RUN_ID', '0')}-{nom}.log"
     garde = vers_coffre(cle, sortie)
-    if p.returncode:
-        vers_telegram(f"❌ {wf} · {nom} (code {p.returncode})", sortie)
+    if code:
+        vers_telegram(f"❌ {wf} · {nom} (code {code})", sortie)
     for l in publics:
         print(l)
     ou = f" · journal complet : /lab/{cle[len('prive/site/Tennis_Edge_Lab/'):]}" if garde else ''
-    print(f"{nom} : {'terminé' if p.returncode == 0 else 'ÉCHEC (code %d)' % p.returncode} · {n} lignes écrites, "
+    print(f"{nom} : {'terminé' if code == 0 else 'ÉCHEC (code %d)' % code} · {n} lignes écrites, "
           f"non affichées (journal public){ou}")
-    return p.returncode
+    return code
 
 
 if __name__ == '__main__':

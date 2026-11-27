@@ -106,7 +106,11 @@ def load_upcoming():
         if k not in out or t < out[k]: out[k] = t
     return out
 
-def load_curves(path=None):
+def load_curves(path=None, books=None, depuis=None):
+    """28/11/2026 (paquet 500, run rouge du Steam pipeline : machine coupée pendant validation_report.py, deux fois de suite
+    au même endroit) — filtres FACULTATIFS, pour ne garder en mémoire que ce que l'appelant lira : books = ensemble des
+    books à garder (les autres courbes ne sont pas construites), depuis = horodatage : matchs dont le début (après
+    croisement) est postérieur ou égal. Sans ces arguments, rien ne change (paper_journal, freeze_thresholds…)."""
     data = {}
     src = path or CURVES
     # RÉGRESSION CORRIGÉE (15/08/2026) : book_curves.jsonl/set1_curves.jsonl/
@@ -156,6 +160,10 @@ def load_curves(path=None):
             _croises_resolus += 1
             if ct is None or ct_croise < ct:
                 ct = ct_croise
+        if depuis is not None and (ct is None or ct < depuis):
+            continue                      # 500 : avant la date demandée, jamais lu par l'appelant
+        if books is not None and r.get('book') not in books:
+            continue                      # 500 : book non lu par l'appelant
         # PRÉ-MATCH UNIQUEMENT. book_curves.jsonl contient ~90% de points IN-PLAY
         # (après le coup d'envoi). Les garder fausse la calibration : le "close"
         # (ser[-1]) devient un prix in-play qui encode le résultat -> look-ahead.
