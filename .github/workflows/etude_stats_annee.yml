@@ -1,0 +1,77 @@
+name: Étude - stats de l'année (paquet 491)
+
+# 27/11/2026 — paquet 491. Les statistiques de l'année (% de points gagnés au service, l'année précédente) ajoutent-elles
+# quelque chose à l'Elo ? Règle écrite dans l'en-tête de simulateur/etude_stats_annee.py (apprise sur 2025 avec les
+# statistiques 2024, jugée une fois sur 2026 avec les statistiques 2025, circuit par circuit). Se lance tout seul quand
+# le paquet arrive sur main (ou à la main). Écrit simulateur/rapport_stats_annee.json et l'entrée 491 du journal.
+# 0 requête d'API. Rien n'entre dans l'algo.
+on:
+  push:
+    branches: [main]
+    paths: ['simulateur/etude_stats_annee.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+            /scripts/feuilles_match.py
+            /feuilles/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /Tennis_Edge_Lab/books.py
+            /scripts/profils_saison.py
+            /historique/stats_annee/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Apprendre 2025 (stats 2024), juger une fois 2026 (stats 2025)
+        run: |
+          set -euo pipefail
+          python simulateur/etude_stats_annee.py /tmp/sackmann . | tee /tmp/stats_annee.log
+          cp simulateur/rapport_stats_annee.json /tmp/rapport_stats_annee.json
+          echo '### Stats de l'année (paquet 491, étude seule)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/stats_annee.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (rapport + entrée du journal, sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_stats_annee.json simulateur/rapport_stats_annee.json
+            python simulateur/etude_stats_annee.py --journal-depuis-rapport /tmp/rapport_stats_annee.json
+            git add -- simulateur/rapport_stats_annee.json simulateur/journal_changements.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 491 : stats de l'année (rapport et journal)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
