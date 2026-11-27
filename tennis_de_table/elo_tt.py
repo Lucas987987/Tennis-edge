@@ -7,7 +7,8 @@ Lecture des résultats collectés (historique/tennis_de_table/AAAA/AAAA-MM-JJ.js
 et Elo joueur par joueur, mis à jour match après match dans l'ordre des débuts.
 
 Matchs gardés : terminés normalement (statut « finished », sans abandon ni forfait), vainqueur connu (g = 1 ou 2),
-au moins 3 manches, et un vainqueur cohérent avec les manches (il en a gagné plus).
+au moins 3 manches, et un vainqueur cohérent avec les manches (il en a gagné plus ; manches à égalité écartées
+depuis le paquet 499).
 
 Trois familles, fixées avant tout essai (etude_elo_tt.py) :
   E0  K fixe                       K
@@ -26,6 +27,26 @@ DOSSIER = os.path.join('historique', 'tennis_de_table')
 DEPART = 1500.0
 
 
+def match_de(r, jour=None):
+    """Une ligne de l'historique (ou d'un match du jour, même format) → le tuple de matchs(), ou None si le match est
+    écarté (paquet 499 : sorti de matchs() pour servir aussi aux pronostics du jour, mêmes filtres)."""
+    if r.get('statut') != 'finished' or r.get('detail') or r.get('g') not in (1, 2):
+        return None
+    M = r.get('manches') or []
+    h, a = (r.get('h') or [None])[0], (r.get('a') or [None])[0]
+    if len(M) < 3 or not h or not a or h == a:
+        return None
+    mh = sum(1 for x, y in M if x > y)
+    ma = sum(1 for x, y in M if y > x)
+    if mh == ma or (r['g'] == 1) != (mh > ma):
+        return None          # 499 : manches à égalité (donnée incomplète) écartées, comme dans l'étape 3
+    ph, pa = sum(x for x, _ in M), sum(y for _, y in M)
+    if ph + pa <= 0:
+        return None
+    return (int(r.get('t') or 0), jour, str(r.get('ligue') or '?'), h, a, 1 if r['g'] == 1 else 0, ph / (ph + pa),
+            max(mh, ma), (mh, ma))
+
+
 def matchs(racine='.', dossier=DOSSIER):
     """[(t, jour, ligue, id_h, id_a, y, part_points_h, manches_a_gagner, (manches h, manches a))] triés par début ;
     y = 1 si h gagne. manches_a_gagner (paquet 494) = manches du vainqueur (3 ou 4) : le format du match, connu avant
@@ -38,22 +59,9 @@ def matchs(racine='.', dossier=DOSSIER):
                 for l in f:
                     if not l.strip():
                         continue
-                    r = json.loads(l)
-                    if r.get('statut') != 'finished' or r.get('detail') or r.get('g') not in (1, 2):
-                        continue
-                    M = r.get('manches') or []
-                    h, a = (r.get('h') or [None])[0], (r.get('a') or [None])[0]
-                    if len(M) < 3 or not h or not a or h == a:
-                        continue
-                    mh = sum(1 for x, y in M if x > y)
-                    ma = sum(1 for x, y in M if y > x)
-                    if (r['g'] == 1) != (mh > ma):
-                        continue
-                    ph, pa = sum(x for x, _ in M), sum(y for _, y in M)
-                    if ph + pa <= 0:
-                        continue
-                    out.append((int(r.get('t') or 0), jour, str(r.get('ligue') or '?'), h, a, 1 if r['g'] == 1 else 0, ph / (ph + pa),
-                                max(mh, ma), (mh, ma)))
+                    m = match_de(json.loads(l), jour)
+                    if m:
+                        out.append(m)
         except (OSError, ValueError):
             continue
     out.sort(key=lambda x: (x[0], x[3], x[4]))
@@ -64,9 +72,11 @@ def proba(ra, rb):
     return 1.0 / (1.0 + 10 ** (-(ra - rb) / 400.0))
 
 
-def rejouer(M, k=None, a=None, c=None, w=0.0, s=20.0):
-    """Rejoue l'Elo ; renvoie la liste des p (pour h) AVANT chaque match, dans l'ordre de M."""
-    R, N = {}, {}
+def rejouer(M, k=None, a=None, c=None, w=0.0, s=20.0, etat=None):
+    """Rejoue l'Elo ; renvoie la liste des p (pour h) AVANT chaque match, dans l'ordre de M.
+    etat (paquet 499, pronostics) : dict rempli à la fin avec 'R' (Elo de chaque joueur) et 'N' (matchs joués) ;
+    s'il contient déjà 'R' et 'N', l'Elo repart de là (matchs du jour ajoutés à l'historique)."""
+    R, N = ({}, {}) if etat is None or 'R' not in etat else (dict(etat['R']), dict(etat['N']))
     P = []
     ap = P.append
     for m in M:
@@ -88,6 +98,8 @@ def rejouer(M, k=None, a=None, c=None, w=0.0, s=20.0):
         R[h] = rh + kh * d
         R[b] = rb - kb * d
         N[h], N[b] = nh + 1, nb + 1
+    if etat is not None:
+        etat['R'], etat['N'] = R, N
     return P
 
 

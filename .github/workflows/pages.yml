@@ -315,6 +315,7 @@ jobs:
           # (bilan, journal, fiabilité, chargés ensuite) ; donnees.json reste publié (images et vidéos, secours de la page).
           if [ -f algo/donnees.json ]; then python3 scripts/site_leger.py algo/donnees.json _site/algo || echo "⚠️ site léger non construit : la page lira donnees.json"; fi
           cp algo/editeur.json algo/partage.png algo/methode.html algo/apropos.html _site/algo/
+          cp algo/tennis-de-table.html _site/algo/ || echo "❌ MANQUANT : algo/tennis-de-table.html"
           # 24/11/2026 (paquet 418) : une page par match terminé et par joueur, et le plan du site complet (référencement)
           python3 scripts/pages_seo.py . _site/algo || echo "::warning::pages des matchs et des joueurs non construites"
           # 26/11/2026 (paquet 487) : profil de la saison des joueurs du site (descriptif, ne change pas le %)

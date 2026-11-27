@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E0A24">
+<!-- 27/11/2026 (paquet 499, Lucas : « une page du site, pour le moment une page indépendante ») — tennis de table :
+     International et Pologne. Données : /tt.json (le worker sert la version complète aux comptes Plus, tt_libre.json aux
+     autres), produites par tennis_de_table/pronostics_tt.py. Même thème et mêmes réglages (te_theme, te_lang) que le site. -->
+<script>(function(){try{var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Game Set Algo — tennis de table : % de victoire et score de chaque match</title>
+<meta name="description" content="L'algo du tennis de table : % de victoire, score en manches le plus probable et bilan public de chaque match (International, Pologne).">
+<link rel="canonical" href="https://gamesetalgo.com/tennis-de-table">
+<meta property="og:url" content="https://gamesetalgo.com/tennis-de-table"><meta property="og:site_name" content="Game Set Algo">
+<meta property="og:title" content="Game Set Algo — tennis de table">
+<meta property="og:description" content="% de victoire, score le plus probable et bilan public de chaque match de tennis de table.">
+<meta property="og:type" content="website"><meta property="og:image" content="https://gamesetalgo.com/partage.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@font-face{font-family:"Bungee";font-weight:400;font-display:swap;src:url(polices/bungee-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(polices/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(polices/barlow-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(polices/barlow-condensed-600.woff2) format("woff2")}
+:root{--bg:#0E0A24;--bg2:#160F38;--panel:#1B1342;--wv:255,255,255;--line:rgba(var(--wv),.12);--line2:rgba(var(--wv),.2);
+  --ink:#F4F1FF;--dim:#ABA3D6;--p1:#2EE6FF;--p2:#FF4FAE;--ball:#D4FF3A;--ok:#45F0A0;--ko:#FF6B86;
+  --disp:"Bungee","Russo One","Arial Black",Impact,sans-serif;--cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --r-lg:18px;--r-sm:10px;color-scheme:dark}
+html[data-theme="light"]{--bg:#F4F2FB;--bg2:#ECE8F8;--panel:#FFFFFF;--wv:30,20,80;--ink:#1B1640;--dim:#5C5788;--p1:#0A7FA3;
+  --p2:#C21F78;--ball:#6F9500;--ok:#0E8A57;--ko:#C92A4D;color-scheme:light}
+*{box-sizing:border-box}
+html{font-size:16px;background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:Barlow,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;
+  -webkit-font-smoothing:antialiased;background:radial-gradient(900px 520px at 50% -120px,#2A1B6B 0%,transparent 70%),var(--bg)}
+html[data-theme="light"] body{background:radial-gradient(900px 520px at 50% -120px,#DAD1FB 0%,transparent 70%),var(--bg)}
+a{color:var(--p1)}
+.wrap{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.marque{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-size:.95rem}
+.marque i{width:22px;height:22px;border-radius:50%;background:var(--ball);display:inline-block;box-shadow:0 0 12px var(--ball)}
+.reg{margin-left:auto;display:flex;gap:6px}
+.btn{font:600 .85rem var(--cond);letter-spacing:.03em;color:var(--ink);background:var(--panel);border:1px solid var(--line2);
+  border-radius:999px;padding:6px 12px;cursor:pointer;text-decoration:none}
+h1{font-family:var(--disp);font-weight:400;font-size:1.7rem;line-height:1.1;margin:18px 0 6px}
+h1 b{color:var(--ball);font-weight:400}
+.sous{color:var(--dim);margin:0 0 14px}
+.onglets{display:flex;gap:8px;margin:10px 0 14px}
+.onglets button{flex:1;font:600 1rem var(--cond);padding:10px;border-radius:var(--r-sm);border:1px solid var(--line2);
+  background:var(--panel);color:var(--dim);cursor:pointer}
+.onglets button[aria-selected="true"]{color:var(--bg);background:var(--ball);border-color:var(--ball)}
+.panel{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:12px 14px;margin:0 0 14px}
+h2{font:600 1.05rem var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:18px 0 8px}
+.offert{border-color:var(--ball);box-shadow:0 0 0 1px var(--ball) inset}
+.etiq{display:inline-block;font:600 .75rem var(--cond);letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;
+  border-radius:999px;background:var(--ball);color:#0E0A24}
+.m{border-top:1px solid var(--line);padding:10px 0}
+.m:first-child{border-top:0}
+.m-haut{display:flex;gap:8px;align-items:baseline;color:var(--dim);font-size:.82rem}
+.m-haut .h{font:600 .95rem var(--cond);color:var(--ink);min-width:3em}
+.m-haut .tr{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.duel{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-top:4px;cursor:pointer}
+.j{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.j.f{color:var(--ink)}.j.o{color:var(--dim)}
+.pc{font:600 1.05rem var(--cond);text-align:right}
+.pc1{color:var(--p1)}.pc2{color:var(--p2)}
+.barre{grid-column:1/-1;height:6px;border-radius:3px;background:var(--p2);overflow:hidden;margin-top:4px}
+.barre span{display:block;height:100%;background:var(--p1)}
+.verrou{grid-column:1/-1;font-size:.85rem;color:var(--dim);margin-top:2px}
+.verrou a{font-weight:600}
+.det{margin-top:8px;padding:10px 12px;border-radius:var(--r-sm);background:rgba(var(--wv),.05);font-size:.9rem}
+.det[hidden]{display:none}
+.sc{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sc span{font:600 .9rem var(--cond);padding:3px 9px;border-radius:999px;border:1px solid var(--line2)}
+.sc span.top{border-color:var(--ball);color:var(--ball)}
+.note{color:var(--dim);font-size:.8rem}
+.res{font:600 .95rem var(--cond)}
+.ok{color:var(--ok)}.ko{color:var(--ko)}
+.plus{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.plus p{margin:0;flex:1 1 220px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:5px 4px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+th:first-child{white-space:normal}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:600}
+.chiffres{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 10px}
+.chiffres div{background:rgba(var(--wv),.05);border-radius:var(--r-sm);padding:8px 10px}
+.chiffres b{display:block;font:400 1.35rem var(--disp);color:var(--ball)}
+.chiffres small{color:var(--dim)}
+.plusde{width:100%;margin-top:8px}
+footer{color:var(--dim);font-size:.8rem;margin-top:24px}
+.vide{color:var(--dim);font-size:.9rem;padding:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="marque" href="/"><i></i>Game Set Algo</a>
+  <div class="reg">
+    <a class="btn" href="/" id="l-tennis">Tennis</a>
+    <button class="btn" id="b-lang" type="button">EN</button>
+    <button class="btn" id="b-theme" type="button" aria-label="Thème">◐</button>
+  </div>
+</header>
+<h1 id="titre">L'algo du <b>tennis de table</b></h1>
+<p class="sous" id="sous"></p>
+<div id="bandeau"></div>
+<div class="onglets" role="tablist" id="onglets"></div>
+<div id="contenu"><p class="vide" id="charge"></p></div>
+<section class="panel" id="methode"></section>
+<footer><p id="maj"></p><p id="pied"></p></footer>
+</div>
+<script>
+(function(){
+'use strict';
+const T={
+ fr:{titre:"L'algo du <b>tennis de table</b>",
+  sous:"Le % de victoire et le score en manches le plus probable de chaque match, International et Pologne. Un bilan public, erreurs comprises.",
+  charge:'Chargement des matchs…',erreur:'Matchs indisponibles pour le moment, réessayez dans un instant.',
+  ligue:{International:'International',Poland:'Pologne'},
+  avenir:'À venir',encours:'En cours',termines:'Terminés (24 h)',aucun:'Aucun match pour le moment.',
+  offert:'Match offert du jour',verrou:'Pronostic réservé à <a href="/#plus">Game Set Algo Plus</a>',
+  bandeau:'Avec Game Set Algo Plus : le % et le score le plus probable de tous les matchs. Sans abonnement : un match offert par ligue chaque jour, le % des matchs commencés et tout le bilan.',
+  sabonner:'Découvrir Plus',plusde:n=>`Afficher ${n} matchs de plus`,
+  fav:(n,p)=>`L'algo voit ${n} gagner à ${p} %.`,scoreProb:'Scores les plus probables',
+  decisive:p=>`Manche décisive : ${p} %`,suivis:(a,b)=>`Matchs suivis par l'algo : ${a} et ${b}`,
+  suppose:n=>`Format supposé : ${n} manches gagnantes (non annoncé par la source) ; il ne change pas le %.`,
+  format:n=>`${n} manches gagnantes`,
+  enCoursScore:'Score au dernier passage',
+  bon:'L’algo avait vu juste',faux:'L’algo s’est trompé',annonce:(n,p)=>`favori annoncé : ${n} (${p} %)`,
+  scoreTrouve:'score exact trouvé',
+  bilanT:'Le bilan',depuis:d=>`Depuis le ${d}, chaque pronostic figé au début du match est comparé au résultat.`,
+  bons:'bons vainqueurs',annonceMoy:'annoncé en moyenne',scores:'score exact trouvé',dec:(a,r)=>`manche décisive annoncée ${a} %, réelle ${r} %`,
+  tranche:'% annoncé au favori',matchs:'matchs',annonceCol:'annoncé',reel:'réel',tot:'Trop tôt pour conclure : moins de 30 matchs jugés.',
+  rienBilan:'Le bilan commence avec les premiers matchs terminés.',
+  methodeT:'Comment ça marche',
+  methode:"Un Elo propre au tennis de table, appris sur plus de 1,4 million de matchs collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Le score le plus probable vient d’une simulation manche par manche ancrée sur ce %, recalée sur la fréquence réelle de chaque score dans la ligue. Chaque réglage a été appris sur une période, puis jugé une seule fois sur la suivante. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
+  maj:d=>`Mis à jour le ${d}.`,
+  pied:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
+  aujourdhui:"Aujourd'hui",demain:'Demain',hier:'Hier',
+  cat:{MS:'Simple messieurs',WS:'Simple dames',MD:'Double messieurs',WD:'Double dames',XD:'Double mixte'}},
+ en:{titre:'The <b>table tennis</b> algorithm',
+  sous:'Win % and most likely game score for every match, International and Poland. A public record, mistakes included.',
+  charge:'Loading matches…',erreur:'Matches unavailable right now, please try again shortly.',
+  ligue:{International:'International',Poland:'Poland'},
+  avenir:'Upcoming',encours:'Live',termines:'Finished (24 h)',aucun:'No match right now.',
+  offert:'Free match of the day',verrou:'Prediction for <a href="/#plus">Game Set Algo Plus</a> members',
+  bandeau:'With Game Set Algo Plus: the % and most likely score of every match. Without a subscription: one free match per league each day, the % of started matches and the full record.',
+  sabonner:'Discover Plus',plusde:n=>`Show ${n} more matches`,
+  fav:(n,p)=>`The algorithm gives ${n} a ${p}% chance to win.`,scoreProb:'Most likely scores',
+  decisive:p=>`Deciding game: ${p}%`,suivis:(a,b)=>`Matches tracked by the algorithm: ${a} and ${b}`,
+  suppose:n=>`Assumed format: first to ${n} games (not given by the source); it does not change the %.`,
+  format:n=>`first to ${n} games`,
+  enCoursScore:'Score at the last update',
+  bon:'The algorithm got it right',faux:'The algorithm got it wrong',annonce:(n,p)=>`predicted favourite: ${n} (${p}%)`,
+  scoreTrouve:'exact score found',
+  bilanT:'The record',depuis:d=>`Since ${d}, each prediction, frozen at the start of the match, is compared with the result.`,
+  bons:'right winners',annonceMoy:'predicted on average',scores:'exact score found',dec:(a,r)=>`deciding game predicted ${a}%, actual ${r}%`,
+  tranche:'% given to the favourite',matchs:'matches',annonceCol:'predicted',reel:'actual',tot:'Too early to conclude: fewer than 30 matches judged.',
+  rienBilan:'The record starts with the first finished matches.',
+  methodeT:'How it works',
+  methode:'A table tennis Elo, learned on more than 1.4 million matches collected since 2021 and updated after every match, gives the win %. The most likely score comes from a game-by-game simulation anchored on that %, recalibrated on how often each score really happens in the league. Every setting was learned on one period, then judged once on the next. The algorithm is independent. The prediction is frozen at the scheduled start time: that is the one we judge.',
+  maj:d=>`Updated ${d}.`,
+  pied:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
+  aujourdhui:'Today',demain:'Tomorrow',hier:'Yesterday',
+  cat:{MS:"Men's singles",WS:"Women's singles",MD:"Men's doubles",WD:"Women's doubles",XD:'Mixed doubles'}}};
+let lang='fr';
+try{const q=new URLSearchParams(location.search).get('lang');lang=q||localStorage.getItem('te_lang')||((navigator.language||'fr').startsWith('fr')?'fr':'en');}catch(e){}
+if(!T[lang])lang='fr';
+let D=null,ligue=null,ouverts=new Set(),montres={};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pc=p=>Math.round(p*100);
+function heure(t){return new Date(t*1000).toLocaleTimeString(lang==='fr'?'fr-FR':'en-GB',{hour:'2-digit',minute:'2-digit'});}
+function jourDe(t){const d=new Date(t*1000);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function etiquetteJour(t){const L=T[lang],a=new Date(),j=jourDe(t),auj=jourDe(a.getTime()/1000);
+  const dem=jourDe(a.getTime()/1000+86400),hie=jourDe(a.getTime()/1000-86400);
+  if(j===auj)return L.aujourdhui;if(j===dem)return L.demain;if(j===hie)return L.hier;
+  return new Date(t*1000).toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short'});}
+function tournoi(m){const L=T[lang];let s=String(m.tournoi||'');const k=s.match(/,\s*(MS|WS|MD|WD|XD)\s*$/);
+  if(k)s=s.replace(/,\s*(MS|WS|MD|WD|XD)\s*$/,' · '+L.cat[k[1]]);return s+(m.tour?' · '+m.tour:'');}
+function dateLongue(iso){try{return new Date(iso).toLocaleString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
+function jourCourt(j){try{return new Date(j+'T12:00:00').toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',year:'numeric'});}catch(e){return j;}}
+function scoreDe(m){const M=m.manches||[];let a=0,b=0;M.forEach(x=>{if(x[0]>x[1])a++;else if(x[1]>x[0])b++;});return [a,b];}
+
+function ligneMatch(m){
+  const L=T[lang],verrou=m.verrou,a_p='p_h' in m;
+  let h=`<div class="m" data-id="${esc(m.id)}"><div class="m-haut"><span class="h">${heure(m.t)}</span><span class="tr">${esc(tournoi(m))}</span>`;
+  if(m.statut==='termine'||m.statut==='en_cours'){const s=scoreDe(m);if(s[0]+s[1])h+=`<span class="res">${s[0]}-${s[1]}</span>`;}
+  h+='</div><div class="duel" role="button" tabindex="0">';
+  if(a_p){const p=m.p_h,fh=p>=.5;
+    h+=`<span class="j ${fh?'f':'o'}">${esc(m.h)}</span><span class="pc pc1">${pc(p)} %</span>`
+     +`<span class="j ${fh?'o':'f'}">${esc(m.a)}</span><span class="pc pc2">${100-pc(p)} %</span>`
+     +`<span class="barre"><span style="width:${(p*100).toFixed(1)}%"></span></span>`;}
+  else{h+=`<span class="j f">${esc(m.h)}</span><span></span><span class="j f">${esc(m.a)}</span><span></span>`;
+    if(verrou)h+=`<span class="verrou">🔒 ${L.verrou}</span>`;}
+  h+='</div>';
+  if(m.statut==='termine'&&'bon' in m){const fav=m.p_h>=.5?m.h:m.a;
+    h+=`<div class="note"><span class="${m.bon?'ok':'ko'}">${m.bon?'✓ '+L.bon:'✗ '+L.faux}</span> · ${esc(L.annonce(fav,pc(Math.max(m.p_h,1-m.p_h))))}`
+      +(m.score_trouve?` · ${L.scoreTrouve}`:'')+'</div>';}
+  if(m.scores){h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}>`+detail(m)+'</div>';}
+  return h+'</div>';}
+
+function detail(m){const L=T[lang],fh=m.p_h>=.5,n=m.format||3;
+  let h=`<div>${esc(L.fav(fh?m.h:m.a,pc(Math.max(m.p_h,1-m.p_h))))}</div><div class="note">${L.scoreProb}</div><div class="sc">`;
+  m.scores.slice(0,4).forEach((s,i)=>{h+=`<span class="${i?'':'top'}">${s[0]}-${s[1]} · ${pc(s[2])} %</span>`;});
+  h+=`</div><div>${L.decisive(pc(m.decisive))}</div>`;
+  if(m.n_h!=null)h+=`<div class="note">${L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang))}</div>`;
+  h+=`<div class="note">${m.format_suppose?L.suppose(n):L.format(n)}</div>`;
+  return h;}
+
+function section(titre,L,cle,groupe){
+  if(!L.length)return '';
+  const max=montres[cle]||(cle==='avenir'?25:15),voir=L.slice(0,max);let h=`<h2>${titre}</h2><div class="panel">`,j=null;
+  voir.forEach(m=>{const e=etiquetteJour(m.t);if(groupe&&e!==j){j=e;h+=`<div class="note" style="margin-top:6px">${esc(e)}</div>`;}h+=ligneMatch(m);});
+  if(L.length>max)h+=`<button class="btn plusde" data-plus="${cle}">${T[lang].plusde(Math.min(L.length-max,cle==='avenir'?25:15))}</button>`;
+  return h+'</div>';}
+
+function bilan(){const L=T[lang],B=(D.bilan||{})[ligue];let h=`<h2>${L.bilanT}</h2><div class="panel">`;
+  if(!B){return h+`<p class="vide">${L.rienBilan}</p></div>`;}
+  h+=`<p class="note">${L.depuis(jourCourt(D.depuis))}</p><div class="chiffres">`
+   +`<div><b>${B.matchs.toLocaleString(lang)}</b><small>${L.matchs}</small></div>`
+   +`<div><b>${B.bons_pct} %</b><small>${L.bons} · ${L.annonceMoy} ${B.annonce_pct} %</small></div>`
+   +`<div><b>${B.scores_trouves_pct} %</b><small>${L.scores}</small></div></div>`
+   +`<p class="note">${L.dec(B.decisive_annoncee_pct,B.decisive_reelle_pct)}</p>`;
+  if(B.matchs<30)h+=`<p class="note">${L.tot}</p>`;
+  if((B.tranches||[]).length){h+=`<table><tr><th>${L.tranche}</th><th>${L.matchs}</th><th>${L.annonceCol}</th><th>${L.reel}</th></tr>`;
+    B.tranches.forEach(t=>{h+=`<tr><td>${t.de}–${t.de===80?100:t.de+10} %</td><td>${t.matchs}</td><td>${t.annonce_pct} %</td><td>${t.reel_pct} %</td></tr>`;});
+    h+='</table>';}
+  return h+'</div>';}
+
+function rendre(){const L=T[lang];document.documentElement.lang=lang;
+  $('titre').innerHTML=L.titre;$('sous').textContent=L.sous;$('b-lang').textContent=lang==='fr'?'EN':'FR';
+  $('pied').textContent=L.pied;$('methode').innerHTML=`<h2 style="margin-top:0">${L.methodeT}</h2><p style="margin:0">${esc(L.methode)}</p>`;
+  if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
+  $('maj').textContent=L.maj(dateLongue(D.genere_le));
+  $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="/#plus">${L.sabonner}</a></div>`;
+  const ligues=D.ligues||['International','Poland'];if(!ligue||!ligues.includes(ligue))ligue=ligues[0];
+  $('onglets').innerHTML=ligues.map(l=>{const n=(D.matchs||[]).filter(m=>m.ligue===l&&m.statut!=='termine').length;
+    return `<button role="tab" aria-selected="${l===ligue}" data-l="${l}">${esc(L.ligue[l]||l)} · ${n}</button>`;}).join('');
+  const M=(D.matchs||[]).filter(m=>m.ligue===ligue),now=Date.now()/1000;
+  const off=M.filter(m=>m.offert&&m.statut!=='termine');
+  const av=M.filter(m=>m.statut==='a_venir'&&!(m.offert&&D.acces!=='plus')),ec=M.filter(m=>m.statut==='en_cours'&&!(m.offert&&D.acces!=='plus')),te=M.filter(m=>m.statut==='termine').reverse();
+  let h='';
+  if(off.length&&D.acces!=='plus')h+=`<h2>${L.offert}</h2><div class="panel offert">`+off.map(ligneMatch).join('')+'</div>';
+  h+=section(L.encours,ec,'encours',false)+section(L.avenir,av,'avenir',true)+section(L.termines,te,'termines',true);
+  if(!M.length)h+=`<p class="vide">${L.aucun}</p>`;
+  $('contenu').innerHTML=h+bilan();}
+
+function charger(){fetch('/tt.json',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(d=>{D=d;rendre();}).catch(()=>{if(!D)$('contenu').innerHTML=`<p class="vide">${T[lang].erreur}</p>`;});}
+
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-l]');if(o){ligue=o.dataset.l;rendre();return;}
+  const p=e.target.closest('[data-plus]');if(p){const k=p.dataset.plus;montres[k]=(montres[k]||(k==='avenir'?25:15))+(k==='avenir'?25:15);rendre();return;}
+  const d=e.target.closest('.duel');if(d){const m=d.closest('.m'),x=m&&m.querySelector('.det');if(x){x.hidden=!x.hidden;
+    const id=m.dataset.id;x.hidden?ouverts.delete(id):ouverts.add(id);}}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('duel')){e.preventDefault();e.target.click();}});
+$('b-lang').addEventListener('click',()=>{lang=lang==='fr'?'en':'fr';try{localStorage.setItem('te_lang',lang);}catch(e){}rendre();});
+$('b-theme').addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('te_theme',c);}catch(e){}});
+rendre();charger();setInterval(charger,5*60*1000);
+})();
+</script>
+</body>
+</html>

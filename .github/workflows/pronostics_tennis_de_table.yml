@@ -1,0 +1,54 @@
+name: Pronostics tennis de table
+
+# 27/11/2026 (paquet 499, Lucas : « construis le produit tennis de table », « une page du site, indépendante ») — chaque
+# heure : l'Elo E2 rejoué sur l'historique collecté puis sur les matchs du jour déjà terminés, le % et le score le plus
+# probable de chaque match à venir (International et Pologne), le bilan des matchs terminés. Voir l'en-tête de
+# tennis_de_table/pronostics_tt.py. Les pronostics à venir ne passent JAMAIS par le dépôt public : l'état vit au coffre
+# R2 privé, les deux fichiers de la page (tt.json pour Plus, tt_libre.json pour les autres) sont envoyés directement à
+# R2. Ce workflow ne commite rien. 2 requêtes AllSportsApi par passage. Le journal du run n'affiche que des comptes.
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pronostics-tennis-de-table
+  cancel-in-progress: false
+
+jobs:
+  pronostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+            /scripts/allsports.py
+            /scripts/collecte_tennis_de_table.py
+            /scripts/r2_io.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Pronostics du jour et bilan
+        timeout-minutes: 10
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '10'
+        run: |
+          set -euo pipefail
+          python tennis_de_table/pronostics_tt.py . | tee /tmp/pronostics_tt.log
+          { echo '### Tennis de table, pronostics (paquet 499)'; sed 's/^/    /' /tmp/pronostics_tt.log; } >> "$GITHUB_STEP_SUMMARY"
