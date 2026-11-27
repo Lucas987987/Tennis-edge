@@ -424,7 +424,7 @@ jobs:
         run: |
           if [ "$(date -u +%u)" = "7" ]; then python scripts/canal_recap.py || true; fi
           # CLV réalisé des écarts publiés = le track record du canal
-          python scripts/discret.py -- python scripts/canal_clv.py || true
+          python scripts/discret.py --pouls 3 -- python scripts/canal_clv.py || true
 
       # REPO_URL retirée (16/08/2026) : elle ajoutait un lien GitHub en clair
       # dans les messages publics du canal. canal_suivi.py et
