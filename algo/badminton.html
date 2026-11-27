@@ -118,12 +118,14 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 <h1 id="titre">L'algo du <b>badminton</b></h1>
 <p class="sous" id="sous"></p>
 <div id="bandeau"></div>
+<div id="post-admin"></div>
 <div class="onglets" role="tablist" id="onglets" style="flex-wrap:wrap"></div>
+<div class="filtre"><button class="btn" id="b-fav" type="button" aria-pressed="false"></button><span id="fav-msg" role="status"></span></div>
 <div id="bilan-haut"></div>
 <div id="contenu"><p class="vide" id="charge"></p></div>
 <section class="panel" id="plus" hidden></section>
 <section class="panel" id="methode"></section>
-<footer><p id="maj"></p><p id="pied"></p></footer>
+<footer><p id="maj"></p><p><a href="/badminton/matchs">Matchs terminés</a> · <a href="/badminton/joueurs">Joueurs</a></p><p id="pied"></p></footer>
 </div>
 <script>
 (function(){
@@ -159,7 +161,11 @@ const T={
   methode:"Un Elo propre au badminton, appris sur plus de 65 000 matchs des circuits BWF collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Il compte la part des points gagnés, pas seulement le vainqueur, et en double chaque joueur a sa propre note : une paire nouvelle profite du passé de ses deux joueurs. Chaque réglage a été appris sur 2021–2022, puis jugé une seule fois de 2023 à novembre 2026 : 71 % de bons vainqueurs. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
   maj:d=>`Mis à jour le ${d}.`,
   pied:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
-  aujourdhui:"Aujourd'hui",demain:'Demain',hier:'Hier'},
+  aujourdhui:"Aujourd'hui",demain:'Demain',hier:'Hier',
+  favF:'⭐ Mes favoris',favVide:'Aucun match de tes favoris ici pour l’instant : touche ☆ sur un match, ou « Suivre » sous les joueurs.',
+  favCompte:'Crée ton compte (gratuit) pour garder tes joueurs et tes matchs favoris.',favCreer:'Créer un compte',
+  favNotif:'Abonné Plus ? Active les notifications dans ton compte (page du tennis, bouton du compte) : le matin, le début et le résultat de tes favoris.',
+  suivre:n=>`☆ Suivre ${n}`,suivi:n=>`⭐ ${n} suivi`,etoileM:'Suivre ce match',favErr:'Impossible pour l’instant, réessaie.'},
  en:{titre:'The <b>badminton</b> algorithm',
   sous:'Win % for every match on the BWF tours, singles and doubles. A public record, mistakes included.',
   charge:'Loading matches…',erreur:'Matches unavailable right now, please try again shortly.',
@@ -190,11 +196,28 @@ const T={
   methode:'A badminton Elo, learned on more than 65,000 BWF matches collected since 2021 and updated after every match, gives the win %. It counts the share of points won, not just the winner, and in doubles each player has their own rating: a new pair benefits from both players’ history. Every setting was learned on 2021–2022, then judged once from 2023 to November 2026: 71% of winners found. The algorithm is independent. The prediction is frozen at the scheduled time: that is the one we judge.',
   maj:d=>`Updated ${d}.`,
   pied:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
-  aujourdhui:'Today',demain:'Tomorrow',hier:'Yesterday'}};
+  aujourdhui:'Today',demain:'Tomorrow',hier:'Yesterday',
+  favF:'⭐ My favourites',favVide:'None of your favourites here yet: tap ☆ on a match, or “Follow” under the players.',
+  favCompte:'Create your (free) account to keep your favourite players and matches.',favCreer:'Create an account',
+  favNotif:'Plus member? Turn on notifications in your account (tennis page, account button): the morning list, the start and the result of your favourites.',
+  suivre:n=>`☆ Follow ${n}`,suivi:n=>`⭐ Following ${n}`,etoileM:'Follow this match',favErr:'Not possible right now, try again.'}};
 let lang='fr';
 try{const q=new URLSearchParams(location.search).get('lang');lang=q||localStorage.getItem('te_lang')||((navigator.language||'fr').startsWith('fr')?'fr':'en');}catch(e){}
 if(!T[lang])lang='fr';
-let D=null,onglet='tout',ouverts=new Set(),montres={},MOI=null;
+let D=null,onglet='tout',ouverts=new Set(),montres={},MOI=null,FILTRE=false;
+// 521 (Lucas : « les favoris et les notifications ») : mêmes favoris que le tennis et le tennis de table (compte),
+// préfixés « bad: » ; un joueur (ou une paire, en double) se suit par son nom, un match par son numéro. Les
+// notifications (Plus) partent du worker.
+const FAV={j:new Set(),m:new Set()};
+const kj=n=>'bad:'+n,km=id=>'bad:'+id;
+const estFav=m=>FAV.m.has(km(m.id))||FAV.j.has(kj(m.h))||FAV.j.has(kj(m.a));
+function lireFavoris(f){FAV.j=new Set((f&&f.joueurs)||[]);FAV.m=new Set((f&&f.matchs)||[]);}
+function basculerFav(type,cle){const L=T[lang];
+  if(!(MOI&&MOI.compte)){$('fav-msg').innerHTML=`${esc(L.favCompte)} <a href="/?compte=inscription">${esc(L.favCreer)}</a>`;return;}
+  const S=type==='joueur'?FAV.j:FAV.m,actif=!S.has(cle);
+  fetch('/compte/api/favoris',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({type,cle,actif,lang})}).then(r=>r.json()).then(o=>{if(o&&o.ok){lireFavoris(o.favoris);rendre();}else $('fav-msg').textContent=L.favErr;})
+    .catch(()=>{$('fav-msg').textContent=L.favErr;});}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pc=p=>Math.round(p*100);
@@ -212,7 +235,8 @@ function scoreDe(m){const M=m.manches||[];let a=0,b=0;M.forEach(x=>{if(x[0]>x[1]
 
 function ligneMatch(m){
   const L=T[lang],a_p='p_h' in m;
-  let h=`<div class="m" data-id="${esc(m.id)}"><div class="m-haut"><span class="h">${heure(m.t)}</span><span class="tr">${esc(tournoi(m))}</span>`;
+  const fm=FAV.m.has(km(m.id));
+  let h=`<div class="m" data-id="${esc(m.id)}"><div class="m-haut"><button class="etoile" type="button" data-fav="match" data-cle="${esc(km(m.id))}" aria-pressed="${fm}" aria-label="${esc(L.etoileM)}">${fm?'⭐':'☆'}</button><span class="h">${heure(m.t)}</span><span class="tr">${esc(tournoi(m))}</span>`;
   if(m.statut==='termine'||m.statut==='en_cours'){const s=scoreDe(m);if(s[0]+s[1])h+=`<span class="res">${s[0]}-${s[1]}</span>`;}
   h+='</div><div class="duel" role="button" tabindex="0">';
   if(a_p){const p=m.p_h,fh=p>=.5;
@@ -224,10 +248,13 @@ function ligneMatch(m){
   h+='</div>';
   if(m.statut==='termine'&&'bon' in m){const fav=m.p_h>=.5?m.h:m.a;
     h+=`<div class="note"><span class="${m.bon?'ok':'ko'}">${m.bon?'✓ '+L.bon:'✗ '+L.faux}</span> · ${esc(L.annonce(fav,pc(Math.max(m.p_h,1-m.p_h))))}</div>`;}
-  if(a_p){h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}><div>${esc(L.fav(m.p_h>=.5?m.h:m.a,pc(Math.max(m.p_h,1-m.p_h))))}</div>`
-    +(m.n_h!=null?`<div class="note">${esc(L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang)))}</div>`:'')
-    +(m.epreuve==='double dames'?`<div class="note">${esc(L.ddames)}</div>`:'')
-    +(m.statut==='a_venir'?`<div class="note">${esc(L.prog)}</div>`:'')+'</div>';}
+  const suivre=`<div class="suivre">`+[m.h,m.a].map(n=>{const on=FAV.j.has(kj(n));
+    return `<button class="btn" type="button" data-fav="joueur" data-cle="${esc(kj(n))}" aria-pressed="${on}">${esc(on?L.suivi(n):L.suivre(n))}</button>`;}).join('')+'</div>';
+  h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}>`
+    +(a_p?`<div>${esc(L.fav(m.p_h>=.5?m.h:m.a,pc(Math.max(m.p_h,1-m.p_h))))}</div>`
+      +(m.n_h!=null?`<div class="note">${esc(L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang)))}</div>`:'')
+      +(m.epreuve==='double dames'?`<div class="note">${esc(L.ddames)}</div>`:''):'')
+    +(m.statut==='a_venir'?`<div class="note">${esc(L.prog)}</div>`:'')+suivre+'</div>';
   return h+'</div>';}
 
 function section(titre,L,cle,groupe){
@@ -254,19 +281,21 @@ function rendre(){const L=T[lang];document.documentElement.lang=lang;
   if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
   $('maj').textContent=L.maj(dateLongue(D.genere_le));
   $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="#plus">${L.sabonner}</a></div>`;
-  rendPlus();
+  rendPlus();rendPost();
+  $('b-fav').textContent=L.favF;$('b-fav').setAttribute('aria-pressed',String(FILTRE));
   const eps=['tout'].concat(D.epreuves||[]);if(!eps.includes(onglet))onglet='tout';
   const tous=D.matchs||[];
   $('onglets').innerHTML=eps.map(k=>{const n=tous.filter(m=>(k==='tout'||m.epreuve===k)&&m.statut!=='termine').length;
     return `<button role="tab" aria-selected="${k===onglet}" data-o="${esc(k)}" style="flex:1 1 30%">${esc(k==='tout'?L.tout:(L.ep[k]||k))} · ${n}</button>`;}).join('');
-  const M=tous.filter(m=>onglet==='tout'||m.epreuve===onglet);
+  const M=tous.filter(m=>(onglet==='tout'||m.epreuve===onglet)&&(!FILTRE||estFav(m)));
   const off=M.filter(m=>m.offert&&m.statut!=='termine');
   const cache=m=>m.offert&&D.acces!=='plus';
   const av=M.filter(m=>m.statut==='a_venir'&&!cache(m)),ec=M.filter(m=>m.statut==='en_cours'&&!cache(m)),te=M.filter(m=>m.statut==='termine').reverse();
   let h='';
   if(off.length&&D.acces!=='plus')h+=`<h2>${L.offert}</h2><div class="panel offert">`+off.map(ligneMatch).join('')+'</div>';
   h+=section(L.encours,ec,'encours',false)+section(L.avenir,av,'avenir',true)+section(L.termines,te,'termines',true);
-  if(!M.length)h+=`<p class="vide">${L.aucun}</p>`;
+  if(!M.length)h+=`<p class="vide">${FILTRE?esc(L.favVide):L.aucun}</p>`;
+  if(FILTRE&&MOI&&MOI.compte&&(FAV.j.size||FAV.m.size))h+=`<p class="note">${esc(L.favNotif)}</p>`;
   $('bilan-haut').innerHTML=bilan();
   $('contenu').innerHTML=h;}
 
@@ -288,11 +317,22 @@ function rendPlus(){const L=T[lang],z=$('plus');
     +`<div class="actions">${boutons}</div>`
     +`<h3 style="margin:16px 0 6px">${esc(L.fdT)}</h3><p style="margin:0">${esc(L.fd)}</p>`;
   z.hidden=false;}
-function chargerMoi(){fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(o=>{if(o&&o.ok!==false){MOI=o;if(D)rendre();else rendPlus();}}).catch(()=>{});}
+// 521 (Lucas : « le post du jour ») — l'administrateur voit le post du jour, prêt à copier (il part aussi chaque matin sur
+// son Telegram privé). Personne d'autre ne le voit.
+function rendPost(){const z=$('post-admin'),adm=MOI&&(MOI.admin||(MOI.compte&&MOI.compte.admin));
+  if(!adm||!D||!D.post_du_jour){z.innerHTML='';delete z.dataset.v;return;}
+  if(z.dataset.v===D.post_du_jour)return;z.dataset.v=D.post_du_jour;
+  z.innerHTML=`<div class="panel"><h2 style="margin-top:0">📝 Post du jour · X et Telegram</h2><textarea id="post-txt" rows="12" readonly style="width:100%;box-sizing:border-box;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:12px;padding:10px;font:inherit;font-size:.88rem"></textarea><p style="display:flex;gap:10px;align-items:center;margin:8px 0 0"><button class="btn" type="button" id="post-copier">Copier</button><small id="post-nb"></small></p></div>`;
+  $('post-txt').textContent=D.post_du_jour;$('post-nb').textContent=D.post_du_jour.length+' caractères';
+  $('post-copier').onclick=()=>{try{navigator.clipboard.writeText(D.post_du_jour).then(()=>{$('post-nb').textContent='Copié ✓';});}catch(e){$('post-txt').select();}};}
+function chargerMoi(){fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(o=>{if(o&&o.ok!==false){MOI=o;
+  lireFavoris(o.compte&&o.compte.favoris);if(D)rendre();else rendPlus();}}).catch(()=>{});}
 function charger(){fetch('/bad.json',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
   .then(d=>{D=d;rendre();}).catch(()=>{if(!D)$('contenu').innerHTML=`<p class="vide">${T[lang].erreur}</p>`;});}
 
 document.addEventListener('click',e=>{
+  const f=e.target.closest('[data-fav]');if(f){e.stopPropagation();basculerFav(f.dataset.fav,f.dataset.cle);return;}
+  if(e.target.closest('#b-fav')){FILTRE=!FILTRE;$('fav-msg').textContent='';rendre();return;}
   const o=e.target.closest('[data-o]');if(o){onglet=o.dataset.o;rendre();return;}
   const p=e.target.closest('[data-plus]');if(p){const k=p.dataset.plus;montres[k]=(montres[k]||(k==='avenir'?25:15))+(k==='avenir'?25:15);rendre();return;}
   const d=e.target.closest('.duel');if(d){const m=d.closest('.m'),x=m&&m.querySelector('.det');if(x){x.hidden=!x.hidden;

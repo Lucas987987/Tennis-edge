@@ -6,6 +6,8 @@ name: Pronostics badminton
 # Les pronostics à venir ne passent JAMAIS par le dépôt public : l'état vit au coffre R2 privé, les deux fichiers de la
 # page (bad.json pour Plus, bad_libre.json pour les autres) sont envoyés directement à R2. Ce workflow ne commite rien.
 # 2 ou 3 requêtes AllSportsApi par passage. Le journal du run n'affiche que des comptes.
+# 521 : chaque matin (premier passage après 8 h, heure de Paris), le post du jour part sur le Telegram PRIVÉ ; les pages
+# de référencement (matchs terminés, joueurs) sont envoyées à R2 au fil des matchs jugés.
 on:
   schedule:
     - cron: '27 * * * *'
@@ -47,6 +49,8 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ALLSPORTS_PAUSE: '0.35'
           ALLSPORTS_RESERVE: '10'
         run: |

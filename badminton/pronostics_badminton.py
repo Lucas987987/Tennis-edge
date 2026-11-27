@@ -31,6 +31,7 @@ Usage : python badminton/pronostics_badminton.py [racine]
 import datetime as dt
 import json
 import os
+import re
 import sys
 
 ICI = os.path.dirname(os.path.abspath(__file__))
@@ -250,6 +251,14 @@ def compter(etat, x):
                 t[1] = round(t[1] + pf, 4)
                 t[2] += int(x['bon'])
     etat.setdefault('depuis', jour_paris(x['t']))
+    # 521 : le bilan de chaque jour (Paris), pour le post du lendemain ; 10 jours gardés
+    J = etat.setdefault('bilan_jours', {})
+    d = J.setdefault(jour_paris(x['t']), [0, 0, 0.0])
+    d[0] += 1
+    d[1] += int(x['bon'])
+    d[2] = round(d[2] + max(x['p_h'], 1 - x['p_h']), 4)
+    for k in sorted(J)[:-10]:
+        del J[k]
 
 
 def choisir_offert(etat, maintenant):
@@ -285,6 +294,63 @@ def bilan_public(etat):
     return out
 
 
+# ------------------------------------------------------------------ 521 : le post du jour (X, Telegram)
+HEURE_POST = 8                    # heure de Paris à partir de laquelle le post du jour part (une fois par jour)
+
+
+def _tournoi_court(t):
+    return re.sub(r',\s*(MS|WS|MD|WD|XD|Men|Women|Mixed)\b.*$', '', str(t or ''), flags=re.I).strip()
+
+
+def _heure_fr(t):
+    d = dt.datetime.fromtimestamp(int(t), dt.timezone.utc).astimezone(PARIS)
+    return f"{d.hour} h {d.minute:02d}"
+
+
+def bilan_veille(etat, maintenant):
+    """{'jour', 'matchs', 'bons_pct', 'annonce_pct'} des matchs jugés la veille (Paris) ; None sans match."""
+    hier = (maintenant.astimezone(PARIS).date() - dt.timedelta(days=1)).isoformat()
+    v = (etat.get('bilan_jours') or {}).get(hier)
+    if not v or not v[0]:
+        return None
+    return {'jour': hier, 'matchs': v[0], 'bons_pct': round(100 * v[1] / v[0], 1), 'annonce_pct': round(100 * v[2] / v[0], 1)}
+
+
+def post_du_jour(complet, veille):
+    """27/11/2026 (paquet 521, Lucas : « le post du jour ») — comme celui du tennis de table : le match offert du jour
+    s'il est encore à venir (le % seul), le bilan de la veille à partir de 30 matchs jugés, l'adresse de la page. Aucune
+    cote, aucun conseil. None s'il n'y a plus de match offert à venir."""
+    offerts = [m for m in complet.get('matchs') or [] if m.get('offert') and m.get('statut') == A_VENIR and 'p_h' in m]
+    if not offerts:
+        return None
+    L = ['🏸 Badminton · le match offert du jour']
+    for m in sorted(offerts, key=lambda m: m['t']):
+        fav, pf = (m['h'], m['p_h']) if m['p_h'] >= 0.5 else (m['a'], 1 - m['p_h'])
+        L += ['', f"{_tournoi_court(m.get('tournoi'))} · {str(m.get('epreuve') or '').capitalize()} · {_heure_fr(m['t'])} (heure du programme)",
+              f"{m['h']} – {m['a']}", f"L'algo : {fav} gagnant à {round(100 * pf)} %"]
+    if veille and veille['matchs'] >= 30:
+        L += ['', f"Hier : {veille['matchs']} matchs jugés, {str(veille['bons_pct']).replace('.', ',')} % de vainqueurs trouvés "
+                  f"(annoncé en moyenne {str(veille['annonce_pct']).replace('.', ',')} %)."]
+    L += ['', 'Tous les pronostics et le bilan, erreurs comprises : gamesetalgo.com/badminton']
+    return '\n'.join(L)
+
+
+def envoyer_telegram(texte, journal=print):
+    """Le post du jour au Telegram PRIVÉ de Lucas (TELEGRAM_TOKEN, TELEGRAM_CHAT_ID), à recopier sur X et sur le canal."""
+    tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+    if not (tok and chat):
+        return False
+    import urllib.parse
+    import urllib.request
+    try:
+        corps = urllib.parse.urlencode({'chat_id': chat, 'text': texte, 'disable_web_page_preview': 'true'}).encode()
+        with urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=corps, timeout=20) as r:
+            return r.status == 200
+    except Exception:  # noqa: BLE001 — jamais bloquant
+        journal('::warning::post du jour : envoi Telegram impossible')
+        return False
+
+
 def site(etat, maintenant):
     ts = int(maintenant.timestamp())
     jour = maintenant.astimezone(PARIS).date().isoformat()
@@ -304,7 +370,10 @@ def site(etat, maintenant):
             libres.append({k: x[k] for k in AFFICHE + ('p_h', 'g', 'bon') if k in x})
     haut = {'genere_le': maintenant.astimezone(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'paquet': PAQUET,
             'jour': jour, 'epreuves': EB.EPREUVES, 'bilan': bilan_public(etat), 'depuis': etat.get('depuis')}
-    return dict(haut, acces='plus', matchs=complets), dict(haut, acces='libre', matchs=libres)
+    haut['bilan_veille'] = bilan_veille(etat, maintenant)
+    complet = dict(haut, acces='plus', matchs=complets)
+    complet['post_du_jour'] = post_du_jour(complet, haut['bilan_veille'])     # 521 : pour l'administrateur (page)
+    return complet, dict(haut, acces='libre', matchs=libres)
 
 
 # ------------------------------------------------------------------ coffre
@@ -376,7 +445,17 @@ def passage(racine, client, cf, maintenant=None, journal=print):
     mod = Modele(H + nouveaux)
     archives = mettre_a_jour(etat, lignes, mod, connues, maintenant)
     complet, libre = site(etat, maintenant)
+    jour = maintenant.astimezone(PARIS).date().isoformat()
+    if complet.get('post_du_jour') and maintenant.astimezone(PARIS).hour >= HEURE_POST and etat.get('post_envoye') != jour:
+        if envoyer_telegram(complet['post_du_jour'], journal):      # 521 : une fois par jour, au Telegram privé
+            etat['post_envoye'] = jour
+            journal('  post du jour envoyé au Telegram privé')
     archiver(cf, archives)
+    try:                                              # 521 : pages de référencement (matchs terminés, joueurs)
+        import pages_badminton
+        pages_badminton.publier(cf, archives, maintenant, CLE_ARCHIVE, journal)
+    except Exception as ex:  # noqa: BLE001 — les pages ne doivent jamais bloquer les pronostics
+        journal(f'  pages : non publiées ce passage ({type(ex).__name__})')
     cf.put(CLE_ETAT, _json(etat), content_type='application/json')
     cf.put(CLE_SITE, _json(complet), content_type='application/json; charset=utf-8')
     cf.put(CLE_LIBRE, _json(libre), content_type='application/json; charset=utf-8')

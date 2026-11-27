@@ -19,10 +19,10 @@ def test_page_favoris():
 
 def test_worker_notifications_tt():
     n = lire('workers', 'algo', 'notifs.js')
-    assert 'export async function notifsTT(' in n and "ETAT_TT_R2 = 'notifs/etat_tt.json'" in n
+    assert 'export const notifsTT = ' in n and "ETAT_TT_R2 = 'notifs/etat_tt.json'" in n   # 521 : notifsPage(…, tt)
     assert "TT_R2 = 'site/algo/tt.json'" in n
     w = lire('workers', 'algo', 'worker.js')
-    assert 'notifsTT(env)' in w and "import { notifsDirect, notifsMatin, notifsTT } from './notifs.js'" in w
+    assert 'notifsTT(env)' in w and "import { notifsDirect, notifsMatin, notifsTT, notifsBad } from './notifs.js'" in w
     assert 'workers/algo/test_notifs_tt.mjs' in lire('.github', 'workflows', 'deploy_algo.yml')
 
 
