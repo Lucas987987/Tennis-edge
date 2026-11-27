@@ -1,25 +1,25 @@
 {
- "genere_le": "2026-11-27T14:08:31Z",
+ "genere_le": "2026-11-27T14:31:35Z",
  "paquet": 502,
  "apprentissage": 36314,
  "jugement": 11793,
  "part_4_apprentissage_pct": 7.53,
  "tour_connu_pct": {
-  "apprentissage": 0.0,
-  "jugement": 1.1
+  "apprentissage": 46.5,
+  "jugement": 76.8
  },
  "jugement_candidat": {
   "matchs": 11793,
-  "gain": 0.06327,
-  "erreur_type": 0.00357,
-  "format_juste_pct": 94.85,
+  "gain": 0.09602,
+  "erreur_type": 0.0047,
+  "format_juste_pct": 97.74,
   "format_juste_temoin_pct": 96.58
  },
- "sens_inverse": 0.07516,
+ "sens_inverse": 0.04937,
  "detail_jugement": {
   "matchs_en_4": 403,
-  "prevus_en_4": 267,
-  "en_4_a_tort": 471
+  "prevus_en_4": 249,
+  "en_4_a_tort": 112
  },
  "familles_jugement": {
   "asie|double": {
@@ -99,7 +99,860 @@
    "en_4": 12
   }
  },
- "retenu": false,
- "verdict": "non_retenu",
- "table_production": null
+ "retenu": true,
+ "verdict": "retenu",
+ "table_production": {
+  "autre|simple|?": [
+   12437,
+   138
+  ],
+  "autre|simple": [
+   12574,
+   197
+  ],
+  "simple": [
+   38877,
+   3103
+  ],
+  "contender_qualif|simple|?": [
+   558,
+   5
+  ],
+  "contender_qualif|simple": [
+   823,
+   12
+  ],
+  "contender_qualif|double|?": [
+   71,
+   0
+  ],
+  "contender_qualif|double": [
+   169,
+   0
+  ],
+  "double": [
+   9230,
+   34
+  ],
+  "contender|simple|?": [
+   2637,
+   46
+  ],
+  "contender|simple": [
+   5830,
+   137
+  ],
+  "contender|double|?": [
+   538,
+   0
+  ],
+  "contender|double": [
+   2334,
+   1
+  ],
+  "star_contender_qualif|simple|?": [
+   128,
+   0
+  ],
+  "star_contender_qualif|simple": [
+   356,
+   4
+  ],
+  "star_contender|simple|?": [
+   627,
+   8
+  ],
+  "star_contender|simple": [
+   2241,
+   38
+  ],
+  "star_contender|double|?": [
+   172,
+   0
+  ],
+  "star_contender|double": [
+   993,
+   0
+  ],
+  "olympiques_qualif|simple|?": [
+   204,
+   204
+  ],
+  "olympiques_qualif|simple": [
+   245,
+   245
+  ],
+  "autre|simple|#1": [
+   1,
+   0
+  ],
+  "olympiques_qualif|simple|round of 64": [
+   13,
+   13
+  ],
+  "olympiques_qualif|simple|round of 16": [
+   16,
+   16
+  ],
+  "olympiques_qualif|simple|quarterfinals": [
+   8,
+   8
+  ],
+  "olympiques_qualif|simple|semifinals": [
+   4,
+   4
+  ],
+  "champions_qualif|double|?": [
+   23,
+   0
+  ],
+  "champions_qualif|double": [
+   23,
+   0
+  ],
+  "champions_qualif|simple|?": [
+   83,
+   0
+  ],
+  "champions_qualif|simple": [
+   83,
+   0
+  ],
+  "champions|double|round of 32": [
+   200,
+   0
+  ],
+  "champions|double": [
+   898,
+   0
+  ],
+  "champions|double|round of 16": [
+   136,
+   0
+  ],
+  "champions|double|quarterfinals": [
+   75,
+   0
+  ],
+  "champions|simple|round of 64": [
+   309,
+   309
+  ],
+  "champions|simple": [
+   2939,
+   1712
+  ],
+  "champions|double|semifinals": [
+   37,
+   0
+  ],
+  "champions|simple|round of 32": [
+   858,
+   193
+  ],
+  "champions|double|final": [
+   16,
+   0
+  ],
+  "champions|simple|round of 16": [
+   405,
+   78
+  ],
+  "champions|simple|quarterfinals": [
+   219,
+   133
+  ],
+  "champions|simple|semifinals": [
+   104,
+   104
+  ],
+  "champions|simple|final": [
+   51,
+   51
+  ],
+  "olympiques|simple|round 1": [
+   31,
+   31
+  ],
+  "olympiques|simple": [
+   269,
+   268
+  ],
+  "olympiques|simple|?": [
+   11,
+   10
+  ],
+  "olympiques|simple|qualification round 1": [
+   3,
+   3
+  ],
+  "olympiques|double|round of 16": [
+   16,
+   16
+  ],
+  "olympiques|double": [
+   32,
+   32
+  ],
+  "olympiques|double|quarterfinals": [
+   8,
+   8
+  ],
+  "olympiques|simple|round 2": [
+   32,
+   32
+  ],
+  "olympiques|double|semifinals": [
+   4,
+   4
+  ],
+  "olympiques|simple|#3": [
+   16,
+   16
+  ],
+  "olympiques|simple|#1": [
+   25,
+   25
+  ],
+  "olympiques|double|final": [
+   2,
+   2
+  ],
+  "olympiques|double|match for 3rd place": [
+   2,
+   2
+  ],
+  "olympiques|simple|round of 16": [
+   24,
+   24
+  ],
+  "olympiques|simple|quarterfinals": [
+   16,
+   16
+  ],
+  "olympiques|simple|semifinals": [
+   7,
+   7
+  ],
+  "olympiques|simple|final": [
+   4,
+   4
+  ],
+  "olympiques|simple|match for 3rd place": [
+   4,
+   4
+  ],
+  "autre|double|?": [
+   54,
+   0
+  ],
+  "autre|double": [
+   68,
+   0
+  ],
+  "champions|simple|?": [
+   568,
+   421
+  ],
+  "champions|double|?": [
+   214,
+   0
+  ],
+  "champions|simple|round of 128": [
+   361,
+   359
+  ],
+  "champions|double|round of 128": [
+   42,
+   0
+  ],
+  "champions|double|round of 64": [
+   149,
+   0
+  ],
+  "finals|simple|?": [
+   35,
+   11
+  ],
+  "finals|simple": [
+   146,
+   51
+  ],
+  "feeder|simple|?": [
+   2667,
+   80
+  ],
+  "feeder|simple": [
+   9882,
+   81
+  ],
+  "feeder|double|?": [
+   405,
+   0
+  ],
+  "feeder|double": [
+   3841,
+   0
+  ],
+  "contender|double|round of 16": [
+   851,
+   1
+  ],
+  "contender|simple|round of 32": [
+   1251,
+   0
+  ],
+  "contender|double|quarterfinals": [
+   536,
+   0
+  ],
+  "contender|simple|round of 16": [
+   647,
+   0
+  ],
+  "contender|double|semifinals": [
+   235,
+   0
+  ],
+  "contender|simple|quarterfinals": [
+   320,
+   0
+  ],
+  "contender|simple|semifinals": [
+   157,
+   16
+  ],
+  "contender|double|final": [
+   122,
+   0
+  ],
+  "contender|simple|final": [
+   77,
+   75
+  ],
+  "smash_qualif|simple|?": [
+   59,
+   0
+  ],
+  "smash_qualif|simple": [
+   59,
+   0
+  ],
+  "smash|simple|round of 64": [
+   1167,
+   0
+  ],
+  "smash|simple": [
+   2885,
+   172
+  ],
+  "smash|double|round of 32": [
+   269,
+   0
+  ],
+  "smash|double": [
+   834,
+   0
+  ],
+  "smash|double|round of 16": [
+   300,
+   0
+  ],
+  "smash|simple|round of 32": [
+   427,
+   0
+  ],
+  "smash|double|quarterfinals": [
+   149,
+   0
+  ],
+  "smash|simple|round of 16": [
+   208,
+   0
+  ],
+  "smash|double|semifinals": [
+   77,
+   0
+  ],
+  "smash|double|final": [
+   39,
+   0
+  ],
+  "smash|simple|quarterfinals": [
+   105,
+   96
+  ],
+  "smash|simple|semifinals": [
+   51,
+   51
+  ],
+  "smash|simple|final": [
+   25,
+   25
+  ],
+  "star_contender_qualif|double|?": [
+   8,
+   0
+  ],
+  "star_contender_qualif|double": [
+   8,
+   0
+  ],
+  "star_contender|double|round of 16": [
+   426,
+   0
+  ],
+  "star_contender|simple|round of 64": [
+   557,
+   0
+  ],
+  "star_contender|simple|round of 32": [
+   481,
+   0
+  ],
+  "star_contender|double|quarterfinals": [
+   233,
+   0
+  ],
+  "star_contender|simple|round of 16": [
+   257,
+   0
+  ],
+  "star_contender|simple|quarterfinals": [
+   117,
+   0
+  ],
+  "star_contender|double|semifinals": [
+   93,
+   0
+  ],
+  "star_contender|double|final": [
+   48,
+   0
+  ],
+  "star_contender|simple|semifinals": [
+   58,
+   2
+  ],
+  "star_contender|simple|final": [
+   29,
+   28
+  ],
+  "finals|simple|round of 16": [
+   63,
+   16
+  ],
+  "finals|simple|quarterfinals": [
+   32,
+   8
+  ],
+  "autre|simple|round of 16": [
+   64,
+   32
+  ],
+  "autre|simple|quarterfinals": [
+   47,
+   15
+  ],
+  "autre|simple|semifinals": [
+   18,
+   8
+  ],
+  "autre|simple|final": [
+   7,
+   4
+  ],
+  "smash|simple|?": [
+   581,
+   0
+  ],
+  "smash|simple|round 1": [
+   27,
+   0
+  ],
+  "smash|simple|round 2": [
+   16,
+   0
+  ],
+  "smash|simple|round 3": [
+   1,
+   0
+  ],
+  "feeder|simple|round of 64": [
+   1969,
+   0
+  ],
+  "feeder|double|round of 16": [
+   1697,
+   0
+  ],
+  "feeder|simple|round of 32": [
+   2395,
+   0
+  ],
+  "feeder|double|quarterfinals": [
+   910,
+   0
+  ],
+  "feeder|simple|round of 16": [
+   1123,
+   0
+  ],
+  "feeder|double|semifinals": [
+   410,
+   0
+  ],
+  "feeder|simple|quarterfinals": [
+   550,
+   0
+  ],
+  "feeder|double|final": [
+   202,
+   0
+  ],
+  "feeder|simple|semifinals": [
+   273,
+   0
+  ],
+  "feeder|simple|final": [
+   126,
+   0
+  ],
+  "contender|simple|round of 64": [
+   474,
+   0
+  ],
+  "contender_qualif|simple|round of 32": [
+   129,
+   0
+  ],
+  "contender_qualif|double|round of 16": [
+   46,
+   0
+  ],
+  "contender_qualif|double|round of 32": [
+   1,
+   0
+  ],
+  "contender_qualif|double|quarterfinals": [
+   32,
+   0
+  ],
+  "contender_qualif|simple|round of 16": [
+   63,
+   0
+  ],
+  "contender_qualif|double|semifinals": [
+   14,
+   0
+  ],
+  "contender_qualif|simple|quarterfinals": [
+   32,
+   0
+  ],
+  "contender_qualif|simple|semifinals": [
+   16,
+   0
+  ],
+  "contender_qualif|double|final": [
+   5,
+   0
+  ],
+  "contender_qualif|simple|final": [
+   8,
+   7
+  ],
+  "feeder|simple|qualification round 2": [
+   8,
+   0
+  ],
+  "feeder|double|round 2": [
+   12,
+   0
+  ],
+  "feeder|simple|qualification round 3": [
+   12,
+   0
+  ],
+  "feeder|simple|round of 128": [
+   29,
+   0
+  ],
+  "autre|double|quarterfinals": [
+   8,
+   0
+  ],
+  "finals|simple|semifinals": [
+   10,
+   10
+  ],
+  "autre|double|semifinals": [
+   4,
+   0
+  ],
+  "autre|double|final": [
+   2,
+   0
+  ],
+  "finals|simple|final": [
+   6,
+   6
+  ],
+  "finals|double|quarterfinals": [
+   10,
+   0
+  ],
+  "finals|double": [
+   29,
+   0
+  ],
+  "finals|double|semifinals": [
+   5,
+   0
+  ],
+  "finals|double|final": [
+   2,
+   0
+  ],
+  "feeder|simple|round of 256": [
+   10,
+   0
+  ],
+  "feeder|simple|round 2": [
+   11,
+   0
+  ],
+  "coupe_du_monde|simple|#1": [
+   162,
+   76
+  ],
+  "coupe_du_monde|simple": [
+   340,
+   185
+  ],
+  "coupe_du_monde|simple|?": [
+   27,
+   19
+  ],
+  "coupe_du_monde|simple|round of 16": [
+   48,
+   48
+  ],
+  "coupe_du_monde|simple|quarterfinals": [
+   23,
+   23
+  ],
+  "coupe_du_monde|simple|semifinals": [
+   12,
+   12
+  ],
+  "coupe_du_monde|simple|final": [
+   7,
+   7
+  ],
+  "smash|simple|qualification round 1": [
+   18,
+   0
+  ],
+  "smash|simple|qualification round 2": [
+   34,
+   0
+  ],
+  "feeder_qualif|simple|?": [
+   39,
+   0
+  ],
+  "feeder_qualif|simple": [
+   204,
+   0
+  ],
+  "feeder_qualif|simple|round of 64": [
+   32,
+   0
+  ],
+  "feeder_qualif|simple|round of 32": [
+   46,
+   0
+  ],
+  "feeder_qualif|simple|round of 16": [
+   23,
+   0
+  ],
+  "feeder_qualif|simple|quarterfinals": [
+   8,
+   0
+  ],
+  "feeder_qualif|simple|semifinals": [
+   6,
+   0
+  ],
+  "feeder_qualif|simple|final": [
+   2,
+   0
+  ],
+  "contender_qualif|simple|round of 64": [
+   17,
+   0
+  ],
+  "contender|simple|round of 128": [
+   3,
+   0
+  ],
+  "contender|double|round 1": [
+   12,
+   0
+  ],
+  "contender|simple|qualification round 2": [
+   15,
+   0
+  ],
+  "contender|double|round of 32": [
+   14,
+   0
+  ],
+  "olympiques|simple|round of 64": [
+   64,
+   64
+  ],
+  "olympiques|simple|round of 32": [
+   32,
+   32
+  ],
+  "feeder|double|round 1": [
+   25,
+   0
+  ],
+  "feeder|double|round of 32": [
+   39,
+   0
+  ],
+  "champions|double|round 1": [
+   29,
+   0
+  ],
+  "champions|simple|round 1": [
+   64,
+   64
+  ],
+  "feeder|simple|round 1": [
+   14,
+   0
+  ],
+  "contender|simple|round 1": [
+   8,
+   0
+  ],
+  "feeder_qualif|simple|round 1": [
+   16,
+   0
+  ],
+  "feeder_qualif|simple|round 2": [
+   16,
+   0
+  ],
+  "feeder|simple|round 3": [
+   7,
+   0
+  ],
+  "feeder_qualif|simple|round 3": [
+   16,
+   0
+  ],
+  "star_contender_qualif|simple|round of 64": [
+   73,
+   0
+  ],
+  "star_contender_qualif|simple|round of 32": [
+   64,
+   0
+  ],
+  "star_contender_qualif|simple|round of 16": [
+   32,
+   0
+  ],
+  "star_contender_qualif|simple|quarterfinals": [
+   15,
+   0
+  ],
+  "star_contender_qualif|simple|semifinals": [
+   8,
+   0
+  ],
+  "star_contender_qualif|simple|final": [
+   4,
+   4
+  ],
+  "smash|simple|qualification round 3": [
+   5,
+   0
+  ],
+  "finals|double|?": [
+   12,
+   0
+  ],
+  "star_contender|simple|qualification round 2": [
+   20,
+   0
+  ],
+  "star_contender_qualif|simple|qualification round 1": [
+   14,
+   0
+  ],
+  "star_contender_qualif|simple|qualification round 2": [
+   18,
+   0
+  ],
+  "feeder|simple|qualifications": [
+   688,
+   1
+  ],
+  "coupe_du_monde|simple|#2": [
+   29,
+   0
+  ],
+  "coupe_du_monde|simple|#3": [
+   32,
+   0
+  ],
+  "contender|simple|qualifications": [
+   241,
+   0
+  ],
+  "feeder|double|qualifications": [
+   141,
+   0
+  ],
+  "smash|simple|qualifications": [
+   220,
+   0
+  ],
+  "contender|double|qualifications": [
+   26,
+   0
+  ],
+  "star_contender|simple|qualifications": [
+   95,
+   0
+  ],
+  "star_contender|double|qualifications": [
+   21,
+   0
+  ],
+  "asie|double|?": [
+   1,
+   1
+  ],
+  "asie|double": [
+   1,
+   1
+  ],
+  "asie|simple|?": [
+   1,
+   1
+  ],
+  "asie|simple": [
+   1,
+   1
+  ]
+ }
 }
