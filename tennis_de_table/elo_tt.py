@@ -27,7 +27,9 @@ DEPART = 1500.0
 
 
 def matchs(racine='.', dossier=DOSSIER):
-    """[(t, jour, ligue, id_h, id_a, y, part_points_h)] triés par début ; y = 1 si h gagne."""
+    """[(t, jour, ligue, id_h, id_a, y, part_points_h, manches_a_gagner, (manches h, manches a))] triés par début ;
+    y = 1 si h gagne. manches_a_gagner (paquet 494) = manches du vainqueur (3 ou 4) : le format du match, connu avant
+    lui ; le score en manches ne sert qu'à mesurer après coup."""
     out = []
     for p in sorted(glob.glob(os.path.join(racine, dossier, '20*', '20*.jsonl.gz'))):
         jour = os.path.basename(p)[:10]
@@ -50,7 +52,8 @@ def matchs(racine='.', dossier=DOSSIER):
                     ph, pa = sum(x for x, _ in M), sum(y for _, y in M)
                     if ph + pa <= 0:
                         continue
-                    out.append((int(r.get('t') or 0), jour, str(r.get('ligue') or '?'), h, a, 1 if r['g'] == 1 else 0, ph / (ph + pa)))
+                    out.append((int(r.get('t') or 0), jour, str(r.get('ligue') or '?'), h, a, 1 if r['g'] == 1 else 0, ph / (ph + pa),
+                                max(mh, ma), (mh, ma)))
         except (OSError, ValueError):
             continue
     out.sort(key=lambda x: (x[0], x[3], x[4]))
@@ -66,7 +69,8 @@ def rejouer(M, k=None, a=None, c=None, w=0.0, s=20.0):
     R, N = {}, {}
     P = []
     ap = P.append
-    for _t, _j, _l, h, b, y, sp in M:
+    for m in M:
+        h, b, y, sp = m[3], m[4], m[5], m[6]
         rh, rb = R.get(h, DEPART), R.get(b, DEPART)
         p = 1.0 / (1.0 + 10 ** (-(rh - rb) / 400.0))
         ap(p)
