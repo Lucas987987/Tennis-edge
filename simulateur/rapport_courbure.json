@@ -1,0 +1,451 @@
+{
+ "genere_le": "2026-11-27T09:55:25+00:00",
+ "paquet": 497,
+ "nature": "étude seule : rien n'entre dans l'algo",
+ "correction": "témoin z' = a·z ; candidat z' = a·z + k·z·|z|/2 (z = logit du % Elo)",
+ "itf_hommes_dans_le_rejeu": 57230,
+ "matchs_rejoues": 115670,
+ "jugement": {
+  "ATP": {
+   "archive": {
+    "temoin_pente_a": 0.9108,
+    "candidat_a": 0.8824,
+    "candidat_k": 0.0383,
+    "reappris_sur_jugement": {
+     "a": 0.8671,
+     "k": 0.0979
+    },
+    "apprentissage": {
+     "matchs": 11601,
+     "gain_sur_temoin": 1e-05,
+     "erreur_type": 5e-05,
+     "log_loss_elo_seul": 0.6056,
+     "log_loss_temoin": 0.60498,
+     "log_loss_candidat": 0.60497,
+     "brier_elo_seul": 0.20967,
+     "brier_temoin": 0.20945,
+     "brier_candidat": 0.20944
+    },
+    "jugement": {
+     "matchs": 9233,
+     "gain_sur_temoin": 5e-05,
+     "erreur_type": 5e-05,
+     "log_loss_elo_seul": 0.6043,
+     "log_loss_temoin": 0.60406,
+     "log_loss_candidat": 0.60401,
+     "brier_elo_seul": 0.2093,
+     "brier_temoin": 0.20918,
+     "brier_candidat": 0.20916
+    },
+    "tranches_jugement": {
+     "50–55 %": {
+      "matchs": 1489,
+      "annonce_elo_pct": 52.5,
+      "annonce_temoin_pct": 52.3,
+      "annonce_candidat_pct": 52.2,
+      "reel_pct": 52.7
+     },
+     "55–60 %": {
+      "matchs": 1470,
+      "annonce_elo_pct": 57.4,
+      "annonce_temoin_pct": 56.8,
+      "annonce_candidat_pct": 56.6,
+      "reel_pct": 55.0
+     },
+     "60–65 %": {
+      "matchs": 1438,
+      "annonce_elo_pct": 62.5,
+      "annonce_temoin_pct": 61.4,
+      "annonce_candidat_pct": 61.2,
+      "reel_pct": 59.7
+     },
+     "65–70 %": {
+      "matchs": 1239,
+      "annonce_elo_pct": 67.4,
+      "annonce_temoin_pct": 66.0,
+      "annonce_candidat_pct": 65.7,
+      "reel_pct": 66.7
+     },
+     "70–75 %": {
+      "matchs": 1063,
+      "annonce_elo_pct": 72.4,
+      "annonce_temoin_pct": 70.7,
+      "annonce_candidat_pct": 70.5,
+      "reel_pct": 72.0
+     },
+     "75–80 %": {
+      "matchs": 954,
+      "annonce_elo_pct": 77.4,
+      "annonce_temoin_pct": 75.4,
+      "annonce_candidat_pct": 75.3,
+      "reel_pct": 75.8
+     },
+     "80–85 %": {
+      "matchs": 655,
+      "annonce_elo_pct": 82.3,
+      "annonce_temoin_pct": 80.3,
+      "annonce_candidat_pct": 80.3,
+      "reel_pct": 81.1
+     },
+     "85–90 %": {
+      "matchs": 496,
+      "annonce_elo_pct": 87.3,
+      "annonce_temoin_pct": 85.3,
+      "annonce_candidat_pct": 85.5,
+      "reel_pct": 86.7
+     },
+     "90–95 %": {
+      "matchs": 308,
+      "annonce_elo_pct": 92.2,
+      "annonce_temoin_pct": 90.5,
+      "annonce_candidat_pct": 90.9,
+      "reel_pct": 91.6
+     },
+     "95–100 %": {
+      "matchs": 121,
+      "annonce_elo_pct": 96.5,
+      "annonce_temoin_pct": 95.4,
+      "annonce_candidat_pct": 95.9,
+      "reel_pct": 96.7
+     }
+    },
+    "passe": false,
+    "raisons": [
+     "gain sur la pente seule sous 0,001"
+    ]
+   },
+   "retenu": false
+  },
+  "WTA": {
+   "archive": {
+    "temoin_pente_a": 1.0663,
+    "candidat_a": 0.9593,
+    "candidat_k": 0.1714,
+    "reappris_sur_jugement": {
+     "a": 0.9098,
+     "k": 0.278
+    },
+    "apprentissage": {
+     "matchs": 10529,
+     "gain_sur_temoin": 0.00013,
+     "erreur_type": 0.00016,
+     "log_loss_elo_seul": 0.60129,
+     "log_loss_temoin": 0.60101,
+     "log_loss_candidat": 0.60088,
+     "brier_elo_seul": 0.20774,
+     "brier_temoin": 0.20768,
+     "brier_candidat": 0.20765
+    },
+    "jugement": {
+     "matchs": 8837,
+     "gain_sur_temoin": 0.00033,
+     "erreur_type": 0.00017,
+     "log_loss_elo_seul": 0.59618,
+     "log_loss_temoin": 0.59573,
+     "log_loss_candidat": 0.5954,
+     "brier_elo_seul": 0.20589,
+     "brier_temoin": 0.2058,
+     "brier_candidat": 0.20574
+    },
+    "tranches_jugement": {
+     "50–55 %": {
+      "matchs": 1569,
+      "annonce_elo_pct": 52.4,
+      "annonce_temoin_pct": 52.6,
+      "annonce_candidat_pct": 52.3,
+      "reel_pct": 52.8
+     },
+     "55–60 %": {
+      "matchs": 1522,
+      "annonce_elo_pct": 57.5,
+      "annonce_temoin_pct": 58.0,
+      "annonce_candidat_pct": 57.4,
+      "reel_pct": 58.5
+     },
+     "60–65 %": {
+      "matchs": 1412,
+      "annonce_elo_pct": 62.4,
+      "annonce_temoin_pct": 63.2,
+      "annonce_candidat_pct": 62.5,
+      "reel_pct": 60.6
+     },
+     "65–70 %": {
+      "matchs": 1230,
+      "annonce_elo_pct": 67.5,
+      "annonce_temoin_pct": 68.6,
+      "annonce_candidat_pct": 67.9,
+      "reel_pct": 68.1
+     },
+     "70–75 %": {
+      "matchs": 1021,
+      "annonce_elo_pct": 72.5,
+      "annonce_temoin_pct": 73.7,
+      "annonce_candidat_pct": 73.3,
+      "reel_pct": 75.3
+     },
+     "75–80 %": {
+      "matchs": 791,
+      "annonce_elo_pct": 77.3,
+      "annonce_temoin_pct": 78.7,
+      "annonce_candidat_pct": 78.6,
+      "reel_pct": 78.3
+     },
+     "80–85 %": {
+      "matchs": 614,
+      "annonce_elo_pct": 82.3,
+      "annonce_temoin_pct": 83.7,
+      "annonce_candidat_pct": 84.2,
+      "reel_pct": 83.7
+     },
+     "85–90 %": {
+      "matchs": 411,
+      "annonce_elo_pct": 87.2,
+      "annonce_temoin_pct": 88.6,
+      "annonce_candidat_pct": 89.7,
+      "reel_pct": 89.3
+     },
+     "90–95 %": {
+      "matchs": 224,
+      "annonce_elo_pct": 92.2,
+      "annonce_temoin_pct": 93.3,
+      "annonce_candidat_pct": 94.7,
+      "reel_pct": 97.3
+     },
+     "95–100 %": {
+      "matchs": 43,
+      "lecture": "trop peu de matchs"
+     }
+    },
+    "passe": false,
+    "raisons": [
+     "gain sur la pente seule sous 0,001"
+    ]
+   },
+   "retenu": false
+  },
+  "CH": {
+   "archive": {
+    "temoin_pente_a": 0.9581,
+    "candidat_a": 0.9642,
+    "candidat_k": -0.0102,
+    "reappris_sur_jugement": {
+     "a": 1.0006,
+     "k": 0.0239
+    },
+    "apprentissage": {
+     "matchs": 38074,
+     "gain_sur_temoin": 0.0,
+     "erreur_type": 0.0,
+     "log_loss_elo_seul": 0.62784,
+     "log_loss_temoin": 0.62774,
+     "log_loss_candidat": 0.62774,
+     "brier_elo_seul": 0.21919,
+     "brier_temoin": 0.21916,
+     "brier_candidat": 0.21916
+    },
+    "jugement": {
+     "matchs": 37396,
+     "gain_sur_temoin": -1e-05,
+     "erreur_type": 0.0,
+     "log_loss_elo_seul": 0.61534,
+     "log_loss_temoin": 0.61552,
+     "log_loss_candidat": 0.61553,
+     "brier_elo_seul": 0.21383,
+     "brier_temoin": 0.21389,
+     "brier_candidat": 0.21389
+    },
+    "tranches_jugement": {
+     "50–55 %": {
+      "matchs": 7191,
+      "annonce_elo_pct": 52.5,
+      "annonce_temoin_pct": 52.4,
+      "annonce_candidat_pct": 52.4,
+      "reel_pct": 52.2
+     },
+     "55–60 %": {
+      "matchs": 6846,
+      "annonce_elo_pct": 57.5,
+      "annonce_temoin_pct": 57.2,
+      "annonce_candidat_pct": 57.2,
+      "reel_pct": 57.6
+     },
+     "60–65 %": {
+      "matchs": 6102,
+      "annonce_elo_pct": 62.5,
+      "annonce_temoin_pct": 62.0,
+      "annonce_candidat_pct": 62.0,
+      "reel_pct": 63.2
+     },
+     "65–70 %": {
+      "matchs": 5323,
+      "annonce_elo_pct": 67.4,
+      "annonce_temoin_pct": 66.7,
+      "annonce_candidat_pct": 66.8,
+      "reel_pct": 67.8
+     },
+     "70–75 %": {
+      "matchs": 4368,
+      "annonce_elo_pct": 72.4,
+      "annonce_temoin_pct": 71.6,
+      "annonce_candidat_pct": 71.6,
+      "reel_pct": 72.9
+     },
+     "75–80 %": {
+      "matchs": 3253,
+      "annonce_elo_pct": 77.4,
+      "annonce_temoin_pct": 76.4,
+      "annonce_candidat_pct": 76.4,
+      "reel_pct": 78.0
+     },
+     "80–85 %": {
+      "matchs": 2196,
+      "annonce_elo_pct": 82.3,
+      "annonce_temoin_pct": 81.4,
+      "annonce_candidat_pct": 81.3,
+      "reel_pct": 80.6
+     },
+     "85–90 %": {
+      "matchs": 1369,
+      "annonce_elo_pct": 87.2,
+      "annonce_temoin_pct": 86.3,
+      "annonce_candidat_pct": 86.2,
+      "reel_pct": 87.5
+     },
+     "90–95 %": {
+      "matchs": 637,
+      "annonce_elo_pct": 92.0,
+      "annonce_temoin_pct": 91.2,
+      "annonce_candidat_pct": 91.1,
+      "reel_pct": 93.4
+     },
+     "95–100 %": {
+      "matchs": 111,
+      "annonce_elo_pct": 96.1,
+      "annonce_temoin_pct": 95.6,
+      "annonce_candidat_pct": 95.5,
+      "reel_pct": 99.1
+     }
+    },
+    "passe": false,
+    "raisons": [
+     "gain sur la pente seule sous 0,001",
+     "pas le même sens sur les deux périodes"
+    ]
+   },
+   "comme_en_production": {
+    "temoin_pente_a": 1.005,
+    "candidat_a": 0.8819,
+    "candidat_k": 0.1986,
+    "reappris_sur_jugement": {
+     "a": 1.1646,
+     "k": -0.0044
+    },
+    "apprentissage": {
+     "matchs": 8749,
+     "gain_sur_temoin": 0.00019,
+     "erreur_type": 0.00021,
+     "log_loss_elo_seul": 0.61782,
+     "log_loss_temoin": 0.61782,
+     "log_loss_candidat": 0.61763,
+     "brier_elo_seul": 0.21525,
+     "brier_temoin": 0.21525,
+     "brier_candidat": 0.21518
+    },
+    "jugement": {
+     "matchs": 7442,
+     "gain_sur_temoin": -0.00011,
+     "erreur_type": 0.00021,
+     "log_loss_elo_seul": 0.58853,
+     "log_loss_temoin": 0.58843,
+     "log_loss_candidat": 0.58854,
+     "brier_elo_seul": 0.20239,
+     "brier_temoin": 0.20235,
+     "brier_candidat": 0.20258
+    },
+    "tranches_jugement": {
+     "50–55 %": {
+      "matchs": 1397,
+      "annonce_elo_pct": 52.4,
+      "annonce_temoin_pct": 52.4,
+      "annonce_candidat_pct": 52.2,
+      "reel_pct": 53.0
+     },
+     "55–60 %": {
+      "matchs": 1334,
+      "annonce_elo_pct": 57.5,
+      "annonce_temoin_pct": 57.5,
+      "annonce_candidat_pct": 56.8,
+      "reel_pct": 59.7
+     },
+     "60–65 %": {
+      "matchs": 1171,
+      "annonce_elo_pct": 62.5,
+      "annonce_temoin_pct": 62.5,
+      "annonce_candidat_pct": 61.7,
+      "reel_pct": 65.5
+     },
+     "65–70 %": {
+      "matchs": 1038,
+      "annonce_elo_pct": 67.4,
+      "annonce_temoin_pct": 67.5,
+      "annonce_candidat_pct": 66.7,
+      "reel_pct": 70.8
+     },
+     "70–75 %": {
+      "matchs": 804,
+      "annonce_elo_pct": 72.3,
+      "annonce_temoin_pct": 72.4,
+      "annonce_candidat_pct": 71.9,
+      "reel_pct": 75.7
+     },
+     "75–80 %": {
+      "matchs": 631,
+      "annonce_elo_pct": 77.4,
+      "annonce_temoin_pct": 77.5,
+      "annonce_candidat_pct": 77.5,
+      "reel_pct": 79.4
+     },
+     "80–85 %": {
+      "matchs": 460,
+      "annonce_elo_pct": 82.4,
+      "annonce_temoin_pct": 82.5,
+      "annonce_candidat_pct": 83.2,
+      "reel_pct": 83.3
+     },
+     "85–90 %": {
+      "matchs": 334,
+      "annonce_elo_pct": 87.3,
+      "annonce_temoin_pct": 87.4,
+      "annonce_candidat_pct": 88.8,
+      "reel_pct": 89.5
+     },
+     "90–95 %": {
+      "matchs": 216,
+      "annonce_elo_pct": 92.2,
+      "annonce_temoin_pct": 92.3,
+      "annonce_candidat_pct": 94.2,
+      "reel_pct": 95.8
+     },
+     "95–100 %": {
+      "matchs": 57,
+      "lecture": "trop peu de matchs"
+     }
+    },
+    "passe": false,
+    "raisons": [
+     "gain sur la pente seule sous 0,001",
+     "pas le même sens sur les deux périodes"
+    ]
+   },
+   "retenu": false
+  }
+ },
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-27",
+  "statut": "etude",
+  "paquet": 497,
+  "quoi": "LA FORME DE LA COURBE D'ÉTALONNAGE : LES % EXTRÊMES ET LES % DU MILIEU SONT-ILS FAUX DANS DES SENS DIFFÉRENTS ? (paquet 497, étude de fiabilité). Toutes les corrections du % étudiées jusqu'ici sont des pentes : le logit du % est multiplié par un même facteur partout sur la courbe (paquets 228, 231, 236, 317, 449, 465). Une pente ne peut pas corriger une courbe dont les deux bouts ont des défauts opposés (par exemple des matchs à 55–65 % un peu trop timides et des favoris à 85 % et plus un peu trop sûrs) ; l'étude du 04/11 sur les pronostics forts ne regardait que la queue, sur nos pronostics figés. Nouvelle étude simulateur/etude_courbure.py, sur l'archive avec l'Elo de production mis à jour après chaque match (résultats ITF hommes compris) : témoin = la meilleure pente apprise sur la même période (z' = a·z) ; candidat = pente et courbure (z' = a·z + k·z·|z|/2 ; k < 0 : les % extrêmes rapprochés de 50 % plus fort que ceux du milieu). Le gain mesuré est donc ce que la courbure ajoute à une simple pente. Règle écrite dans l'en-tête avant tout essai, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → mai 2026 ; retenu si, sur au moins 1 000 matchs jugés, le gain de log loss sur le témoin atteint 0,001 et 2 erreurs types, avec une courbure réapprise de même signe et un gain aussi en apprentissage ; le Challenger doit aussi passer le contrôle comme en production (appris de janvier à septembre 2025, jugé d'octobre 2025 à mai 2026). Publié sans décider : pour chaque tranche de 5 points du % annoncé au favori, le % annoncé (Elo seul, pente, pente et courbure) contre le % réel, à partir de 100 matchs par tranche. Rapport public : simulateur/rapport_courbure.json (comptes seulement, aucun nom). RÉSULTAT : ATP : pente seule 0,9108, pente 0,8824 et courbure 0,0383 (réapprise 0,0979), 9233 matchs jugés, gain sur la pente seule 5e-05 ± 5e-05, Brier 0,20918 → 0,20916 — non retenu (gain sur la pente seule sous 0,001) ; WTA : pente seule 1,0663, pente 0,9593 et courbure 0,1714 (réapprise 0,278), 8837 matchs jugés, gain sur la pente seule 0,00033 ± 0,00017, Brier 0,2058 → 0,20574 — non retenu (gain sur la pente seule sous 0,001) ; Challenger : pente seule 0,9581, pente 0,9642 et courbure -0,0102 (réapprise 0,0239), 37396 matchs jugés, gain sur la pente seule -1e-05 ± 0,0, Brier 0,21389 → 0,21389 ; contrôle comme en production 7442 matchs, gain -0,00011 ± 0,00021 — non retenu (gain sur la pente seule sous 0,001, pas le même sens sur les deux périodes). Aucun circuit retenu : une pente suffit, la forme de la courbe n'a pas de défaut à corriger ; la piste est close et ne sera pas rejouée. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé à Lucas dans un paquet suivant : courbure appliquée en dernier, jamais en plus d'une pente déjà en place sur le même match sans étude, les deux % gardés dans la fiche, retrait par la règle cumulée (300 matchs concernés, 2 erreurs types). Limite : l'Elo seul, sans la simulation ni les signaux. 0 requête d'API. Retrait de l'étude : supprimer simulateur/etude_courbure.py, simulateur/journal_ajouts/paquet_497.json, simulateur/tests/test_etude_courbure.py et .github/workflows/etude_courbure.yml."
+ }
+}
