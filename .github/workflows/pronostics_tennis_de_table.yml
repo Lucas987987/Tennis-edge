@@ -6,6 +6,7 @@ name: Pronostics tennis de table
 # tennis_de_table/pronostics_tt.py. Les pronostics à venir ne passent JAMAIS par le dépôt public : l'état vit au coffre
 # R2 privé, les deux fichiers de la page (tt.json pour Plus, tt_libre.json pour les autres) sont envoyés directement à
 # R2. Ce workflow ne commite rien. 2 requêtes AllSportsApi par passage. Le journal du run n'affiche que des comptes.
+# 513 : chaque matin (premier passage après 8 h, heure de Paris), le post du jour part sur le Telegram PRIVÉ.
 on:
   schedule:
     - cron: '41 * * * *'
@@ -46,6 +47,8 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ALLSPORTS_PAUSE: '0.35'
           ALLSPORTS_RESERVE: '10'
         run: |
