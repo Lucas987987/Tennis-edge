@@ -1,0 +1,495 @@
+{
+ "genere_le": "2026-11-27T15:21:17Z",
+ "paquet": 503,
+ "base_E2": [
+  400,
+  0.6,
+  0.5,
+  20
+ ],
+ "pentes_par_ligue": {
+  "Germany": 1.314,
+  "International": 1.249
+ },
+ "apprentissage": 884440,
+ "jugement": 464162,
+ "ligues_produit": [
+  "International",
+  "Poland"
+ ],
+ "par_ligue": {
+  "Belarus": {
+   "produit": false,
+   "apprentissage": 0,
+   "jugement": {
+    "matchs": 9521,
+    "log_loss_temoin": 0.68546,
+    "log_loss_candidat": 0.68546,
+    "gain": 0.0,
+    "erreur_type": 0.0
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": 0.0,
+    "b2_resultat_precedent": 0.0,
+    "b3_repos_heures": 0.0
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": 0.0606,
+    "b2_resultat_precedent": 0.1161,
+    "b3_repos_heures": -0.1615
+   },
+   "meme_signe": false,
+   "sens_inverse": null,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.0,
+     "gain": 0.0,
+     "erreur_type": 0.0
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.0,
+     "gain": 0.0,
+     "erreur_type": 0.0
+    },
+    "b3_repos_heures": {
+     "coefficient": 0.0,
+     "gain": 0.0,
+     "erreur_type": 0.0
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 2732,
+     "favori_annonce_pct": 58.8,
+     "favori_reel_pct": 54.6
+    },
+    "1": {
+     "matchs": 2657,
+     "favori_annonce_pct": 58.5,
+     "favori_reel_pct": 56.7
+    },
+    "2": {
+     "matchs": 2483,
+     "favori_annonce_pct": 58.7,
+     "favori_reel_pct": 57.7
+    },
+    "3": {
+     "matchs": 1594,
+     "favori_annonce_pct": 57.9,
+     "favori_reel_pct": 55.3
+    },
+    "4+": {
+     "matchs": 55,
+     "favori_annonce_pct": 55.2,
+     "favori_reel_pct": 58.2
+    }
+   }
+  },
+  "Czech Republic": {
+   "produit": false,
+   "apprentissage": 432997,
+   "jugement": {
+    "matchs": 137081,
+    "log_loss_temoin": 0.68293,
+    "log_loss_candidat": 0.68056,
+    "gain": 0.00237,
+    "erreur_type": 0.00014
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": 0.0121,
+    "b2_resultat_precedent": 0.0641,
+    "b3_repos_heures": -0.1023
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": 0.0141,
+    "b2_resultat_precedent": 0.0746,
+    "b3_repos_heures": -0.1712
+   },
+   "meme_signe": true,
+   "sens_inverse": 0.00113,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.031,
+     "gain": 0.00032,
+     "erreur_type": 6e-05
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.0637,
+     "gain": 0.001,
+     "erreur_type": 0.0001
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.1057,
+     "gain": 0.00129,
+     "erreur_type": 9e-05
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 33542,
+     "favori_annonce_pct": 55.6,
+     "favori_reel_pct": 55.7
+    },
+    "1": {
+     "matchs": 31878,
+     "favori_annonce_pct": 55.7,
+     "favori_reel_pct": 56.7
+    },
+    "2": {
+     "matchs": 30645,
+     "favori_annonce_pct": 55.4,
+     "favori_reel_pct": 54.3
+    },
+    "3": {
+     "matchs": 22304,
+     "favori_annonce_pct": 55.5,
+     "favori_reel_pct": 56.5
+    },
+    "4+": {
+     "matchs": 18712,
+     "favori_annonce_pct": 55.5,
+     "favori_reel_pct": 57.6
+    }
+   }
+  },
+  "Germany": {
+   "produit": false,
+   "apprentissage": 5497,
+   "jugement": {
+    "matchs": 2940,
+    "log_loss_temoin": 0.46346,
+    "log_loss_candidat": 0.46036,
+    "gain": 0.0031,
+    "erreur_type": 0.00109
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": 0.0332,
+    "b2_resultat_precedent": 0.1243,
+    "b3_repos_heures": -0.0913
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": -0.1577,
+    "b2_resultat_precedent": 0.1615,
+    "b3_repos_heures": -0.1866
+   },
+   "meme_signe": false,
+   "sens_inverse": 0.00061,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.0712,
+     "gain": -9e-05,
+     "erreur_type": 0.00021
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.124,
+     "gain": 0.00231,
+     "erreur_type": 0.00095
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.0959,
+     "gain": 0.00092,
+     "erreur_type": 0.00054
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 744,
+     "favori_annonce_pct": 77.7,
+     "favori_reel_pct": 77.0
+    },
+    "1": {
+     "matchs": 603,
+     "favori_annonce_pct": 76.6,
+     "favori_reel_pct": 80.1
+    },
+    "2": {
+     "matchs": 563,
+     "favori_annonce_pct": 75.2,
+     "favori_reel_pct": 75.8
+    },
+    "3": {
+     "matchs": 420,
+     "favori_annonce_pct": 76.1,
+     "favori_reel_pct": 83.3
+    },
+    "4+": {
+     "matchs": 610,
+     "favori_annonce_pct": 77.1,
+     "favori_reel_pct": 78.7
+    }
+   }
+  },
+  "International": {
+   "produit": true,
+   "apprentissage": 33797,
+   "jugement": {
+    "matchs": 13287,
+    "log_loss_temoin": 0.57849,
+    "log_loss_candidat": 0.57777,
+    "gain": 0.00072,
+    "erreur_type": 0.00015
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": -0.1427,
+    "b2_resultat_precedent": 0.0347,
+    "b3_repos_heures": -0.1819
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": -0.4787,
+    "b2_resultat_precedent": 0.2624,
+    "b3_repos_heures": -0.129
+   },
+   "meme_signe": true,
+   "sens_inverse": -0.00273,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": -0.0686,
+     "gain": 0.00032,
+     "erreur_type": 7e-05
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.0177,
+     "gain": 6e-05,
+     "erreur_type": 3e-05
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.1319,
+     "gain": -1e-05,
+     "erreur_type": 5e-05
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 11280,
+     "favori_annonce_pct": 68.0,
+     "favori_reel_pct": 69.1
+    },
+    "1": {
+     "matchs": 1976,
+     "favori_annonce_pct": 66.2,
+     "favori_reel_pct": 66.2
+    },
+    "2": {
+     "matchs": 26,
+     "favori_annonce_pct": 70.7,
+     "favori_reel_pct": 69.2
+    },
+    "3": {
+     "matchs": 5,
+     "favori_annonce_pct": 69.2,
+     "favori_reel_pct": 100.0
+    }
+   }
+  },
+  "Poland": {
+   "produit": true,
+   "apprentissage": 210503,
+   "jugement": {
+    "matchs": 125416,
+    "log_loss_temoin": 0.64919,
+    "log_loss_candidat": 0.64779,
+    "gain": 0.0014,
+    "erreur_type": 0.0002
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": -0.0042,
+    "b2_resultat_precedent": 0.0345,
+    "b3_repos_heures": -0.1978
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": -0.007,
+    "b2_resultat_precedent": -0.0234,
+    "b3_repos_heures": -0.188
+   },
+   "meme_signe": false,
+   "sens_inverse": 0.00162,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.0065,
+     "gain": 2e-05,
+     "erreur_type": 2e-05
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.0346,
+     "gain": -0.00057,
+     "erreur_type": 6e-05
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.1944,
+     "gain": 0.00194,
+     "erreur_type": 0.00019
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 17437,
+     "favori_annonce_pct": 60.6,
+     "favori_reel_pct": 60.1
+    },
+    "1": {
+     "matchs": 16957,
+     "favori_annonce_pct": 60.6,
+     "favori_reel_pct": 61.2
+    },
+    "2": {
+     "matchs": 16156,
+     "favori_annonce_pct": 60.5,
+     "favori_reel_pct": 62.1
+    },
+    "3": {
+     "matchs": 14985,
+     "favori_annonce_pct": 60.5,
+     "favori_reel_pct": 61.7
+    },
+    "4+": {
+     "matchs": 59881,
+     "favori_annonce_pct": 60.1,
+     "favori_reel_pct": 60.8
+    }
+   }
+  },
+  "Russia": {
+   "produit": false,
+   "apprentissage": 98534,
+   "jugement": {
+    "matchs": 49973,
+    "log_loss_temoin": 0.68226,
+    "log_loss_candidat": 0.68097,
+    "gain": 0.00129,
+    "erreur_type": 0.00024
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": -0.0071,
+    "b2_resultat_precedent": 0.0421,
+    "b3_repos_heures": -0.1306
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": 0.0167,
+    "b2_resultat_precedent": 0.0956,
+    "b3_repos_heures": -0.0739
+   },
+   "meme_signe": true,
+   "sens_inverse": 0.00036,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.006,
+     "gain": 6e-05,
+     "erreur_type": 2e-05
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.0419,
+     "gain": 0.00102,
+     "erreur_type": 0.00011
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.1278,
+     "gain": 0.00032,
+     "erreur_type": 0.00021
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 15330,
+     "favori_annonce_pct": 57.5,
+     "favori_reel_pct": 56.0
+    },
+    "1": {
+     "matchs": 13923,
+     "favori_annonce_pct": 57.5,
+     "favori_reel_pct": 56.9
+    },
+    "2": {
+     "matchs": 11720,
+     "favori_annonce_pct": 57.1,
+     "favori_reel_pct": 56.2
+    },
+    "3": {
+     "matchs": 6302,
+     "favori_annonce_pct": 57.1,
+     "favori_reel_pct": 55.9
+    },
+    "4+": {
+     "matchs": 2698,
+     "favori_annonce_pct": 57.0,
+     "favori_reel_pct": 57.0
+    }
+   }
+  },
+  "Ukraine": {
+   "produit": false,
+   "apprentissage": 95658,
+   "jugement": {
+    "matchs": 125944,
+    "log_loss_temoin": 0.67619,
+    "log_loss_candidat": 0.67551,
+    "gain": 0.00068,
+    "erreur_type": 0.00016
+   },
+   "coefficients_appris": {
+    "b1_matchs_deja_joues": -0.0153,
+    "b2_resultat_precedent": 0.0464,
+    "b3_repos_heures": -0.1663
+   },
+   "coefficients_reappris_sur_jugement": {
+    "b1_matchs_deja_joues": 0.0053,
+    "b2_resultat_precedent": 0.0151,
+    "b3_repos_heures": -0.1346
+   },
+   "meme_signe": true,
+   "sens_inverse": 0.00167,
+   "retenu": false,
+   "chaque_trait_seul": {
+    "b1_matchs_deja_joues": {
+     "coefficient": 0.0232,
+     "gain": 4e-05,
+     "erreur_type": 2e-05
+    },
+    "b2_resultat_precedent": {
+     "coefficient": 0.046,
+     "gain": -0.00013,
+     "erreur_type": 8e-05
+    },
+    "b3_repos_heures": {
+     "coefficient": -0.1604,
+     "gain": 0.00085,
+     "erreur_type": 0.00014
+    }
+   },
+   "favori_selon_matchs_deja_joues": {
+    "0": {
+     "matchs": 29388,
+     "favori_annonce_pct": 57.7,
+     "favori_reel_pct": 56.9
+    },
+    "1": {
+     "matchs": 28478,
+     "favori_annonce_pct": 57.6,
+     "favori_reel_pct": 57.0
+    },
+    "2": {
+     "matchs": 26298,
+     "favori_annonce_pct": 57.7,
+     "favori_reel_pct": 56.8
+    },
+    "3": {
+     "matchs": 23674,
+     "favori_annonce_pct": 57.7,
+     "favori_reel_pct": 57.3
+    },
+    "4+": {
+     "matchs": 18106,
+     "favori_annonce_pct": 58.1,
+     "favori_reel_pct": 57.4
+    }
+   }
+  }
+ },
+ "retenu_dans": [],
+ "verdict": "non_retenu"
+}

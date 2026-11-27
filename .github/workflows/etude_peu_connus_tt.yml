@@ -1,0 +1,57 @@
+name: Étude joueurs peu connus tennis de table
+
+# 27/11/2026 (paquet 503, Lucas : « fais les 4 ») — les joueurs peu connus : le % de production (Elo E2 + pente de la
+# ligue) est-il moins fiable quand un des deux joueurs a peu de matchs suivis (moins de 10, 10 à 29, 30 à 99, 100 et
+# plus) ? Et une pente par classe fait-elle mieux ? Jugé UNE SEULE FOIS du 01/10/2025 au dernier jour (règle dans
+# l'en-tête de tennis_de_table/etude_peu_connus_tt.py, écrite avant tout essai). Rien n'est publié sur le site ; le
+# rapport et le journal ne contiennent que des comptes, des pentes et des moyennes (aucun nom, aucun identifiant).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-peu-connus-tt
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python tennis_de_table/etude_peu_connus_tt.py . | tee /tmp/peu_connus_tt.log
+          cp tennis_de_table/rapport_peu_connus_tt.json /tmp/rapport_peu_connus_tt.json
+          { echo '### Tennis de table, joueurs peu connus (paquet 503)'; sed 's/^/    /' /tmp/peu_connus_tt.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_peu_connus_tt.json tennis_de_table/rapport_peu_connus_tt.json
+            git add -- tennis_de_table/rapport_peu_connus_tt.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude tennis de table joueurs peu connus (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
