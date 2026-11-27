@@ -40,7 +40,7 @@ def test_page_publique():
                 'clôture', 'closing', 'bookmaker'):
         assert mot not in bas, mot
     assert "fetch('/tt.json'" in h and "credentials:'same-origin'" in h
-    assert 'href="/#plus"' in h
+    assert 'href="#plus"' in h and 'href="/?compte=inscription"' in h     # 509 : l'accès Plus sur la page
     assert 'Ce site ne donne pas de conseil de pari' in h and '09 74 75 13 13' in h
     assert '<link rel="canonical" href="https://gamesetalgo.com/tennis-de-table">' in h
     assert 'innerHTML' in h and 'const esc=' in h            # noms des joueurs échappés
