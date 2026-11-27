@@ -101,6 +101,10 @@ class T(unittest.TestCase):
         self.assertEqual(e['bilan']['double messieurs']['matchs'], 1)
         arch = self.cf.get(P.CLE_ARCHIVE.format(mois='2023-09')).decode().splitlines()
         self.assertEqual([json.loads(l)['id'] for l in arch], [2])
+        pg = self.cf.get('site/algo/badminton/match/2.html').decode()       # 521 : la page du match terminé
+        self.assertIn('pronostic et résultat', pg)
+        self.assertIn('Joueur 202 / Joueur 202b bat Joueur 201 / Joueur 201b 2-1 (21-15, 19-21, 21-18)', pg)
+        self.assertIsNone(self.cf.get('site/algo/badminton/match/1.html'))
         libre = self.lire(P.CLE_LIBRE)
         un = next(m for m in libre['matchs'] if m['id'] == 1)
         self.assertIn('p_h', un)                                    # commencé : le % est public
@@ -115,7 +119,10 @@ class T(unittest.TestCase):
                   maintenant=T0, journal=lambda x: None)
         self.assertEqual(sorted(os.listdir(os.path.join(ICI, '..'))), avant)
         cles = sorted(os.path.relpath(os.path.join(d, f), self.coffre) for d, _, fs in os.walk(self.coffre) for f in fs)
-        self.assertEqual(cles, sorted([P.CLE_ETAT, P.CLE_SITE, P.CLE_LIBRE]))
+        import pages_badminton as PG                   # 521 : + les pages de référencement (index et plan)
+        self.assertEqual(cles, sorted([P.CLE_ETAT, P.CLE_SITE, P.CLE_LIBRE, PG.CLE_ETAT, PG.CLE_SITEMAP,
+                                       PG.PREFIXE + 'matchs.html', PG.PREFIXE + 'joueurs.html']))
+        self.assertTrue(PG.CLE_ETAT.startswith('prive/'))
         self.assertTrue(P.CLE_ETAT.startswith('prive/'))
 
     def test_journal_sans_nom(self):
@@ -130,6 +137,32 @@ class T(unittest.TestCase):
                 return 500, None
         self.assertFalse(P.passage(self.dir, Panne(), self.cf, maintenant=T0, journal=lambda x: None)['publie'])
         self.assertIsNone(self.cf.get(P.CLE_SITE))
+
+    def test_post_du_jour_521(self):
+        t = int(dt.datetime(2026, 11, 28, 9, tzinfo=dt.timezone.utc).timestamp())
+        m = {'id': 1, 't': t, 'tournoi': 'Welsh International Open, MS', 'epreuve': 'simple messieurs', 'h': 'A', 'a': 'B',
+             'statut': 'a_venir', 'p_h': 0.37, 'offert': True}
+        txt = P.post_du_jour({'matchs': [m, dict(m, id=2, offert=False, p_h=0.9)]}, {'matchs': 40, 'bons_pct': 72.5, 'annonce_pct': 70.0})
+        self.assertIn('🏸 Badminton', txt)
+        self.assertIn('Welsh International Open · Simple messieurs · 10 h 00', txt)
+        self.assertIn("L'algo : B gagnant à 63 %", txt)
+        self.assertIn('Hier : 40 matchs jugés, 72,5 % de vainqueurs trouvés', txt)
+        self.assertTrue(txt.endswith('gamesetalgo.com/badminton'))
+        self.assertNotIn('90 %', txt)                               # seul le match offert
+        for interdit in ('cote', 'value', 'marché', 'pari'):
+            self.assertNotIn(interdit, txt.lower())
+        self.assertNotIn('Hier', P.post_du_jour({'matchs': [m]}, {'matchs': 29, 'bons_pct': 1, 'annonce_pct': 1}))
+        self.assertIsNone(P.post_du_jour({'matchs': [dict(m, statut='en_cours')]}, None))
+
+    def test_bilan_veille_521(self):
+        e = {}
+        x = {'t': int(dt.datetime(2026, 11, 27, 12, tzinfo=dt.timezone.utc).timestamp()), 'epreuve': 'simple dames',
+             'p_h': 0.7, 'bon': True}
+        P.compter(e, x)
+        P.compter(e, dict(x, bon=False, p_h=0.4))
+        v = P.bilan_veille(e, dt.datetime(2026, 11, 28, 9, tzinfo=dt.timezone.utc))
+        self.assertEqual((v['matchs'], v['bons_pct'], v['annonce_pct']), (2, 50.0, 65.0))
+        self.assertIsNone(P.bilan_veille(e, dt.datetime(2026, 11, 30, 9, tzinfo=dt.timezone.utc)))
 
 
 if __name__ == '__main__':

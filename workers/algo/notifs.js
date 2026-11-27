@@ -407,15 +407,28 @@ export const TXT_TT = {
   fr: { matin_t: '🏓 Tes favoris jouent aujourd\'hui', debut_t: '▶️ Début du match (tennis de table)' },
   en: { matin_t: '🏓 Your favourites play today', debut_t: '▶️ Match started (table tennis)' },
 };
-export function interessesTT(I, m) {
-  const out = [], km = 'tt:' + m.id, kh = 'tt:' + m.h, ka = 'tt:' + m.a;
+// 27/11/2026 (paquet 521, Lucas : « les favoris et les notifications » du badminton) — exactement le même système que
+// le tennis de table (préfixe « bad: », page site/algo/bad.json refaite chaque heure par
+// badminton/pronostics_badminton.py, état à part notifs/etat_bad.json) : le matin, le début, le résultat.
+export const ETAT_BAD_R2 = 'notifs/etat_bad.json', BAD_R2 = 'site/algo/bad.json', BAD_URL = '/badminton';
+export const TXT_BAD = {
+  fr: { matin_t: '🏸 Tes favoris jouent aujourd\'hui', debut_t: '▶️ Début du match (badminton)' },
+  en: { matin_t: '🏸 Your favourites play today', debut_t: '▶️ Match started (badminton)' },
+};
+export const SPORTS_PAGE = Object.freeze({
+  tt: { prefixe: 'tt:', etat: ETAT_TT_R2, source: TT_R2, url: TT_URL, txt: TXT_TT, tag: 'gsa-tt-' },
+  bad: { prefixe: 'bad:', etat: ETAT_BAD_R2, source: BAD_R2, url: BAD_URL, txt: TXT_BAD, tag: 'gsa-bad-' },
+});
+export function interessesPage(I, m, S = SPORTS_PAGE.tt) {
+  const out = [], km = S.prefixe + m.id, kh = S.prefixe + m.h, ka = S.prefixe + m.a;
   for (const [id, e] of Object.entries((I && I.u) || {}))
     if ((e.m || []).includes(km) || (e.j || []).includes(kh) || (e.j || []).includes(ka)) out.push(id);
   return out;
 }
+export const interessesTT = (I, m) => interessesPage(I, m, SPORTS_PAGE.tt);
 const scoreTT = (m) => { let h = 0, a = 0; for (const [x, y] of m.manches || []) { if (x > y) h++; else if (y > x) a++; } return [h, a]; };
-export function messageTT(type, m, lang) {
-  const T = TXT[lang] || TXT.fr, U = TXT_TT[lang] || TXT_TT.fr, tag = 'gsa-tt-' + m.id, url = TT_URL;
+export function messagePage(type, m, lang, S = SPORTS_PAGE.tt) {
+  const T = TXT[lang] || TXT.fr, U = S.txt[lang] || S.txt.fr, tag = S.tag + m.id, url = S.url;
   const mm = { home: m.h, away: m.a };
   if (type === 'debut') return { titre: U.debut_t, texte: T.debut(mm), url, tag };
   if (type === 'fin') {
@@ -430,21 +443,22 @@ export function messageTT(type, m, lang) {
   }
   return null;
 }
-export async function notifsTT(env, maintenant = Date.now()) {
+export const messageTT = (type, m, lang) => messagePage(type, m, lang, SPORTS_PAGE.tt);
+export async function notifsPage(env, S, maintenant = Date.now()) {
   if (!env.COFFRE) return { envoyes: 0 };
   const { doc: I } = await lireJson(env, INDEX_R2);
-  if (!I || !I.u || !Object.values(I.u).some((e) => [...(e.j || []), ...(e.m || [])].some((k) => String(k).startsWith('tt:'))))
-    return { envoyes: 0, rien: true };                              // aucun favori du tennis de table : rien du tout
-  const { doc: e0 } = await lireJson(env, ETAT_TT_R2);
+  if (!I || !I.u || !Object.values(I.u).some((e) => [...(e.j || []), ...(e.m || [])].some((k) => String(k).startsWith(S.prefixe))))
+    return { envoyes: 0, rien: true };                              // aucun favori de ce sport : rien du tout
+  const { doc: e0 } = await lireJson(env, S.etat);
   const etat = e0 || {}, jour = new Date(maintenant).toISOString().slice(0, 10);
   const matinDu = new Date(maintenant).getUTCHours() >= 7 && etat.matin !== jour;
-  const { doc: D } = await lireJson(env, TT_R2);
+  const { doc: D } = await lireJson(env, S.source);
   if (!D || !Array.isArray(D.matchs) || (D.genere_le === etat.genere && !matinDu)) return { envoyes: 0 };
   etat.vus = etat.vus || {};
   const envois = [];
   for (const m of D.matchs) {
     if (!m || m.id == null) continue;
-    const ids = interessesTT(I, m), k = String(m.id), v = etat.vus[k];
+    const ids = interessesPage(I, m, S), k = String(m.id), v = etat.vus[k];
     if (!ids.length) continue;
     let type = null;
     const age = maintenant - m.t * 1000;                         // un vieux match (favori ajouté après coup) : rien
@@ -453,27 +467,29 @@ export async function notifsTT(env, maintenant = Date.now()) {
     if (!type) continue;
     etat.vus[k] = { e: type, le: maintenant };
     if (!etat.genere) continue;                                  // tout premier passage : on note, on n'envoie rien
-    for (const id of ids) envois.push({ id, msg: messageTT(type, m, (I.u[id] || {}).lang) });
+    for (const id of ids) envois.push({ id, msg: messagePage(type, m, (I.u[id] || {}).lang, S) });
   }
   if (matinDu) {
     etat.matin = jour;
-    const fin = maintenant + 24 * 3600e3;
+    const fin = maintenant + 24 * 3600e3, p = S.prefixe;
     const aVenir = D.matchs.filter((m) => m.statut === 'a_venir' && m.t * 1000 >= maintenant && m.t * 1000 < fin).sort((a, b) => a.t - b.t);
     for (const [id, e] of Object.entries(I.u)) {
-      const T = TXT[e.lang] || TXT.fr, U = TXT_TT[e.lang] || TXT_TT.fr, L = [];
+      const T = TXT[e.lang] || TXT.fr, U = S.txt[e.lang] || S.txt.fr, L = [];
       for (const m of aVenir) {
-        const fj = (e.j || []).includes('tt:' + m.h) ? m.h : (e.j || []).includes('tt:' + m.a) ? m.a : (e.m || []).includes('tt:' + m.id) ? m.h : null;
+        const fj = (e.j || []).includes(p + m.h) ? m.h : (e.j || []).includes(p + m.a) ? m.a : (e.m || []).includes(p + m.id) ? m.h : null;
         if (fj) L.push(T.ligne(fj, heureParis(new Date(m.t * 1000).toISOString(), e.lang), fj === m.h ? m.a : m.h));
       }
-      if (L.length) envois.push({ id, msg: { titre: U.matin_t, texte: T.matin(L.slice(0, 6)) + (L.length > 6 ? ` (+${L.length - 6})` : ''), url: TT_URL, tag: 'gsa-tt-matin' } });
+      if (L.length) envois.push({ id, msg: { titre: U.matin_t, texte: T.matin(L.slice(0, 6)) + (L.length > 6 ? ` (+${L.length - 6})` : ''), url: S.url, tag: S.tag + 'matin' } });
     }
   }
   for (const [k, v] of Object.entries(etat.vus)) if (maintenant - ((v && v.le) || 0) > 72 * 3600e3) delete etat.vus[k];
   etat.genere = D.genere_le;
   const n = envois.length ? await distribuer(env, I, etat, envois.filter((x) => x.msg), 3600) : 0;
-  await env.COFFRE.put(ETAT_TT_R2, JSON.stringify(etat));
+  await env.COFFRE.put(S.etat, JSON.stringify(etat));
   return { envoyes: n, prevus: envois.length };
 }
+export const notifsTT = (env, maintenant = Date.now()) => notifsPage(env, SPORTS_PAGE.tt, maintenant);
+export const notifsBad = (env, maintenant = Date.now()) => notifsPage(env, SPORTS_PAGE.bad, maintenant);   // 521
 
 // GET /compte/api/push/cle : la clé publique VAPID (pour pushManager.subscribe)
 export async function clePublique(env) { return (await clesVapid(env)).publique; }
