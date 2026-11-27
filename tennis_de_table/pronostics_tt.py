@@ -392,6 +392,14 @@ def compter(etat, x):
             t[1] = round(t[1] + pf, 4)
             t[2] += int(x['bon'])
     etat.setdefault('depuis', jour_paris(x['t']))
+    # 513 : le bilan de chaque jour (Paris), pour le post du lendemain ; 10 jours gardés
+    J = etat.setdefault('bilan_jours', {})
+    d = J.setdefault(jour_paris(x['t']), {}).setdefault(x['ligue'], [0, 0, 0.0])
+    d[0] += 1
+    d[1] += int(x['bon'])
+    d[2] = round(d[2] + pf, 4)
+    for k in sorted(J)[:-10]:
+        del J[k]
 
 
 def choisir_offerts(etat, maintenant):
@@ -439,6 +447,71 @@ def bilan_public(etat):
     return out
 
 
+# ------------------------------------------------------------------ 513 : le post du jour (X, Telegram)
+LIGUE_POST = {'Poland': '🇵🇱 Pologne', 'International': '🌍 International'}
+EPREUVES = {'MS': 'Simple messieurs', 'WS': 'Simple dames', 'MD': 'Double messieurs', 'WD': 'Double dames', 'XD': 'Double mixte'}
+HEURE_POST = 8                    # heure de Paris à partir de laquelle le post du jour part (une fois par jour)
+
+
+def _tournoi_fr(t):
+    m = re.match(r'^(.*),\s*(MS|WS|MD|WD|XD)\s*$', str(t or ''))
+    return f"{m.group(1)} · {EPREUVES[m.group(2)]}" if m else str(t or '')
+
+
+def _heure_fr(t):
+    d = dt.datetime.fromtimestamp(int(t), dt.timezone.utc).astimezone(PARIS)
+    return f"{d.hour} h {d.minute:02d}"
+
+
+def bilan_veille(etat, maintenant):
+    """{'matchs', 'bons_pct', 'annonce_pct'} des matchs jugés la veille (Paris), toutes ligues ; None sans match."""
+    hier = (maintenant.astimezone(PARIS).date() - dt.timedelta(days=1)).isoformat()
+    J = (etat.get('bilan_jours') or {}).get(hier) or {}
+    n = sum(v[0] for v in J.values())
+    if not n:
+        return None
+    return {'jour': hier, 'matchs': n, 'bons_pct': round(100 * sum(v[1] for v in J.values()) / n, 1),
+            'annonce_pct': round(100 * sum(v[2] for v in J.values()) / n, 1)}
+
+
+def post_du_jour(complet, veille):
+    """27/11/2026 (paquet 513, Lucas : « le tennis de table sur X et Telegram : un post par jour avec le match offert et le
+    bilan de la veille, comme pour le tennis ») — en français, comme les posts du tennis : les matchs offerts encore à
+    venir (le % et le score le plus probable, rien d'autre), le bilan de la veille à partir de 30 matchs jugés, l'adresse
+    de la page. Aucune cote, aucun conseil."""
+    L = ['🏓 Tennis de table · le match offert du jour']
+    offerts = [m for m in complet.get('matchs') or [] if m.get('offert') and m.get('statut') == A_VENIR and m.get('scores')]
+    for m in sorted(offerts, key=lambda m: (m['ligue'] != 'Poland', m['t'])):
+        fav, pf = (m['h'], m['p_h']) if m['p_h'] >= 0.5 else (m['a'], 1 - m['p_h'])
+        s = m['scores'][0]
+        L += ['', f"{LIGUE_POST.get(m['ligue'], m['ligue'])} · {_tournoi_fr(m.get('tournoi'))} · {_heure_fr(m['t'])}",
+              f"{m['h']} – {m['a']}",
+              f"L'algo : {fav} à {round(100 * pf)} % · score le plus probable {s[0]}-{s[1]} ({round(100 * s[2])} %)"]
+    if len(L) == 1:
+        return None                                  # plus aucun match offert à venir : pas de post
+    if veille and veille['matchs'] >= 30:
+        L += ['', f"Hier : {veille['matchs']} matchs jugés, {str(veille['bons_pct']).replace('.', ',')} % de vainqueurs trouvés "
+                  f"(annoncé en moyenne {str(veille['annonce_pct']).replace('.', ',')} %)."]
+    L += ['', 'Tous les pronostics et le bilan, erreurs comprises : gamesetalgo.com/tennis-de-table']
+    return '\n'.join(L)
+
+
+def envoyer_telegram(texte, journal=print):
+    """Le post du jour au Telegram PRIVÉ de Lucas (TELEGRAM_TOKEN, TELEGRAM_CHAT_ID), à recopier sur X et sur le canal."""
+    tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+    if not (tok and chat):
+        return False
+    import urllib.parse
+    import urllib.request
+    try:
+        corps = urllib.parse.urlencode({'chat_id': chat, 'text': texte, 'disable_web_page_preview': 'true'}).encode()
+        with urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=corps, timeout=20) as r:
+            return r.status == 200
+    except Exception:  # noqa: BLE001 — jamais bloquant
+        journal('::warning::post du jour : envoi Telegram impossible')
+        return False
+
+
 def site(etat, mod_info, maintenant):
     """(tt.json complet, tt_libre.json)."""
     ts = int(maintenant.timestamp())
@@ -459,8 +532,10 @@ def site(etat, mod_info, maintenant):
             libres.append({k: x[k] for k in AFFICHE + ('p_h', 'g', 'bon') if k in x})
     haut = {'genere_le': maintenant.astimezone(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'paquet': PAQUET,
             'jour': jour, 'ligues': list(LIGUES), 'bilan': bilan_public(etat), 'depuis': etat.get('depuis'),
-            'modele': mod_info}
-    return dict(haut, acces='plus', matchs=complets), dict(haut, acces='libre', matchs=libres)
+            'modele': mod_info, 'bilan_veille': bilan_veille(etat, maintenant)}
+    complet = dict(haut, acces='plus', matchs=complets)
+    complet['post_du_jour'] = post_du_jour(complet, haut['bilan_veille'])     # 513 : pour l'administrateur (page)
+    return complet, dict(haut, acces='libre', matchs=libres)
 
 
 # ------------------------------------------------------------------ coffre (R2 privé, ou dossier local pour les essais)
@@ -534,7 +609,17 @@ def passage(racine, client, cf, maintenant=None, journal=print):
             'changements': [c for c in CHANGEMENTS if c['ligue'] in ((reg.get('oubli') or {}).get('ligues') or [])
                             or c['ligue'] in (reg.get('face_a_face') or {})]}
     complet, libre = site(etat, info, maintenant)
+    jour = maintenant.astimezone(PARIS).date().isoformat()
+    if complet.get('post_du_jour') and maintenant.astimezone(PARIS).hour >= HEURE_POST and etat.get('post_envoye') != jour:
+        if envoyer_telegram(complet['post_du_jour'], journal):      # 513 : une fois par jour, au Telegram privé
+            etat['post_envoye'] = jour
+            journal('  post du jour envoyé au Telegram privé')
     archiver(cf, archives, maintenant)
+    try:                                              # 514 : pages de référencement (matchs terminés, joueurs)
+        import pages_tt
+        pages_tt.publier(cf, archives, maintenant, CLE_ARCHIVE, journal)
+    except Exception as ex:  # noqa: BLE001 — les pages ne doivent jamais bloquer les pronostics
+        journal(f'  pages : non publiées ce passage ({type(ex).__name__})')
     cf.put(CLE_ETAT, _json(etat), content_type='application/json')
     cf.put(CLE_SITE, _json(complet), content_type='application/json; charset=utf-8')
     cf.put(CLE_LIBRE, _json(libre), content_type='application/json; charset=utf-8')
