@@ -142,7 +142,7 @@ test('direct : début, break, set, résultat avec le verdict de l\'algo ; rien p
   D = { ok: true, matchs: [lv([0], [1], 'home')], termines: [] };
   await N.notifsDirect(env, async () => D, T0 + 60e3);
   L = await recus();
-  assert.equal(L.length, 1); assert.equal(L[0].titre, '🎾 Break de Carlos Alcaraz'); assert.match(L[0].texte, /1-0 dans le 1er set/);
+  assert.equal(L.length, 1); assert.equal(L[0].titre, '🎾 Break de Carlos Alcaraz'); assert.match(L[0].texte, /0-1 dans le 1er set/);   // 519 : dans l'ordre des noms
   // deux jeux d'un coup (minute manquée) : pas de break annoncé
   D = { ok: true, matchs: [lv([1], [2], 'away')], termines: [] };
   await N.notifsDirect(env, async () => D, T0 + 120e3);
