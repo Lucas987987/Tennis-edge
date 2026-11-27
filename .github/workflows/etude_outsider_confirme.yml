@@ -24,6 +24,7 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /scripts/etude_outsider_confirme.py
+            /scripts/etude_outsider_confirme2.py
             /simulateur/elo.py
             /historique/tennis_data.csv.gz
             /historique/tennis_de_table/
@@ -41,6 +42,12 @@ jobs:
           python scripts/etude_outsider_confirme.py . | tee /tmp/outsider.log
           cp rapport_outsider_confirme.json /tmp/rapport_outsider_confirme.json
           { echo '### Outsider confirmé'; sed 's/^/    /' /tmp/outsider.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Étude 2 (contre les autres outsiders de même %)
+        run: |
+          set -euo pipefail
+          python scripts/etude_outsider_confirme2.py . | tee /tmp/outsider2.log
+          cp rapport_outsider_confirme2.json /tmp/rapport_outsider_confirme2.json
+          { echo '### Outsider confirmé contre les autres outsiders'; sed 's/^/    /' /tmp/outsider2.log; } >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport
         run: |
           set -euo pipefail
@@ -50,9 +57,10 @@ jobs:
             git fetch -q origin main
             git reset -q --hard origin/main
             cp /tmp/rapport_outsider_confirme.json rapport_outsider_confirme.json
-            git add -- rapport_outsider_confirme.json
+            cp /tmp/rapport_outsider_confirme2.json rapport_outsider_confirme2.json
+            git add -- rapport_outsider_confirme.json rapport_outsider_confirme2.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
-            git commit -q -m 'Étude outsider confirmé (rapport)'
+            git commit -q -m 'Études outsider confirmé (rapports)'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
             sleep $((i * 10))
           done
