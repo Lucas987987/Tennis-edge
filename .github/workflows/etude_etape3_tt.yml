@@ -1,0 +1,56 @@
+name: Étude tennis de table étape 3
+
+# 27/11/2026 (paquet 496, Lucas : « fais le ») — étape 3 : les scores en manches, ancrés sur le % retenu (Elo E2 + pente
+# de l'International et de l'Allemagne), sont-ils bien étalonnés ? Et une table de recalage fait-elle mieux ? Jugé UNE
+# SEULE FOIS du 01/10/2025 au dernier jour (règle dans l'en-tête de tennis_de_table/etude_etape3_tt.py, écrite avant
+# tout essai). Rien n'est publié sur le site ; le rapport ne contient que des comptes et des moyennes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-etape3-tt
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python tennis_de_table/etude_etape3_tt.py . | tee /tmp/etape3_tt.log
+          cp tennis_de_table/rapport_etape3_tt.json /tmp/rapport_etape3_tt.json
+          { echo '### Tennis de table, étape 3 (paquet 496)'; sed 's/^/    /' /tmp/etape3_tt.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_etape3_tt.json tennis_de_table/rapport_etape3_tt.json
+            git add -- tennis_de_table/rapport_etape3_tt.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude tennis de table étape 3 (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
