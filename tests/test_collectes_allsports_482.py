@@ -145,11 +145,18 @@ class TennisDeTable(unittest.TestCase):
     def test_un_passage_par_jour_une_fois_l_historique_fait(self):
         auj = dt.date(2026, 11, 26)
         self.lancer(auj)
-        res, urls, txt = self.lancer(auj, heure=14)
+        res, urls, txt = self.lancer(auj, heure=14)            # passage du jour déjà fait
         self.assertTrue(res.get('saute'))
         self.assertEqual(urls, [])
-        res, urls, _ = self.lancer(auj, heure=TT.HEURE_QUOTIDIENNE)
-        self.assertEqual(len(urls), 2)
+        demain = auj + dt.timedelta(days=1)
+        res, urls, _ = self.lancer(demain, heure=TT.HEURE_QUOTIDIENNE - 1)   # avant 6 h UTC
+        self.assertTrue(res.get('saute'))
+        res, urls, _ = self.lancer(demain, heure=TT.HEURE_QUOTIDIENNE + 1)   # 501 : run planifié parti en retard
+        self.assertFalse(res.get('saute'))
+        self.assertGreater(len(urls), 0)
+        res, urls, _ = self.lancer(demain, heure=TT.HEURE_QUOTIDIENNE + 3)   # une seule fois par jour
+        self.assertTrue(res.get('saute'))
+        self.assertEqual(urls, [])
 
     def test_fichier_reproductible(self):
         p = os.path.join(self.dir, 'x.jsonl.gz')
