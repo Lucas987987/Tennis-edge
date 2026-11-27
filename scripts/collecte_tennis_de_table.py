@@ -21,7 +21,8 @@ Aucun script de l'algo tennis ne lit ce dossier. Le journal du run n'affiche que
 
 Une ligne : id, t (début, horodatage UTC), ligue (pays/catégorie), tournoi, tournoi_id, h et a ([id, nom]),
             g (1 ou 2 = vainqueur, 0 = inconnu), manches ([[points h, points a], …]), statut (finished, canceled…),
-            detail (texte du statut s'il n'est pas « Ended » : abandon, forfait…), serveur (1 ou 2, si connu).
+            detail (texte du statut s'il n'est pas « Ended » : abandon, forfait…), serveur (1 ou 2, si connu),
+            tour (paquet 502 : Final, Semifinal…, si connu), format (manches gagnantes, si la source l'annonce).
 Usage : python scripts/collecte_tennis_de_table.py [minutes]
 """
 import datetime as dt
@@ -82,7 +83,23 @@ def ligne(e, ligue):
         r['detail'] = st.get('description')
     if e.get('firstToServe') in (1, 2):
         r['serveur'] = e['firstToServe']
+    tour = tour_de(e)                     # 502 : le tour (Final, Semifinal…), pour apprendre le format des matchs
+    if tour:
+        r['tour'] = tour
+    dpc = e.get('defaultPeriodCount') or e.get('bestOf')
+    if dpc in (5, 7):
+        r['format'] = (dpc + 1) // 2       # 502 : format annoncé par la source, s'il l'est un jour
     return r
+
+
+def tour_de(e):
+    """Nom du tour de l'événement (roundInfo), ou « #numéro » s'il n'a pas de nom ; None sinon."""
+    ri = e.get('roundInfo') or {}
+    if ri.get('name'):
+        return str(ri['name'])[:60]
+    if isinstance(ri.get('round'), int):
+        return f"#{ri['round']}"
+    return None
 
 
 def jour_utc(ts):
