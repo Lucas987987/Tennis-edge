@@ -793,6 +793,18 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
  .cartes .cj-r text {font-size:10px}
 }
 </style>
+<style id="te-adv-style">/* 525 (Lucas : « s'inspirer de l'analyse détaillée ») : profil de la saison, bilans contre le style adverse et duel service ↔ retour dans la même présentation que l'analyse détaillée */
+.adv .c1{color:var(--p1)}.adv .c2{color:var(--p2)}.adv{padding:0 0 4px}.adv .ad-tete{margin-top:4px}.adv-h{margin:14px 0 2px;font:600 .78rem var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}.adv-h:first-of-type{margin-top:6px}
+.adv .ad-l{grid-template-columns:minmax(58px,max-content) 1fr minmax(58px,max-content)}.adv .ad-l>b{font-size:1.05rem;font-variant-numeric:tabular-nums;white-space:nowrap}.adv .ad-l>b.net{font-size:1.2rem}.adv .ad-l.tx{grid-template-areas:"a k b"}.adv .ad-l.tx .ad-k{align-self:center}
+.adv .ad-bb>span{position:relative}.adv .ad-bb u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.8;border-radius:1px;text-decoration:none}
+.adv .ad-av{margin:4px 0 0;padding-left:20px;font-size:.9rem}.adv .ad-p{margin:10px 0 0;font-size:.88rem;color:var(--dim)}.adv .ad-note{margin:8px 0 0;font-size:.76rem;color:var(--dim)}
+.sb-j{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.sb-j:first-child{border-top:0;margin-top:4px;padding-top:4px}.sb-j h4{margin:0 0 6px;font-family:var(--cond);font-size:1.1rem}.sb-j h4 small{font-family:Barlow,system-ui,sans-serif;font-weight:400;font-size:.8rem;color:var(--dim);margin-left:6px}
+.sb-l{margin:10px 0}.sb-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:.85rem}.sb-h small{color:var(--dim)}.sb-v{display:flex;align-items:baseline;gap:8px}.sb-v b{font-family:var(--cond);font-size:1.35rem;font-variant-numeric:tabular-nums}.sb-v em{font-style:normal;color:var(--dim);font-size:.8rem}
+.sb-pt{font:700 .78rem var(--cond);padding:2px 8px;border-radius:999px;background:rgba(var(--wv),.07);color:var(--dim)}.sb-pt.plus{background:rgba(69,240,160,.14);color:var(--ok)}.sb-pt.moins{background:rgba(255,107,134,.14);color:var(--ko)}
+.sb-b{position:relative;height:10px;border-radius:5px;background:rgba(var(--wv),.07);margin-top:5px}.sb-b i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.sb-b i.c1{background:var(--p1)}.sb-b i.c2{background:var(--p2)}.sb-b i.pale{opacity:.45}.sb-b s{position:absolute;top:2px;bottom:2px;border-radius:3px;background:rgba(var(--wv),.28);text-decoration:none}.sb-b u{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:2px;text-decoration:none}
+.sb-j .sv-phrase{margin:8px 0 0;font-size:.88rem}
+@media (min-width:820px){.mdj > .fiche > .tiroir[data-cle="feuille"]{grid-column:2}}
+</style>
 <style id="te-analyse-detaillee-style">.te-analyse-detaillee{margin:12px 0;padding:16px;border:1px solid var(--line2);border-radius:14px;background:var(--panel)}.te-analyse-detaillee[hidden]{display:none!important}.te-analyse-detaillee h3{margin:0 0 10px}.te-analyse-part{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.te-analyse-part h4{margin:0 0 5px}.te-analyse-part p{margin:0;line-height:1.55}.te-analyse-part ul{margin:5px 0;padding-left:22px}.te-analyse-part li{margin:5px 0}.te-analyse-disclaimer{font-size:.85rem;color:var(--dim);line-height:1.5}.te-analyse-detaillee .c1{color:var(--p1)}.te-analyse-detaillee .c2{color:var(--p2)}.ad-s{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.ad-s h4{margin:0 0 8px;font-family:var(--cond);font-size:1.05rem;letter-spacing:.02em}.ad-s p{margin:6px 0 0;line-height:1.5;font-size:.92rem}.ad-duel{display:grid;grid-template-columns:1fr auto auto 1fr;gap:8px;align-items:baseline;font-weight:600}.ad-duel span:last-child{text-align:right}.ad-duel b{font-family:var(--cond);font-size:1.6rem}.ad-barre{position:relative;height:12px;border-radius:6px;background:var(--p2);overflow:hidden;margin:6px 0}.ad-barre i{position:absolute;left:0;top:0;bottom:0;background:var(--p1)}.ad-barre u{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.35);text-decoration:none}.ad-barre u.avant{width:3px;margin-left:-1.5px;background:var(--ink)}.ad-tete{display:flex;justify-content:space-between;font-weight:600;font-size:.85rem;margin-bottom:4px}.ad-l{display:grid;grid-template-columns:30px 1fr 30px;grid-template-areas:"a k b" "a bb b";column-gap:8px;align-items:center;margin:6px 0}.ad-l>b{font-family:var(--cond);font-size:1.15rem;color:var(--dim)}.ad-l>b:first-child{grid-area:a}.ad-l>b:nth-of-type(2){grid-area:b;text-align:right}.ad-l>b.net{font-size:1.3rem}.ad-l>b.c1{color:var(--p1)}.ad-l>b.c2{color:var(--p2)}.ad-k{grid-area:k;text-align:center;font-size:.8rem;color:var(--dim)}.ad-bb{grid-area:bb;display:grid;grid-template-columns:1fr 1fr;gap:3px;height:8px}.ad-bb>span{background:rgba(var(--wv),.07);border-radius:4px;display:flex}.ad-bb>span:first-child{justify-content:flex-end}.ad-bb i{display:block;border-radius:4px}.ad-bb i.c1{background:var(--p1)}.ad-bb i.c2{background:var(--p2)}.ad-av{margin:4px 0 0;padding-left:20px;font-size:.92rem}.ad-av li{margin:3px 0}.ad-p{color:var(--dim)}.ad-note{font-size:.78rem!important;color:var(--dim)}</style>
 <style>
 /* te-cartes-pleine-largeur-v2 */
@@ -2438,11 +2450,24 @@ function duelSimLignes(ds, N){
     : `${N[i]} serving against ${N[1-i]}: ${dec(J[i].points_service_pct,1)}% of points won${refTxt}${J[i].jeux_service_gagnes_pct!=null ? ` · ${dec(J[i].jeux_service_gagnes_pct,1)}% of service games won` : ''}` }));
 }
 function rendDuelSim(ds, m){
+  // 525 (Lucas : « revoir le style et la présentation duel service retour ») : même présentation que l'analyse détaillée
+  // — face à face en barres miroir (points et jeux de service gagnés face à CET adversaire, d'après la simulation du
+  // match), l'avantage net à la couleur du joueur, le trait = la moyenne du circuit sur la surface.
   const N=[court(m.home),court(m.away)], fr = L==='fr', v = duelSimTexte(ds, N); if (!v) return '';
-  const J = ds.joueurs, ref = ds.reference_pct;
-  const barre = (x, c) => `<span><i class="${c}" style="width:${Math.max(0,Math.min(100,x))}%"></i></span>`;
-  const lig = duelSimLignes(ds, N).map(o=>`<div class="du-l"><p>${esc(o.txt)}</p><div class="du-r"><b class="${o.i===0?'c1':'c2'}">${dec(J[o.i].points_service_pct,1)}</b><div class="bb">${barre(J[o.i].points_service_pct, o.i===0?'c1':'c2')}${ref!=null ? barre(ref, '') : '<span></span>'}</div><b>${ref!=null ? dec(ref,1) : ''}</b></div></div>`).join('');
-  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(fr ? 'D’après la simulation du match (la même que le % et les statistiques prédites) : points gagnés au service face à cet adversaire.' : 'From the match simulation (the same as the % and the expected stats): points won on serve against this opponent.')}</p><p class="sv-phrase ${v.sens}">${esc(v.txt)}</p>${lig}<p class="styles-note">${esc(fr ? 'Descriptif : ne change pas le %. Les classements sur 100 (service, retour) sont sur les cartes des joueurs.' : 'Descriptive: does not change the %. The 0–100 rankings (serve, return) are on the player cards.')}</p></div>`;
+  const J = ds.joueurs, ref = ds.reference_pct, surf = (SURF[L][ds.surface] || ds.surface || '');
+  const R = [['points_service_pct', fr ? 'Points gagnés au service' : 'Service points won', DUS_SEUIL, ref],
+             ['jeux_service_gagnes_pct', fr ? 'Jeux de service gagnés' : 'Service games won', 4, null]]
+    .filter(([k]) => J[0][k] != null && J[1][k] != null);
+  const lig = R.map(([k, lib, seuil, rf]) => {
+    const a = +J[0][k], b = +J[1][k], net = Math.abs(a - b) >= seuil ? (a > b ? 0 : 1) : -1, w = x => Math.max(2, Math.min(100, x)).toFixed(1);
+    const tk = (side) => rf == null ? '' : `<u style="${side}:${Math.max(0, Math.min(100, rf)).toFixed(1)}%"></u>`;
+    return `<div class="ad-l"><b class="${net === 0 ? 'c1 net' : ''}">${esc(dec(a, 1))} %</b><span class="ad-bb"><span><i class="c1" style="width:${w(a)}%"></i>${tk('right')}</span><span><i class="c2" style="width:${w(b)}%"></i>${tk('left')}</span></span><b class="${net === 1 ? 'c2 net' : ''}">${esc(dec(b, 1))} %</b><span class="ad-k">${esc(lib)}</span></div>`;
+  }).join('');
+  const refTxt = ref == null ? '' : (fr ? `Trait : la moyenne ${CIRC[ds.circuit]||ds.circuit}${surf ? ' sur ' + surf : ''}, ${dec(ref,1)} % des points gagnés au service.` : `Tick: the ${CIRC[ds.circuit]||ds.circuit}${surf ? ' ' + surf : ''} average, ${dec(ref,1)}% of service points won.`);
+  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(fr ? 'D’après la simulation du match (la même que le % et les statistiques prédites) : ce que chacun gagne au service face à CE retour.' : 'From the match simulation (the same as the % and the expected stats): what each wins on serve against THIS return.')}</p>
+    <div class="adv"><div class="ad-tete"><span class="c1">${esc(N[0])}</span><span class="c2">${esc(N[1])}</span></div>${lig}
+    <p class="sv-phrase ${v.sens}" style="margin-top:10px">${esc(v.txt)}</p>${refTxt ? `<p class="ad-note">${esc(refTxt)}</p>` : ''}
+    <p class="ad-note">${esc(fr ? 'Descriptif : ne change pas le %. Les classements sur 100 (service, retour) sont sur les cartes des joueurs.' : 'Descriptive: does not change the %. The 0–100 rankings (serve, return) are on the player cards.')}</p></div></div>`;
 }
 function rendDuel(d,m){
   if (!d || d.descriptif_seulement !== true) return '';
@@ -3923,12 +3948,52 @@ function remplirProfilsSaison(zone){
     const val = (k, b, p) => !b || !p ? '—' : k === 'm' ? `${b.m} (${b.v||0} – ${b.m-(b.v||0)})` : k === 'tb' ? `${(b.tb||[0,0])[0]} – ${(b.tb||[0,0])[1]}`
       : k === 'ac' || k === 'df' ? dec(b[k]) : k === 'cl' ? ((p.cl||{}).rang ? `${p.cl.rang}${p.cl.meilleur ? ' (' + p.cl.meilleur + ')' : ''}` : '—') : k === 'utr' ? ((p.cl||{}).utr || '—') : pct(b[k]);
     const an = !ph || !pa ? (ph || pa).an : ph.an === pa.an ? ph.an : `${ph.an} / ${pa.an}`;
-    z.innerHTML = `<h3>${esc(t('ps_titre', an))}</h3><p class="aide" style="margin:0 0 8px">${esc(t('ps_sous', surf ? (SURF[L][surf] || surf) : null))}</p>
-      <table class="ps-t" style="width:100%;border-collapse:collapse;font-size:.9rem"><thead><tr><th></th><th style="text-align:right">${esc(court(z.dataset.psH))}</th><th style="text-align:right">${esc(court(z.dataset.psA))}</th></tr></thead><tbody>`
-      + t('ps_lignes').map(([k, lib]) => `<tr style="border-top:1px solid var(--line2)"><td style="padding:4px 0">${esc(lib)}</td><td style="text-align:right">${esc(String(val(k, bh, ph)))}</td><td style="text-align:right">${esc(String(val(k, ba, pa)))}</td></tr>`).join('')
-      + `</tbody></table>`;
+    // 525 (Lucas : « revoir le style et la présentation, s'inspirer de l'analyse détaillée ») : face à face en barres
+    // miroir, regroupé (bilan, service, pression, classements) ; l'avantage net en couleur du joueur, puis la liste
+    // des avantages nets — comme l'analyse détaillée. Descriptif : ne change pas le %.
+    const N = [court(z.dataset.psH), court(z.dataset.psA)], tx = (a, b) => fr ? a : b, LIB = Object.fromEntries(t('ps_lignes'));
+    const num = (k, b, p) => k === 'cl' ? ((p && p.cl && p.cl.rang) || null) : k === 'utr' ? (p && p.cl && Number(p.cl.utr)) || null : b && b[k] != null ? +b[k] : null;
+    const PCT = ['ps', 'p1', 'p2', 'pr', 'bs', 'bc'], av = [[], []];
+    const ligne = k => {
+      const sa = String(val(k, bh, ph)), sb = String(val(k, ba, pa)), x = num(k, bh, ph), y = num(k, ba, pa);
+      let w = null, net = -1;
+      if (x != null && y != null) {
+        if (PCT.includes(k)) { w = [x, y]; if (Math.abs(x - y) >= 3) net = x > y ? 0 : 1; }
+        else if (k === 'ac' || k === 'df') { const mx = Math.max(x, y, 1e-9); w = [x / mx * 100, y / mx * 100];
+          if (Math.abs(x - y) >= 0.5) net = (k === 'ac' ? x > y : x < y) ? 0 : 1; }
+        else if ((k === 'cl' || k === 'utr') && x !== y) net = x < y ? 0 : 1;
+      }
+      if (net >= 0 && k !== 'cl' && k !== 'utr') av[net].push(LIB[k].replace(/ \(.*\)$/, '').toLowerCase());
+      const bar = w ? `<span class="ad-bb"><span><i class="c1" style="width:${Math.max(2, Math.min(100, w[0])).toFixed(1)}%"></i></span><span><i class="c2" style="width:${Math.max(2, Math.min(100, w[1])).toFixed(1)}%"></i></span></span>` : '';
+      return `<div class="ad-l${w ? '' : ' tx'}"><b class="${net === 0 ? 'c1 net' : ''}">${esc(sa)}</b>${bar}<b class="${net === 1 ? 'c2 net' : ''}">${esc(sb)}</b><span class="ad-k">${esc(LIB[k])}</span></div>`;
+    };
+    const GR = [[tx('Bilan', 'Record'), ['m', 'tb']], [tx('Au service', 'On serve'), ['ps', 'p1', 'p2', 'pr', 'ac', 'df']],
+      [tx('Sous pression', 'Under pressure'), ['bs', 'bc']], [tx('Classements', 'Rankings'), ['cl', 'utr']]];
+    const corps = GR.map(([g, K]) => `<h4 class="adv-h">${esc(g)}</h4>${K.map(ligne).join('')}`).join('');
+    const phrase = i => av[i].length ? `<li><b class="c${i + 1}">${esc(N[i])}</b> : ${esc(av[i].join(', '))}</li>` : '';
+    z.innerHTML = `<h3>${esc(t('ps_titre', an))}</h3><p class="aide" style="margin:0 0 4px">${esc(t('ps_sous', surf ? (SURF[L][surf] || surf) : null))}</p>
+      <div class="adv"><div class="ad-tete"><span class="c1">${esc(N[0])}</span><span class="c2">${esc(N[1])}</span></div>${corps}
+      ${av[0].length || av[1].length ? `<p class="ad-p">${esc(tx('Avantages nets (3 points d’écart ou plus ; 0,5 par match pour les aces et les doubles fautes) :', 'Clear edges (3 points or more; 0.5 per match for aces and double faults):'))}</p><ul class="ad-av">${phrase(0)}${phrase(1)}</ul>`
+        : `<p class="ad-p">${esc(tx('Aucun avantage net : saisons proches.', 'No clear edge: similar seasons.'))}</p>`}</div>`;
     z.hidden = false;
   });
+}
+// 525 (Lucas : « revoir le style et la présentation du bilan contre le style adverse ») — même présentation que
+// l'analyse détaillée : pour chaque joueur, son style face à celui de l'adversaire, puis toutes surfaces et la surface du
+// match : victoires réelles (barre à sa couleur), attendues vu ses adversaires (trait), fourchette probable (bande),
+// l'écart en pastille (vert / rouge s'il est net, gris dans le bruit), et la phrase qui le dit.
+function styleDuel(J, m){
+  const fr = L==='fr', S_ = SURF[L][m.surface]||m.surface||'';
+  const ligne = (b, lib, i) => {
+    if (!b || !b.n || typeof b.attendu_pct !== 'number') return `<div class="sb-l"><div class="sb-h"><span>${esc(lib)}</span><span class="sb-v"><em>—</em></span></div></div>`;
+    const v = verdictStyle(b), ic = Array.isArray(b.ic95) ? b.ic95 : null, e = b.ecart_pts || 0, c = x => Math.max(0, Math.min(100, x)).toFixed(1);
+    return `<div class="sb-l" title="${esc(t('styles_vn', b.victoires, b.n))}"><div class="sb-h"><span>${esc(lib)} <small>${esc(fr ? `${fmt(b.n)} matchs` : `${fmt(b.n)} matches`)}</small></span>
+      <span class="sb-v"><b class="c${i+1}">${esc(pc0(b.pct / 100))}</b><em>${esc(fr ? `attendu ${pc0(b.attendu_pct / 100)}` : `expected ${pc0(b.attendu_pct / 100)}`)}</em><span class="sb-pt ${v && v.net ? v.sens : ''}">${esc(`${e > 0 ? '+' : e < 0 ? '−' : ''}${dec(Math.abs(e), 1)} pts`)}</span></span></div>
+      <div class="sb-b" aria-hidden="true">${ic ? `<s style="left:${c(ic[0])}%;width:${(c(ic[1]) - c(ic[0])).toFixed(1)}%"></s>` : ''}<i class="c${i+1}${v && v.net ? '' : ' pale'}" style="width:${c(b.pct)}%"></i><u style="left:${c(b.attendu_pct)}%"></u></div></div>`;
+  };
+  const j_ = (j, i) => `<section class="sb-j"><h4><span class="c${i+1}">${esc(court(i ? m.away : m.home))}</span><small>${esc([styleLib(j.style), j.style_adverse ? (fr ? `face à : ${styleLib(j.style_adverse).toLowerCase()}` : `against: ${styleLib(j.style_adverse).toLowerCase()}`) : ''].filter(Boolean).join(' · '))}</small></h4>
+    ${ligne(j.global, fr ? 'Toutes surfaces' : 'All surfaces', i)}${ligne(j.surface, S_ ? (fr ? `Sur ${S_}` : `On ${S_}`) : t('styles_surface', S_), i)}${phraseStyle(j, S_)}</section>`;
+  return `<div class="adv">${J.map(j_).join('')}<p class="ad-note">${esc(fr ? 'Barre : victoires réelles · trait : victoires attendues vu ses adversaires · bande : fourchette probable. Barre pâle et pastille grise : écart dans le bruit.' : 'Bar: actual wins · tick: wins expected given the opponents · band: likely range. Faded bar and grey badge: gap within noise.')}</p></div>`;
 }
 function rendStylesDescriptifs(sd,m){
   if (!sd || sd.descriptif_seulement !== true || !Array.isArray(sd.joueurs) || sd.joueurs.length!==2) return '';
@@ -3946,7 +4011,7 @@ function rendStylesDescriptifs(sd,m){
   const bx = okX && ADMIN ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
   const fr = L==='fr';
   return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p>
-    ${schemaStyles(sd.joueurs, m, j => styleLib(j.style), j => j.style_adverse ? styleLib(j.style_adverse) : '')}
+    ${styleDuel(sd.joueurs, m)}
     <details class="ry-det sd-det"><summary>${esc(fr?'Détail, statistiques et derniers matchs':'Detail, statistics and recent matches')}</summary><div class="styles-joueurs">${joueurs}</div></details>${bx}</div>`;
 }
 // 29/10/2026 — IMAGE POUR X : le duel des styles en PNG 1080×1350 (dessiné ici, sans bibliothèque), couleur selon
@@ -4169,7 +4234,7 @@ function rendMdj(){
         <div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendReussite(m)}
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${(VIDEO_ICI || ADMIN) ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${(VIDEO_ICI || ADMIN) && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${ADMIN ? '<button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button>' : ''}<button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button><button type="button" class="btn" id="b-qa" hidden>💬 ${esc(t('qa_titre'))}</button>${utc(m.debut).getTime() <= Date.now() ? `<button type="button" class="btn" id="b-resume-match" aria-expanded="false" aria-controls="te-resume-match">🏁 ${esc(t('rs_bouton'))}</button>` : ''}${ADMIN && utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${(VIDEO_ICI || ADMIN) ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${(VIDEO_ICI || ADMIN) && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <section id="te-resume-match" hidden aria-live="polite" style="margin-top:10px"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
@@ -4194,7 +4259,7 @@ function rendMdj(){
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div>${ligneSetsSecs(m)}</div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
       </div>`}
-      ${f && lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3>${feuilleMiroir(f, m)}</div>` : ''}
+      ${f && lignes ? `<div class="panel feuille-prevue"><h3>${esc(t('feuille_titre', nSim))}</h3>${feuilleMiroir(f, m)}</div>` : ''}
       ${rendPointsMarques(m)}
       ${m.duel_simule ? rendDuelSim(m.duel_simule,m) : rendDuel(m.duel,m)}
       ${rendQuestion(m)}
@@ -4206,8 +4271,23 @@ function rendMdj(){
   const cartesPleineLargeur = zone.querySelector('.duelx .cartes');
   const fichePleineLargeur = zone.querySelector('.mdj > .fiche');
   if (cartesPleineLargeur && fichePleineLargeur) fichePleineLargeur.querySelector('.duelx').after(cartesPleineLargeur);
+  // 525 (Lucas : « la feuille de match prévue doit se retrouver sous le match et au-dessus de la carte des joueurs »)
+  const feuillePrevue = zone.querySelector('.fiche > .feuille-prevue'), duelxF = zone.querySelector('.fiche > .duelx');
+  if (feuillePrevue && duelxF) {
+    const cartesDedans = duelxF.querySelector('.cartes');
+    if (cartesDedans) cartesDedans.before(feuillePrevue); else duelxF.after(feuillePrevue);
+  }
   const bAnalyse = document.getElementById('b-analyse-detaillee');
   if (bAnalyse) bAnalyse.onclick = () => ouvrirAnalyseDetaillee(m);
+  // 525 (Lucas : « ajouter un bouton Demande à l'algo là où on peut avoir l'analyse détaillée ») : il amène au bloc
+  // « Demande à l'algo » de la fiche et met le choix de la question sous le doigt
+  const bQa = document.getElementById('b-qa');
+  if (bQa && zone.querySelector('.fiche .qa')) {
+    bQa.hidden = false;
+    bQa.onclick = () => { const q = document.querySelector('.fiche .qa'); if (!q) return;
+      q.scrollIntoView({ block: 'start', behavior: MOINS_ANIM ? 'auto' : 'smooth' });
+      const s_ = q.querySelector('#qa-q'); if (s_) setTimeout(() => { try { s_.focus({ preventScroll: true }); } catch (e) { s_.focus(); } }, 350); };
+  }
   const bResume = document.getElementById('b-resume-match'); if (bResume) bResume.onclick = () => ouvrirResume(m);
   const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
   const bPostRes = document.getElementById('b-post-res'); if (bPostRes) bPostRes.onclick = () => ouvrirPost(m, 'resultat');
@@ -4236,7 +4316,7 @@ function tiroirsFiche(m){
   XT.match = m;
   const enveloppe = (el, cle, titre, indice) => {
     const d = document.createElement('details'); d.className = 'tiroir'; d.dataset.cle = cle;
-    d.open = cle in TIROIRS ? TIROIRS[cle] : (cle === 'match' || cle === 'stats');
+    d.open = cle in TIROIRS ? TIROIRS[cle] : (cle === 'match' || cle === 'stats' || cle === 'feuille');   // 525 : la feuille prévue ouverte
     const sm = document.createElement('summary');
     sm.innerHTML = `<span class="tt">${esc(titre)}</span>${indice ? `<span class="ti">${esc(indice)}</span>` : ''}<span class="tc" aria-hidden="true">▸</span>`;
     d.appendChild(sm); el.parentNode.insertBefore(d, el); d.appendChild(el);
@@ -4251,6 +4331,7 @@ function tiroirsFiche(m){
     if (el.hasAttribute('data-live-match')) { faits.match = enveloppe(el, 'match', t('tr_match')); return; }
     if (el.hasAttribute('data-live-stats')) { faits.stats = enveloppe(el, 'stats', t('tr_stats')); return; }
     if (el.classList.contains('duo')) { enveloppe(el, 'sets', t('tr_sets')); return; }
+    if (el.classList.contains('feuille-prevue')) { const h_ = el.querySelector('h3'); enveloppe(el, 'feuille', h_ ? h_.textContent.trim() : ''); return; }   // 525
     const h = el.querySelector('h3, h4, summary'); if (!h) return;
     const titre = h.textContent.replace(/^[^\p{L}\p{N}]+/u, '').trim(); if (!titre) return;
     let indice = '';
