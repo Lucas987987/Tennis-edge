@@ -91,6 +91,11 @@ th{color:var(--dim);font-weight:600}
 .plusde{width:100%;margin-top:8px}
 footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 .vide{color:var(--dim);font-size:.9rem;padding:6px 0}
+/* 509 : l'accès Plus, comme sur la page du tennis */
+#plus h2{margin-top:0}.prix{margin:8px 0 0}.prix .fd{color:var(--ball)}.preuve{color:var(--dim);font-size:.88rem;margin:8px 0}
+.comp td.p,.comp th.p{background:rgba(var(--wv),.05)}.comp .oui{color:var(--ok);text-align:center}.comp .non{color:var(--dim);text-align:center}
+.comp td,.comp th{text-align:center;white-space:normal}.comp td:first-child,.comp th:first-child{text-align:left;width:50%}.comp small{font-size:.78rem}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn.go{background:var(--ball);color:#0E0A24;border-color:var(--ball)}
 </style>
 </head>
 <body>
@@ -107,7 +112,9 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 <p class="sous" id="sous"></p>
 <div id="bandeau"></div>
 <div class="onglets" role="tablist" id="onglets"></div>
+<div id="bilan-haut"></div>
 <div id="contenu"><p class="vide" id="charge"></p></div>
+<section class="panel" id="plus" hidden></section>
 <section class="panel" id="methode"></section>
 <footer><p id="maj"></p><p id="pied"></p></footer>
 </div>
@@ -120,7 +127,7 @@ const T={
   charge:'Chargement des matchs…',erreur:'Matchs indisponibles pour le moment, réessayez dans un instant.',
   ligue:{International:'International',Poland:'Pologne'},
   avenir:'À venir',encours:'En cours',termines:'Terminés (24 h)',aucun:'Aucun match pour le moment.',
-  offert:'Match offert du jour',verrou:'Pronostic réservé à <a href="/#plus">Game Set Algo Plus</a>',
+  offert:'Match offert du jour',verrou:'Pronostic réservé à <a href="#plus">Game Set Algo Plus</a>',
   bandeau:'Avec Game Set Algo Plus : le % et le score le plus probable de tous les matchs. Sans abonnement : un match offert par ligue chaque jour, le % des matchs commencés et tout le bilan.',
   sabonner:'Découvrir Plus',plusde:n=>`Afficher ${n} matchs de plus`,
   fav:(n,p)=>`L'algo voit ${n} gagner à ${p} %.`,scoreProb:'Scores les plus probables',
@@ -137,6 +144,17 @@ const T={
   rienBilan:'Le bilan commence avec les premiers matchs terminés.',
   rencontres:n=>n?`Rencontres précédentes entre eux : ${n} (elles entrent dans le %).`:'Première rencontre entre eux.',
   nouveautes:"Depuis le 27 novembre 2026 : en Pologne, le % tient aussi compte des rencontres passées entre les deux joueurs ; à l'International, l'Elo oublie plus vite l'ancien niveau d'un joueur resté longtemps sans jouer. Deux réglages retenus par des études jugées une seule fois.",
+  plusT:'Accès Plus',
+  plusTexte:"Un seul accès, tout compris : le tennis et le tennis de table. Un match offert par ligue, chaque jour.",
+  prix:(t,e)=>`<b>${e(t.mois)} par mois</b> · ${e(t.trimestre)} les 3 mois · ${e(t.annee)} l’année · ${e(t.semaine)} la semaine<br><span class="fd">Fondateurs : <b>9,99 € par mois, à vie</b>, pour les 100 premiers comptes confirmés.</span>`,
+  preuve:(n,b)=>`Aujourd'hui : <b>${n} matchs</b> analysés, dont deux offerts.`+(b?` Depuis le ${b.d} : <b>${b.p} % de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.`:''),
+  compTete:['','Gratuit','Plus'],
+  comp:[['Le match offert du jour (un par ligue), en entier',true,true],['% de victoire de tous les matchs',['une fois le match commencé'],['avant le match']],
+    ['Score le plus probable et manche décisive',false,true],['Rencontres précédentes entre les joueurs (Pologne)',false,true],
+    ['Tout l’accès Plus du tennis (ATP, WTA, Challenger)',false,true],['Bilan public, toutes les erreurs comprises',true,true]],
+  fdT:'Offre fondateurs',
+  fd:"Les 100 premiers comptes confirmés sont fondateurs, automatiquement : l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Rien à réserver : crée ton compte et confirme ton adresse.",
+  creer:'Créer un compte',connexion:'Se connecter',abonner:"S'abonner",
   methodeT:'Comment ça marche',
   methode:"Un Elo propre au tennis de table, appris sur plus de 1,4 million de matchs collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Le score le plus probable vient d’une simulation manche par manche ancrée sur ce %, recalée sur la fréquence réelle de chaque score dans la ligue. Chaque réglage a été appris sur une période, puis jugé une seule fois sur la suivante. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
   maj:d=>`Mis à jour le ${d}.`,
@@ -148,7 +166,7 @@ const T={
   charge:'Loading matches…',erreur:'Matches unavailable right now, please try again shortly.',
   ligue:{International:'International',Poland:'Poland'},
   avenir:'Upcoming',encours:'Live',termines:'Finished (24 h)',aucun:'No match right now.',
-  offert:'Free match of the day',verrou:'Prediction for <a href="/#plus">Game Set Algo Plus</a> members',
+  offert:'Free match of the day',verrou:'Prediction for <a href="#plus">Game Set Algo Plus</a> members',
   bandeau:'With Game Set Algo Plus: the % and most likely score of every match. Without a subscription: one free match per league each day, the % of started matches and the full record.',
   sabonner:'Discover Plus',plusde:n=>`Show ${n} more matches`,
   fav:(n,p)=>`The algorithm gives ${n} a ${p}% chance to win.`,scoreProb:'Most likely scores',
@@ -165,6 +183,17 @@ const T={
   rienBilan:'The record starts with the first finished matches.',
   rencontres:n=>n?`Previous meetings between them: ${n} (they count in the %).`:'First meeting between them.',
   nouveautes:'Since 27 November 2026: in Poland the % also uses the past meetings between the two players; in International, the Elo forgets faster the old level of a player who has not played for a long time. Two settings kept by studies judged only once.',
+  plusT:'Plus access',
+  plusTexte:'One access, everything included: tennis and table tennis. One free match per league, every day.',
+  prix:(t,e)=>`<b>${e(t.mois)} a month</b> · ${e(t.trimestre)} for 3 months · ${e(t.annee)} a year · ${e(t.semaine)} a week<br><span class="fd">Founders: <b>€9.99 a month, for life</b>, for the first 100 confirmed accounts.</span>`,
+  preuve:(n,b)=>`Today: <b>${n} matches</b> analysed, two of them free.`+(b?` Since ${b.d}: <b>${b.p}% of winners found</b> across ${b.n} matches, every miss included.`:''),
+  compTete:['','Free','Plus'],
+  comp:[['The free match of the day (one per league), in full',true,true],['Win % for every match',['once the match has started'],['before the match']],
+    ['Most likely score and deciding game',false,true],['Previous meetings between the players (Poland)',false,true],
+    ['All of Plus for tennis (ATP, WTA, Challenger)',false,true],['Public record, every miss included',true,true]],
+  fdT:'Founders offer',
+  fd:"The first 100 confirmed accounts are founders, automatically: Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Nothing to reserve: create your account and confirm your address.",
+  creer:'Create an account',connexion:'Log in',abonner:'Subscribe',
   methodeT:'How it works',
   methode:'A table tennis Elo, learned on more than 1.4 million matches collected since 2021 and updated after every match, gives the win %. The most likely score comes from a game-by-game simulation anchored on that %, recalibrated on how often each score really happens in the league. Every setting was learned on one period, then judged once on the next. The algorithm is independent. The prediction is frozen at the scheduled start time: that is the one we judge.',
   maj:d=>`Updated ${d}.`,
@@ -174,7 +203,7 @@ const T={
 let lang='fr';
 try{const q=new URLSearchParams(location.search).get('lang');lang=q||localStorage.getItem('te_lang')||((navigator.language||'fr').startsWith('fr')?'fr':'en');}catch(e){}
 if(!T[lang])lang='fr';
-let D=null,ligue=null,ouverts=new Set(),montres={};
+let D=null,ligue=null,ouverts=new Set(),montres={},MOI=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pc=p=>Math.round(p*100);
@@ -243,7 +272,8 @@ function rendre(){const L=T[lang];document.documentElement.lang=lang;
     +(D&&D.modele&&(D.modele.changements||[]).length?`<p class="note" style="margin:8px 0 0">${esc(L.nouveautes)}</p>`:'');
   if(!D){$('contenu').innerHTML=`<p class="vide">${L.charge}</p>`;return;}
   $('maj').textContent=L.maj(dateLongue(D.genere_le));
-  $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="/#plus">${L.sabonner}</a></div>`;
+  $('bandeau').innerHTML=D.acces==='plus'?'':`<div class="panel plus"><p>${esc(L.bandeau)}</p><a class="btn" href="#plus">${L.sabonner}</a></div>`;
+  rendPlus();
   const ligues=D.ligues||['International','Poland'];if(!ligue||!ligues.includes(ligue))ligue=ligues[0];
   $('onglets').innerHTML=ligues.map(l=>{const n=(D.matchs||[]).filter(m=>m.ligue===l&&m.statut!=='termine').length;
     return `<button role="tab" aria-selected="${l===ligue}" data-l="${l}">${esc(L.ligue[l]||l)} · ${n}</button>`;}).join('');
@@ -254,7 +284,32 @@ function rendre(){const L=T[lang];document.documentElement.lang=lang;
   if(off.length&&D.acces!=='plus')h+=`<h2>${L.offert}</h2><div class="panel offert">`+off.map(ligneMatch).join('')+'</div>';
   h+=section(L.encours,ec,'encours',false)+section(L.avenir,av,'avenir',true)+section(L.termines,te,'termines',true);
   if(!M.length)h+=`<p class="vide">${L.aucun}</p>`;
-  $('contenu').innerHTML=h+bilan();}
+  $('bilan-haut').innerHTML=bilan();                 // 509 (Lucas) : le bilan en haut de la page
+  $('contenu').innerHTML=h;}
+
+// 509 (Lucas : « il faut retrouver ça sur la page de l'algo tennis de table ») — l'accès Plus, comme sur la page du
+// tennis : tarifs lus dans le compte (/compte/api/moi), tableau gratuit / Plus, offre fondateurs. Le compte se crée et
+// se gère sur la page du tennis (même compte, même accès).
+function rendPlus(){const L=T[lang],z=$('plus');
+  if(!D||D.acces==='plus'){z.hidden=true;return;}
+  const e=v=>lang==='fr'?Number(v).toFixed(2).replace('.',',')+' €':'€'+Number(v).toFixed(2);
+  const tf=MOI&&MOI.tarifs,c=MOI&&MOI.compte;
+  const n=(D.matchs||[]).filter(m=>m.statut!=='termine').length;
+  let bn=0,bb=0;Object.keys(D.bilan||{}).forEach(k=>{const b=D.bilan[k];bn+=b.matchs;bb+=b.matchs*b.bons_pct/100;});
+  const preuve=n?L.preuve(n,bn>=30?{n:bn.toLocaleString(lang),p:(100*bb/bn).toFixed(1).replace('.',lang==='fr'?',':'.'),d:jourCourt(D.depuis)}:null):'';
+  const cel=(v,cl)=>v===true?`<td class="${cl} oui">✓</td>`:v===false?`<td class="${cl} non">—</td>`:`<td class="${cl}"><small>${esc(v[0])}</small></td>`;
+  const tete=L.compTete;
+  const boutons=c?`<a class="btn go" href="/?compte=connexion">${esc(L.abonner)}</a>`
+    :`<a class="btn go" href="/?compte=inscription">${esc(L.creer)}</a><a class="btn" href="/?compte=connexion">${esc(L.connexion)}</a>`;
+  z.innerHTML=`<h2>${esc(L.plusT)}</h2><p style="margin:0">${esc(L.plusTexte)}</p>`
+    +(tf&&tf.mois!=null?`<p class="prix">${L.prix(tf,e)}</p>`:'')
+    +(preuve?`<p class="preuve">${preuve}</p>`:'')
+    +`<table class="comp"><thead><tr><th>${esc(tete[0])}</th><th>${esc(tete[1])}</th><th class="p">${esc(tete[2])}</th></tr></thead><tbody>`
+    +L.comp.map(r=>`<tr><td>${esc(r[0])}</td>${cel(r[1],'')}${cel(r[2],'p')}</tr>`).join('')+'</tbody></table>'
+    +`<div class="actions">${boutons}</div>`
+    +`<h3 style="margin:16px 0 6px">${esc(L.fdT)}</h3><p style="margin:0">${esc(L.fd)}</p>`;
+  z.hidden=false;}
+function chargerMoi(){fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(o=>{if(o&&o.ok!==false){MOI=o;rendPlus();}}).catch(()=>{});}
 
 function charger(){fetch('/tt.json',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
   .then(d=>{D=d;rendre();}).catch(()=>{if(!D)$('contenu').innerHTML=`<p class="vide">${T[lang].erreur}</p>`;});}
@@ -268,7 +323,7 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
 $('b-lang').addEventListener('click',()=>{lang=lang==='fr'?'en':'fr';try{localStorage.setItem('te_lang',lang);}catch(e){}rendre();});
 $('b-theme').addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
   document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('te_theme',c);}catch(e){}});
-rendre();charger();setInterval(charger,5*60*1000);
+rendre();charger();chargerMoi();setInterval(charger,5*60*1000);
 })();
 </script>
 </body>
