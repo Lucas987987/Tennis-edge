@@ -17,7 +17,7 @@ concurrency:
 jobs:
   etude:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
         with:
@@ -39,6 +39,12 @@ jobs:
           python badminton/etude_elo_badminton.py . | tee /tmp/elo_badminton.log
           cp badminton/rapport_elo_badminton.json /tmp/rapport_elo_badminton.json
           { echo '### Elo du badminton'; sed 's/^/    /' /tmp/elo_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Étape 2 (grille élargie, pente apprise, doubles au joueur)
+        run: |
+          set -euo pipefail
+          python badminton/etude_etape2_badminton.py . | tee /tmp/etape2_badminton.log
+          cp badminton/rapport_etape2_badminton.json /tmp/rapport_etape2_badminton.json
+          { echo '### Badminton, étape 2'; sed 's/^/    /' /tmp/etape2_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport
         run: |
           set -euo pipefail
@@ -48,9 +54,10 @@ jobs:
             git fetch -q origin main
             git reset -q --hard origin/main
             cp /tmp/rapport_elo_badminton.json badminton/rapport_elo_badminton.json
-            git add -- badminton/rapport_elo_badminton.json
+            cp /tmp/rapport_etape2_badminton.json badminton/rapport_etape2_badminton.json
+            git add -- badminton/rapport_elo_badminton.json badminton/rapport_etape2_badminton.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
-            git commit -q -m 'Étude Elo badminton (rapport)'
+            git commit -q -m 'Études Elo badminton (rapports)'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
             sleep $((i * 10))
           done
