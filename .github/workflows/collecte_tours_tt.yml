@@ -1,0 +1,68 @@
+name: Collecte tours tennis de table
+
+# 27/11/2026 (paquet 502, Lucas : « fais le ») — rattrapage, une seule fois, du tour (Final, Semifinal…) des matchs
+# « International » déjà collectés, pour l'étude du format des matchs (etude_format_tt.yml). 1 requête AllSportsApi par
+# jour d'historique (environ 2 150), à faire pendant la formule Pro. Reprend où il s'est arrêté ; une fois le rattrapage
+# terminé, un passage ne demande plus rien. Voir l'en-tête de scripts/collecte_tours_tt.py. Le journal n'affiche que des
+# comptes.
+on:
+  schedule:
+    - cron: '47 */3 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Durée au plus (minutes)'
+        default: '60'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collecte-tours-tt
+  cancel-in-progress: false
+
+jobs:
+  tours:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/collecte_tennis_de_table.py
+            /scripts/collecte_tours_tt.py
+            /historique/tennis_de_table/tours_international.json.gz
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Rattrapage des tours
+        timeout-minutes: 70
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          MINUTES: ${{ github.event.inputs.minutes || '60' }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '60'
+        run: python scripts/collecte_tours_tt.py "$MINUTES" | tee /tmp/tours.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Tours tennis de table'; sed 's/^/    /' /tmp/tours.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique/tennis_de_table/tours_international.json.gz
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Tours tennis de table $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
