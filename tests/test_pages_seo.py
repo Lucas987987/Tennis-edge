@@ -38,7 +38,7 @@ def test_pages_passe_seulement(tmp_path):
     assert '70 %' in m and 'Le favori de l\'algorithme a gagné' in m and 'href="/joueur/aaa-bbb"' in m
     sm = (tmp_path / 'sitemap.xml').read_text(encoding='utf-8')
     # 4 pages fixes (499 : + tennis de table) + 2 × (4 index + 2 matchs + 1 joueur + 1 tournoi + 1 semaine)
-    assert len(re.findall('<url>', sm)) == 4 + 2 * (4 + 2 + 1 + 1 + 1) and '/match/2026-11-21_aa_cc' in sm and '/joueur/aaa-bbb' in sm
+    assert len(re.findall('<url>', sm)) == 5 + 2 * (4 + 2 + 1 + 1 + 1) and '/match/2026-11-21_aa_cc' in sm and '/joueur/aaa-bbb' in sm   # 520 : + /badminton
 
 
 def test_branche_dans_pages_et_le_worker():
