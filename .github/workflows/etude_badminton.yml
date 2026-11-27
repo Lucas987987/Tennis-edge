@@ -51,6 +51,12 @@ jobs:
           python badminton/etude_etape3_badminton.py . | tee /tmp/etape3_badminton.log
           cp badminton/rapport_etape3_badminton.json /tmp/rapport_etape3_badminton.json
           { echo '### Badminton, étape 3'; sed 's/^/    /' /tmp/etape3_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Étape 4 (sans la série hors circuits)
+        run: |
+          set -euo pipefail
+          python badminton/etude_etape4_badminton.py . | tee /tmp/etape4_badminton.log
+          cp badminton/rapport_etape4_badminton.json /tmp/rapport_etape4_badminton.json
+          { echo '### Badminton, étape 4'; sed 's/^/    /' /tmp/etape4_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport
         run: |
           set -euo pipefail
@@ -62,7 +68,8 @@ jobs:
             cp /tmp/rapport_elo_badminton.json badminton/rapport_elo_badminton.json
             cp /tmp/rapport_etape2_badminton.json badminton/rapport_etape2_badminton.json
             cp /tmp/rapport_etape3_badminton.json badminton/rapport_etape3_badminton.json
-            git add -- badminton/rapport_elo_badminton.json badminton/rapport_etape2_badminton.json badminton/rapport_etape3_badminton.json
+            cp /tmp/rapport_etape4_badminton.json badminton/rapport_etape4_badminton.json
+            git add -- badminton/rapport_*_badminton.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
             git commit -q -m 'Études Elo badminton (rapports)'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
