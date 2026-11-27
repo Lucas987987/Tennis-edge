@@ -33,7 +33,7 @@ def test_regle():
 
 def test_workflow_et_source():
     y = open(os.path.join(R, '.github', 'workflows', 'etude_outsider_confirme.yml'), encoding='utf-8').read()
-    assert 'workflow_dispatch' in y and 'schedule' not in y and 'git add -- rapport_outsider_confirme.json' in y
+    assert 'workflow_dispatch' in y and 'schedule' not in y and 'git add -- rapport_outsider_confirme.json rapport_outsider_confirme2.json' in y
     src = open(os.path.join(R, 'scripts', 'etude_outsider_confirme.py'), encoding='utf-8').read()
     for interdit in ("['psw']", "['psl']", 'pinnacle'):   # les colonnes de cotes ne sont jamais lues
         assert interdit not in src.lower(), interdit
