@@ -1,0 +1,56 @@
+name: Étude format tennis de table
+
+# 27/11/2026 (paquet 502, Lucas : « fais le ») — peut-on prévoir le format d'un match « International » (3 ou 4 manches
+# gagnantes) par famille de tournoi, épreuve et tour ? Règle dans l'en-tête de tennis_de_table/etude_format_tt.py, écrite
+# avant tout essai ; jugé UNE SEULE FOIS du 01/10/2025 au dernier jour. À lancer une fois le rattrapage des tours fini
+# (« Collecte tours tennis de table »). Si retenu, les pronostics lisent la table du rapport ; sinon rien ne change.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-format-tt
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /tennis_de_table/
+            /historique/tennis_de_table/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests de l'étude (données factices)
+        run: python -m unittest discover -s tennis_de_table/tests -p 'test_*.py'
+      - name: Apprendre puis juger une seule fois
+        run: |
+          set -euo pipefail
+          python tennis_de_table/etude_format_tt.py . | tee /tmp/format_tt.log
+          cp tennis_de_table/rapport_format_tt.json /tmp/rapport_format_tt.json
+          { echo '### Tennis de table, format des matchs (paquet 502)'; sed 's/^/    /' /tmp/format_tt.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_format_tt.json tennis_de_table/rapport_format_tt.json
+            git add -- tennis_de_table/rapport_format_tt.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude format tennis de table (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
