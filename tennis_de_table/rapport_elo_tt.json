@@ -1,0 +1,337 @@
+{
+ "genere_le": "2026-11-27T06:41:20Z",
+ "paquet": 487,
+ "donnees": {
+  "premier_jour": "2021-01-01",
+  "dernier_jour": "2026-11-25",
+  "matchs_gardes": 1421179,
+  "apprentissage": 884446,
+  "jugement": 462949
+ },
+ "reglages_appris": {
+  "E0": {
+   "reglage": 16,
+   "log_loss_apprentissage": 0.66971
+  },
+  "E1": {
+   "reglage": [
+    400,
+    0.6
+   ],
+   "log_loss_apprentissage": 0.66233
+  },
+  "E2": {
+   "reglage": [
+    400,
+    0.6,
+    0.5,
+    20
+   ],
+   "log_loss_apprentissage": 0.65924
+  }
+ },
+ "comparaisons": {
+  "E1_contre_E0": {
+   "gain_juge": 0.0052,
+   "sens_inverse": 0.00739,
+   "retenu": true
+  },
+  "E2_contre_E1": {
+   "gain_juge": 0.00277,
+   "sens_inverse": 0.00309,
+   "retenu": true
+  }
+ },
+ "modele_retenu": "E2",
+ "jugement_toutes_ligues": {
+  "matchs": 462949,
+  "log_loss": 0.66786,
+  "pile_ou_face": 0.69315,
+  "brier": 0.23792,
+  "bons_vainqueurs_pct": 58.2,
+  "pente_etalonnage": 1.027,
+  "par_tranche": {
+   "50–60 %": {
+    "matchs": 325014,
+    "favori_annonce_pct": 54.3,
+    "favori_reel_pct": 54.5
+   },
+   "60–70 %": {
+    "matchs": 103809,
+    "favori_annonce_pct": 63.9,
+    "favori_reel_pct": 63.4
+   },
+   "70–80 %": {
+    "matchs": 26995,
+    "favori_annonce_pct": 73.9,
+    "favori_reel_pct": 75.3
+   },
+   "80–90 %": {
+    "matchs": 6319,
+    "favori_annonce_pct": 83.7,
+    "favori_reel_pct": 86.6
+   },
+   "90–100 %": {
+    "matchs": 812,
+    "favori_annonce_pct": 92.7,
+    "favori_reel_pct": 95.1
+   }
+  },
+  "tient": true
+ },
+ "jugement_par_ligue": {
+  "Belarus": {
+   "matchs": 9498,
+   "log_loss": 0.68559,
+   "pile_ou_face": 0.69315,
+   "brier": 0.24597,
+   "bons_vainqueurs_pct": 56.1,
+   "pente_etalonnage": 0.647,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 6268,
+     "favori_annonce_pct": 54.7,
+     "favori_reel_pct": 53.6
+    },
+    "60–70 %": {
+     "matchs": 2598,
+     "favori_annonce_pct": 64.0,
+     "favori_reel_pct": 60.4
+    },
+    "70–80 %": {
+     "matchs": 575,
+     "favori_annonce_pct": 73.6,
+     "favori_reel_pct": 63.3
+    },
+    "80–90 %": {
+     "matchs": 55,
+     "favori_annonce_pct": 82.9,
+     "favori_reel_pct": 65.5
+    },
+    "90–100 %": {
+     "matchs": 2,
+     "favori_annonce_pct": 90.3,
+     "favori_reel_pct": 100.0
+    }
+   },
+   "tient": false
+  },
+  "Czech Republic": {
+   "matchs": 136764,
+   "log_loss": 0.68294,
+   "pile_ou_face": 0.69315,
+   "brier": 0.24488,
+   "bons_vainqueurs_pct": 56.0,
+   "pente_etalonnage": 0.964,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 115988,
+     "favori_annonce_pct": 54.0,
+     "favori_reel_pct": 54.7
+    },
+    "60–70 %": {
+     "matchs": 18617,
+     "favori_annonce_pct": 63.2,
+     "favori_reel_pct": 62.7
+    },
+    "70–80 %": {
+     "matchs": 1932,
+     "favori_annonce_pct": 73.2,
+     "favori_reel_pct": 67.2
+    },
+    "80–90 %": {
+     "matchs": 214,
+     "favori_annonce_pct": 83.4,
+     "favori_reel_pct": 65.0
+    },
+    "90–100 %": {
+     "matchs": 13,
+     "favori_annonce_pct": 91.3,
+     "favori_reel_pct": 46.2
+    }
+   },
+   "tient": false
+  },
+  "Germany": {
+   "matchs": 2917,
+   "log_loss": 0.47749,
+   "pile_ou_face": 0.69315,
+   "brier": 0.1554,
+   "bons_vainqueurs_pct": 78.6,
+   "pente_etalonnage": 1.428,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 620,
+     "favori_annonce_pct": 55.0,
+     "favori_reel_pct": 60.2
+    },
+    "60–70 %": {
+     "matchs": 709,
+     "favori_annonce_pct": 64.9,
+     "favori_reel_pct": 72.4
+    },
+    "70–80 %": {
+     "matchs": 650,
+     "favori_annonce_pct": 75.0,
+     "favori_reel_pct": 81.2
+    },
+    "80–90 %": {
+     "matchs": 631,
+     "favori_annonce_pct": 84.9,
+     "favori_reel_pct": 91.4
+    },
+    "90–100 %": {
+     "matchs": 307,
+     "favori_annonce_pct": 93.0,
+     "favori_reel_pct": 98.4
+    }
+   },
+   "tient": false
+  },
+  "International": {
+   "matchs": 13248,
+   "log_loss": 0.58378,
+   "pile_ou_face": 0.69315,
+   "brier": 0.20011,
+   "bons_vainqueurs_pct": 68.7,
+   "pente_etalonnage": 1.343,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 5396,
+     "favori_annonce_pct": 54.6,
+     "favori_reel_pct": 56.4
+    },
+    "60–70 %": {
+     "matchs": 3811,
+     "favori_annonce_pct": 64.7,
+     "favori_reel_pct": 68.9
+    },
+    "70–80 %": {
+     "matchs": 2446,
+     "favori_annonce_pct": 74.5,
+     "favori_reel_pct": 80.5
+    },
+    "80–90 %": {
+     "matchs": 1306,
+     "favori_annonce_pct": 84.3,
+     "favori_reel_pct": 90.9
+    },
+    "90–100 %": {
+     "matchs": 289,
+     "favori_annonce_pct": 93.0,
+     "favori_reel_pct": 96.9
+    }
+   },
+   "tient": false
+  },
+  "Poland": {
+   "matchs": 125113,
+   "log_loss": 0.64926,
+   "pile_ou_face": 0.69315,
+   "brier": 0.22915,
+   "bons_vainqueurs_pct": 61.0,
+   "pente_etalonnage": 1.13,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 70876,
+     "favori_annonce_pct": 54.6,
+     "favori_reel_pct": 54.3
+    },
+    "60–70 %": {
+     "matchs": 37412,
+     "favori_annonce_pct": 64.3,
+     "favori_reel_pct": 65.2
+    },
+    "70–80 %": {
+     "matchs": 13744,
+     "favori_annonce_pct": 74.0,
+     "favori_reel_pct": 78.2
+    },
+    "80–90 %": {
+     "matchs": 2929,
+     "favori_annonce_pct": 83.5,
+     "favori_reel_pct": 87.7
+    },
+    "90–100 %": {
+     "matchs": 152,
+     "favori_annonce_pct": 91.7,
+     "favori_reel_pct": 91.4
+    }
+   },
+   "tient": true
+  },
+  "Russia": {
+   "matchs": 49831,
+   "log_loss": 0.6823,
+   "pile_ou_face": 0.69315,
+   "brier": 0.24454,
+   "bons_vainqueurs_pct": 56.3,
+   "pente_etalonnage": 0.791,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 36351,
+     "favori_annonce_pct": 54.4,
+     "favori_reel_pct": 54.2
+    },
+    "60–70 %": {
+     "matchs": 11497,
+     "favori_annonce_pct": 63.6,
+     "favori_reel_pct": 61.2
+    },
+    "70–80 %": {
+     "matchs": 1817,
+     "favori_annonce_pct": 73.5,
+     "favori_reel_pct": 67.8
+    },
+    "80–90 %": {
+     "matchs": 163,
+     "favori_annonce_pct": 82.5,
+     "favori_reel_pct": 65.0
+    },
+    "90–100 %": {
+     "matchs": 3,
+     "favori_annonce_pct": 92.3,
+     "favori_reel_pct": 100.0
+    }
+   },
+   "tient": false
+  },
+  "Ukraine": {
+   "matchs": 125578,
+   "log_loss": 0.6762,
+   "pile_ou_face": 0.69315,
+   "brier": 0.24175,
+   "bons_vainqueurs_pct": 57.1,
+   "pente_etalonnage": 0.897,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 89515,
+     "favori_annonce_pct": 54.4,
+     "favori_reel_pct": 54.2
+    },
+    "60–70 %": {
+     "matchs": 29165,
+     "favori_annonce_pct": 63.8,
+     "favori_reel_pct": 61.9
+    },
+    "70–80 %": {
+     "matchs": 5831,
+     "favori_annonce_pct": 73.9,
+     "favori_reel_pct": 71.7
+    },
+    "80–90 %": {
+     "matchs": 1021,
+     "favori_annonce_pct": 83.1,
+     "favori_reel_pct": 84.3
+    },
+    "90–100 %": {
+     "matchs": 46,
+     "favori_annonce_pct": 92.1,
+     "favori_reel_pct": 87.0
+    }
+   },
+   "tient": false
+  }
+ },
+ "verdict": "l_elo_tient"
+}
