@@ -352,6 +352,7 @@ h1{font-family:Bungee,system-ui;font-weight:400;font-size:1.7rem;line-height:1.1
 .a{color:var(--p1)}.b2{color:var(--p2)}.ok{color:var(--ok)}.ko{color:var(--ko)}
 table{width:100%;border-collapse:collapse;font-size:.95rem}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center}
 th:first-child,td:first-child{text-align:left}small{color:var(--dim)}ul.l{list-style:none;padding:0;margin:0}ul.l li{padding:7px 0;border-bottom:1px solid var(--line)}
+.fav{background:none;border:1px solid var(--ball);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}.fav[aria-pressed="true"]{color:var(--ball)}.fav-msg{font-size:.85rem;color:var(--dim)}
 .cta{display:inline-block;margin-top:10px;background:var(--ball);color:var(--cta-txt);font-weight:600;padding:10px 16px;border-radius:999px;text-decoration:none}
 footer{margin-top:34px;color:var(--dim);font-size:.85rem}footer a{color:var(--dim)}
 h3{font-size:1rem;margin:18px 0 6px}.jaune{color:var(--ball)}.aide{color:var(--dim);font-size:.85rem;margin:6px 0 0}
@@ -398,13 +399,30 @@ THEME_BASCULE = ("(function(){var b=document.querySelectorAll('.th button');func
                  "if(window.matchMedia){var q=matchMedia('(prefers-color-scheme: dark)');if(q.addEventListener)q.addEventListener('change',function(){if(v==='auto')app(v);});}})();")
 
 
+# 27/11/2026 (paquet 512, Lucas : « l'étoile sur les pages /joueur ») — suivre un joueur depuis sa page : mêmes favoris
+# que la page du tennis (le nom du joueur, sur le compte). Le bouton n'apparaît que si le compte répond (gamesetalgo.com) ;
+# sans compte, un lien pour en créer un. Rien de réservé : les favoris trient, filtrent et déclenchent les notifications Plus.
+FAV_JOUEUR = ("(function(){var b=document.querySelector('[data-fav-joueur]');if(!b)return;var n=b.getAttribute('data-fav-joueur'),"
+              "fr=document.documentElement.lang!=='en',on=false,cpt=null,m=document.querySelector('.fav-msg');"
+              "function maj(){b.textContent=(on?'\u2b50 ':'\u2606 ')+(fr?(on?'Joueur suivi':'Suivre ce joueur'):(on?'Following':'Follow this player'));"
+              "b.setAttribute('aria-pressed',String(on));}"
+              "fetch('/compte/api/moi',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(o){"
+              "if(!o||o.ok===false&&o.erreur!=='connexion')return;cpt=o.compte||null;"
+              "on=!!(cpt&&cpt.favoris&&(cpt.favoris.joueurs||[]).indexOf(n)>=0);maj();b.hidden=false;}).catch(function(){});"
+              "b.addEventListener('click',function(){if(!cpt){m.innerHTML=fr?'<a href=/?compte=inscription>Cr\u00e9e ton compte (gratuit)</a> pour suivre tes joueurs.'"
+              ":'<a href=/?compte=inscription&amp;lang=en>Create your free account</a> to follow players.';return;}"
+              "fetch('/compte/api/favoris',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},"
+              "body:JSON.stringify({type:'joueur',cle:n,actif:!on})}).then(function(r){return r.json();}).then(function(o){"
+              "if(o&&o.ok){on=(o.favoris.joueurs||[]).indexOf(n)>=0;maj();m.textContent='';}}).catch(function(){});});})();")
+
+
 def bascule_theme(L):
     lib = [('auto', 'Auto'), ('light', 'Clair' if L == 'fr' else 'Light'), ('dark', 'Sombre' if L == 'fr' else 'Dark')]
     return ('<span class="th" role="group" aria-label="' + ('Thème' if L == 'fr' else 'Theme') + '">'
             + ''.join(f'<button type="button" data-th="{k}" aria-pressed="{str(k == "dark").lower()}">{e(v)}</button>' for k, v in lib) + '</span>')
 
 
-def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=True):
+def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=True, script=''):
     """chemin : sans préfixe de langue (« /match/x ») ; la page existe dans les deux langues."""
     t = T[L]
     url = SITE + pre(L) + chemin
@@ -427,7 +445,7 @@ def page(L, titre, description, chemin, corps, ld=None, og='article', indexer=Tr
 {corps}
 <footer><p><a href="{accueil}">{e(t['accueil'])}</a> · <a href="{p}/matchs">{e(t['matchs'])}</a> · <a href="{p}/joueurs">{e(t['joueurs'])}</a> · <a href="{p}/tournois">{e(t['tournois'])}</a> · <a href="{p}/bilans">{e(t['bilans'])}</a> · <a href="/methode.html{'' if L == 'fr' else '?lang=en'}">{e(t['methode'])}</a> · <a href="/#mentions">{e(t['mentions'])}</a> · <a href="/#cgv">{e(t['cgv'])}</a></p>
 <p>{e(t['pied'])}</p></footer>
-</div><script>{THEME_BASCULE}</script></body></html>
+</div><script>{THEME_BASCULE}{script}</script></body></html>
 """
 
 
@@ -764,7 +782,7 @@ def page_joueur(nom, S, L):
                   f'<br><small>{e(t["annonce"].format(p=pc(pj, L)))}{sc}</small></li>')
     circuits = sorted({CIRCUITS.get(m['circuit'], m['circuit']) for m in ms})
     pl = 's' if len(ms) > 1 else ''
-    corps = f"""<h1>{e(nom)}</h1><p class="sub">{e(' · '.join(circuits))} · {e(t['analyses'].format(n=len(ms), s=pl if L == 'fr' else ('es' if len(ms) > 1 else '')))}</p>
+    corps = f"""<h1>{e(nom)}</h1><p><button class="fav" type="button" data-fav-joueur="{e(nom)}" aria-pressed="false" hidden></button> <span class="fav-msg" role="status"></span></p><p class="sub">{e(' · '.join(circuits))} · {e(t['analyses'].format(n=len(ms), s=pl if L == 'fr' else ('es' if len(ms) > 1 else '')))}</p>
 <div class="panel"><p><b>{e(t['vd'].format(v=v, d=d, sv=('s' if v > 1 else ''), sd=(('s' if d > 1 else '') if L == 'fr' else ('es' if d > 1 else ''))))}</b> {e(t['sur'])}</p>
 <p>{e(t['forme'])} : <b>{e(forme) or '—'}</b></p>{_prochain(nom, S, L)}</div>
 {bloc_performance(nom, S, L)}
@@ -776,7 +794,7 @@ def page_joueur(nom, S, L):
     desc = t['desc_joueur'].format(n=nom, v=v, d=d, t=len(jug), f=forme[:9])
     ld = {'@context': 'https://schema.org', '@type': 'Person', 'name': nom, 'url': f"{SITE}{pre(L)}/joueur/{S.slugs_j[nom]}"}
     return page(L, titre, desc, f"/joueur/{S.slugs_j[nom]}", corps, [ld, _fil(L, [(t['joueurs'], '/joueurs'), (nom, f"/joueur/{S.slugs_j[nom]}")])],
-                og='profile', indexer=S.indexable(nom))
+                og='profile', indexer=S.indexable(nom), script=FAV_JOUEUR)
 
 
 def _trouves(ms):
