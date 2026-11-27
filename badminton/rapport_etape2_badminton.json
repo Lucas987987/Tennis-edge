@@ -1,0 +1,589 @@
+{
+ "genere_le": "2026-11-27T19:15:03Z",
+ "etude": "etape2_badminton",
+ "regle_ecrite_le": "2026-11-27",
+ "donnees": {
+  "lignes_lues": 70973,
+  "matchs_gardes": 65274,
+  "matchs_ecartes": 5699,
+  "ecartes_par_motif": {
+   "abandon_forfait": 2349,
+   "camps_dissemblables": 4,
+   "manches_absentes": 372,
+   "manches_non_a_21": 221,
+   "nombre_de_manches": 28,
+   "non_termine": 2667,
+   "sans_vainqueur": 55,
+   "vainqueur_incoherent": 3
+  },
+  "epreuve_lue_par": {
+   "convention": 6143,
+   "joueurs": 13149,
+   "nom": 45982
+  },
+  "hors_circuit": 8804,
+  "premier_jour": "2021-01-01",
+  "dernier_jour": "2026-11-26",
+  "doubles_paire_illisible": 2,
+  "joueurs_de_double": 5577
+ },
+ "periodes": {
+  "apprentissage": 19216,
+  "jugement": 42924,
+  "lancement_non_juge": 3134
+ },
+ "c1_reglage_appris": [
+  200,
+  0.2,
+  0.75,
+  32
+ ],
+ "c1_en_butee": [
+  "w",
+  "s"
+ ],
+ "comparaisons": {
+  "C1": {
+   "gain_juge": 0.00748,
+   "sens_inverse": 0.00422,
+   "matchs_juges": 42924,
+   "retenu": true
+  },
+  "C2a": {
+   "gain_juge": 0.00095,
+   "sens_inverse": 0.00036,
+   "matchs_juges": 42924,
+   "retenu": false
+  },
+  "C2b": {
+   "saute": "C2a non retenu"
+  },
+  "C3": {
+   "gain_juge": 0.03451,
+   "sens_inverse": 0.02339,
+   "matchs_juges": 21769,
+   "retenu": true
+  }
+ },
+ "modele_retenu": {
+  "grille_elargie": true,
+  "pente": null,
+  "doubles_au_joueur": true,
+  "reglage": [
+   200,
+   0.2,
+   0.75,
+   32
+  ],
+  "betas": null
+ },
+ "jugement_toutes_epreuves": {
+  "matchs": 42924,
+  "log_loss": 0.55464,
+  "pile_ou_face": 0.69315,
+  "brier": 0.18861,
+  "bons_vainqueurs_pct": 70.5,
+  "pente_etalonnage": 1.189,
+  "par_tranche": {
+   "50–60 %": {
+    "matchs": 13534,
+    "favori_annonce_pct": 54.9,
+    "favori_reel_pct": 54.7
+   },
+   "60–70 %": {
+    "matchs": 11429,
+    "favori_annonce_pct": 64.8,
+    "favori_reel_pct": 66.8
+   },
+   "70–80 %": {
+    "matchs": 8788,
+    "favori_annonce_pct": 74.8,
+    "favori_reel_pct": 78.0
+   },
+   "80–90 %": {
+    "matchs": 6195,
+    "favori_annonce_pct": 84.6,
+    "favori_reel_pct": 88.6
+   },
+   "90–100 %": {
+    "matchs": 2978,
+    "favori_annonce_pct": 93.8,
+    "favori_reel_pct": 97.0
+   }
+  },
+  "part_peu_connus_pct": 33.6,
+  "tient": false
+ },
+ "jugement_par_epreuve": {
+  "simple messieurs": {
+   "matchs": 11950,
+   "log_loss": 0.58884,
+   "pile_ou_face": 0.69315,
+   "brier": 0.20277,
+   "bons_vainqueurs_pct": 67.7,
+   "pente_etalonnage": 1.101,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 4220,
+     "favori_annonce_pct": 54.8,
+     "favori_reel_pct": 54.3
+    },
+    "60–70 %": {
+     "matchs": 3365,
+     "favori_annonce_pct": 64.8,
+     "favori_reel_pct": 65.9
+    },
+    "70–80 %": {
+     "matchs": 2463,
+     "favori_annonce_pct": 74.6,
+     "favori_reel_pct": 76.4
+    },
+    "80–90 %": {
+     "matchs": 1431,
+     "favori_annonce_pct": 84.3,
+     "favori_reel_pct": 86.9
+    },
+    "90–100 %": {
+     "matchs": 471,
+     "favori_annonce_pct": 93.3,
+     "favori_reel_pct": 96.2
+    }
+   },
+   "part_peu_connus_pct": 24.8,
+   "tient": true
+  },
+  "simple dames": {
+   "matchs": 9205,
+   "log_loss": 0.5396,
+   "pile_ou_face": 0.69315,
+   "brier": 0.18269,
+   "bons_vainqueurs_pct": 71.6,
+   "pente_etalonnage": 1.203,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 2747,
+     "favori_annonce_pct": 54.7,
+     "favori_reel_pct": 55.3
+    },
+    "60–70 %": {
+     "matchs": 2395,
+     "favori_annonce_pct": 64.9,
+     "favori_reel_pct": 65.9
+    },
+    "70–80 %": {
+     "matchs": 1848,
+     "favori_annonce_pct": 74.9,
+     "favori_reel_pct": 79.0
+    },
+    "80–90 %": {
+     "matchs": 1377,
+     "favori_annonce_pct": 84.6,
+     "favori_reel_pct": 88.2
+    },
+    "90–100 %": {
+     "matchs": 838,
+     "favori_annonce_pct": 94.1,
+     "favori_reel_pct": 97.9
+    }
+   },
+   "part_peu_connus_pct": 21.6,
+   "tient": false
+  },
+  "double messieurs": {
+   "matchs": 7780,
+   "log_loss": 0.57107,
+   "pile_ou_face": 0.69315,
+   "brier": 0.19541,
+   "bons_vainqueurs_pct": 69.1,
+   "pente_etalonnage": 1.164,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 2577,
+     "favori_annonce_pct": 54.9,
+     "favori_reel_pct": 54.4
+    },
+    "60–70 %": {
+     "matchs": 2165,
+     "favori_annonce_pct": 64.7,
+     "favori_reel_pct": 66.4
+    },
+    "70–80 %": {
+     "matchs": 1624,
+     "favori_annonce_pct": 74.8,
+     "favori_reel_pct": 77.2
+    },
+    "80–90 %": {
+     "matchs": 1025,
+     "favori_annonce_pct": 84.6,
+     "favori_reel_pct": 88.1
+    },
+    "90–100 %": {
+     "matchs": 389,
+     "favori_annonce_pct": 93.4,
+     "favori_reel_pct": 96.9
+    }
+   },
+   "part_peu_connus_pct": 40.3,
+   "tient": false
+  },
+  "double dames": {
+   "matchs": 6495,
+   "log_loss": 0.5038,
+   "pile_ou_face": 0.69315,
+   "brier": 0.16786,
+   "bons_vainqueurs_pct": 74.3,
+   "pente_etalonnage": 1.323,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 1753,
+     "favori_annonce_pct": 54.9,
+     "favori_reel_pct": 53.9
+    },
+    "60–70 %": {
+     "matchs": 1560,
+     "favori_annonce_pct": 64.8,
+     "favori_reel_pct": 68.7
+    },
+    "70–80 %": {
+     "matchs": 1291,
+     "favori_annonce_pct": 74.7,
+     "favori_reel_pct": 80.5
+    },
+    "80–90 %": {
+     "matchs": 1151,
+     "favori_annonce_pct": 84.8,
+     "favori_reel_pct": 91.1
+    },
+    "90–100 %": {
+     "matchs": 740,
+     "favori_annonce_pct": 94.2,
+     "favori_reel_pct": 97.7
+    }
+   },
+   "part_peu_connus_pct": 44.3,
+   "tient": false
+  },
+  "double mixte": {
+   "matchs": 7494,
+   "log_loss": 0.54557,
+   "pile_ou_face": 0.69315,
+   "brier": 0.18422,
+   "bons_vainqueurs_pct": 72.1,
+   "pente_etalonnage": 1.204,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 2237,
+     "favori_annonce_pct": 55.0,
+     "favori_reel_pct": 55.9
+    },
+    "60–70 %": {
+     "matchs": 1944,
+     "favori_annonce_pct": 64.8,
+     "favori_reel_pct": 68.7
+    },
+    "70–80 %": {
+     "matchs": 1562,
+     "favori_annonce_pct": 74.8,
+     "favori_reel_pct": 78.3
+    },
+    "80–90 %": {
+     "matchs": 1211,
+     "favori_annonce_pct": 84.6,
+     "favori_reel_pct": 89.1
+    },
+    "90–100 %": {
+     "matchs": 540,
+     "favori_annonce_pct": 93.6,
+     "favori_reel_pct": 95.6
+    }
+   },
+   "part_peu_connus_pct": 46.0,
+   "tient": false
+  }
+ },
+ "peu_connus_doubles_joueur_pct": 26.2,
+ "verdict": "l_elo_ne_tient_pas",
+ "sans_hors_circuit_publie_sans_decider": {
+  "periodes": {
+   "apprentissage": 12469,
+   "jugement": 42924,
+   "lancement_non_juge": 1077
+  },
+  "c1_reglage_appris": [
+   400,
+   0.3,
+   0.75,
+   16
+  ],
+  "c1_en_butee": [
+   "c",
+   "w",
+   "s"
+  ],
+  "comparaisons": {
+   "C1": {
+    "gain_juge": 0.00857,
+    "sens_inverse": 0.00573,
+    "matchs_juges": 42924,
+    "retenu": true
+   },
+   "C2a": {
+    "gain_juge": 0.0013,
+    "sens_inverse": 0.002,
+    "matchs_juges": 42924,
+    "retenu": true
+   },
+   "C2b": {
+    "gain_juge": 2e-05,
+    "sens_inverse": -0.00016,
+    "matchs_juges": 42924,
+    "retenu": false
+   },
+   "C3": {
+    "gain_juge": 0.03702,
+    "sens_inverse": 0.02415,
+    "matchs_juges": 21769,
+    "retenu": true
+   }
+  },
+  "modele_retenu": {
+   "grille_elargie": true,
+   "pente": "une",
+   "doubles_au_joueur": true,
+   "reglage": [
+    400,
+    0.3,
+    0.75,
+    16
+   ],
+   "betas": 1.1103
+  },
+  "jugement_toutes_epreuves": {
+   "matchs": 42924,
+   "log_loss": 0.55026,
+   "pile_ou_face": 0.69315,
+   "brier": 0.18657,
+   "bons_vainqueurs_pct": 71.2,
+   "pente_etalonnage": 1.22,
+   "par_tranche": {
+    "50–60 %": {
+     "matchs": 13163,
+     "favori_annonce_pct": 54.9,
+     "favori_reel_pct": 55.7
+    },
+    "60–70 %": {
+     "matchs": 11479,
+     "favori_annonce_pct": 64.9,
+     "favori_reel_pct": 67.0
+    },
+    "70–80 %": {
+     "matchs": 9120,
+     "favori_annonce_pct": 74.8,
+     "favori_reel_pct": 78.5
+    },
+    "80–90 %": {
+     "matchs": 6362,
+     "favori_annonce_pct": 84.6,
+     "favori_reel_pct": 88.9
+    },
+    "90–100 %": {
+     "matchs": 2800,
+     "favori_annonce_pct": 93.7,
+     "favori_reel_pct": 97.5
+    }
+   },
+   "part_peu_connus_pct": 33.6,
+   "tient": false
+  },
+  "jugement_par_epreuve": {
+   "simple messieurs": {
+    "matchs": 11950,
+    "log_loss": 0.58257,
+    "pile_ou_face": 0.69315,
+    "brier": 0.20029,
+    "bons_vainqueurs_pct": 68.2,
+    "pente_etalonnage": 1.098,
+    "par_tranche": {
+     "50–60 %": {
+      "matchs": 4003,
+      "favori_annonce_pct": 54.9,
+      "favori_reel_pct": 55.0
+     },
+     "60–70 %": {
+      "matchs": 3379,
+      "favori_annonce_pct": 64.8,
+      "favori_reel_pct": 65.2
+     },
+     "70–80 %": {
+      "matchs": 2513,
+      "favori_annonce_pct": 74.7,
+      "favori_reel_pct": 76.2
+     },
+     "80–90 %": {
+      "matchs": 1517,
+      "favori_annonce_pct": 84.5,
+      "favori_reel_pct": 86.4
+     },
+     "90–100 %": {
+      "matchs": 538,
+      "favori_annonce_pct": 93.7,
+      "favori_reel_pct": 97.4
+     }
+    },
+    "part_peu_connus_pct": 24.8,
+    "tient": true
+   },
+   "simple dames": {
+    "matchs": 9205,
+    "log_loss": 0.53629,
+    "pile_ou_face": 0.69315,
+    "brier": 0.18093,
+    "bons_vainqueurs_pct": 72.5,
+    "pente_etalonnage": 1.225,
+    "par_tranche": {
+     "50–60 %": {
+      "matchs": 2594,
+      "favori_annonce_pct": 54.7,
+      "favori_reel_pct": 56.5
+     },
+     "60–70 %": {
+      "matchs": 2413,
+      "favori_annonce_pct": 65.0,
+      "favori_reel_pct": 67.0
+     },
+     "70–80 %": {
+      "matchs": 1947,
+      "favori_annonce_pct": 74.7,
+      "favori_reel_pct": 78.6
+     },
+     "80–90 %": {
+      "matchs": 1488,
+      "favori_annonce_pct": 84.7,
+      "favori_reel_pct": 88.6
+     },
+     "90–100 %": {
+      "matchs": 763,
+      "favori_annonce_pct": 93.7,
+      "favori_reel_pct": 97.5
+     }
+    },
+    "part_peu_connus_pct": 21.6,
+    "tient": false
+   },
+   "double messieurs": {
+    "matchs": 7780,
+    "log_loss": 0.56902,
+    "pile_ou_face": 0.69315,
+    "brier": 0.19435,
+    "bons_vainqueurs_pct": 69.2,
+    "pente_etalonnage": 1.209,
+    "par_tranche": {
+     "50–60 %": {
+      "matchs": 2621,
+      "favori_annonce_pct": 55.0,
+      "favori_reel_pct": 54.3
+     },
+     "60–70 %": {
+      "matchs": 2125,
+      "favori_annonce_pct": 64.7,
+      "favori_reel_pct": 66.7
+     },
+     "70–80 %": {
+      "matchs": 1676,
+      "favori_annonce_pct": 74.7,
+      "favori_reel_pct": 77.8
+     },
+     "80–90 %": {
+      "matchs": 1025,
+      "favori_annonce_pct": 84.5,
+      "favori_reel_pct": 89.7
+     },
+     "90–100 %": {
+      "matchs": 333,
+      "favori_annonce_pct": 93.5,
+      "favori_reel_pct": 97.3
+     }
+    },
+    "part_peu_connus_pct": 40.3,
+    "tient": false
+   },
+   "double dames": {
+    "matchs": 6495,
+    "log_loss": 0.49883,
+    "pile_ou_face": 0.69315,
+    "brier": 0.16517,
+    "bons_vainqueurs_pct": 75.4,
+    "pente_etalonnage": 1.386,
+    "par_tranche": {
+     "50–60 %": {
+      "matchs": 1708,
+      "favori_annonce_pct": 54.9,
+      "favori_reel_pct": 55.8
+     },
+     "60–70 %": {
+      "matchs": 1611,
+      "favori_annonce_pct": 65.0,
+      "favori_reel_pct": 69.1
+     },
+     "70–80 %": {
+      "matchs": 1338,
+      "favori_annonce_pct": 74.9,
+      "favori_reel_pct": 82.6
+     },
+     "80–90 %": {
+      "matchs": 1159,
+      "favori_annonce_pct": 84.9,
+      "favori_reel_pct": 91.2
+     },
+     "90–100 %": {
+      "matchs": 679,
+      "favori_annonce_pct": 93.8,
+      "favori_reel_pct": 98.2
+     }
+    },
+    "part_peu_connus_pct": 44.3,
+    "tient": false
+   },
+   "double mixte": {
+    "matchs": 7494,
+    "log_loss": 0.54099,
+    "pile_ou_face": 0.69315,
+    "brier": 0.18209,
+    "bons_vainqueurs_pct": 72.8,
+    "pente_etalonnage": 1.27,
+    "par_tranche": {
+     "50–60 %": {
+      "matchs": 2237,
+      "favori_annonce_pct": 55.0,
+      "favori_reel_pct": 57.4
+     },
+     "60–70 %": {
+      "matchs": 1951,
+      "favori_annonce_pct": 64.8,
+      "favori_reel_pct": 68.7
+     },
+     "70–80 %": {
+      "matchs": 1646,
+      "favori_annonce_pct": 74.8,
+      "favori_reel_pct": 79.6
+     },
+     "80–90 %": {
+      "matchs": 1173,
+      "favori_annonce_pct": 84.5,
+      "favori_reel_pct": 89.6
+     },
+     "90–100 %": {
+      "matchs": 487,
+      "favori_annonce_pct": 93.5,
+      "favori_reel_pct": 96.5
+     }
+    },
+    "part_peu_connus_pct": 46.0,
+    "tient": false
+   }
+  },
+  "peu_connus_doubles_joueur_pct": 26.2,
+  "verdict": "l_elo_ne_tient_pas",
+  "matchs_retires": 8804
+ }
+}
