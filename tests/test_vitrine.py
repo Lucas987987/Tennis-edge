@@ -174,6 +174,26 @@ class TestGarderCommences(unittest.TestCase):
         self.assertEqual(L[1]['p_home'], 0.61)          # la version nouvelle d'un match l'emporte
         self.assertTrue(L[0].get('commence_garde')) ; self.assertNotIn('commence_garde', L[1])
 
+    def test_match_retarde_commence_avant_sa_derniere_heure_garde_524(self):
+        """27/11/2026 : Ribeiro – Roncadelli, annoncé 19 h 20 puis repoussé à 21 h 30, commencé vers 20 h 30 :
+        la source ne le donnait plus et il disparaissait du site."""
+        import datetime as dt_
+        import vitrine as V
+        # passage de 20 h 43 : le programme repousse le match ; la première heure annoncée est gardée
+        L = V.noter_debut_annonce([{'uid': 'rr', 'debut': '2026-11-27T21:30'}, {'uid': 'nv', 'debut': '2026-11-27T23:00'}],
+                                  {'matchs': [{'uid': 'rr', 'debut': '2026-11-27T19:20'}]})
+        self.assertEqual(L[0]['debut_annonce'], '2026-11-27T19:20')
+        self.assertNotIn('debut_annonce', L[1])
+        # passage suivant : il a commencé (la source ne le donne plus), sa dernière heure est encore à venir
+        now = dt_.datetime(2026, 11, 27, 21, 29, tzinfo=dt_.timezone.utc)
+        ancien = {'matchs': [dict(L[0], p_home=0.317), {'uid': 'jamais_du', 'debut': '2026-11-27T22:00'}]}
+        G = V.garder_commences([], ancien, now)
+        self.assertEqual([l['uid'] for l in G], ['rr'])
+        self.assertTrue(G[0]['commence_garde'])
+        # la première heure reste la plus tôt, même si le programme la repousse encore
+        L2 = V.noter_debut_annonce([{'uid': 'rr', 'debut': '2026-11-27T22:10'}], {'matchs': [G[0]]})
+        self.assertEqual(L2[0]['debut_annonce'], '2026-11-27T19:20')
+
     def test_copie_publique_verrouillee_jamais_gardee(self):
         """Paquet 387 : chaîne courte rouge le 23/11/2026 — la copie git (verrou, sans simulation) servait d'ancienne version."""
         import datetime as dt_
