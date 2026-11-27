@@ -6,7 +6,8 @@ name: Collecte badminton
 # UTC). Voir l'en-tête de scripts/collecte_badminton.py. Le journal n'affiche que des comptes.
 on:
   schedule:
-    - cron: '13 */2 * * *'
+    # 27/11/2026 (paquet 514, Lucas : « lance ») : l'historique est complet (2 156 jours) : un seul passage par jour
+    - cron: '13 7 * * *'
   workflow_dispatch:
     inputs:
       minutes:
