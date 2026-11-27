@@ -24,7 +24,7 @@ souvent que l'Elo ne le dit). Trois variantes fixées ici :
 
 REJEU. Comme l'étude 456 : etude_depart_itf.matchs (archive depuis 2012 + résultats ITF hommes du dépôt),
 elo.de_production, départs par niveau, Elo mis à jour après chaque match ; jugés : ATP, WTA, Challenger, sans abandon
-ni compétition par équipes. Base : l'Elo seul, sans les signaux ni la simulation. Noms rapprochés par la clé de
+ni compétition par équipes. Base : l'Elo seul, sans les signaux ni la simulation. Noms rapprochés par la même clé que
 scripts/profils_saison.py ; un nom porté par deux joueurs dans les statistiques est écarté.
 
 RÈGLE ÉCRITE LE 27/11/2026, AVANT TOUT ESSAI, circuit par circuit et variante par variante :
@@ -43,10 +43,10 @@ import math
 import os
 import re
 import sys
+import unicodedata
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
-sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
 
 PAQUET = 491
 CIRCUITS = ('ATP', 'WTA', 'CH')
@@ -80,6 +80,13 @@ def brier(z):
 
 
 # ------------------------------------------------------------------ statistiques d'une année
+def cle(nom):
+    """Clé de nom, identique à scripts/profils_saison.cle (recopiée ici, 27/11 : les tests du simulateur tournent dans
+    le workflow des pronostics sans le dossier scripts/)."""
+    n = unicodedata.normalize('NFD', str(nom or '')).encode('ascii', 'ignore').decode().lower()
+    return ' '.join(re.findall(r'[a-z]+', n))
+
+
 def surface_site(g):
     g = str(g or '').lower()
     return 'Clay' if 'clay' in g else 'Hard' if 'hard' in g else 'Grass' if 'grass' in g else 'Carpet' if 'carpet' in g else None
@@ -94,7 +101,6 @@ def _service(L):
 
 def stats_annee(racine, an):
     """{clé du nom: {'tout': (matchs, ps), 'Clay': (…), …}} ; noms en double écartés."""
-    import profils_saison as PS
     p = os.path.join(racine, DOSSIER_STATS, f'{an}.jsonl.gz')
     out, vus = {}, {}
     try:
@@ -103,7 +109,7 @@ def stats_annee(racine, an):
     except OSError:
         return {}
     for r in lignes:
-        k = PS.cle(r.get('nom'))
+        k = cle(r.get('nom'))
         if not k:
             continue
         vus[k] = vus.get(k, 0) + 1
@@ -232,7 +238,6 @@ def rejeu(archive, racine):
     import backtest_pronostic as BP
     import elo as E
     import etude_depart_itf as ED
-    import profils_saison as PS
     M, n_itf = ED.matchs(archive, racine)
     el, bas = E.de_production(racine)
     nb = {}
@@ -248,7 +253,7 @@ def rejeu(archive, racine):
         pg = el.proba(g, p, s)
         if (c in CIRCUITS and APPRENTISSAGE[0] <= m['date'] < JUGEMENT[1] and not m.get('abandon')
                 and m.get('niveau') != 'D'):
-            rows.append((c, m['date'], _lg(pg), PS.cle(m.get('nom_g')), PS.cle(m.get('nom_p')), s,
+            rows.append((c, m['date'], _lg(pg), cle(m.get('nom_g')), cle(m.get('nom_p')), s,
                          min(nb.get(g, 0), nb.get(p, 0))))
         nb[g], nb[p] = nb.get(g, 0) + 1, nb.get(p, 0) + 1
         el.maj(g, p, s, m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') and m.get('sets') else None)

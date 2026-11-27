@@ -1,0 +1,286 @@
+{
+ "genere_le": "2026-11-27T08:48:29Z",
+ "paquet": 494,
+ "base_E2": [
+  400,
+  0.6,
+  0.5,
+  20
+ ],
+ "apprentissage": 884446,
+ "jugement": 462949,
+ "A_pente_par_ligue": {
+  "Belarus": {
+   "pente_apprise": 1.0,
+   "pente_reapprise_sur_jugement": 0.647,
+   "apprentissage": 0,
+   "jugement": {
+    "matchs": 9498,
+    "gain": -0.0,
+    "erreur_type": 0.0
+   },
+   "retenue": false
+  },
+  "Brazil": {
+   "pente_apprise": 1.531,
+   "pente_reapprise_sur_jugement": 1.0,
+   "apprentissage": 3539,
+   "jugement": {
+    "matchs": 0
+   },
+   "retenue": false
+  },
+  "Czech Republic": {
+   "pente_apprise": 0.887,
+   "pente_reapprise_sur_jugement": 0.964,
+   "apprentissage": 432998,
+   "jugement": {
+    "matchs": 136764,
+    "gain": -5e-05,
+    "erreur_type": 5e-05
+   },
+   "retenue": false
+  },
+  "Germany": {
+   "pente_apprise": 1.314,
+   "pente_reapprise_sur_jugement": 1.428,
+   "apprentissage": 5497,
+   "jugement": {
+    "matchs": 2917,
+    "gain": 0.01242,
+    "erreur_type": 0.00203
+   },
+   "retenue": true
+  },
+  "Hungary": {
+   "pente_apprise": 1.33,
+   "pente_reapprise_sur_jugement": 1.0,
+   "apprentissage": 3915,
+   "jugement": {
+    "matchs": 0
+   },
+   "retenue": false
+  },
+  "International": {
+   "pente_apprise": 1.249,
+   "pente_reapprise_sur_jugement": 1.343,
+   "apprentissage": 33798,
+   "jugement": {
+    "matchs": 13248,
+    "gain": 0.00528,
+    "erreur_type": 0.00064
+   },
+   "retenue": true
+  },
+  "Poland": {
+   "pente_apprise": 1.202,
+   "pente_reapprise_sur_jugement": 1.13,
+   "apprentissage": 210504,
+   "jugement": {
+    "matchs": 125113,
+    "gain": 0.00036,
+    "erreur_type": 0.00014
+   },
+   "retenue": false
+  },
+  "Russia": {
+   "pente_apprise": 0.955,
+   "pente_reapprise_sur_jugement": 0.791,
+   "apprentissage": 98534,
+   "jugement": {
+    "matchs": 49831,
+    "gain": 0.00029,
+    "erreur_type": 4e-05
+   },
+   "retenue": false
+  },
+  "Ukraine": {
+   "pente_apprise": 0.953,
+   "pente_reapprise_sur_jugement": 0.897,
+   "apprentissage": 95661,
+   "jugement": {
+    "matchs": 125578,
+    "gain": 0.00015,
+    "erreur_type": 3e-05
+   },
+   "retenue": false
+  }
+ },
+ "B_simulation_aux_points": {
+  "reglage_appris": [
+   400,
+   0.6
+  ],
+  "reglage_reappris_sur_jugement": [
+   200,
+   0.6
+  ],
+  "toutes_ligues": {
+   "matchs": 462949,
+   "gain": -0.00954,
+   "erreur_type": 0.00025,
+   "sens_inverse": -0.00963,
+   "retenue": false
+  },
+  "par_ligue": {
+   "Belarus": {
+    "matchs": 9498,
+    "gain": -0.01604,
+    "erreur_type": 0.00185,
+    "sens_inverse": 0.0,
+    "retenue": false
+   },
+   "Brazil": {
+    "matchs": 0,
+    "sens_inverse": 0.00899,
+    "retenue": false
+   },
+   "Czech Republic": {
+    "matchs": 136764,
+    "gain": -0.00746,
+    "erreur_type": 0.00037,
+    "sens_inverse": -0.00913,
+    "retenue": false
+   },
+   "Germany": {
+    "matchs": 2917,
+    "gain": 0.01729,
+    "erreur_type": 0.00505,
+    "sens_inverse": -0.01124,
+    "retenue": false
+   },
+   "Hungary": {
+    "matchs": 0,
+    "sens_inverse": -0.00416,
+    "retenue": false
+   },
+   "International": {
+    "matchs": 13248,
+    "gain": 0.00573,
+    "erreur_type": 0.00271,
+    "sens_inverse": -0.00354,
+    "retenue": false
+   },
+   "Poland": {
+    "matchs": 125113,
+    "gain": -0.01018,
+    "erreur_type": 0.00052,
+    "sens_inverse": -0.01171,
+    "retenue": false
+   },
+   "Russia": {
+    "matchs": 49831,
+    "gain": -0.01191,
+    "erreur_type": 0.0007,
+    "sens_inverse": -0.01004,
+    "retenue": false
+   },
+   "Ukraine": {
+    "matchs": 125578,
+    "gain": -0.01195,
+    "erreur_type": 0.00048,
+    "sens_inverse": -0.00989,
+    "retenue": false
+   }
+  },
+  "score_en_manches": {
+   "Czech Republic": {
+    "matchs": 136764,
+    "score_le_plus_probable_juste_pct": 21.1,
+    "proba_moyenne_du_score_reel_pct": 17.6
+   },
+   "Poland": {
+    "matchs": 125113,
+    "score_le_plus_probable_juste_pct": 24.6,
+    "proba_moyenne_du_score_reel_pct": 19.3
+   },
+   "International": {
+    "matchs": 13248,
+    "score_le_plus_probable_juste_pct": 31.7,
+    "proba_moyenne_du_score_reel_pct": 24.2
+   },
+   "Germany": {
+    "matchs": 2917,
+    "score_le_plus_probable_juste_pct": 37.6,
+    "proba_moyenne_du_score_reel_pct": 29.2
+   },
+   "Ukraine": {
+    "matchs": 125578,
+    "score_le_plus_probable_juste_pct": 22.1,
+    "proba_moyenne_du_score_reel_pct": 18.1
+   },
+   "Russia": {
+    "matchs": 49831,
+    "score_le_plus_probable_juste_pct": 20.9,
+    "proba_moyenne_du_score_reel_pct": 17.7
+   },
+   "Belarus": {
+    "matchs": 9498,
+    "score_le_plus_probable_juste_pct": 20.6,
+    "proba_moyenne_du_score_reel_pct": 17.7
+   }
+  }
+ },
+ "bilan_par_ligue": {
+  "Belarus": {
+   "matchs": 9498,
+   "modele": "E2",
+   "log_loss": 0.68559,
+   "bons_vainqueurs_pct": 56.1,
+   "pente_restante": 0.647,
+   "produit": false
+  },
+  "Czech Republic": {
+   "matchs": 136764,
+   "modele": "E2",
+   "log_loss": 0.68294,
+   "bons_vainqueurs_pct": 56.0,
+   "pente_restante": 0.964,
+   "produit": false
+  },
+  "Germany": {
+   "matchs": 2917,
+   "modele": "E2 + pente",
+   "log_loss": 0.46507,
+   "bons_vainqueurs_pct": 78.6,
+   "pente_restante": 1.087,
+   "produit": false
+  },
+  "International": {
+   "matchs": 13248,
+   "modele": "E2 + pente",
+   "log_loss": 0.5785,
+   "bons_vainqueurs_pct": 68.7,
+   "pente_restante": 1.075,
+   "produit": true
+  },
+  "Poland": {
+   "matchs": 125113,
+   "modele": "E2",
+   "log_loss": 0.64926,
+   "bons_vainqueurs_pct": 61.0,
+   "pente_restante": 1.13,
+   "produit": true
+  },
+  "Russia": {
+   "matchs": 49831,
+   "modele": "E2",
+   "log_loss": 0.6823,
+   "bons_vainqueurs_pct": 56.3,
+   "pente_restante": 0.791,
+   "produit": false
+  },
+  "Ukraine": {
+   "matchs": 125578,
+   "modele": "E2",
+   "log_loss": 0.6762,
+   "bons_vainqueurs_pct": 57.1,
+   "pente_restante": 0.897,
+   "produit": false
+  }
+ },
+ "ligues_produit": [
+  "International",
+  "Poland"
+ ]
+}
