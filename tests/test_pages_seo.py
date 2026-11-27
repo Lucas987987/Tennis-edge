@@ -37,8 +37,8 @@ def test_pages_passe_seulement(tmp_path):
     assert '<link rel="canonical" href="https://gamesetalgo.com/match/2026-11-20_aa_bb">' in m
     assert '70 %' in m and 'Le favori de l\'algorithme a gagné' in m and 'href="/joueur/aaa-bbb"' in m
     sm = (tmp_path / 'sitemap.xml').read_text(encoding='utf-8')
-    # 3 pages fixes + 2 × (4 index + 2 matchs + 1 joueur + 1 tournoi + 1 semaine)
-    assert len(re.findall('<url>', sm)) == 3 + 2 * (4 + 2 + 1 + 1 + 1) and '/match/2026-11-21_aa_cc' in sm and '/joueur/aaa-bbb' in sm
+    # 4 pages fixes (499 : + tennis de table) + 2 × (4 index + 2 matchs + 1 joueur + 1 tournoi + 1 semaine)
+    assert len(re.findall('<url>', sm)) == 4 + 2 * (4 + 2 + 1 + 1 + 1) and '/match/2026-11-21_aa_cc' in sm and '/joueur/aaa-bbb' in sm
 
 
 def test_branche_dans_pages_et_le_worker():

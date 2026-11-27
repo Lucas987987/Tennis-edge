@@ -45,6 +45,8 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   // 23/11/2026 (paquet 391) : le site s'installe comme une appli (manifeste, service worker, icônes)
   '/manifest.webmanifest': 'manifest.webmanifest', '/sw.js': 'sw.js', '/icone-192.png': 'icone-192.png', '/badge-96.png': 'badge-96.png',   // 484 : icône des notifications
   '/profils_saison.json': 'profils_saison.json',   // 487 : profil de la saison (descriptif)
+  // 27/11/2026 (paquet 499) : la page du tennis de table (indépendante pour le moment) ; ses données : /tt.json (RESERVES)
+  '/tennis-de-table': 'tennis-de-table.html', '/tennis-de-table.html': 'tennis-de-table.html', '/table-tennis': 'tennis-de-table.html',
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
 // 24/11/2026 (paquet 418) : une page par match terminé et par joueur (scripts/pages_seo.py, publiées par pages.yml)
@@ -109,7 +111,10 @@ export async function prive(req, env, nom) {
 }
 
 // 377 : fichiers réservés à l'accès Plus ; sans accès, la version libre (jamais le fichier complet, même en secours)
-export const RESERVES = Object.freeze({ '/site.json': 'site.json', '/donnees.json': 'donnees.json', '/site_admin.json': 'site_admin.json' });
+export const RESERVES = Object.freeze({ '/site.json': 'site.json', '/donnees.json': 'donnees.json', '/site_admin.json': 'site_admin.json',
+  '/tt.json': 'tt.json' });   // 499 : tennis de table (tennis_de_table/pronostics_tt.py, envoyé directement à R2)
+// 499 : version libre de chaque fichier réservé (par défaut celle du tennis)
+export const LIBRES = Object.freeze({ '/tt.json': 'tt_libre.json' });
 export async function accesPlus(req, env) {
   if (await autorise(req, env)) return true;
   const u = await utilisateur(req, env);
@@ -121,11 +126,11 @@ export async function accesAdmin(req, env) {
   return estAdmin(await utilisateur(req, env));
 }
 async function reserve(req, chemin, env) {
-  const admin = chemin !== '/site.json' && await accesAdmin(req, env);
+  const admin = chemin !== '/site.json' && chemin !== '/tt.json' && await accesAdmin(req, env);
   const plus = admin || await accesPlus(req, env);
   // /donnees.json complet (avec les sections internes) : administrateur seulement ; un abonné reçoit site.json
   const f = chemin === '/site_admin.json' ? (admin ? 'site_admin.json' : null)
-    : !plus ? 'site_libre.json' : (chemin === '/donnees.json' && !admin ? 'site.json' : RESERVES[chemin]);
+    : !plus ? (LIBRES[chemin] || 'site_libre.json') : (chemin === '/donnees.json' && !admin ? 'site.json' : RESERVES[chemin]);
   if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
   const h = { ...SECURITE, 'Content-Type': TYPES.json, 'Cache-Control': 'private, no-store', Vary: 'Cookie', 'X-Acces': plus ? 'plus' : 'libre' };
   const o = await depuisR2(env, 'site/algo/' + f);
@@ -182,7 +187,7 @@ function publiqueOuManifeste(req, url, env) {
   if (url.pathname === '/manifest.webmanifest' && !MARQUES.has(url.hostname)) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
   return publique(req, url.pathname, env);
 }
-export const PAGES_SITEMAP = ['/', '/methode.html', '/apropos.html'];
+export const PAGES_SITEMAP = ['/', '/methode.html', '/apropos.html', '/tennis-de-table'];   // 499 : tennis de table
 export function robotsTxt(officiel) {
   return officiel
     ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\n`
@@ -190,7 +195,7 @@ export function robotsTxt(officiel) {
 }
 export function sitemapXml(jour) {
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    + PAGES_SITEMAP.map(p => `  <url><loc>${SITE_OFFICIEL}${p}</loc><lastmod>${jour}</lastmod><changefreq>${p === '/' ? 'hourly' : 'monthly'}</changefreq></url>`).join('\n')
+    + PAGES_SITEMAP.map(p => `  <url><loc>${SITE_OFFICIEL}${p}</loc><lastmod>${jour}</lastmod><changefreq>${p === '/' || p === '/tennis-de-table' ? 'hourly' : 'monthly'}</changefreq></url>`).join('\n')
     + '\n</urlset>\n';
 }
 const TYPES_PRIVES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8',
