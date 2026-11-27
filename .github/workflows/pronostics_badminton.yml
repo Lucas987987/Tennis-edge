@@ -1,0 +1,55 @@
+name: Pronostics badminton
+
+# 27/11/2026 (paquet 520, Lucas : « oui » à la page du badminton) — chaque heure : l'Elo retenu par les études (étapes 3
+# et 4) rejoué sur l'historique collecté puis sur les matchs du jour déjà terminés, le % de chaque match à venir des
+# circuits BWF (aujourd'hui et demain), le bilan des matchs terminés. Voir l'en-tête de badminton/pronostics_badminton.py.
+# Les pronostics à venir ne passent JAMAIS par le dépôt public : l'état vit au coffre R2 privé, les deux fichiers de la
+# page (bad.json pour Plus, bad_libre.json pour les autres) sont envoyés directement à R2. Ce workflow ne commite rien.
+# 2 ou 3 requêtes AllSportsApi par passage. Le journal du run n'affiche que des comptes.
+on:
+  schedule:
+    - cron: '27 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pronostics-badminton
+  cancel-in-progress: false
+
+jobs:
+  pronostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /badminton/
+            /historique/badminton/
+            /tennis_de_table/elo_tt.py
+            /scripts/allsports.py
+            /scripts/collecte_tennis_de_table.py
+            /scripts/r2_io.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests (données factices)
+        run: python -m unittest discover -s badminton/tests -p 'test_*.py'
+      - name: Pronostics du jour et bilan
+        timeout-minutes: 10
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '10'
+        run: |
+          set -euo pipefail
+          python badminton/pronostics_badminton.py . | tee /tmp/pronostics_badminton.log
+          { echo '### Badminton, pronostics (paquet 520)'; sed 's/^/    /' /tmp/pronostics_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
