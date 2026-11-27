@@ -49,6 +49,7 @@ sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
 import elo_tt as ET  # noqa: E402
 import etude_etape3_tt as E3  # noqa: E402
 import format_tt as FT  # noqa: E402
+import etude_oubli_tt as EO  # noqa: E402
 
 PAQUET = 499
 SPORT = 'table-tennis'
@@ -58,6 +59,11 @@ EQUIPES = re.compile(r'champions league|team|europe cup|europe trophy|bundesliga
 RAPPORT_487 = os.path.join(ICI, 'rapport_elo_tt.json')
 RAPPORT_494 = os.path.join(ICI, 'rapport_etape2_tt.json')
 RAPPORT_496 = os.path.join(ICI, 'rapport_etape3_tt.json')
+RAPPORT_OUBLI = os.path.join(ICI, 'rapport_oubli_tt.json')                 # 507
+RAPPORT_FACE = os.path.join(ICI, 'rapport_face_a_face_tt.json')            # 507
+# 507 : changements du modèle, affichés sur la page (le bilan public couvre les deux périodes)
+CHANGEMENTS = [{'date': '2026-11-27', 'ligue': 'International', 'quoi': 'oubli'},
+               {'date': '2026-11-27', 'ligue': 'Poland', 'quoi': 'face_a_face'}]
 CLE_ETAT = 'prive/tennis_de_table/etat_pronostics.json'
 CLE_ARCHIVE = 'prive/tennis_de_table/archive/{mois}.jsonl'
 CLE_SITE = 'site/algo/tt.json'
@@ -97,53 +103,136 @@ def _lire(p):
 
 
 # ------------------------------------------------------------------ réglages retenus par les études
-def reglages(r487=RAPPORT_487, r494=RAPPORT_494, r496=RAPPORT_496):
-    """E2, pentes et ligues recalées, lus dans les rapports des études (seulement ce qu'elles ont retenu)."""
+def reglages(r487=RAPPORT_487, r494=RAPPORT_494, r496=RAPPORT_496, r_oubli=RAPPORT_OUBLI, r_face=RAPPORT_FACE):
+    """E2, pentes et ligues recalées, lus dans les rapports des études (seulement ce qu'elles ont retenu).
+    507 (Lucas : « oui fais le ») : l'Elo qui oublie pour les ligues où l'étude 503 l'a retenu (International : la
+    moitié de l'expérience oubliée après 30 jours sans jouer), le face-à-face là où il a été retenu (Pologne), avec
+    les réglages appris sur l'apprentissage, tels que jugés."""
     a = _lire(r487)
     e2 = ((a.get('reglages_appris') or {}).get('E2') or {}).get('reglage') or [400, 0.6, 0.5, 20]
     b = (_lire(r494).get('A_pente_par_ligue') or {})
     pentes = {lg: v['pente_apprise'] for lg, v in b.items() if v.get('retenue') and lg in LIGUES}
     c = (_lire(r496).get('par_ligue') or {})
     recal = sorted(lg for lg, v in c.items() if (v.get('Q2_recalage') or {}).get('retenu') and lg in LIGUES)
-    return {'e2': list(e2), 'pentes': pentes, 'recalees': recal}
+    o = _lire(r_oubli)
+    cand = o.get('candidat') or {}
+    oubli = None
+    if cand.get('famille') in ('O1', 'O2') and cand.get('reglage'):
+        oubli = {'famille': cand['famille'], 'reglage': cand['reglage'],
+                 'ligues': [lg for lg in (o.get('ligues_retenues') or []) if lg in LIGUES]}
+        if not oubli['ligues']:
+            oubli = None
+    face = {}
+    for lg, v in ((_lire(r_face).get('par_ligue') or {}).items()):
+        x = v.get('appris_sur_apprentissage') or {}
+        if lg in LIGUES and v.get('retenu') and x.get('k') and x.get('b'):
+            face[lg] = {'k': x['k'], 'b': x['b']}
+    pentes_temoin = {lg: v['pente_apprise'] for lg, v in b.items() if v.get('retenue')}   # résidus du face-à-face
+    return {'e2': list(e2), 'pentes': pentes, 'recalees': recal, 'oubli': oubli, 'face_a_face': face,
+            'pentes_temoin': pentes_temoin}
 
 
 class Modele:
-    """L'Elo de chaque joueur à la fin de l'historique (puis des matchs du jour) et la table recalée."""
+    """L'Elo de chaque joueur à la fin de l'historique (puis des matchs du jour), l'Elo qui oublie (507), le bilan de
+    chaque paire de joueurs (face-à-face, 507) et la table recalée."""
 
     def __init__(self, M, reg):
         self.reg = reg
         a, c, w, s = reg['e2']
         self.etat = {}
         P = ET.rejouer(M, a=a, c=c, w=w, s=s, etat=self.etat)
+        self.etat_oubli = {}
+        Po = None
+        if reg.get('oubli'):
+            Po = EO.rejouer_oubli(M, a, c, w=w, s=s, etat=self.etat_oubli, **self._oubli())
+        self.paires = {}
+        self._paires(M, P)
+        # le % de production de chaque match passé (même recette que predire), pour apprendre la table recalée
+        Pp = [self._prod(m[2], P[i], Po[i] if Po else None, m[3], m[4], avant=F) for i, (m, F) in
+              enumerate(zip(M, self._face_avant))]
+        del self._face_avant
         rec = set(reg['recalees'])
-        L = E3.lignes(M, P, reg['pentes'], [i for i, m in enumerate(M) if m[2] in rec])
+        L = E3.lignes(M, Pp, {}, [i for i, m in enumerate(M) if m[2] in rec])
         self.table = E3.apprendre_table(L)
         self.matchs_historique = len(M)
         self.lignes_table = len(L)
         self.cles_recentes = {(m[0], m[3], m[4]) for m in M[-20000:]}
         self.dernier_t = M[-1][0] if M else 0
 
+    def _oubli(self):
+        o = self.reg['oubli']
+        return {'plafond': o['reglage']} if o['famille'] == 'O1' else {'demi_vie': o['reglage']}
+
+    def _temoin(self, ligue, p):
+        k = self.reg.get('pentes_temoin', {}).get(ligue)
+        return _sg(k * _lg(p)) if k else p
+
+    def _paires(self, M, P):
+        """Bilan de chaque paire (résidus contre le témoin E2 + pente), comme EF.rencontres_passees : les matchs de même
+        début ne se voient pas. Garde aussi, pour l'historique, le bilan AVANT chaque match (table recalée)."""
+        avant, n_tot, i = [], len(M), 0
+        while i < n_tot:
+            j = i
+            while j < n_tot and M[j][0] == M[i][0]:
+                j += 1
+            for q in range(i, j):
+                avant.append(self.face(M[q][3], M[q][4]))
+            for q in range(i, j):
+                self._ajouter_paire(M[q], P[q])
+            i = j
+        self._face_avant = avant
+
+    def _ajouter_paire(self, m, p_e2):
+        h, b = m[3], m[4]
+        r = m[5] - self._temoin(m[2], p_e2)
+        e = self.paires.setdefault((h, b) if h < b else (b, h), [0.0, 0])
+        e[0] += r if h < b else -r
+        e[1] += 1
+
+    def face(self, h, a):
+        """(somme des résidus vue de h, rencontres passées)."""
+        e = self.paires.get((h, a) if h < a else (a, h))
+        return (0.0, 0) if e is None else (e[0] if h < a else -e[0], e[1])
+
+    def _prod(self, ligue, p_e2, p_oubli, h, a, avant=None):
+        """Le % en production pour h : Elo (qui oublie si la ligue l'a retenu), pente de la ligue, face-à-face."""
+        o = self.reg.get('oubli')
+        p = p_oubli if (o and ligue in o['ligues'] and p_oubli is not None) else p_e2
+        pente = self.reg['pentes'].get(ligue)
+        if pente:
+            p = _sg(pente * _lg(p))
+        f = self.reg.get('face_a_face', {}).get(ligue)
+        if f:
+            sx, n = avant if avant is not None else self.face(h, a)
+            if n:
+                p = _sg(_lg(p) + f['b'] * sx / (n + f['k']))
+        return p
+
     def ajouter(self, nouveaux):
-        """Matchs terminés du jour (tuples de ET.match_de) absents de l'historique : l'Elo continue."""
+        """Matchs terminés du jour (tuples de ET.match_de) absents de l'historique : les Elo et les paires continuent."""
         neufs = sorted({(m[0], m[3], m[4]): m for m in nouveaux
                         if (m[0], m[3], m[4]) not in self.cles_recentes}.values(), key=lambda x: (x[0], x[3], x[4]))
         if neufs:
             a, c, w, s = self.reg['e2']
-            ET.rejouer(neufs, a=a, c=c, w=w, s=s, etat=self.etat)
+            P = ET.rejouer(neufs, a=a, c=c, w=w, s=s, etat=self.etat)
+            if self.reg.get('oubli'):
+                EO.rejouer_oubli(neufs, a, c, w=w, s=s, etat=self.etat_oubli, **self._oubli())
+            for m, p in zip(neufs, P):
+                self._ajouter_paire(m, p)
             self.cles_recentes.update((m[0], m[3], m[4]) for m in neufs)
         return len(neufs)
 
     def elo(self, j):
         return self.etat['R'].get(j, ET.DEPART), self.etat['N'].get(j, 0)
 
+    def elo_oubli(self, j):
+        return self.etat_oubli.get('R', {}).get(j, ET.DEPART)
+
     def predire(self, ligue, h, a, n):
         """{'p_h', 'scores': [[manches h, manches a, proba]…] du plus probable au moins probable, 'decisive', 'n_h', 'n_a'}."""
         (rh, nh), (ra, na) = self.elo(h), self.elo(a)
-        p = ET.proba(rh, ra)
-        pente = self.reg['pentes'].get(ligue)
-        if pente:
-            p = _sg(pente * _lg(p))
+        p_oubli = ET.proba(self.elo_oubli(h), self.elo_oubli(a)) if self.reg.get('oubli') else None
+        p = self._prod(ligue, ET.proba(rh, ra), p_oubli, h, a)
         p = round(p, 4)                   # le même p partout : scénario, favori affiché, jugement
         fav_h = p >= 0.5
         pf = p if fav_h else 1 - p
@@ -157,8 +246,10 @@ class Modele:
         tot = sum(x[2] for x in sc) or 1.0
         sc = [[x[0], x[1], round(x[2] / tot, 4)] for x in sorted(sc, key=lambda x: -x[2])]
         dec = sum(x[2] for x in sc if min(x[0], x[1]) == n - 1)
-        return {'p_h': p, 'scores': sc, 'decisive': round(dec, 4), 'n_h': nh, 'n_a': na,
-                'elo_somme': round(rh + ra, 1)}
+        out = {'p_h': p, 'scores': sc, 'decisive': round(dec, 4), 'n_h': nh, 'n_a': na, 'elo_somme': round(rh + ra, 1)}
+        if ligue in self.reg.get('face_a_face', {}):
+            out['rencontres'] = self.face(h, a)[1]          # 507 : descriptif (affiché sur la page)
+        return out
 
 
 # ------------------------------------------------------------------ matchs du jour (AllSportsApi)
@@ -328,7 +419,7 @@ def choisir_offerts(etat, maintenant):
 # ------------------------------------------------------------------ fichiers du site
 AFFICHE = ('id', 'ligue', 't', 'tournoi', 'tour', 'h', 'a', 'statut', 'format', 'format_suppose', 'format_source',
            'manches')
-PRONOSTIC = ('p_h', 'scores', 'decisive', 'n_h', 'n_a', 'maj', 'g', 'bon', 'score_trouve', 'decisive_reelle')
+PRONOSTIC = ('p_h', 'scores', 'decisive', 'n_h', 'n_a', 'maj', 'g', 'bon', 'score_trouve', 'decisive_reelle', 'rencontres')
 
 
 def bilan_public(etat):
@@ -439,7 +530,9 @@ def passage(racine, client, cf, maintenant=None, journal=print):
     ajoutes = mod.ajouter([m for m in (ET.match_de(r, jour_paris(r['t'])) for r in lignes) if m])
     archives = mettre_a_jour(etat, lignes, mod, maintenant)
     info = {'matchs_historique': mod.matchs_historique, 'matchs_du_jour_ajoutes': ajoutes, 'pentes': reg['pentes'],
-            'recalees': reg['recalees'], 'e2': reg['e2']}
+            'recalees': reg['recalees'], 'e2': reg['e2'], 'oubli': reg.get('oubli'), 'face_a_face': reg.get('face_a_face'),
+            'changements': [c for c in CHANGEMENTS if c['ligue'] in ((reg.get('oubli') or {}).get('ligues') or [])
+                            or c['ligue'] in (reg.get('face_a_face') or {})]}
     complet, libre = site(etat, info, maintenant)
     archiver(cf, archives, maintenant)
     cf.put(CLE_ETAT, _json(etat), content_type='application/json')
