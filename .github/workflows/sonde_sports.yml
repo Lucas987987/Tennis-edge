@@ -1,0 +1,38 @@
+name: Sonde autres sports (lecture seule)
+
+# 27/11/2026 (paquet 505, Lucas : « fais le ») — quel sport après le tennis de table ? Badminton, volley-ball,
+# beach-volley, fléchettes, snooker, basket-ball : volume par jour, historique sur 5 ans, forme du score, statistiques et
+# compositions, taille des réponses. Lecture seule : rien n'est écrit dans le dépôt. Environ 70 requêtes AllSportsApi.
+# Voir l'en-tête de scripts/sonde_sports.py.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/sonde_sports.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '60'
+        run: python scripts/sonde_sports.py | tee /tmp/sonde.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Sonde autres sports'; sed 's/^/    /' /tmp/sonde.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
