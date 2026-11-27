@@ -946,6 +946,31 @@ def dedoublonner_site(matchs):
 GARDER_COMMENCES_H = 24
 
 
+def premier_debut(l):
+    """524 : la plus tôt des heures annoncées pour ce match (debut_annonce si connue, sinon debut), en UTC."""
+    t = _utc(l['debut'])
+    try:
+        return min(t, _utc(l['debut_annonce'])) if l.get('debut_annonce') else t
+    except (TypeError, ValueError):
+        return t
+
+
+def noter_debut_annonce(lignes, ancien_doc):
+    """524 : garde, pour chaque match déjà publié, la PREMIÈRE heure annoncée (le programme la repousse souvent)."""
+    avant = {l.get('uid'): l for l in (ancien_doc or {}).get('matchs') or [] if l.get('uid') and l.get('debut')}
+    for l in lignes:
+        a = avant.get(l.get('uid'))
+        if not a or not l.get('debut'):
+            continue
+        try:
+            p = premier_debut(a)
+            if p < _utc(l['debut']):
+                l['debut_annonce'] = p.strftime('%Y-%m-%dT%H:%M')
+        except (TypeError, ValueError):
+            continue
+    return lignes
+
+
 def garder_commences(lignes, ancien_doc, maintenant, racine=None):
     """06/11/2026 (paquet 209) — un match COMMENCÉ disparaît des pronostics du passage suivant (la source des matchs à
     venir ne le donne plus) : Fritz – Alcaraz, en cours, n'était plus sur le site, ni ses scores en direct. On garde
@@ -957,9 +982,14 @@ def garder_commences(lignes, ancien_doc, maintenant, racine=None):
     # 23/11/2026 (paquet 387) : la version précédente peut être la copie PUBLIQUE du dépôt (paquet 378 : matchs « à
     # l'affiche » seulement, marqués verrou, sans simulation) quand la version complète n'a pas été rapatriée (chaîne
     # courte du paquet, panne du coffre). Ces entrées ne sont jamais gardées : elles rendraient le site invalide.
+    # 27/11/2026 (paquet 524, Lucas : « Ribeiro – Roncadelli n'apparaît plus sur le site alors qu'il y était tout à
+    # l'heure ») : un match RETARDÉ par le programme (13 h → 17 h 30 → … → 21 h 30) qui commence AVANT sa dernière heure
+    # annoncée disparaissait — la source ne le donne plus (il est en cours) et son « début » gardé était encore à venir.
+    # On compte donc depuis la PREMIÈRE heure annoncée (debut_annonce, conservée d'un passage à l'autre) : un match
+    # jamais encore dû qui disparaît (annulé, faux tableau) n'est toujours pas gardé.
     garde = [dict(l, commence_garde=True) for l in (ancien_doc or {}).get('matchs') or []
              if l.get('uid') and l['uid'] not in vus and l.get('debut') and not l.get('verrou')
-             and maintenant - dt.timedelta(hours=GARDER_COMMENCES_H) < _utc(l['debut']) <= maintenant]
+             and maintenant - dt.timedelta(hours=GARDER_COMMENCES_H) < premier_debut(l) <= maintenant]
     if garde and racine:
         garde = retirer_annules(garde, racine, maintenant)
     return dedoublonner_site(sorted(lignes + garde, key=lambda l: (str(l.get('debut')), str(l.get('uid')))))   # paquet 272
@@ -1126,6 +1156,7 @@ def construire(racine, maintenant=None):
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     for l_ in lignes:                           # 26/11/2026 (paquet 456) : heure du calcul de CE match (images et textes)
         l_.setdefault('calcule_le', pron.get('genere_le'))
+    noter_debut_annonce(lignes, ancien_doc)                             # 524 : première heure annoncée
     lignes = garder_commences(lignes, ancien_doc, maintenant, racine)   # les matchs gardés gardent leur heure de calcul
     bilan_tout = bilan(resultats)
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
