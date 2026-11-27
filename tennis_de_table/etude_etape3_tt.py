@@ -21,6 +21,8 @@ jusqu'au 30/09/2025, JUGEMENT une seule fois du 01/10/2025 au dernier jour). Lig
       ancrée. Retenue si, sur au moins 1 000 matchs jugés, la log loss du score réel baisse d'au moins 0,001 ET de 2
       erreurs types, ET si la table apprise sur le jugement fait aussi mieux sur l'apprentissage (même sens).
   Le vainqueur annoncé et le % ne changent dans aucun cas (le recalage ne touche que la répartition des scores).
+  Écartés de l'étude des scores (ajout du 27/11 après un run rouge, avant tout résultat) : les matchs dont le score en
+  manches est à égalité (donnée incomplète) et les formats rares (2 ou 5 manches gagnantes) — 26 matchs sur 1,42 million.
   Ligues du produit (choix de Lucas) : International et Pologne, mises en avant.
 Rapport : tennis_de_table/rapport_etape3_tt.json (comptes et moyennes, aucun nom). Rien n'est publié sur le site.
 Usage : python tennis_de_table/etude_etape3_tt.py [racine]
@@ -118,6 +120,10 @@ def lignes(M, P, pentes, idx):
     out = []
     for i in idx:
         m = M[i]
+        mh, ma = m[8]
+        if mh == ma or max(mh, ma) != m[7] or m[7] not in (3, 4):
+            continue          # 27/11 : égalité de manches (donnée incomplète) ou format rare (2, 5 manches) — écartés
+                              # de l'étude des scores (26 matchs sur 1,42 million) ; l'Elo, lui, est rejoué comme en 487
         p = P[i]
         a = pentes.get(m[2])
         if a:

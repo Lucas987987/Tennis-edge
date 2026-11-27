@@ -1,0 +1,560 @@
+{
+ "genere_le": "2026-11-27T10:55:25Z",
+ "paquet": 496,
+ "base_E2": [
+  400,
+  0.6,
+  0.5,
+  20
+ ],
+ "pentes_par_ligue": {
+  "Germany": 1.314,
+  "International": 1.249
+ },
+ "apprentissage": 884446,
+ "jugement": 462949,
+ "par_ligue": {
+  "Belarus": {
+   "produit": false,
+   "Q1_etalonnage": {
+    "matchs": 9495,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 9488,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 16.5,
+        "reel_pct": 18.3
+       },
+       "favori 3-1": {
+        "annonce_pct": 22.1,
+        "reel_pct": 20.6
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.9,
+        "reel_pct": 17.2
+       },
+       "outsider 3-2": {
+        "annonce_pct": 16.6,
+        "reel_pct": 14.5
+       },
+       "outsider 3-1": {
+        "annonce_pct": 15.4,
+        "reel_pct": 16.4
+       },
+       "outsider 3-0": {
+        "annonce_pct": 9.5,
+        "reel_pct": 13.0
+       }
+      },
+      "manche_decisive_annoncee_pct": 36.5,
+      "manche_decisive_reelle_pct": 31.7
+     },
+     "4_manches_gagnantes": {
+      "matchs": 7,
+      "scores": {
+       "favori 4-0": {
+        "annonce_pct": 9.2,
+        "reel_pct": 14.3
+       },
+       "favori 4-1": {
+        "annonce_pct": 16.2,
+        "reel_pct": 28.6
+       },
+       "favori 4-2": {
+        "annonce_pct": 18.0,
+        "reel_pct": 0.0
+       },
+       "favori 4-3": {
+        "annonce_pct": 16.2,
+        "reel_pct": 0.0
+       },
+       "outsider 4-3": {
+        "annonce_pct": 13.7,
+        "reel_pct": 0.0
+       },
+       "outsider 4-2": {
+        "annonce_pct": 12.7,
+        "reel_pct": 0.0
+       },
+       "outsider 4-1": {
+        "annonce_pct": 9.5,
+        "reel_pct": 14.3
+       },
+       "outsider 4-0": {
+        "annonce_pct": 4.4,
+        "reel_pct": 42.9
+       }
+      },
+      "manche_decisive_annoncee_pct": 29.9,
+      "manche_decisive_reelle_pct": 0.0
+     }
+    },
+    "ecart_max_pts": 38.4,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 9495,
+    "gain": 0.0,
+    "erreur_type": 0.0,
+    "log_loss_score_ancre": 1.7922,
+    "sens_inverse": null,
+    "retenu": false
+   }
+  },
+  "Czech Republic": {
+   "produit": false,
+   "Q1_etalonnage": {
+    "matchs": 136753,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 136746,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 15.0,
+        "reel_pct": 17.3
+       },
+       "favori 3-1": {
+        "annonce_pct": 21.0,
+        "reel_pct": 21.2
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.6,
+        "reel_pct": 17.5
+       },
+       "outsider 3-2": {
+        "annonce_pct": 17.4,
+        "reel_pct": 15.8
+       },
+       "outsider 3-1": {
+        "annonce_pct": 16.5,
+        "reel_pct": 16.8
+       },
+       "outsider 3-0": {
+        "annonce_pct": 10.5,
+        "reel_pct": 11.4
+       }
+      },
+      "manche_decisive_annoncee_pct": 37.0,
+      "manche_decisive_reelle_pct": 33.3
+     },
+     "4_manches_gagnantes": {
+      "matchs": 7,
+      "scores": {
+       "favori 4-0": {
+        "annonce_pct": 7.9,
+        "reel_pct": 14.3
+       },
+       "favori 4-1": {
+        "annonce_pct": 14.7,
+        "reel_pct": 28.6
+       },
+       "favori 4-2": {
+        "annonce_pct": 17.3,
+        "reel_pct": 0.0
+       },
+       "favori 4-3": {
+        "annonce_pct": 16.2,
+        "reel_pct": 0.0
+       },
+       "outsider 4-3": {
+        "annonce_pct": 14.5,
+        "reel_pct": 0.0
+       },
+       "outsider 4-2": {
+        "annonce_pct": 13.8,
+        "reel_pct": 0.0
+       },
+       "outsider 4-1": {
+        "annonce_pct": 10.5,
+        "reel_pct": 28.6
+       },
+       "outsider 4-0": {
+        "annonce_pct": 5.0,
+        "reel_pct": 28.6
+       }
+      },
+      "manche_decisive_annoncee_pct": 30.7,
+      "manche_decisive_reelle_pct": 0.0
+     }
+    },
+    "ecart_max_pts": 23.6,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 136753,
+    "gain": 0.00374,
+    "erreur_type": 0.00032,
+    "log_loss_score_ancre": 1.7764,
+    "sens_inverse": 0.00595,
+    "retenu": true
+   }
+  },
+  "Germany": {
+   "produit": false,
+   "Q1_etalonnage": {
+    "matchs": 2917,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 2917,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 31.5,
+        "reel_pct": 37.2
+       },
+       "favori 3-1": {
+        "annonce_pct": 27.4,
+        "reel_pct": 26.9
+       },
+       "favori 3-2": {
+        "annonce_pct": 17.7,
+        "reel_pct": 14.6
+       },
+       "outsider 3-2": {
+        "annonce_pct": 10.2,
+        "reel_pct": 7.2
+       },
+       "outsider 3-1": {
+        "annonce_pct": 8.5,
+        "reel_pct": 8.1
+       },
+       "outsider 3-0": {
+        "annonce_pct": 4.7,
+        "reel_pct": 6.1
+       }
+      },
+      "manche_decisive_annoncee_pct": 27.9,
+      "manche_decisive_reelle_pct": 21.8
+     }
+    },
+    "ecart_max_pts": 5.6,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 2917,
+    "gain": 0.00388,
+    "erreur_type": 0.00478,
+    "log_loss_score_ancre": 1.4971,
+    "sens_inverse": 0.01643,
+    "retenu": false
+   }
+  },
+  "International": {
+   "produit": true,
+   "Q1_etalonnage": {
+    "matchs": 13213,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 12810,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 23.2,
+        "reel_pct": 32.4
+       },
+       "favori 3-1": {
+        "annonce_pct": 25.2,
+        "reel_pct": 22.6
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.4,
+        "reel_pct": 13.7
+       },
+       "outsider 3-2": {
+        "annonce_pct": 13.5,
+        "reel_pct": 9.7
+       },
+       "outsider 3-1": {
+        "annonce_pct": 11.8,
+        "reel_pct": 11.1
+       },
+       "outsider 3-0": {
+        "annonce_pct": 7.0,
+        "reel_pct": 10.5
+       }
+      },
+      "manche_decisive_annoncee_pct": 32.9,
+      "manche_decisive_reelle_pct": 23.4
+     },
+     "4_manches_gagnantes": {
+      "matchs": 403,
+      "scores": {
+       "favori 4-0": {
+        "annonce_pct": 12.9,
+        "reel_pct": 19.6
+       },
+       "favori 4-1": {
+        "annonce_pct": 19.5,
+        "reel_pct": 18.9
+       },
+       "favori 4-2": {
+        "annonce_pct": 19.2,
+        "reel_pct": 18.9
+       },
+       "favori 4-3": {
+        "annonce_pct": 15.7,
+        "reel_pct": 12.9
+       },
+       "outsider 4-3": {
+        "annonce_pct": 11.6,
+        "reel_pct": 10.7
+       },
+       "outsider 4-2": {
+        "annonce_pct": 10.3,
+        "reel_pct": 8.4
+       },
+       "outsider 4-1": {
+        "annonce_pct": 7.4,
+        "reel_pct": 7.2
+       },
+       "outsider 4-0": {
+        "annonce_pct": 3.3,
+        "reel_pct": 3.5
+       }
+      },
+      "manche_decisive_annoncee_pct": 27.3,
+      "manche_decisive_reelle_pct": 23.6
+     }
+    },
+    "ecart_max_pts": 9.2,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 13213,
+    "gain": 0.03887,
+    "erreur_type": 0.00251,
+    "log_loss_score_ancre": 1.6683,
+    "sens_inverse": 0.03629,
+    "retenu": true
+   }
+  },
+  "Poland": {
+   "produit": true,
+   "Q1_etalonnage": {
+    "matchs": 125105,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 125105,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 17.6,
+        "reel_pct": 20.8
+       },
+       "favori 3-1": {
+        "annonce_pct": 22.8,
+        "reel_pct": 23.7
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.9,
+        "reel_pct": 16.5
+       },
+       "outsider 3-2": {
+        "annonce_pct": 16.0,
+        "reel_pct": 14.2
+       },
+       "outsider 3-1": {
+        "annonce_pct": 14.6,
+        "reel_pct": 15.2
+       },
+       "outsider 3-0": {
+        "annonce_pct": 9.0,
+        "reel_pct": 9.6
+       }
+      },
+      "manche_decisive_annoncee_pct": 35.9,
+      "manche_decisive_reelle_pct": 30.7
+     }
+    },
+    "ecart_max_pts": 3.4,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 125105,
+    "gain": 0.00406,
+    "erreur_type": 0.00058,
+    "log_loss_score_ancre": 1.7359,
+    "sens_inverse": 0.01713,
+    "retenu": true
+   }
+  },
+  "Russia": {
+   "produit": false,
+   "Q1_etalonnage": {
+    "matchs": 49821,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 49793,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 15.9,
+        "reel_pct": 18.6
+       },
+       "favori 3-1": {
+        "annonce_pct": 21.7,
+        "reel_pct": 20.9
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.8,
+        "reel_pct": 16.8
+       },
+       "outsider 3-2": {
+        "annonce_pct": 16.9,
+        "reel_pct": 14.7
+       },
+       "outsider 3-1": {
+        "annonce_pct": 15.8,
+        "reel_pct": 16.4
+       },
+       "outsider 3-0": {
+        "annonce_pct": 9.9,
+        "reel_pct": 12.6
+       }
+      },
+      "manche_decisive_annoncee_pct": 36.7,
+      "manche_decisive_reelle_pct": 31.5
+     },
+     "4_manches_gagnantes": {
+      "matchs": 28,
+      "scores": {
+       "favori 4-0": {
+        "annonce_pct": 8.1,
+        "reel_pct": 28.6
+       },
+       "favori 4-1": {
+        "annonce_pct": 15.0,
+        "reel_pct": 35.7
+       },
+       "favori 4-2": {
+        "annonce_pct": 17.5,
+        "reel_pct": 0.0
+       },
+       "favori 4-3": {
+        "annonce_pct": 16.3,
+        "reel_pct": 0.0
+       },
+       "outsider 4-3": {
+        "annonce_pct": 14.4,
+        "reel_pct": 0.0
+       },
+       "outsider 4-2": {
+        "annonce_pct": 13.6,
+        "reel_pct": 0.0
+       },
+       "outsider 4-1": {
+        "annonce_pct": 10.2,
+        "reel_pct": 25.0
+       },
+       "outsider 4-0": {
+        "annonce_pct": 4.8,
+        "reel_pct": 10.7
+       }
+      },
+      "manche_decisive_annoncee_pct": 30.7,
+      "manche_decisive_reelle_pct": 0.0
+     }
+    },
+    "ecart_max_pts": 20.7,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 49821,
+    "gain": 0.00919,
+    "erreur_type": 0.00054,
+    "log_loss_score_ancre": 1.7855,
+    "sens_inverse": 0.00439,
+    "retenu": true
+   }
+  },
+  "Ukraine": {
+   "produit": false,
+   "Q1_etalonnage": {
+    "matchs": 125573,
+    "par_format": {
+     "3_manches_gagnantes": {
+      "matchs": 125562,
+      "scores": {
+       "favori 3-0": {
+        "annonce_pct": 16.2,
+        "reel_pct": 18.5
+       },
+       "favori 3-1": {
+        "annonce_pct": 21.8,
+        "reel_pct": 21.8
+       },
+       "favori 3-2": {
+        "annonce_pct": 19.8,
+        "reel_pct": 16.8
+       },
+       "outsider 3-2": {
+        "annonce_pct": 16.8,
+        "reel_pct": 15.3
+       },
+       "outsider 3-1": {
+        "annonce_pct": 15.7,
+        "reel_pct": 16.3
+       },
+       "outsider 3-0": {
+        "annonce_pct": 9.8,
+        "reel_pct": 11.3
+       }
+      },
+      "manche_decisive_annoncee_pct": 36.6,
+      "manche_decisive_reelle_pct": 32.1
+     },
+     "4_manches_gagnantes": {
+      "matchs": 11,
+      "scores": {
+       "favori 4-0": {
+        "annonce_pct": 7.7,
+        "reel_pct": 45.5
+       },
+       "favori 4-1": {
+        "annonce_pct": 14.6,
+        "reel_pct": 18.2
+       },
+       "favori 4-2": {
+        "annonce_pct": 17.2,
+        "reel_pct": 0.0
+       },
+       "favori 4-3": {
+        "annonce_pct": 16.3,
+        "reel_pct": 0.0
+       },
+       "outsider 4-3": {
+        "annonce_pct": 14.6,
+        "reel_pct": 0.0
+       },
+       "outsider 4-2": {
+        "annonce_pct": 13.9,
+        "reel_pct": 0.0
+       },
+       "outsider 4-1": {
+        "annonce_pct": 10.6,
+        "reel_pct": 27.3
+       },
+       "outsider 4-0": {
+        "annonce_pct": 5.0,
+        "reel_pct": 9.1
+       }
+      },
+      "manche_decisive_annoncee_pct": 30.9,
+      "manche_decisive_reelle_pct": 0.0
+     }
+    },
+    "ecart_max_pts": 37.7,
+    "etalonne": false
+   },
+   "Q2_recalage": {
+    "matchs": 125573,
+    "gain": 0.00461,
+    "erreur_type": 0.00039,
+    "log_loss_score_ancre": 1.7701,
+    "sens_inverse": 0.00752,
+    "retenu": true
+   }
+  }
+ },
+ "ligues_produit": [
+  "International",
+  "Poland"
+ ]
+}
