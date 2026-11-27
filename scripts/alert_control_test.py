@@ -136,7 +136,7 @@ def charger():
             ct = _dt(r.get('commence_time'))
             if not bk or not ct or bk in EXCHANGES:
                 continue
-            recs.append(r)
+            recs.append(mk.cle_index(r))   # 504 : champs de l'index seulement (mémoire)
             # COUPE PRÉ-MATCH : un point postérieur au coup d'envoi encode
             # déjà le déroulement de la rencontre.
             h = sorted((_dt(q[0]), float(q[1])) for q in (r.get('home_curve') or [])
