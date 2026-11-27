@@ -1,0 +1,69 @@
+name: Collecte feuilles anciennes (tennis)
+
+# 27/11/2026 (paquet 493, Lucas : « on y va ») — historique des feuilles de match du tennis (statistiques + point par
+# point), du 31/05/2026 au 01/01/2023 : ATP et WTA depuis 2023, Challenger et WTA 125 depuis 2024 (voir l'en-tête de
+# scripts/collecte_feuilles_anciennes.py). AllSportsApi (formule Pro) ; quota de TennisApi non touché ; s'arrête quand
+# il reste 60 requêtes (formule gratuite). Rangé à part dans historique/archive_feuilles/ : l'algo ne le lit pas.
+# Un jour écrit n'est jamais redemandé ; une fois l'historique fait, un passage ne fait plus aucune requête.
+on:
+  schedule:
+    - cron: '37 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Durée de collecte au plus (minutes)'
+        default: '100'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collecte-feuilles-anciennes
+  cancel-in-progress: false
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/feuilles_match.py
+            /scripts/points_match.py
+            /scripts/collecte_feuilles_anciennes.py
+            /historique/archive_feuilles/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Collecte (récents d'abord)
+        timeout-minutes: 110
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          MINUTES: ${{ github.event.inputs.minutes || '100' }}
+          ALLSPORTS_PAUSE: '0.35'
+          ALLSPORTS_RESERVE: '60'
+        run: python scripts/collecte_feuilles_anciennes.py "$MINUTES" | tee /tmp/fa.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Feuilles anciennes'; sed 's/^/    /' /tmp/fa.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique/archive_feuilles
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Feuilles anciennes $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
