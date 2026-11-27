@@ -1,0 +1,610 @@
+{
+ "genere_le": "2026-11-27T15:21:44Z",
+ "paquet": 503,
+ "etude": "face_a_face",
+ "base_E2": [
+  400,
+  0.6,
+  0.5,
+  20
+ ],
+ "pentes_par_ligue": {
+  "Germany": 1.314,
+  "International": 1.249
+ },
+ "grille_k": [
+  5,
+  10,
+  20,
+  40
+ ],
+ "apprentissage": 884440,
+ "jugement": 464162,
+ "par_ligue": {
+  "Belarus": {
+   "produit": false,
+   "matchs_apprentissage": 0,
+   "matchs_juges": 9521,
+   "appris_sur_apprentissage": {
+    "k": 5,
+    "b": 0.0,
+    "log_loss_par_k": {
+     "5": {
+      "b": 0.0,
+      "log_loss": null
+     },
+     "10": {
+      "b": 0.0,
+      "log_loss": null
+     },
+     "20": {
+      "b": 0.0,
+      "log_loss": null
+     },
+     "40": {
+      "b": 0.0,
+      "log_loss": null
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 5,
+    "b": 3.129,
+    "log_loss_par_k": {
+     "5": {
+      "b": 3.129,
+      "log_loss": 0.6693
+     },
+     "10": {
+      "b": 4.1103,
+      "log_loss": 0.66976
+     },
+     "20": {
+      "b": 5.6817,
+      "log_loss": 0.67058
+     },
+     "40": {
+      "b": 8.3608,
+      "log_loss": 0.67159
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 9521,
+    "log_loss_temoin": 0.68546,
+    "log_loss_candidat": 0.68546,
+    "gain": 0.0,
+    "erreur_type": 0.0
+   },
+   "sens_inverse": {
+    "matchs": 0
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": false,
+    "gain_au_moins_2_erreurs_types": true,
+    "sens_inverse_positif": false,
+    "meme_signe_de_b": false
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 89.1,
+    "part_au_moins_5_rencontres_pct": 62.0,
+    "part_au_moins_20_rencontres_pct": 22.0,
+    "au_moins_5_rencontres": {
+     "matchs": 5899,
+     "log_loss_temoin": 0.68228,
+     "log_loss_candidat": 0.68228,
+     "gain": 0.0,
+     "erreur_type": 0.0
+    }
+   }
+  },
+  "Czech Republic": {
+   "produit": false,
+   "matchs_apprentissage": 432997,
+   "matchs_juges": 137081,
+   "appris_sur_apprentissage": {
+    "k": 5,
+    "b": 2.366,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.366,
+      "log_loss": 0.67298
+     },
+     "10": {
+      "b": 3.0822,
+      "log_loss": 0.67309
+     },
+     "20": {
+      "b": 4.1404,
+      "log_loss": 0.67344
+     },
+     "40": {
+      "b": 5.7885,
+      "log_loss": 0.67395
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 10,
+    "b": 2.4091,
+    "log_loss_par_k": {
+     "5": {
+      "b": 1.8666,
+      "log_loss": 0.67879
+     },
+     "10": {
+      "b": 2.4091,
+      "log_loss": 0.67867
+     },
+     "20": {
+      "b": 3.173,
+      "log_loss": 0.67872
+     },
+     "40": {
+      "b": 4.2993,
+      "log_loss": 0.67894
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 137081,
+    "log_loss_temoin": 0.68293,
+    "log_loss_candidat": 0.67908,
+    "gain": 0.00385,
+    "erreur_type": 0.00031
+   },
+   "sens_inverse": {
+    "matchs": 432997,
+    "log_loss_temoin": 0.68001,
+    "log_loss_candidat": 0.67342,
+    "gain": 0.00659,
+    "erreur_type": 0.00014
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": true,
+    "gain_au_moins_2_erreurs_types": true,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 92.9,
+    "part_au_moins_5_rencontres_pct": 74.9,
+    "part_au_moins_20_rencontres_pct": 44.7,
+    "au_moins_5_rencontres": {
+     "matchs": 102660,
+     "log_loss_temoin": 0.68307,
+     "log_loss_candidat": 0.67838,
+     "gain": 0.00469,
+     "erreur_type": 0.00037
+    }
+   }
+  },
+  "Germany": {
+   "produit": false,
+   "matchs_apprentissage": 5497,
+   "matchs_juges": 2940,
+   "appris_sur_apprentissage": {
+    "k": 20,
+    "b": 8.4079,
+    "log_loss_par_k": {
+     "5": {
+      "b": 3.3478,
+      "log_loss": 0.49938
+     },
+     "10": {
+      "b": 5.2882,
+      "log_loss": 0.49894
+     },
+     "20": {
+      "b": 8.4079,
+      "log_loss": 0.49872
+     },
+     "40": {
+      "b": 13.5719,
+      "log_loss": 0.49876
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 5,
+    "b": 1.0186,
+    "log_loss_par_k": {
+     "5": {
+      "b": 1.0186,
+      "log_loss": 0.46297
+     },
+     "10": {
+      "b": 1.5384,
+      "log_loss": 0.463
+     },
+     "20": {
+      "b": 2.4795,
+      "log_loss": 0.46303
+     },
+     "40": {
+      "b": 4.2955,
+      "log_loss": 0.46304
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 2940,
+    "log_loss_temoin": 0.46346,
+    "log_loss_candidat": 0.46544,
+    "gain": -0.00197,
+    "erreur_type": 0.00183
+   },
+   "sens_inverse": {
+    "matchs": 5497,
+    "log_loss_temoin": 0.50367,
+    "log_loss_candidat": 0.50145,
+    "gain": 0.00222,
+    "erreur_type": 0.00039
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": false,
+    "gain_au_moins_2_erreurs_types": false,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 64.5,
+    "part_au_moins_5_rencontres_pct": 20.8,
+    "part_au_moins_20_rencontres_pct": 0.5,
+    "au_moins_5_rencontres": {
+     "matchs": 612,
+     "log_loss_temoin": 0.44755,
+     "log_loss_candidat": 0.45701,
+     "gain": -0.00947,
+     "erreur_type": 0.00659
+    }
+   }
+  },
+  "International": {
+   "produit": true,
+   "matchs_apprentissage": 33797,
+   "matchs_juges": 13287,
+   "appris_sur_apprentissage": {
+    "k": 5,
+    "b": 2.9965,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.9965,
+      "log_loss": 0.59361
+     },
+     "10": {
+      "b": 4.1399,
+      "log_loss": 0.59376
+     },
+     "20": {
+      "b": 5.6719,
+      "log_loss": 0.59404
+     },
+     "40": {
+      "b": 7.9363,
+      "log_loss": 0.59435
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 10,
+    "b": 4.0372,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.3598,
+      "log_loss": 0.57771
+     },
+     "10": {
+      "b": 4.0372,
+      "log_loss": 0.5777
+     },
+     "20": {
+      "b": 7.2297,
+      "log_loss": 0.5777
+     },
+     "40": {
+      "b": 13.4038,
+      "log_loss": 0.57771
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 13287,
+    "log_loss_temoin": 0.57849,
+    "log_loss_candidat": 0.57777,
+    "gain": 0.00072,
+    "erreur_type": 0.00043
+   },
+   "sens_inverse": {
+    "matchs": 33797,
+    "log_loss_temoin": 0.59608,
+    "log_loss_candidat": 0.59376,
+    "gain": 0.00232,
+    "erreur_type": 0.00036
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": false,
+    "gain_au_moins_2_erreurs_types": false,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 17.8,
+    "part_au_moins_5_rencontres_pct": 1.4,
+    "part_au_moins_20_rencontres_pct": 0.0,
+    "au_moins_5_rencontres": {
+     "matchs": 187,
+     "log_loss_temoin": 0.54928,
+     "log_loss_candidat": 0.5406,
+     "gain": 0.00868,
+     "erreur_type": 0.01052
+    }
+   }
+  },
+  "Poland": {
+   "produit": true,
+   "matchs_apprentissage": 210503,
+   "matchs_juges": 125416,
+   "appris_sur_apprentissage": {
+    "k": 20,
+    "b": 3.1004,
+    "log_loss_par_k": {
+     "5": {
+      "b": 1.8218,
+      "log_loss": 0.6189
+     },
+     "10": {
+      "b": 2.3513,
+      "log_loss": 0.61875
+     },
+     "20": {
+      "b": 3.1004,
+      "log_loss": 0.6187
+     },
+     "40": {
+      "b": 4.2017,
+      "log_loss": 0.61878
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 40,
+    "b": 3.9407,
+    "log_loss_par_k": {
+     "5": {
+      "b": 1.6171,
+      "log_loss": 0.64677
+     },
+     "10": {
+      "b": 2.14,
+      "log_loss": 0.64641
+     },
+     "20": {
+      "b": 2.8751,
+      "log_loss": 0.64613
+     },
+     "40": {
+      "b": 3.9407,
+      "log_loss": 0.64598
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 125416,
+    "log_loss_temoin": 0.64919,
+    "log_loss_candidat": 0.64614,
+    "gain": 0.00304,
+    "erreur_type": 0.00023
+   },
+   "sens_inverse": {
+    "matchs": 210503,
+    "log_loss_temoin": 0.62195,
+    "log_loss_candidat": 0.61879,
+    "gain": 0.00316,
+    "erreur_type": 0.00016
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": true,
+    "gain_au_moins_2_erreurs_types": true,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": true,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 95.2,
+    "part_au_moins_5_rencontres_pct": 81.1,
+    "part_au_moins_20_rencontres_pct": 54.1,
+    "au_moins_5_rencontres": {
+     "matchs": 101679,
+     "log_loss_temoin": 0.6554,
+     "log_loss_candidat": 0.65159,
+     "gain": 0.00381,
+     "erreur_type": 0.00028
+    }
+   }
+  },
+  "Russia": {
+   "produit": false,
+   "matchs_apprentissage": 98534,
+   "matchs_juges": 49973,
+   "appris_sur_apprentissage": {
+    "k": 5,
+    "b": 2.756,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.756,
+      "log_loss": 0.65946
+     },
+     "10": {
+      "b": 3.6157,
+      "log_loss": 0.65959
+     },
+     "20": {
+      "b": 4.9533,
+      "log_loss": 0.66011
+     },
+     "40": {
+      "b": 7.185,
+      "log_loss": 0.66084
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 5,
+    "b": 2.7097,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.7097,
+      "log_loss": 0.67062
+     },
+     "10": {
+      "b": 3.6672,
+      "log_loss": 0.67072
+     },
+     "20": {
+      "b": 5.1663,
+      "log_loss": 0.67125
+     },
+     "40": {
+      "b": 7.6485,
+      "log_loss": 0.67204
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 49973,
+    "log_loss_temoin": 0.68226,
+    "log_loss_candidat": 0.67063,
+    "gain": 0.01164,
+    "erreur_type": 0.00069
+   },
+   "sens_inverse": {
+    "matchs": 98534,
+    "log_loss_temoin": 0.67119,
+    "log_loss_candidat": 0.65946,
+    "gain": 0.01174,
+    "erreur_type": 0.00047
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": true,
+    "gain_au_moins_2_erreurs_types": true,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 85.9,
+    "part_au_moins_5_rencontres_pct": 52.8,
+    "part_au_moins_20_rencontres_pct": 15.2,
+    "au_moins_5_rencontres": {
+     "matchs": 26382,
+     "log_loss_temoin": 0.67864,
+     "log_loss_candidat": 0.66171,
+     "gain": 0.01692,
+     "erreur_type": 0.0011
+    }
+   }
+  },
+  "Ukraine": {
+   "produit": false,
+   "matchs_apprentissage": 95658,
+   "matchs_juges": 125944,
+   "appris_sur_apprentissage": {
+    "k": 5,
+    "b": 2.2819,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.2819,
+      "log_loss": 0.66775
+     },
+     "10": {
+      "b": 2.9158,
+      "log_loss": 0.66782
+     },
+     "20": {
+      "b": 3.8397,
+      "log_loss": 0.66812
+     },
+     "40": {
+      "b": 5.2692,
+      "log_loss": 0.66857
+     }
+    }
+   },
+   "appris_sur_jugement": {
+    "k": 10,
+    "b": 3.2091,
+    "log_loss_par_k": {
+     "5": {
+      "b": 2.4596,
+      "log_loss": 0.66768
+     },
+     "10": {
+      "b": 3.2091,
+      "log_loss": 0.66767
+     },
+     "20": {
+      "b": 4.3338,
+      "log_loss": 0.66796
+     },
+     "40": {
+      "b": 6.1204,
+      "log_loss": 0.66848
+     }
+    }
+   },
+   "jugement": {
+    "matchs": 125944,
+    "log_loss_temoin": 0.67619,
+    "log_loss_candidat": 0.66772,
+    "gain": 0.00847,
+    "erreur_type": 0.00034
+   },
+   "sens_inverse": {
+    "matchs": 95658,
+    "log_loss_temoin": 0.67449,
+    "log_loss_candidat": 0.66788,
+    "gain": 0.00661,
+    "erreur_type": 0.00041
+   },
+   "criteres": {
+    "au_moins_1000_juges": true,
+    "gain_au_moins_0_001": true,
+    "gain_au_moins_2_erreurs_types": true,
+    "sens_inverse_positif": true,
+    "meme_signe_de_b": true
+   },
+   "retenu": false,
+   "descriptif": {
+    "part_au_moins_1_rencontres_pct": 91.5,
+    "part_au_moins_5_rencontres_pct": 68.9,
+    "part_au_moins_20_rencontres_pct": 32.9,
+    "au_moins_5_rencontres": {
+     "matchs": 86760,
+     "log_loss_temoin": 0.67085,
+     "log_loss_candidat": 0.66092,
+     "gain": 0.00993,
+     "erreur_type": 0.00043
+    }
+   }
+  }
+ },
+ "ligues_produit": [
+  "International",
+  "Poland"
+ ],
+ "ligues_retenues": [
+  "Poland"
+ ],
+ "verdict": "retenu"
+}

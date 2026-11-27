@@ -926,7 +926,7 @@ def reinforce_watch():
                 return sorted(x for x in pts if x[0] < ct)
             h, a = pre(r.get('home_curve')), pre(r.get('away_curve'))
             if len(h) < 3 or len(a) < 3: continue
-            _recs.append(r)
+            _recs.append(mk.cle_index(r))   # 504 : champs de l'index seulement (mémoire)
             g = games.setdefault(r['uid'], {})
             g[r['book']] = {'h': h, 'a': a}
         # DÉDUPLICATION CANONIQUE : deux conventions d'uid ont coexisté du 11/06
@@ -1259,7 +1259,7 @@ def betfair_confirm_watch():
                 return sorted(x for x in pts if x[0] < ct)
             h, a = pre(r.get('home_curve')), pre(r.get('away_curve'))
             if h and a:
-                _recs.append(r)
+                _recs.append(mk.cle_index(r))   # 504 : champs de l'index seulement (mémoire)
                 games.setdefault(r['uid'], {'_ct': ct})[r['book']] = {'h': h, 'a': a}
 
     rows = []
@@ -1415,7 +1415,7 @@ def move_age_watch():
                 return sorted(x for x in pts if x[0] < ct)
             h, a = pre(r.get('home_curve')), pre(r.get('away_curve'))
             if h and a:
-                _recs.append(r)
+                _recs.append(mk.cle_index(r))   # 504 : champs de l'index seulement (mémoire)
                 games.setdefault(r['uid'], {'_ct': ct})[r['book']] = {'h': h, 'a': a}
 
     rows = []

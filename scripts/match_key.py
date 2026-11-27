@@ -180,6 +180,15 @@ def _joueurs_compatibles(n1, n2):
     return False   # cas dégénéré (>2 "joueurs"), on n'y touche pas
 
 
+def cle_index(r):
+    """28/11/2026 (paquet 504) : les seuls champs que build_index() lit (uid, joueurs, début, fixture_id, tournoi).
+    Garder l'enregistrement complet (courbes de prix comprises) pour construire l'index a fait tuer la machine du
+    Steam pipeline : même cause que move_audit.py le 30/08/2026. Même index, à une fraction de la mémoire."""
+    return {'uid': r.get('uid'), 'home_team': r.get('home_team'), 'home': r.get('home'),
+            'away_team': r.get('away_team'), 'away': r.get('away'), 'commence_time': r.get('commence_time'),
+            'fixture_id': r.get('fixture_id'), 'tournament': r.get('tournament')}
+
+
 def build_index(records):
     """records : itérable de dicts ayant uid, home/home_team, away/away_team,
     commence_time et éventuellement fixture_id."""
