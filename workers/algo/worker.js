@@ -26,7 +26,7 @@
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
 import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
 import { compterVisite, quotidien, poulsVisites, compterEvenements } from './ventes.js';
-import { notifsDirect, notifsMatin, notifsTT } from './notifs.js';   // 483 ; 510 : tennis de table
+import { notifsDirect, notifsMatin, notifsTT, notifsBad } from './notifs.js';   // 483 ; 510 : tennis de table ; 521 : badminton
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -52,12 +52,12 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
 // 24/11/2026 (paquet 418) : une page par match terminé et par joueur (scripts/pages_seo.py, publiées par pages.yml)
-export const PAGES_SEO = /^\/(?:(?:en\/)?(?:match\/[a-z0-9_-]{5,140}|joueur\/[a-z0-9-]{1,90}|tournoi\/[a-z0-9-]{1,140}|bilan\/\d{4}-s\d{2})|tennis-de-table\/(?:match\/\d{1,14}|joueur\/[a-z0-9-]{1,100}))$/;
+export const PAGES_SEO = /^\/(?:(?:en\/)?(?:match\/[a-z0-9_-]{5,140}|joueur\/[a-z0-9-]{1,90}|tournoi\/[a-z0-9-]{1,140}|bilan\/\d{4}-s\d{2})|(?:tennis-de-table|badminton)\/(?:match\/\d{1,14}|joueur\/[a-z0-9-]{1,100}))$/;   // 521 : + badminton
 // 27/11/2026 (paquet 514) : tennis de table — une page par match terminé et par joueur (tennis_de_table/pages_tt.py,
 // envoyées à R2 par le workflow horaire), leurs index et leur plan /sitemap-tt.xml
 export const INDEX_SEO = Object.fromEntries(['', '/en'].flatMap(p =>
   ['matchs', 'joueurs', 'tournois', 'bilans'].map(n => [`${p}/${n}`, `${p.slice(1)}${p ? '/' : ''}${n}.html`]))
-  .concat(['matchs', 'joueurs'].map(n => [`/tennis-de-table/${n}`, `tennis-de-table/${n}.html`])));   // 514
+  .concat(['tennis-de-table', 'badminton'].flatMap(sp => ['matchs', 'joueurs'].map(n => [`/${sp}/${n}`, `${sp}/${n}.html`]))));   // 514 ; 521
 // 391 : le script et la feuille de style de la page, sortis à la publication (scripts/decouper_page.py) ; leur nom
 // contient l'empreinte de leur contenu : gardés un an par le navigateur
 export const EMPREINTES = /^\/(app-[0-9a-f]{12}\.js|style-[0-9a-f]{12}\.css)$/;
@@ -196,7 +196,7 @@ function publiqueOuManifeste(req, url, env) {
 export const PAGES_SITEMAP = ['/', '/methode.html', '/apropos.html', '/tennis-de-table', '/badminton'];   // 499 : tennis de table ; 520 : badminton
 export function robotsTxt(officiel) {
   return officiel
-    ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\nSitemap: ${SITE_OFFICIEL}/sitemap-tt.xml\n`
+    ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\nSitemap: ${SITE_OFFICIEL}/sitemap-tt.xml\nSitemap: ${SITE_OFFICIEL}/sitemap-bad.xml\n`
     : 'User-agent: *\nDisallow: /\n';
 }
 export function sitemapXml(jour) {
@@ -860,7 +860,8 @@ export default {
     const c = event && event.cron;
     if (c === '* * * * *') {
       // 510 : le tennis de table toutes les 5 minutes (sa page n'est refaite qu'une fois par heure ; rien si rien de neuf)
-      const tt = new Date((event && event.scheduledTime) || Date.now()).getUTCMinutes() % 5 === 2 ? notifsTT(env).catch(() => null) : null;
+      const mn_ = new Date((event && event.scheduledTime) || Date.now()).getUTCMinutes() % 5;
+      const tt = mn_ === 2 ? notifsTT(env).catch(() => null) : mn_ === 4 ? notifsBad(env).catch(() => null) : null;   // 521 : badminton
       return ctx.waitUntil(Promise.all([notifsDirect(env, () => directPourNotifs(env), Date.now(), (id) => statsPourNotifs(env, id)).catch(() => null), tt]));
     }
     if (c === '7 * * * *') return ctx.waitUntil(poulsVisites(env));
@@ -880,8 +881,8 @@ export default {
     }
     // 479 : pages match / joueur / tournoi / bilan ouvertes (totaux du jour)
     if (req.method === 'GET' && MARQUES.has(url.hostname) && PAGES_SEO.test(url.pathname) && ctx && ctx.waitUntil) {
-      const m_ = url.pathname.match(/^\/(?:en\/|tennis-de-table\/)?(match|joueur|tournoi|bilan)\//);
-      const t_ = m_ && (m_[1] + (url.pathname.startsWith('/tennis-de-table/') ? '_tt' : ''));
+      const m_ = url.pathname.match(/^\/(?:en\/|tennis-de-table\/|badminton\/)?(match|joueur|tournoi|bilan)\//);
+      const t_ = m_ && (m_[1] + (url.pathname.startsWith('/tennis-de-table/') ? '_tt' : url.pathname.startsWith('/badminton/') ? '_bad' : ''));
       if (t_) ctx.waitUntil(compterEvenements(req, env, { e: { ['page_' + t_]: 1 } }).catch(() => {}));
     }
     if (url.pathname === '/vendor/status') return vendorStatus(req);
@@ -918,8 +919,8 @@ export default {
       const o = await depuisR2(env, 'site/algo/sitemap.xml');
       return new Response(o ? o.body : sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
     }
-    if (url.pathname === '/sitemap-tt.xml' && officiel) {   // 514 : le plan des pages du tennis de table
-      const o = await depuisR2(env, 'site/algo/sitemap-tt.xml');
+    if ((url.pathname === '/sitemap-tt.xml' || url.pathname === '/sitemap-bad.xml') && officiel) {   // 514 ; 521 : badminton
+      const o = await depuisR2(env, 'site/algo' + url.pathname);
       if (!o) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
       return new Response(o.body, { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
     }

@@ -121,3 +121,28 @@ test('tennis de table : sans favori « tt: » la page n’est même pas lue ; un
   assert.equal(envois.length, 0);
   assert.deepEqual(N.interessesTT({ u: { x: { j: ['tt:A'], m: [] }, y: { j: ['A'], m: ['tt:5'] } } }, { id: 5, h: 'A', a: 'B' }), ['x', 'y']);
 });
+
+test('521 : badminton — mêmes notifications, préfixe « bad: », sa propre page et son propre état ; le ping ne s’en mêle pas', async () => {
+  const { env, C, envois } = monde();
+  const tel = await telephone(3);
+  const c = await compte(env, ID, true, { favoris: { joueurs: ['bad:Lee Z. J.'], matchs: ['tt:99'] } });
+  await worker.fetch(post('/compte/api/push', { appareil: tel.appareil }, c), env);
+  envois.length = 0;
+  const recus = async () => { const L = []; for (const e of envois) L.push(await dechiffrer(tel, e.corps)); envois.length = 0; return L; };
+  const B = (id, statut, t, extra = {}) => ({ id, t: Math.round(t / 1000), tournoi: 'Open, MS', epreuve: 'simple messieurs',
+    h: 'Lee Z. J.', a: 'Axelsen V.', statut, p_h: 0.42, ...extra });
+  const bad = (genere, matchs) => JSON.stringify({ genere_le: genere, acces: 'plus', matchs });
+  C.m.set(N.BAD_R2, bad('2026-11-27T06:27:00Z', [B(1, 'a_venir', T0 + 2 * 3600e3)]));
+  await N.notifsBad(env, T0 - 3 * 3600e3);
+  assert.deepEqual(await recus(), []);
+  await N.notifsBad(env, T0);
+  let L = await recus();
+  assert.equal(L.length, 1); assert.equal(L[0].titre, '🏸 Tes favoris jouent aujourd\'hui'); assert.equal(L[0].url, '/badminton');
+  C.m.set(N.BAD_R2, bad('2026-11-27T11:27:00Z', [B(1, 'termine', T0 + 2 * 3600e3, { g: 1, manches: [[21, 18], [15, 21], [21, 19]] })]));
+  await N.notifsBad(env, T0 + 3 * 3600e3);
+  L = await recus();
+  assert.equal(L.length, 1); assert.equal(L[0].titre, '🏁 Lee Z. J. bat Axelsen V.');
+  assert.equal(L[0].texte, "2-1. L'algo donnait Axelsen V. à 58 % ❌");
+  assert.ok(C.m.has(N.ETAT_BAD_R2) && !C.m.has(N.ETAT_TT_R2));
+  assert.deepEqual(N.interessesPage({ u: { x: { j: ['bad:A'], m: [] }, y: { j: ['tt:A'], m: [] } } }, { id: 5, h: 'A', a: 'B' }, N.SPORTS_PAGE.bad), ['x']);
+});

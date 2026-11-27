@@ -99,3 +99,18 @@ test('520 : badminton — page servie, /bad.json complet pour Plus, version libr
   assert.equal(r.headers.get('X-Acces'), 'libre');
   assert.deepEqual(await r.json(), { acces: 'libre', sport: 'bad' });
 });
+
+test('521 : pages de référencement du badminton servies depuis R2, plan annoncé', async () => {
+  const env = monde();
+  env.COFFRE.m.set('site/algo/badminton/match/987654.html', '<h1>match bad</h1>');
+  env.COFFRE.m.set('site/algo/badminton/joueur/lee-zii-jia.html', '<h1>joueur bad</h1>');
+  env.COFFRE.m.set('site/algo/badminton/joueurs.html', '<h1>index bad</h1>');
+  env.COFFRE.m.set('site/algo/sitemap-bad.xml', '<urlset>bad</urlset>');
+  const lire = async (p) => { const r = await worker.fetch(new Request(SITE + p, { headers: { Accept: 'text/html' } }), env); return [r.status, await r.text()]; };
+  assert.deepEqual(await lire('/badminton/match/987654'), [200, '<h1>match bad</h1>']);
+  assert.deepEqual(await lire('/badminton/joueur/lee-zii-jia'), [200, '<h1>joueur bad</h1>']);
+  assert.deepEqual(await lire('/badminton/joueurs'), [200, '<h1>index bad</h1>']);
+  assert.deepEqual(await lire('/sitemap-bad.xml'), [200, '<urlset>bad</urlset>']);
+  assert.equal((await lire('/badminton/match/abc'))[0], 404);
+  assert.match((await lire('/robots.txt'))[1], /Sitemap: https:\/\/gamesetalgo\.com\/sitemap-bad\.xml/);
+});
