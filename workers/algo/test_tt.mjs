@@ -65,3 +65,19 @@ test('499 : sitemap de secours avec la page du tennis de table', async () => {
   const t = await (await worker.fetch(new Request(SITE + '/sitemap.xml'), env)).text();
   assert.ok(t.includes('<loc>https://gamesetalgo.com/tennis-de-table</loc>'));
 });
+
+test('514 : pages de référencement du tennis de table servies depuis R2, plan annoncé', async () => {
+  const env = monde();
+  env.COFFRE.m.set('site/algo/tennis-de-table/match/123456.html', '<h1>match tt</h1>');
+  env.COFFRE.m.set('site/algo/tennis-de-table/joueur/jan-kowalski.html', '<h1>joueur tt</h1>');
+  env.COFFRE.m.set('site/algo/tennis-de-table/matchs.html', '<h1>index tt</h1>');
+  env.COFFRE.m.set('site/algo/sitemap-tt.xml', '<urlset>tt</urlset>');
+  const lire = async (p) => { const r = await worker.fetch(new Request(SITE + p, { headers: { Accept: 'text/html' } }), env); return [r.status, await r.text()]; };
+  assert.deepEqual(await lire('/tennis-de-table/match/123456'), [200, '<h1>match tt</h1>']);
+  assert.deepEqual(await lire('/tennis-de-table/joueur/jan-kowalski'), [200, '<h1>joueur tt</h1>']);
+  assert.deepEqual(await lire('/tennis-de-table/matchs'), [200, '<h1>index tt</h1>']);
+  assert.deepEqual(await lire('/sitemap-tt.xml'), [200, '<urlset>tt</urlset>']);
+  assert.equal((await lire('/tennis-de-table/match/../../prive'))[0], 404);
+  assert.equal((await lire('/tennis-de-table/match/abc'))[0], 404);
+  assert.match((await lire('/robots.txt'))[1], /Sitemap: https:\/\/gamesetalgo\.com\/sitemap-tt\.xml/);
+});
