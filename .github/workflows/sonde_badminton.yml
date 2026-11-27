@@ -1,0 +1,36 @@
+name: Sonde badminton (matchs à venir, lecture seule)
+
+# 27/11/2026 (paquet 518, Lucas : « oui ») — avant la page du badminton : la source annonce-t-elle les matchs à
+# l'avance (tableau publié, heure, tour, format) ? Aujourd'hui et les 4 jours suivants, environ 5 requêtes AllSportsApi.
+# Lecture seule : rien n'est écrit dans le dépôt. Voir l'en-tête de scripts/sonde_badminton_avenir.py.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/allsports.py
+            /scripts/sonde_badminton_avenir.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          ALLSPORTS_PAUSE: '0.35'
+        run: python scripts/sonde_badminton_avenir.py | tee /tmp/sonde.log
+      - name: Résumé
+        if: always()
+        run: |
+          { echo '### Sonde badminton (à venir)'; sed 's/^/    /' /tmp/sonde.log 2>/dev/null || true; } >> "$GITHUB_STEP_SUMMARY"
