@@ -50,9 +50,12 @@ export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donne
   '/icone-512.png': 'icone-512.png', '/icone-maskable-512.png': 'icone-maskable-512.png', '/apple-touch-icon.png': 'apple-touch-icon.png' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
 // 24/11/2026 (paquet 418) : une page par match terminé et par joueur (scripts/pages_seo.py, publiées par pages.yml)
-export const PAGES_SEO = /^\/(?:en\/)?(?:match\/[a-z0-9_-]{5,140}|joueur\/[a-z0-9-]{1,90}|tournoi\/[a-z0-9-]{1,140}|bilan\/\d{4}-s\d{2})$/;
+export const PAGES_SEO = /^\/(?:(?:en\/)?(?:match\/[a-z0-9_-]{5,140}|joueur\/[a-z0-9-]{1,90}|tournoi\/[a-z0-9-]{1,140}|bilan\/\d{4}-s\d{2})|tennis-de-table\/(?:match\/\d{1,14}|joueur\/[a-z0-9-]{1,100}))$/;
+// 27/11/2026 (paquet 514) : tennis de table — une page par match terminé et par joueur (tennis_de_table/pages_tt.py,
+// envoyées à R2 par le workflow horaire), leurs index et leur plan /sitemap-tt.xml
 export const INDEX_SEO = Object.fromEntries(['', '/en'].flatMap(p =>
-  ['matchs', 'joueurs', 'tournois', 'bilans'].map(n => [`${p}/${n}`, `${p.slice(1)}${p ? '/' : ''}${n}.html`])));
+  ['matchs', 'joueurs', 'tournois', 'bilans'].map(n => [`${p}/${n}`, `${p.slice(1)}${p ? '/' : ''}${n}.html`]))
+  .concat(['matchs', 'joueurs'].map(n => [`/tennis-de-table/${n}`, `tennis-de-table/${n}.html`])));   // 514
 // 391 : le script et la feuille de style de la page, sortis à la publication (scripts/decouper_page.py) ; leur nom
 // contient l'empreinte de leur contenu : gardés un an par le navigateur
 export const EMPREINTES = /^\/(app-[0-9a-f]{12}\.js|style-[0-9a-f]{12}\.css)$/;
@@ -190,7 +193,7 @@ function publiqueOuManifeste(req, url, env) {
 export const PAGES_SITEMAP = ['/', '/methode.html', '/apropos.html', '/tennis-de-table'];   // 499 : tennis de table
 export function robotsTxt(officiel) {
   return officiel
-    ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\n`
+    ? `User-agent: *\nAllow: /\nDisallow: /compte/\nDisallow: /live\nDisallow: /admin\n\nSitemap: ${SITE_OFFICIEL}/sitemap.xml\nSitemap: ${SITE_OFFICIEL}/sitemap-tt.xml\n`
     : 'User-agent: *\nDisallow: /\n';
 }
 export function sitemapXml(jour) {
@@ -868,7 +871,8 @@ export default {
     }
     // 479 : pages match / joueur / tournoi / bilan ouvertes (totaux du jour)
     if (req.method === 'GET' && MARQUES.has(url.hostname) && PAGES_SEO.test(url.pathname) && ctx && ctx.waitUntil) {
-      const t_ = (url.pathname.match(/^\/(?:en\/)?(match|joueur|tournoi|bilan)\//) || [])[1];
+      const m_ = url.pathname.match(/^\/(?:en\/|tennis-de-table\/)?(match|joueur|tournoi|bilan)\//);
+      const t_ = m_ && (m_[1] + (url.pathname.startsWith('/tennis-de-table/') ? '_tt' : ''));
       if (t_) ctx.waitUntil(compterEvenements(req, env, { e: { ['page_' + t_]: 1 } }).catch(() => {}));
     }
     if (url.pathname === '/vendor/status') return vendorStatus(req);
@@ -904,6 +908,11 @@ export default {
     if (url.pathname === '/sitemap.xml' && officiel) {   // 418 : le plan complet (pages des matchs et des joueurs) s'il est publié
       const o = await depuisR2(env, 'site/algo/sitemap.xml');
       return new Response(o ? o.body : sitemapXml(new Date().toISOString().slice(0, 10)), { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+    }
+    if (url.pathname === '/sitemap-tt.xml' && officiel) {   // 514 : le plan des pages du tennis de table
+      const o = await depuisR2(env, 'site/algo/sitemap-tt.xml');
+      if (!o) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
+      return new Response(o.body, { headers: { ...SECURITE, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
     }
     // 25/11/2026 (paquet 431, Lucas : « l'adresse n'est pas la bonne, worker dev apparaît encore ») : une PAGE ouverte
     // sur l'adresse technique part vers gamesetalgo.com. Restent sur workers.dev : le Lab et la connexion (plus haut),

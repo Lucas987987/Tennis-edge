@@ -182,6 +182,9 @@ class T(unittest.TestCase):
         self.assertNotIn('7', etat['matchs'])                     # vu terminé sans pronostic : rien à juger
         arch = self.cf.get(PT.CLE_ARCHIVE.format(mois='2025-12')).decode().splitlines()
         self.assertEqual(sorted(json.loads(l)['id'] for l in arch), [2, 3])
+        for i in (2, 3):                                          # 514 : une page par match terminé
+            self.assertIn('pronostic et résultat', self.cf.get(f'site/algo/tennis-de-table/match/{i}.html').decode())
+        self.assertIsNone(self.cf.get('site/algo/tennis-de-table/match/1.html'))   # en cours : pas de page
         libre = self.lire(PT.CLE_LIBRE)
         un = next(m for m in libre['matchs'] if m['id'] == 1)
         if not un.get('offert'):                                  # commencé : le % seul
@@ -231,6 +234,43 @@ class T(unittest.TestCase):
         attendu = PT.E3.proba_recalee(mod.table, 'Poland', 3, 0.5, ('F', 0))
         self.assertAlmostEqual(sc[(3, 0)], attendu, places=3)
 
+    def test_post_du_jour_513(self):
+        envois = []
+        garde = PT.envoyer_telegram
+        PT.envoyer_telegram = lambda texte, journal=print: envois.append(texte) or True
+        try:
+            T1 = dt.datetime(2025, 12, 1, 7, 30, tzinfo=dt.timezone.utc)          # 8 h 30 à Paris
+            J = [ev(1, 'Poland', 3, 4, T1 + dt.timedelta(hours=3)), ev(2, 'International', 7, 8, T1 + dt.timedelta(hours=5), tournoi='Feeder X, MS')]
+            PT.passage(self.dir, Client(J), self.cf, maintenant=T1, journal=lambda x: None)
+            self.assertEqual(len(envois), 1)
+            t = envois[0]
+            self.assertTrue(t.startswith('🏓 Tennis de table · le match offert du jour'))
+            self.assertIn('🇵🇱 Pologne · TT Elite Series · 11 h 30', t)
+            self.assertIn('🌍 International · Feeder X · Simple messieurs · 13 h 30', t)
+            self.assertIn("L'algo : ", t)
+            self.assertIn('score le plus probable', t)
+            self.assertTrue(t.endswith('gamesetalgo.com/tennis-de-table'))
+            for interdit in ('cote', 'pari', 'value', 'marché'):
+                self.assertNotIn(interdit, t.lower())
+            self.assertNotIn('Hier :', t)                                      # pas de matchs jugés la veille
+            self.assertEqual(self.lire(PT.CLE_SITE)['post_du_jour'], t)
+            self.assertNotIn('post_du_jour', self.lire(PT.CLE_LIBRE))
+            PT.passage(self.dir, Client(J), self.cf, maintenant=T1 + dt.timedelta(hours=1), journal=lambda x: None)
+            self.assertEqual(len(envois), 1)                                   # une seule fois par jour
+        finally:
+            PT.envoyer_telegram = garde
+
+    def test_bilan_veille_513(self):
+        etat = {'bilan_jours': {'2025-11-30': {'Poland': [40, 26, 24.4], 'International': [10, 8, 6.9]}}}
+        b = PT.bilan_veille(etat, dt.datetime(2025, 12, 1, 9, tzinfo=dt.timezone.utc))
+        self.assertEqual(b, {'jour': '2025-11-30', 'matchs': 50, 'bons_pct': 68.0, 'annonce_pct': 62.6})
+        m = {'id': 1, 'ligue': 'Poland', 't': 1764590400, 'tournoi': 'TT Elite Series', 'h': 'A', 'a': 'B', 'statut': 'a_venir',
+             'offert': True, 'p_h': 0.4, 'scores': [[1, 3, 0.21]]}
+        t = PT.post_du_jour({'matchs': [m]}, b)
+        self.assertIn("L'algo : B à 60 % · score le plus probable 1-3 (21 %)", t)
+        self.assertIn('Hier : 50 matchs jugés, 68,0 % de vainqueurs trouvés (annoncé en moyenne 62,6 %).', t)
+        self.assertIsNone(PT.post_du_jour({'matchs': [dict(m, statut='termine')]}, b))
+
     def test_ligue_muette_rien_publie(self):
         r = PT.passage(self.dir, Client([ev(1, 'Poland', 3, 4, T0 + dt.timedelta(hours=2))], ok=False), self.cf,
                        maintenant=T0, journal=lambda x: None)
@@ -253,7 +293,10 @@ class T(unittest.TestCase):
                    journal=lambda x: None)
         self.assertEqual(sorted(os.listdir(os.path.join(ICI, '..'))), avant)
         cles = sorted(os.path.relpath(os.path.join(d, f), self.coffre_dir) for d, _, fs in os.walk(self.coffre_dir) for f in fs)
-        self.assertEqual(cles, sorted([PT.CLE_ETAT, PT.CLE_SITE, PT.CLE_LIBRE]))
+        import pages_tt                                   # 514 : + les pages de référencement (index et plan)
+        self.assertEqual(cles, sorted([PT.CLE_ETAT, PT.CLE_SITE, PT.CLE_LIBRE, pages_tt.CLE_ETAT, pages_tt.CLE_SITEMAP,
+                                       pages_tt.PREFIXE + 'matchs.html', pages_tt.PREFIXE + 'joueurs.html']))
+        self.assertTrue(pages_tt.CLE_ETAT.startswith('prive/'))
         self.assertTrue(PT.CLE_ETAT.startswith('prive/'))
 
 
