@@ -523,10 +523,29 @@ def appliquer_reglages(c, reglages):
 
 # 04/11/2026 (Lucas) — la vidéo montre le TYPE de match prévu : 3 sets si la probabilité de 3 sets de CE match dépasse
 # la moyenne du circuit, tie-break si la probabilité d'au moins un tie-break dépasse la moyenne du circuit.
+# 26/11/2026 (paquet 489) : seuils = ces moyennes, SANS marge (Lucas : « plus de chance que la moyenne → 3e set »).
 # Moyennes réelles, matchs au meilleur des 3 sets depuis 2021 (etude_forme_video.py : ATP 13 853, WTA 15 387,
 # Challenger 49 410 matchs) : (part des matchs en 3 sets, part des matchs avec au moins un tie-break).
 MOYENNES_FORME = {'ATP': (0.366, 0.384), 'WTA': (0.344, 0.235), 'CH': (0.357, 0.317)}
-# Pas « juste au-dessus » (Lucas, 04/11/2026) : une marge au-dessus de la moyenne, calculée par le pronostic du jour
+
+# 27/11/2026 (paquet 490, Lucas : « si c'est plus probable que la moyenne d'avoir un 3e set, il y en a un dans la vidéo.
+# Avec une marge ») — SEUILS DE LA VIDÉO = MOYENNE DE NOS PROPRES MATCHS SIMULÉS DU CIRCUIT + 3 POINTS. La moyenne de
+# référence est celle de nos simulations (1 449 matchs publiés puis terminés, 08/2026 → 26/11/2026), et non la moyenne
+# réelle du circuit : notre simulation donne en moyenne moins de 3 sets que la réalité en Challenger (31,6 % contre 34 %)
+# et plus en ATP/WTA (38,7 % contre 35 % ; 37,2 % contre 34 %), si bien qu'avec la moyenne réelle presque aucune vidéo
+# Challenger n'allait en 3 sets avec une marge, et presque toutes les vidéos ATP/WTA y allaient. Effet mesuré avec
+# + 3 points : vidéos en 3 sets Challenger 40 % (réel 34 %), ATP 33 % (35 %), WTA 25 % (34 %) ; tie-break Challenger
+# 35 % (30 %), ATP 40 % (48 %), WTA 21 % (25 %) ; et les matchs montrés en 3 sets finissent plus souvent en 3 sets
+# que les autres (Challenger 39 % contre 30 %).
+MOYENNES_SIMULEES = {'ATP': (0.387, 0.438), 'WTA': (0.372, 0.258), 'CH': (0.316, 0.301)}
+MARGE_FORME = 0.03
+
+
+def seuils_video(circuit):
+    """(seuil 3 sets, seuil tie-break) de la vidéo : moyenne de nos matchs simulés du circuit + MARGE_FORME."""
+    m = MOYENNES_SIMULEES.get(circuit)
+    return (m[0] + MARGE_FORME, m[1] + MARGE_FORME) if m else None
+# [Remplacé le 26/11/2026, paquet 489 : plus de marge, la moyenne seule.] Pas « juste au-dessus » (Lucas, 04/11/2026) : une marge au-dessus de la moyenne, calculée par le pronostic du jour
 # (seuils_forme) pour que la part de vidéos en 3 sets / avec tie-break égale la part RÉELLE du circuit ; jamais sous la
 # moyenne. Au 04/11 : 3 sets ATP 41,5 % (+5), WTA 39,9 % (+5,5), Challenger 35,7 % ; tie-break ATP 48,1 % (+10), WTA
 # 27,9 % (+4,4), Challenger 31,7 %.
@@ -599,7 +618,7 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb
            'feuille': [{k: elargir(k, resume(F[i][k])) for k in CLES_FEUILLE} for i in (0, 1)],
            'match_type': match_type(brut, traces,
                                     0 if (vA / n if p_victoire is None else p_victoire) >= .5 else 1,
-                                    (seuils_forme or MOYENNES_FORME.get(circuit)) if sets_gagnants == 2 else None)}
+                                    (seuils_forme or seuils_video(circuit)) if sets_gagnants == 2 else None)}
     if garder:
         out['_brut'] = brut
     return out
@@ -626,42 +645,50 @@ def match_type(brut, traces=None, vainqueur=0, moyennes=None):
             candidats.append((i, ligne))
     if not candidats:
         return None
-    # 26/11/2026 (paquet 488, Lucas : « peu importe que ce soit en 3 sets, il faut que ce soit fidèle aux scénarios
-    # envisagés ») — LA VIDÉO JOUE LE SCÉNARIO LE PLUS PROBABLE DU FAVORI, tel que la fiche le publie : parmi ses
-    # victoires simulées, le groupe le plus fréquent des trois publiés (« sans trembler », « accrochés », « en 3 sets »,
-    # scenarios_match.issue) ; en 3 sets, « remontée » si elle est plus fréquente que « après avoir gagné le 1er ».
-    # Puis, dans ce scénario, tie-break seulement si plus de la moitié de ses matchs en ont un, et le match médoïde.
-    # Avant (paquets 230–244) : la forme passait d'abord par un seuil fixe de 3 sets / tie-break (moyenne du circuit),
-    # qui faisait varier la part de vidéos en 3 sets de 9 % à 58 % selon les semaines, sans lien avec les scénarios.
-    # « moyennes » (seuils du circuit) n'est plus utilisé ; gardé dans la signature.
+    # 26–27/11/2026 (paquets 489–490, Lucas : « s'il y a plus de chance que la moyenne d'avoir un 3e set, il en faut un,
+    # avec une marge » ; paquet 488 : « fidèle aux scénarios envisagés ») — DEUX ÉTAPES :
+    #   1. la FORME vient des % du match : 3 sets si sa probabilité de 3 sets dépasse le seuil (seuils_video : moyenne
+    #      de nos matchs simulés du circuit + 3 points), un tie-break si sa probabilité d'au moins un tie-break dépasse
+    #      le sien ;
+    #   2. dans ce nombre de sets, le SCÉNARIO le plus probable du favori, comme sur la fiche (scenarios_match.issue) :
+    #      en 2 sets « sans trembler » ou « accrochés », en 3 sets « après avoir gagné le 1er » ou « remontée » ;
+    #   puis le match aux jeux et statistiques médians. Sans seuils (format en 3 sets gagnants) : le scénario le plus
+    #   probable du favori, tous nombres de sets confondus (règle du paquet 488).
     import scenarios_match as SM
     par = {}
     for c in candidats:
         g, rem = SM.issue([tuple(x) for x in c[1][4]], vainqueur)
-        par.setdefault(g, {'tous': [], 'remontee': []})
-        par[g]['tous'].append(c)
-        if rem:
-            par[g]['remontee'].append(c)
-    publie = max(par, key=lambda k: (len(par[k]['tous']), k == 'accroche'))
-    choisis = par[publie]['tous']
-    scen = publie
-    if publie == 'long':
-        rem = par['long']['remontee']
-        ir = {c[0] for c in rem}
-        non = [c for c in choisis if c[0] not in ir]
-        scen, choisis = ('remontee', rem) if len(rem) > len(non) else ('long', non)
+        par.setdefault('remontee' if rem else g, []).append(c)
+    groupes_3 = ('long', 'remontee')
+    if moyennes:
+        p3 = sum(1 for ligne in brut if len(ligne[4]) == 3) / len(brut)
+        ptb = sum(1 for ligne in brut if a_un_tiebreak(ligne[4])) / len(brut)
+        n_sets = 3 if p3 > moyennes[0] else 2
+        tb = ptb > moyennes[1]
+        regle = {'p_3_sets': round(p3, 4), 'p_tie_break': round(ptb, 4), 'seuil_3_sets': round(moyennes[0], 4),
+                 'seuil_tie_break': round(moyennes[1], 4),
+                 'regle': '3 sets / tie-break si le % du match dépasse la moyenne de nos matchs du circuit + 3 points, '
+                          'puis le scénario le plus probable du favori'}
+        permis = [k for k in par if (k in groupes_3) == (n_sets == 3)] or list(par)
+    else:
+        tot = {'net': len(par.get('net', [])), 'accroche': len(par.get('accroche', [])),
+               'long': len(par.get('long', [])) + len(par.get('remontee', []))}
+        pub = max(tot, key=lambda k: (tot[k], k == 'accroche'))
+        n_sets = 3 if pub == 'long' else 2
+        permis = [k for k in par if (k in groupes_3) == (n_sets == 3)] or list(par)
+        tb = None
+        regle = {'regle': 'scénario le plus probable du favori'}
+    scen = max(permis, key=lambda k: (len(par[k]), k == 'accroche'))
+    choisis = par[scen]
     avec_tb = sum(1 for c in choisis if a_un_tiebreak(c[1][4]))
-    tb = 2 * avec_tb > len(choisis)
-    n_sets = 3 if publie == 'long' else 2
-    part_forme = round(100.0 * len(par[publie]['tous']) / len(brut), 1)
+    if tb is None:
+        tb = 2 * avec_tb > len(choisis)
+    part_forme = round(100.0 * sum(len(par[k]) for k in permis) / len(brut), 1)
     candidats = [c for c in choisis if a_un_tiebreak(c[1][4]) == tb] or choisis
-    part_scen = round(100.0 * len(candidats) / len(brut), 1)
-    nb_sets = sum(1 for ligne in brut if len(ligne[4]) == n_sets)
-    forme = {'regle': 'scénario le plus probable du favori, comme sur la fiche', 'sets': n_sets, 'tie_break': tb,
-             'scenario_publie': publie, 'part_scenario_publie_pct': part_forme,
-             'part_tie_break_pct': round(100.0 * avec_tb / len(choisis), 1) if choisis else 0.0,
-             'part_forme_pct': part_forme, 'scenario': scen, 'part_scenario_pct': part_scen,
-             'part_sets_pct': round(100.0 * nb_sets / len(brut), 1)}
+    forme = dict(regle, sets=n_sets, tie_break=tb, scenario=scen,
+                 part_sets_pct=round(100.0 * sum(1 for ligne in brut if len(ligne[4]) == n_sets) / len(brut), 1),
+                 part_tie_break_pct=round(100.0 * avec_tb / len(choisis), 1) if choisis else 0.0,
+                 part_forme_pct=part_forme, part_scenario_pct=round(100.0 * len(candidats) / len(brut), 1))
     groupe = [ligne for _, ligne in candidats]
     F = []
     for j in (0, 1):

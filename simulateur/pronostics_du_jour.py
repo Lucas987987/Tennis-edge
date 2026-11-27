@@ -1449,7 +1449,7 @@ def impact_facteurs(cH, cA, sg, fct):
     return out
 
 
-SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme) — plus utilisé par la vidéo depuis le paquet 488 (scénario le plus probable), gardé pour mémoire
+SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme) — plus utilisé par la vidéo depuis le paquet 489 (paquet 490 : MS.seuils_video), gardé pour mémoire
 
 
 def seuils_forme(racine, jours=60, minimum=50, aujourdhui=None):
@@ -1493,7 +1493,7 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=F
     # communs, pour que son % de victoire, qui entre dans le mélange, ne bouge pas
     reg = MS.reglages_du_circuit(REGLAGES, c) if p_home is not None else MS.reglages_du_circuit(REGLAGES, None)
     r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=reg, circuit=c,
-                   seuils_forme=SEUILS_FORME.get(c))
+                   seuils_forme=None)   # 490 : moyenne de nos matchs simulés du circuit + 3 points (MS.seuils_video)
     if controler_stabilite and STABILITE_BLOCS > 0:
         import stabilite_scores as SS
         r['stabilite_score'] = SS.controler(cH, cA, p_home, r, sg, SIMULATIONS, sigma, cle,
