@@ -46,7 +46,7 @@ jobs:
       - name: Vérifier la syntaxe et les tests
         run: |
           node --check workers/algo/worker.js
-          node --test workers/algo/test_worker.mjs workers/algo/test_comptes.mjs workers/algo/test_notifs.mjs workers/algo/test_tt.mjs
+          node --test workers/algo/test_worker.mjs workers/algo/test_comptes.mjs workers/algo/test_notifs.mjs workers/algo/test_tt.mjs workers/algo/test_notifs_tt.mjs
 
       - name: Clé du coffre présente ?
         env:

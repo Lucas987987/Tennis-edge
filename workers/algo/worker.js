@@ -26,7 +26,7 @@
 //    site_libre.json (le match du jour complet, les autres matchs sans aucun pronostic). Voir comptes.js.
 import { apiCompte, adminComptes, utilisateur, abonne, estAdmin } from './comptes.js';
 import { compterVisite, quotidien, poulsVisites, compterEvenements } from './ventes.js';
-import { notifsDirect, notifsMatin } from './notifs.js';   // 483
+import { notifsDirect, notifsMatin, notifsTT } from './notifs.js';   // 483 ; 510 : tennis de table
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -846,7 +846,11 @@ export default {
   // 483 : « * * * * * » = notifications des favoris (direct) ; « 17 7 * * * » = quotidien + « tes favoris jouent aujourd'hui »
   async scheduled(event, env, ctx) {
     const c = event && event.cron;
-    if (c === '* * * * *') return ctx.waitUntil(notifsDirect(env, () => directPourNotifs(env)).catch(() => null));
+    if (c === '* * * * *') {
+      // 510 : le tennis de table toutes les 5 minutes (sa page n'est refaite qu'une fois par heure ; rien si rien de neuf)
+      const tt = new Date((event && event.scheduledTime) || Date.now()).getUTCMinutes() % 5 === 2 ? notifsTT(env).catch(() => null) : null;
+      return ctx.waitUntil(Promise.all([notifsDirect(env, () => directPourNotifs(env)).catch(() => null), tt]));
+    }
     if (c === '7 * * * *') return ctx.waitUntil(poulsVisites(env));
     ctx.waitUntil(Promise.all([quotidien(env), notifsMatin(env).catch(() => null)]));
   },
