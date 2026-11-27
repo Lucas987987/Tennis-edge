@@ -1,0 +1,59 @@
+name: Étude outsider confirmé (tennis, tennis de table, badminton)
+
+# 27/11/2026 (paquet 522, Lucas : « l'outsider qui gagne son match du tour précédent et qui est à nouveau outsider
+# gagne-t-il plus souvent ? », « les trois ») — lecture seule des historiques, aucune cote ; règle écrite dans l'en-tête
+# de scripts/etude_outsider_confirme.py avant tout essai. Publie seulement le rapport (comptes et moyennes, aucun nom).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etude-outsider-confirme
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/etude_outsider_confirme.py
+            /simulateur/elo.py
+            /historique/tennis_data.csv.gz
+            /historique/tennis_de_table/
+            /historique/badminton/
+            /tennis_de_table/elo_tt.py
+            /tennis_de_table/rapport_elo_tt.json
+            /badminton/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Étude
+        run: |
+          set -euo pipefail
+          python scripts/etude_outsider_confirme.py . | tee /tmp/outsider.log
+          cp rapport_outsider_confirme.json /tmp/rapport_outsider_confirme.json
+          { echo '### Outsider confirmé'; sed 's/^/    /' /tmp/outsider.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_outsider_confirme.json rapport_outsider_confirme.json
+            git add -- rapport_outsider_confirme.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude outsider confirmé (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
