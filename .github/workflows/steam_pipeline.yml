@@ -281,7 +281,7 @@ jobs:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/discret.py -- python scripts/validation_report.py || true
+        run: python scripts/discret.py --pouls 3 -- python scripts/validation_report.py || true
 
       # AJOUTÉ LE 25/09/2026 — mesure SÉPARÉMENT les deux populations H13.
       #

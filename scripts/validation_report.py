@@ -1135,9 +1135,12 @@ def adaptive_threshold_watch():
     for market, frozen_books in freeze.get('markets', {}).items():
         if not frozen_books:
             continue
-        track = sa.load_curves(MARKET_TRACK[market])
+        # 500 : seulement le book de référence et les books gelés, seulement après le gel (les seuls lus plus bas) ;
+        # avant, tout l'historique de tous les books était gardé en mémoire, trois fois (machine coupée deux fois)
+        track = sa.load_curves(MARKET_TRACK[market], books={sa.SHARP, *frozen_books}, depuis=frozen_at_ts)
         oos_matches = {u: bk for u, bk in track.items()
                       if bk.get('_commence') and bk['_commence'] >= frozen_at_ts}
+        del track
         print(f"\n  [{market}] {len(oos_matches)} matchs strictement postérieurs au gel")
         for sb, info in sorted(frozen_books.items()):
             thr = info['threshold']
@@ -3014,6 +3017,11 @@ def report_canal(fichier='paper_trades_canal.jsonl',
               f"{ic_hi:+.1f}%] | {wr:.0f}% gagnés")
 
 
+def progres(k, n):
+    """500 : repère de progression (numéro du bloc seulement, aucun chiffre privé), affiché en direct par discret.py."""
+    print(f"::progres::bloc {k}/{n}", flush=True)
+
+
 def main():
     files = sorted(glob.glob(JOURNALS))
     if not files:
@@ -3022,7 +3030,11 @@ def main():
     print("TABLEAU DE VALIDATION FORWARD — steam-following")
     print(f"{len(HYPOTHESES)} hypothèses gelées suivies — verdicts individuels à lire à travers le filtre Holm-Bonferroni (bilan en fin de rapport).")
     print("Regle : un edge n'est CONFIRME que si la borne basse de l'IC95 exclut 0 (ROI) / 50% (CLV+).")
+    n_blocs = len(files) + 2 + len(HYPOTHESES)
+    bloc = 0
     for f in files:
+        bloc += 1
+        progres(bloc, n_blocs)
         # CORRIGÉ LE 27/08/2026 (audit §1.2) : paper_trades_canal.jsonl a un
         # schéma différent (statut/gagne vs status/won) — report_group() le
         # filtrait sur 'status' == 'SETTLED', qui n'existe jamais dans ce
@@ -3041,11 +3053,14 @@ def main():
                 try: trades.append(json.loads(line))
                 except Exception: pass
         report_group(name, trades)
+    progres(len(files) + 1, n_blocs)
     report_canal()
+    progres(len(files) + 2, n_blocs)
     rappel_value_clv()
     print(f"\n{'='*60}\nRappel : CLV+ = prix battu ; le ROI net subit encore marge + gubbing.")
     resultats = []
     for i, (nom, gel, w) in enumerate(HYPOTHESES, 1):
+        progres(len(files) + 2 + i, n_blocs)
         print(f"\n─── hypothèse {i}/{len(HYPOTHESES)} : {nom} (gel {gel}) ───")
         resultats.append((nom, gel, w()))
     bilan_tests_multiples(resultats)
