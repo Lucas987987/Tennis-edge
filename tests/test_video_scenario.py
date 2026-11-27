@@ -36,11 +36,12 @@ class Video(unittest.TestCase):
             v, g = mt['vainqueur'], groupe(mt['sets'], mt['vainqueur'])
             J = S['j'][v]
             self.assertEqual(mt['forme']['scenario'], g)
-            # 488 : le groupe publié de la vidéo est le plus probable des trois publiés pour le favori
-            pub = 'long' if g in ('long', 'remontee') else g
-            for autre in ('net', 'accroche', 'long'):
-                self.assertGreaterEqual(J[pub], J[autre] - 0.01, (mt['score'], J))
-            if pub == 'long':
+            # 489–490 : le nombre de sets suit le % du match contre le seuil de la vidéo ; dedans, le scénario le plus probable
+            self.assertEqual(len(mt['sets']), 3 if mt['forme']['p_3_sets'] > MS.seuils_video(c)[0] else 2)
+            if g in ('net', 'accroche'):
+                autre = 'accroche' if g == 'net' else 'net'
+                self.assertGreaterEqual(J[g], J[autre] - 0.01, (mt['score'], J))
+            else:
                 rem, non = J['remontee'], J['long'] - J['remontee']
                 self.assertGreaterEqual(rem if g == 'remontee' else non, (non if g == 'remontee' else rem) - 0.01, (mt['score'], J))
 
@@ -54,8 +55,8 @@ class Video(unittest.TestCase):
 
     def test_texte_d_aide(self):
         s = open(os.path.join(ICI, '..', 'algo', 'index.html'), encoding='utf-8').read()
-        self.assertIn('le scénario le plus probable du favori, celui que la fiche annonce', s)
-        self.assertIn('the favourite’s most likely scenario, the one the match page shows', s)
+        self.assertIn('si sa probabilité de 3 sets dépasse nettement celle d’un match moyen du circuit', s)
+        self.assertIn('if its three-set probability is clearly above that of an average match on the tour', s)
 
 
 if __name__ == '__main__':
