@@ -50,7 +50,7 @@ def test_archive_seulement_sur_demande():
 def test_aucun_fichier_de_l_algo_ne_les_lit():
     import glob
     for f in glob.glob(os.path.join(R, 'simulateur', '*.py')):
-        if os.path.basename(f) in ('feuilles.py', 'etude_nos_donnees_2023.py'):
+        if os.path.basename(f) == 'feuilles.py' or os.path.basename(f).startswith('etude_'):   # 533 : les études seules
             continue
         t = open(f, encoding='utf-8').read()
         assert 'archive=True' not in t and 'lire_archive' not in t, f
