@@ -474,26 +474,57 @@ def bilan_veille(etat, maintenant):
             'annonce_pct': round(100 * sum(v[2] for v in J.values()) / n, 1)}
 
 
+def _ligne_offert(m, pc_score=True):
+    """530 : une ligne du match offert selon où il en est — à venir : le % (et le score le plus probable) ; en cours : le
+    % d'avant match ; terminé : le résultat et le verdict de l'algo. Rien d'autre que ce que la page montre déjà."""
+    fav, pf = (m['h'], m['p_h']) if m['p_h'] >= 0.5 else (m['a'], 1 - m['p_h'])
+    if m.get('statut') == A_VENIR:
+        s = m.get('scores')
+        return f"L'algo : {fav} à {round(100 * pf)} %" + (
+            f" · score le plus probable {s[0][0]}-{s[0][1]} ({round(100 * s[0][2])} %)" if s and pc_score else '')
+    if m.get('statut') == 'termine' and m.get('g') in (1, 2):
+        mh = sum(1 for a, b in m.get('manches') or [] if a > b)
+        ma = sum(1 for a, b in m.get('manches') or [] if b > a)
+        g, sc = (m['h'], f'{mh}-{ma}') if m['g'] == 1 else (m['a'], f'{ma}-{mh}')
+        return f"Résultat : {g} gagne {sc} · l'algo donnait {fav} à {round(100 * pf)} % {'✅' if m.get('bon') else '❌'}"
+    etat_ = 'Terminé' if m.get('statut') == 'termine' else 'En cours'
+    return f"{etat_} · l'algo donnait {fav} gagnant à {round(100 * pf)} % avant le match"
+
+
 def post_du_jour(complet, veille):
     """27/11/2026 (paquet 513, Lucas : « le tennis de table sur X et Telegram : un post par jour avec le match offert et le
-    bilan de la veille, comme pour le tennis ») — en français, comme les posts du tennis : les matchs offerts encore à
-    venir (le % et le score le plus probable, rien d'autre), le bilan de la veille à partir de 30 matchs jugés, l'adresse
-    de la page. Aucune cote, aucun conseil."""
-    L = ['🏓 Tennis de table · le match offert du jour']
-    offerts = [m for m in complet.get('matchs') or [] if m.get('offert') and m.get('statut') == A_VENIR and m.get('scores')]
+    bilan de la veille, comme pour le tennis ») — en français, comme les posts du tennis : les matchs offerts du jour, le
+    bilan de la veille à partir de 30 matchs jugés, l'adresse de la page. Aucune cote, aucun conseil.
+    530 (Lucas : « pas de post du jour ») : à 8 h les matchs offerts étaient souvent déjà commencés et le post n'existait
+    pas. Chaque match offert du jour y est maintenant où qu'il en soit (à venir : le % et le score le plus probable ; en
+    cours ; terminé : le résultat et le verdict), et sans match offert le bilan de la veille suffit."""
+    offerts = [m for m in complet.get('matchs') or [] if m.get('offert') and 'p_h' in m and m.get('statut') != 'annule']
+    bilan = veille and veille['matchs'] >= 30
+    if not offerts and not bilan:
+        return None                                  # ni match offert, ni bilan : pas de post
+    L = ['🏓 Tennis de table · le match offert du jour' if offerts else "🏓 Tennis de table · le bilan d'hier"]
     for m in sorted(offerts, key=lambda m: (m['ligue'] != 'Poland', m['t'])):
-        fav, pf = (m['h'], m['p_h']) if m['p_h'] >= 0.5 else (m['a'], 1 - m['p_h'])
-        s = m['scores'][0]
         L += ['', f"{LIGUE_POST.get(m['ligue'], m['ligue'])} · {_tournoi_fr(m.get('tournoi'))} · {_heure_fr(m['t'])}",
-              f"{m['h']} – {m['a']}",
-              f"L'algo : {fav} à {round(100 * pf)} % · score le plus probable {s[0]}-{s[1]} ({round(100 * s[2])} %)"]
-    if len(L) == 1:
-        return None                                  # plus aucun match offert à venir : pas de post
-    if veille and veille['matchs'] >= 30:
+              f"{m['h']} – {m['a']}", _ligne_offert(m)]
+    if bilan:
         L += ['', f"Hier : {veille['matchs']} matchs jugés, {str(veille['bons_pct']).replace('.', ',')} % de vainqueurs trouvés "
                   f"(annoncé en moyenne {str(veille['annonce_pct']).replace('.', ',')} %)."]
     L += ['', 'Tous les pronostics et le bilan, erreurs comprises : gamesetalgo.com/tennis-de-table']
     return '\n'.join(L)
+
+
+def envoyer_post(etat, complet, maintenant, jour, journal=print):
+    """513 : une fois par jour, au Telegram privé, à partir de HEURE_POST. 530 : quand il ne part pas après l'heure, le
+    journal dit pourquoi (sans rien afficher de secret)."""
+    if maintenant.astimezone(PARIS).hour < HEURE_POST or etat.get('post_envoye') == jour:
+        return
+    if not complet.get('post_du_jour'):
+        journal("  post du jour : rien à poster pour l'instant (ni match offert du jour, ni bilan d'hier sur 30 matchs)")
+    elif envoyer_telegram(complet['post_du_jour'], journal):
+        etat['post_envoye'] = jour
+        journal('  post du jour envoyé au Telegram privé')
+    elif not (os.environ.get('TELEGRAM_TOKEN') and os.environ.get('TELEGRAM_CHAT_ID')):
+        journal('::warning::post du jour : TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID absent du workflow')
 
 
 def envoyer_telegram(texte, journal=print):
@@ -583,6 +614,23 @@ def archiver(cf, archives, maintenant):
             cf.put(cle, avant + b''.join(_json(x) + b'\n' for x in L), content_type='application/x-ndjson')
 
 
+def signaler_indexnow(journal=print):
+    """529 (Lucas : « il faut que l'on référence les pages ») : les pages nouvelles ou modifiées sont signalées à
+    IndexNow (Bing, Yandex, Seznam, Naver…) par scripts/indexnow.py, comme les pages du tennis ; Google lit le plan
+    du site. Seulement dans le workflow (INDEXNOW_ACTIF=1) : jamais depuis les tests."""
+    if os.environ.get('INDEXNOW_ACTIF') != '1':
+        return None
+    try:
+        import indexnow
+    except ImportError:
+        return None
+
+    def signaler(urls):
+        codes = indexnow.envoyer(urls)
+        journal(f"  IndexNow : {len(set(urls))} adresse(s) signalée(s) · réponses {codes}")
+    return signaler
+
+
 def passage(racine, client, cf, maintenant=None, journal=print):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     brut = cf.get(CLE_ETAT)
@@ -610,14 +658,11 @@ def passage(racine, client, cf, maintenant=None, journal=print):
                             or c['ligue'] in (reg.get('face_a_face') or {})]}
     complet, libre = site(etat, info, maintenant)
     jour = maintenant.astimezone(PARIS).date().isoformat()
-    if complet.get('post_du_jour') and maintenant.astimezone(PARIS).hour >= HEURE_POST and etat.get('post_envoye') != jour:
-        if envoyer_telegram(complet['post_du_jour'], journal):      # 513 : une fois par jour, au Telegram privé
-            etat['post_envoye'] = jour
-            journal('  post du jour envoyé au Telegram privé')
+    envoyer_post(etat, complet, maintenant, jour, journal)          # 513 ; 530 : la raison dans le journal
     archiver(cf, archives, maintenant)
     try:                                              # 514 : pages de référencement (matchs terminés, joueurs)
         import pages_tt
-        pages_tt.publier(cf, archives, maintenant, CLE_ARCHIVE, journal)
+        pages_tt.publier(cf, archives, maintenant, CLE_ARCHIVE, journal, signaler=signaler_indexnow(journal))
     except Exception as ex:  # noqa: BLE001 — les pages ne doivent jamais bloquer les pronostics
         journal(f'  pages : non publiées ce passage ({type(ex).__name__})')
     cf.put(CLE_ETAT, _json(etat), content_type='application/json')

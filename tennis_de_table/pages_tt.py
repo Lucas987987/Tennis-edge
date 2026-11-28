@@ -206,7 +206,7 @@ def _rattrapage(cf, E, maintenant, cle_archive):
     return out
 
 
-def publier(cf, juges, maintenant, cle_archive=None, journal=print):
+def publier(cf, juges, maintenant, cle_archive=None, journal=print, signaler=None):
     """juges : matchs jugés à ce passage (déjà archivés). Tant que le rattrapage n'est pas fini, on lit l'archive
     (qui contient déjà ces matchs) au lieu de juges. Met à jour les pages."""
     brut = cf.get(CLE_ETAT)
@@ -239,20 +239,25 @@ def publier(cf, juges, maintenant, cle_archive=None, journal=print):
             R.insert(0, {'id': x['id'], 't': x['t'], 'titre': f"{x['h']} – {x['a']}", 'date': date_fr(x['t'])})
     R.sort(key=lambda m: -m['t'])
     del R[20000:]
+    jour = maintenant.astimezone(dt.timezone.utc).date().isoformat()
+    nouvelles = []                                             # 529 : les adresses à signaler (IndexNow)
     for x in juges:                                            # après les joueurs : les liens vers leurs pages existent
         _html(cf, f"{PREFIXE}match/{x['id']}.html", page_match(x, J))
+        nouvelles.append(f"{SITE}{BASE}/match/{x['id']}")
     n_j = 0
     for k in changes:
         if J[k]['n'] >= MIN_JOUEUR:
             _html(cf, f"{PREFIXE}joueur/{k}.html", page_joueur(k, J[k]))
+            J[k]['maj'] = jour                                 # 529 : la vraie date de mise à jour (plan du site)
+            nouvelles.append(f"{SITE}{BASE}/joueur/{k}")
             n_j += 1
-    jour = maintenant.astimezone(dt.timezone.utc).date().isoformat()
     if juges or E.get('index_le') != jour:
+        nouvelles += [f"{SITE}{BASE}/matchs", f"{SITE}{BASE}/joueurs"]
         _html(cf, f"{PREFIXE}matchs.html", index_matchs(R[:INDEX_MATCHS]))
         _html(cf, f"{PREFIXE}joueurs.html", index_joueurs(J))
         limite = maintenant.timestamp() - SITEMAP_JOURS * 86400
         ch = [(BASE, jour), (f'{BASE}/matchs', jour), (f'{BASE}/joueurs', jour)]
-        ch += [(f"{BASE}/joueur/{k}", jour) for k, j in J.items() if j['n'] >= MIN_JOUEUR]
+        ch += [(f"{BASE}/joueur/{k}", j.get('maj') or jour) for k, j in J.items() if j['n'] >= MIN_JOUEUR]
         ch += [(f"{BASE}/match/{m['id']}", dt.datetime.fromtimestamp(m['t'], dt.timezone.utc).date().isoformat())
                for m in R if m['t'] >= limite]
         cf.put(CLE_SITEMAP, sitemap(ch[:45000]).encode('utf-8'), content_type='application/xml; charset=utf-8')
@@ -261,4 +266,9 @@ def publier(cf, juges, maintenant, cle_archive=None, journal=print):
     journal(f"  pages : {len(juges)} matchs, {n_j} joueurs mis à jour, "
             f"{sum(1 for j in J.values() if j['n'] >= MIN_JOUEUR)} pages joueur en tout"
             + ('' if E.get('rattrapage_fini') else ' (rattrapage en cours)'))
-    return {'matchs': len(juges), 'joueurs': n_j}
+    if signaler and nouvelles:                                 # 529 : Bing et les autres moteurs (IndexNow) ; Google lit le plan
+        try:
+            signaler(nouvelles[:10000])
+        except Exception:  # noqa: BLE001 — jamais bloquant
+            journal('  pages : signalement IndexNow impossible ce passage')
+    return {'matchs': len(juges), 'joueurs': n_j, 'signalees': len(nouvelles)}
