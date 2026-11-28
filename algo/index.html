@@ -829,6 +829,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <div class="reglages">
       <button type="button" class="compte-b" id="b-compte" hidden></button>
       <a class="arena-nav tt-nav" href="/tennis-de-table" data-t="tt_btn">🏓 Tennis de table</a>
+      <a class="arena-nav tt-nav" href="/badminton" data-t="bad_btn">🏸 Badminton</a>   <!-- 528 -->
       <span class="arena-w"><button type="button" class="arena-nav" id="b-arena" aria-expanded="false" aria-controls="arena-bulle" data-t="arena_btn"></button><span class="arena-bulle" id="arena-bulle" role="status" hidden data-t="arena_msg"></span></span>
       <button type="button" class="ico" id="b-regl" aria-expanded="false" aria-controls="menu-regl" aria-label="Réglages / Settings">⚙️</button>
       <div class="menu-regl" id="menu-regl" hidden>
@@ -969,7 +970,7 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
-    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a> · <a href="/matchs" data-t="lg_matchs"></a> · <a href="/joueurs" data-t="lg_joueurs"></a> · <a href="/tournois" data-t="lg_tournois"></a> · <a href="/bilans" data-t="lg_bilans"></a> · <a href="/tennis-de-table" data-t="lg_tt"></a></p>
+    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a> · <a href="#cgv" data-t="lg_cgv"></a> · <a href="/matchs" data-t="lg_matchs"></a> · <a href="/joueurs" data-t="lg_joueurs"></a> · <a href="/tournois" data-t="lg_tournois"></a> · <a href="/bilans" data-t="lg_bilans"></a> · <a href="/tennis-de-table" data-t="lg_tt"></a> · <a href="/badminton" data-t="lg_bad"></a></p>
   </footer>
   <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
@@ -1203,7 +1204,7 @@ const T = {
   annonce:'Annoncé', reel:'Réel', matchs:'Matchs', tranche:'Tranche',
   calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris. Le match du jour reste offert à tous, chaque jour.",
+  plus_titre:'Accès Plus', plus_texte:"Un seul accès, tout compris : le tennis, le tennis de table et le badminton. Le match du jour reste offert à tous, chaque jour.",   // 528
   plus_bientot:"Paiement par virement · crée ton compte, puis fais ta demande d'abonnement ici.",
   cp_abo_titre:'Mon abonnement',
   cp_abo_fond:d=>`Tarif fondateur : garde-le en payant le mois suivant au plus tard le ${d}.`,
@@ -1276,6 +1277,7 @@ const T = {
   pwa_ios:"📲 Installer l'appli : touche Partager (le carré avec une flèche vers le haut), puis « Sur l'écran d'accueil ».",
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   tt_btn:'🏓 Tennis de table', lg_tt:'Tennis de table',   // 509
+  bad_btn:'🏸 Badminton', lg_bad:'Badminton',   // 528
   arena_btn:'🏟️ Arena · bientôt', arena_msg:"L'Arena est un service en développement : elle n'est pas encore ouverte. Elle arrivera ici dès qu'elle sera prête.",
   lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation", lg_cgv:'Conditions de vente', lg_matchs:'Matchs analysés', lg_joueurs:'Joueurs', lg_tournois:'Tournois', lg_bilans:'Bilans de la semaine',
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
@@ -1585,7 +1587,7 @@ const T = {
   annonce:'Forecast', reel:'Actual', matchs:'Matches', tranche:'Range',
   calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Plus access', plus_texte:'One access, everything included. The match of the day stays free for everyone, every day.',
+  plus_titre:'Plus access', plus_texte:'One access, everything included: tennis, table tennis and badminton. The match of the day stays free for everyone, every day.',   // 528
   plus_bientot:'Payment by bank transfer · create your account, then request your subscription here.',
   cp_abo_titre:'My subscription',
   cp_abo_fond:d=>`Founder price: keep it by paying for the next month no later than ${d}.`,
@@ -1658,6 +1660,7 @@ const T = {
   pwa_ios:'📲 Install the app: tap Share (the square with an upward arrow), then "Add to Home Screen".',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   tt_btn:'🏓 Table tennis', lg_tt:'Table tennis',   // 509
+  bad_btn:'🏸 Badminton', lg_bad:'Badminton',   // 528
   arena_btn:'🏟️ Arena · soon', arena_msg:"Arena is a service in development: it isn't open yet. It will appear here as soon as it's ready.",
   lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use', lg_cgv:'Terms of sale', lg_matchs:'Analysed matches', lg_joueurs:'Players', lg_tournois:'Tournaments', lg_bilans:'Weekly records',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
