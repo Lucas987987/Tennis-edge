@@ -764,3 +764,50 @@ test('412 : tarif fondateur perdu après 7 jours de retard ; rappel avec la date
     { 'X-Cle': CLE }, DEV), env).then((x) => x.json());
   assert.equal(o.erreur, 'fondateur_perdu');
 });
+
+test('532 : alertes à traiter aussi par e-mail (ADMIN_EMAIL), adresse en clair dans l’e-mail seulement ; bloc des demandes en attente', async () => {
+  const { env, mails } = monde();
+  const tg = [], brevo = globalThis.fetch;
+  globalThis.fetch = async (u, o) => {
+    if (String(u).startsWith('https://api.telegram.org/')) { tg.push(JSON.parse(o.body)); return new Response('{}'); }
+    return brevo(u, o);
+  };
+  env.TELEGRAM_TOKEN = 't'; env.TELEGRAM_CHAT_ID = '42';
+  await worker.fetch(post('/compte/api/inscription', { email: 'lucie.martin@exemple.fr', mdp: 'motdepasse1' }), env);
+  const c = cookie(await worker.fetch(post('/compte/api/verifier', { jeton: lienDe(mails[0], 'verifier') }), env));
+  // sans ADMIN_EMAIL : Telegram seul
+  let n0 = mails.length;
+  await worker.fetch(post('/compte/api/abonnement', { formule: 'trimestre' }, { Cookie: c }), env);
+  assert.equal(mails.length, n0 + 1);                                          // l'e-mail du client seulement
+  assert.match(tg.at(-1).text, /demande d'abonnement : .* lu\*\*\*@exemple\.fr/);
+  // avec ADMIN_EMAIL : un e-mail de plus, à l'admin, adresse complète + lien du tableau de bord
+  env.ADMIN_EMAIL = 'moi@exemple.org';
+  n0 = mails.length;
+  await worker.fetch(post('/compte/api/abonnement', { annuler: true }, { Cookie: c }), env);
+  await worker.fetch(post('/compte/api/abonnement', { formule: 'mois' }, { Cookie: c }), env);
+  const admin = mails.slice(n0).filter((m) => m.to[0].email === 'moi@exemple.org');
+  assert.ok(admin.length >= 1);
+  const dem = admin.find((m) => /demande d'abonnement :/.test(m.subject));
+  assert.ok(dem);
+  assert.match(dem.textContent, /lucie\.martin@exemple\.fr/);
+  assert.match(dem.htmlContent, /\/compte\/admin/);
+  assert.ok(!tg.some((t) => t.text.includes('lucie.martin')));              // Telegram : toujours masqué
+  // accès immédiat demandé : e-mail admin aussi
+  n0 = mails.length;
+  await worker.fetch(post('/compte/api/acces_immediat', { demande: true, renonce: true }, { Cookie: c }), env);
+  assert.ok(mails.slice(n0).some((m) => m.to[0].email === 'moi@exemple.org' && /accès immédiat demandé/.test(m.subject)));
+  // les visites et les nouveaux comptes ne partent pas par e-mail à l'admin
+  n0 = mails.length;
+  await worker.fetch(post('/compte/api/inscription', { email: 'z@exemple.fr', mdp: 'motdepasse1' }), env);
+  assert.ok(!mails.slice(n0).some((m) => m.to[0].email === 'moi@exemple.org'));
+  // Brevo en panne : la demande passe quand même
+  globalThis.fetch = async (u, o) => { if (String(u).includes('brevo')) throw new Error('panne'); return new Response('{}'); };
+  const r = await worker.fetch(post('/compte/api/abonnement', { formule: 'annee' }, { Cookie: c }), env);
+  assert.equal(r.status, 200);
+  // tableau de bord : le bloc « Demandes en attente » est en haut, et son script se lit
+  const { pageAdmin } = await import('./comptes.js');
+  const p = pageAdmin();
+  assert.ok(p.indexOf('Demandes en attente') < p.indexOf('Entonnoir'));
+  assert.match(p, /function attente\(\)/);
+  assert.doesNotThrow(() => new Function(p.split('<script>')[1].split('</script>')[0]));
+});
