@@ -209,6 +209,28 @@ export async function telegramSite(env, texte) {
 export async function alerte(env, texte) {
   return telegramSite(env, `👤 Game Set Algo · ${texte}`);
 }
+// 28/11/2026 (paquet 532, Lucas : « recevoir par mail également », choix « demandes + virements ») : les alertes qui
+// demandent une action (demande d'abonnement, annulation, accès immédiat demandé, virement reçu) partent AUSSI par
+// e-mail à l'adresse du secret ADMIN_EMAIL (Brevo, même quota que les autres e-mails). Dans ta boîte : l'adresse complète
+// du client et le lien vers /compte/admin. Sans ADMIN_EMAIL ou sans Brevo : Telegram seul, comme avant. Jamais bloquant.
+export function mailAlerte(texte, email, site) {
+  const s_ = String(site || 'https://gamesetalgo.com').replace(/\/+$/, '');
+  const corps = MAIL_P(ESC(texte)) + (email ? MAIL_P('Compte : ' + ESC(email)) : '');
+  return { sujet: `Game Set Algo · ${texte}`.slice(0, 150),
+    html: cadreMail({ surtitre: 'Alerte', titre: texte.charAt(0).toUpperCase() + texte.slice(1), corps,
+      bouton: { lib: 'Ouvrir le tableau de bord', url: `${s_}/compte/admin` }, site: s_ }),
+    texte: `${texte}${email ? '\nCompte : ' + email : ''}\n${s_}/compte/admin` };
+}
+// texte : celui de Telegram (adresse masquée) ; email : l'adresse du client, remise en clair dans l'e-mail.
+export async function alerteAdmin(env, texte, email) {
+  const tg = await alerte(env, texte);
+  const a = String(env.ADMIN_EMAIL || '').trim();
+  if (a.includes('@')) {
+    const clair = email ? texte.split(masquer(email)).join(email) : texte;
+    try { await envoyerMail(env, a, mailAlerte(clair, email, env.SITE_URL)); } catch (e) { /* Telegram suffit */ }
+  }
+  return tg;
+}
 async function quotaJour(env) {
   const cle = `comptes/envois/${new Date().toISOString().slice(0, 10)}.json`;
   let n = 0;
@@ -520,7 +542,7 @@ async function accesImmediat(req, env, b) {
     u.historique = [...(u.historique || []).slice(-19), { le: maintenant, acces_immediat: 'demande' }];
     await ecrire(env, u);
     try { await envoyerMail(env, u.email, mailRenonciation(u.acces_immediat, base(req, env))); } catch (e) { /* la demande reste notée */ }
-    await alerte(env, `accès immédiat demandé (renonciation) : ${masquer(u.email)}`);
+    await alerteAdmin(env, `accès immédiat demandé (renonciation) : ${masquer(u.email)}`, u.email);
   }
   return rep({ ok: true, compte: vueCompte(u) });
 }
@@ -652,6 +674,7 @@ export function pageAdmin() {
 .c{background:#1b1342;border-radius:12px;padding:12px;margin:10px 0}input,select,button{font:inherit;padding:10px;border-radius:9px;border:1px solid #443a7a;background:#0e0a24;color:#f4f1ff;margin:4px 0;width:100%;box-sizing:border-box}
 button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}.ok{color:#7dff9a}.non{color:#ff4fae}small{color:#a99fd6}</style></head><body>
 <h2>Comptes abonnés</h2>
+<div class="c"><b>Demandes en attente</b><div id="dm"><small>…</small></div></div>
 <div class="c"><b>Entonnoir</b><div id="en"><small>…</small></div></div>
 <div class="c"><b>Canal Telegram du site</b><br><small>Comptes, demandes, virements, visites (une fois par heure s'il y a du nouveau, et le bilan de la veille chaque matin). 1) Crée un canal privé et ajoute le bot comme administrateur. 2) Publie un message dans le canal. 3) « Chercher mes canaux », copie l'identifiant (-100…) dans le secret GitHub TELEGRAM_SITE_CHAT_ID, relance « Déployer le worker algo ». 4) « Envoyer un test ».</small><div style="margin-top:8px"><button id="tgc">Chercher mes canaux</button> <button id="tgt">Envoyer un test</button></div><p id="tgr"></p></div>
 <div class="c"><b>Virement reçu</b><br><small>Donne l'accès, crée la facture numérotée et l'envoie au client.</small>
@@ -673,7 +696,10 @@ let TOUS=[],FOND=[];
 function rendre(){const q=$('q').value.trim().toLowerCase(),L=TOUS.filter(c=>!q||c.email.toLowerCase().includes(q)||String(c.reference).toLowerCase().includes(q));
 $('l').innerHTML='<p><small>'+L.length+' compte(s)</small></p>'+L.map(c=>{const n=FOND.indexOf(c.email);return '<div class="c"><b>'+c.email.replace(/</g,'&lt;')+'</b><br><small>créé le '+String(c.cree).slice(0,10)+(c.verifie?'':' · e-mail non confirmé')+' · virement : '+c.reference+(c.acces_immediat?' · accès immédiat demandé le '+String(c.acces_immediat).slice(0,10):' · accès immédiat non demandé')+'</small><br>'+(c.demande?'<span class="ok">Demande : '+c.demande.formule+' · '+String(c.demande.montant.toFixed(2)).replace('.',',')+' €'+(c.demande.fondateur?' (fondateur)':'')+' · le '+String(c.demande.le).slice(0,10)+'</span> <button data-pre="'+c.reference+'|'+c.demande.formule+'|'+c.demande.montant+'|'+(c.demande.fondateur?1:0)+'">Préremplir le virement</button><br>':'')+(c.abonne?'<span class="ok">Plus · '+(c.formule||'')+(c.jusqu_au?' jusqu’au '+c.jusqu_au.slice(0,10):'')+'</span>':'<span class="non">gratuit</span>')+(n>=0?' · <span class="ok">fondateur n° '+(n+1)+(n>=100?' (au-delà des 100 places)':'')+'</span>':'')+'</div>'}).join('');}
 function charger(){fetch('/compte/admin/api/liste',{cache:'no-store'}).then(r=>r.json()).then(o=>{TOUS=o.comptes;FOND=TOUS.filter(c=>c.fondateur&&c.verifie).sort((a,b)=>String(a.fondateur).localeCompare(String(b.fondateur))).map(c=>c.email);
-const DEM=TOUS.filter(c=>c.demande).length;$('lf').innerHTML='<small>'+DEM+' demande(s) d’abonnement en attente · '+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
+const DEM=TOUS.filter(c=>c.demande).length;attente();$('lf').innerHTML='<small>'+DEM+' demande(s) d’abonnement en attente · '+FOND.length+' réservation(s)'+(FOND.length>100?' — '+(FOND.length-100)+' au-delà des 100 places':'')+'</small>';rendre();});}
+// 532 : demandes d'abonnement en attente de virement, la plus ancienne d'abord
+function attente(){const e=s=>String(s||'').replace(/</g,'&lt;'),D=TOUS.filter(c=>c.demande).sort((a,b)=>String(a.demande.le).localeCompare(String(b.demande.le)));
+$('dm').innerHTML=D.length?D.map(c=>{const j=Math.max(0,Math.floor((Date.now()-Date.parse(c.demande.le))/864e5));return '<div class="c" style="background:#0e0a24"><b>'+e(c.email)+'</b><br><small>le '+String(c.demande.le).slice(0,10)+' · '+(j?'depuis '+j+' jour'+(j>1?'s':''):'aujourd’hui')+'</small><br><span class="ok">'+e(c.demande.formule)+' · '+String(Number(c.demande.montant).toFixed(2)).replace('.',',')+' €'+(c.demande.fondateur?' (fondateur)':'')+'</span><br><small>réf. '+e(c.reference)+' · '+(c.acces_immediat?'<span class="ok">accès immédiat demandé</span>':'<span class="non">accès immédiat non demandé</span>')+'</small><br><button data-pre="'+e(c.reference)+'|'+e(c.demande.formule)+'|'+c.demande.montant+'|'+(c.demande.fondateur?1:0)+'">Préremplir le virement</button></div>';}).join(''):'<small>Aucune demande en attente.</small>';}
 $('q').oninput=rendre;
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-pre]');if(!b)return;const x=b.dataset.pre.split('|');$('vc').value=x[0];$('vf').value=x[1];$('vm').value=String(x[2]).replace('.',',');$('vfo').checked=x[3]==='1';$('vc').scrollIntoView({behavior:'smooth',block:'center'});});$('cf2').onclick=()=>{const t=FOND.join('\\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('cf2').textContent='Copié ('+FOND.length+')';},()=>{$('lf').insertAdjacentHTML('beforeend','<pre style="white-space:pre-wrap;user-select:all">'+t.replace(/</g,'&lt;')+'</pre>');});};
 $('b').onclick=()=>fetch('/compte/admin/api/acces',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('e').value,formule:$('f').value,jours:$('j').value||null})}).then(r=>r.json()).then(o=>{$('r').textContent=o.ok?'Fait.':'Refusé : '+o.erreur;charger();});

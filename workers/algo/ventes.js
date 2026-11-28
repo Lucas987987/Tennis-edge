@@ -13,7 +13,7 @@
 //    (obligation comptable), même si le compte est supprimé.
 // 3. RAPPEL (tous les jours à 7 h 17 UTC) : un accès PAYÉ qui finit dans 3 jours ou moins reçoit un e-mail, une seule
 //    fois par échéance, avec la référence de virement (et les coordonnées bancaires du secret VIREMENT s'il existe).
-import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, masquer, donnerAcces, listeComptes,
+import { lire, ecrire, rep, memeOrigine, corps, utilisateur, envoyerMail, alerte, alerteAdmin, masquer, donnerAcces, listeComptes,
   referenceVirement, idCompte, normaliser, ESC, abonne, base, estAdmin, telegramSite, cadreMail, MAIL_P, MAIL_FORT, MAIL_BOITE, MAIL_LISTE, MAIL_VEDETTE } from './comptes.js';
 // coordonnees(), PLACES_FONDATEUR et PRIX_FONDATEUR sont définis plus bas (fonctions et constantes du module)
 
@@ -244,7 +244,7 @@ export async function virementRecu(env, b, req) {
     facture: htmlFacture(f, true) + `<p style="color:#666;font-size:13px;margin:8px 0">Elle reste disponible dans « Mon compte » : ${ESC(lienF)}</p>` });
   const m = await envoyerMail(env, u2.email, { sujet: `Ton accès Plus est ouvert · facture ${num} · Game Set Algo`, html: corps_.html,
     texte: `${corps_.texte}\nFacture ${num} : ${eur(montant)}.\n${lienF}` });
-  await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`);
+  await alerteAdmin(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · facture ${num}`, u2.email);
   return { ok: true, numero: num, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation: !!ri };
 }
 // 26/11/2026 (paquet 473, Lucas : « un mail plus joli qui reprend le thème du site ») — e-mail « accès Plus ouvert »
@@ -284,7 +284,7 @@ async function virementSansFacture(env, u, b, montant, renonciation, req) {
   const au = String(u2.acces.jusqu_au || '').slice(0, 10);
   const corps_ = mailAccesOuvert({ jusquau: au, formule: b.formule, montant, fondateur, url: env.SITE_URL || base(req, env) });
   const m = await envoyerMail(env, u2.email, { sujet: 'Ton accès Plus est ouvert · Game Set Algo', html: corps_.html, texte: corps_.texte });
-  await alerte(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · SANS FACTURE (test, FACTURE_VENDEUR absent)`);
+  await alerteAdmin(env, `virement reçu ${eur(montant)} (${PAYANTES[b.formule]}) : ${masquer(u2.email)} · SANS FACTURE (test, FACTURE_VENDEUR absent)`, u2.email);
   return { ok: true, numero: null, sans_facture: true, mail: m.ok, jusqu_au: u2.acces.jusqu_au, renonciation };
 }
 const dateFr = (d) => String(d || '').slice(0, 10).split('-').reverse().join('/');
@@ -580,7 +580,7 @@ export async function demandeAbonnement(req, env, b) {
       u.historique = [...(u.historique || []).slice(-19), { le: maintenant, demande: 'annulee' }];
       u.demande = null;
       await ecrire(env, u);
-      await alerte(env, `demande d'abonnement annulée : ${masquer(u.email)}`);
+      await alerteAdmin(env, `demande d'abonnement annulée : ${masquer(u.email)}`, u.email);
     }
     return rep({ ok: true });
   }
@@ -601,7 +601,7 @@ export async function demandeAbonnement(req, env, b) {
   const url = String(env.SITE_URL || 'https://gamesetalgo.com');
   let mail = { ok: false };
   try { mail = await envoyerMail(env, u.email, mailDemande(u, { ...u.demande, acces_immediat: !!u.acces_immediat }, coordonnees(env), url)); } catch (e) { /* la demande reste notée */ }
-  await alerte(env, `demande d'abonnement : ${PAYANTES[b.formule]}, ${eur(montant)}${fondateur ? ' (fondateur n° ' + place + ')' : ''} · réf. ${referenceVirement(u)} · ${masquer(u.email)}${u.acces_immediat ? '' : ' · accès immédiat pas encore coché'}`);
+  await alerteAdmin(env, `demande d'abonnement : ${PAYANTES[b.formule]}, ${eur(montant)}${fondateur ? ' (fondateur n° ' + place + ')' : ''} · réf. ${referenceVirement(u)} · ${masquer(u.email)}${u.acces_immediat ? '' : ' · accès immédiat pas encore coché'}`, u.email);
   return rep({ ok: true, mail: !!mail.ok });
 }
 
