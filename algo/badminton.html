@@ -132,12 +132,14 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 'use strict';
 const T={
  fr:{titre:"L'algo du <b>badminton</b>",
-  sous:"Le % de victoire de chaque match des circuits BWF, simples et doubles. Un bilan public, erreurs comprises.",
+  sous:"Le % de victoire et le score en manches le plus probable de chaque match des circuits BWF, simples et doubles. Un bilan public, erreurs comprises.",
   charge:'Chargement des matchs…',erreur:'Matchs indisponibles pour le moment, réessayez dans un instant.',
   tout:'Tout',ep:{'simple messieurs':'Simple messieurs','simple dames':'Simple dames','double messieurs':'Double messieurs','double dames':'Double dames','double mixte':'Double mixte'},
   avenir:'À venir',encours:'En cours',termines:'Terminés (24 h)',aucun:'Aucun match pour le moment.',
   offert:'Match offert du jour',verrou:'Pronostic réservé à <a href="#plus">Game Set Algo Plus</a>',
-  bandeau:'Avec Game Set Algo Plus : le % de tous les matchs avant leur début. Sans abonnement : un match offert chaque jour, le % des matchs commencés et tout le bilan.',
+  bandeau:'Avec Game Set Algo Plus : le % et le score le plus probable de tous les matchs avant leur début. Sans abonnement : un match offert chaque jour, le % des matchs commencés et tout le bilan.',
+  scoreProb:'Scores les plus probables',decisive:p=>`Troisième manche : ${p} %`,scoreTrouve:'score exact trouvé',scores:'score exact trouvé',
+  dec:(a,r)=>`3e manche annoncée ${a} %, réelle ${r} %`,
   sabonner:'Découvrir Plus',plusde:n=>`Afficher ${n} matchs de plus`,
   fav:(n,p)=>`L'algo voit ${n} gagner à ${p} %.`,suivis:(a,b)=>`Matchs suivis par l'algo : ${a} et ${b} (en double : le joueur le moins suivi de chaque paire).`,
   prog:"L'heure est celle du programme : les matchs s'enchaînent sur un court, le début réel est souvent plus tard.",
@@ -153,12 +155,13 @@ const T={
   preuve:(n,b)=>`Aujourd'hui : <b>${n} matchs</b> analysés, dont un offert.`+(b?` Depuis le ${b.d} : <b>${b.p} % de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.`:''),
   compTete:['','Gratuit','Plus'],
   comp:[['Le match offert du jour, en entier',true,true],['% de victoire de tous les matchs',['une fois le match commencé'],['avant le match']],
+    ['Score le plus probable et chance d’une 3e manche',false,true],
     ['Tout l’accès Plus du tennis et du tennis de table',false,true],['Bilan public, toutes les erreurs comprises',true,true]],
   fdT:'Offre fondateurs',
   fd:"Les 100 premiers comptes confirmés sont fondateurs, automatiquement : l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Rien à réserver : crée ton compte et confirme ton adresse.",
   creer:'Créer un compte',connexion:'Se connecter',abonner:"S'abonner",
   methodeT:'Comment ça marche',
-  methode:"Un Elo propre au badminton, appris sur plus de 65 000 matchs des circuits BWF collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Il compte la part des points gagnés, pas seulement le vainqueur, et en double chaque joueur a sa propre note : une paire nouvelle profite du passé de ses deux joueurs. Chaque réglage a été appris sur 2021–2022, puis jugé une seule fois de 2023 à novembre 2026 : 71 % de bons vainqueurs. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
+  methode:"Un Elo propre au badminton, appris sur plus de 65 000 matchs des circuits BWF collectés depuis 2021 et mis à jour après chaque match, donne le % de victoire. Le score en manches le plus probable vient de ce %, recalé sur la fréquence réelle des matchs en 3 manches par épreuve. Il compte la part des points gagnés, pas seulement le vainqueur, et en double chaque joueur a sa propre note : une paire nouvelle profite du passé de ses deux joueurs. Chaque réglage a été appris sur 2021–2022, puis jugé une seule fois de 2023 à novembre 2026 : 71 % de bons vainqueurs. L’algo est indépendant. Le pronostic n’est plus modifié à l’heure prévue du match : c’est lui qui est jugé.",
   maj:d=>`Mis à jour le ${d}.`,
   pied:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   aujourdhui:"Aujourd'hui",demain:'Demain',hier:'Hier',
@@ -167,12 +170,14 @@ const T={
   favNotif:'Abonné Plus ? Active les notifications dans ton compte (page du tennis, bouton du compte) : le matin, le début et le résultat de tes favoris.',
   suivre:n=>`☆ Suivre ${n}`,suivi:n=>`⭐ ${n} suivi`,etoileM:'Suivre ce match',favErr:'Impossible pour l’instant, réessaie.'},
  en:{titre:'The <b>badminton</b> algorithm',
-  sous:'Win % for every match on the BWF tours, singles and doubles. A public record, mistakes included.',
+  sous:'Win % and most likely game score for every match on the BWF tours, singles and doubles. A public record, mistakes included.',
   charge:'Loading matches…',erreur:'Matches unavailable right now, please try again shortly.',
   tout:'All',ep:{'simple messieurs':"Men's singles",'simple dames':"Women's singles",'double messieurs':"Men's doubles",'double dames':"Women's doubles",'double mixte':'Mixed doubles'},
   avenir:'Upcoming',encours:'Live',termines:'Finished (24 h)',aucun:'No match right now.',
   offert:'Free match of the day',verrou:'Prediction for <a href="#plus">Game Set Algo Plus</a> members',
-  bandeau:'With Game Set Algo Plus: the % of every match before it starts. Without a subscription: one free match each day, the % of started matches and the full record.',
+  bandeau:'With Game Set Algo Plus: the % and most likely score of every match before it starts. Without a subscription: one free match each day, the % of started matches and the full record.',
+  scoreProb:'Most likely scores',decisive:p=>`Third game: ${p}%`,scoreTrouve:'exact score found',scores:'exact score found',
+  dec:(a,r)=>`third game predicted ${a}%, actual ${r}%`,
   sabonner:'Discover Plus',plusde:n=>`Show ${n} more matches`,
   fav:(n,p)=>`The algorithm gives ${n} a ${p}% chance to win.`,suivis:(a,b)=>`Matches tracked by the algorithm: ${a} and ${b} (doubles: the less tracked player of each pair).`,
   prog:'The time is the scheduled one: matches follow each other on a court, the real start is often later.',
@@ -188,12 +193,13 @@ const T={
   preuve:(n,b)=>`Today: <b>${n} matches</b> analysed, one of them free.`+(b?` Since ${b.d}: <b>${b.p}% of winners found</b> across ${b.n} matches, every miss included.`:''),
   compTete:['','Free','Plus'],
   comp:[['The free match of the day, in full',true,true],['Win % for every match',['once the match has started'],['before the match']],
+    ['Most likely score and chance of a third game',false,true],
     ['All of Plus for tennis and table tennis',false,true],['Public record, every miss included',true,true]],
   fdT:'Founders offer',
   fd:"The first 100 confirmed accounts are founders, automatically: Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Nothing to reserve: create your account and confirm your address.",
   creer:'Create an account',connexion:'Log in',abonner:'Subscribe',
   methodeT:'How it works',
-  methode:'A badminton Elo, learned on more than 65,000 BWF matches collected since 2021 and updated after every match, gives the win %. It counts the share of points won, not just the winner, and in doubles each player has their own rating: a new pair benefits from both players’ history. Every setting was learned on 2021–2022, then judged once from 2023 to November 2026: 71% of winners found. The algorithm is independent. The prediction is frozen at the scheduled time: that is the one we judge.',
+  methode:'A badminton Elo, learned on more than 65,000 BWF matches collected since 2021 and updated after every match, gives the win %. The most likely game score comes from that %, recalibrated on how often matches really go to three games in each event. It counts the share of points won, not just the winner, and in doubles each player has their own rating: a new pair benefits from both players’ history. Every setting was learned on 2021–2022, then judged once from 2023 to November 2026: 71% of winners found. The algorithm is independent. The prediction is frozen at the scheduled time: that is the one we judge.',
   maj:d=>`Updated ${d}.`,
   pied:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   aujourdhui:'Today',demain:'Tomorrow',hier:'Yesterday',
@@ -247,11 +253,12 @@ function ligneMatch(m){
     if(m.verrou)h+=`<span class="verrou">🔒 ${L.verrou}</span>`;}
   h+='</div>';
   if(m.statut==='termine'&&'bon' in m){const fav=m.p_h>=.5?m.h:m.a;
-    h+=`<div class="note"><span class="${m.bon?'ok':'ko'}">${m.bon?'✓ '+L.bon:'✗ '+L.faux}</span> · ${esc(L.annonce(fav,pc(Math.max(m.p_h,1-m.p_h))))}</div>`;}
+    h+=`<div class="note"><span class="${m.bon?'ok':'ko'}">${m.bon?'✓ '+L.bon:'✗ '+L.faux}</span> · ${esc(L.annonce(fav,pc(Math.max(m.p_h,1-m.p_h))))}`+(m.score_trouve?` · ${L.scoreTrouve}`:'')+'</div>';}
   const suivre=`<div class="suivre">`+[m.h,m.a].map(n=>{const on=FAV.j.has(kj(n));
     return `<button class="btn" type="button" data-fav="joueur" data-cle="${esc(kj(n))}" aria-pressed="${on}">${esc(on?L.suivi(n):L.suivre(n))}</button>`;}).join('')+'</div>';
   h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}>`
     +(a_p?`<div>${esc(L.fav(m.p_h>=.5?m.h:m.a,pc(Math.max(m.p_h,1-m.p_h))))}</div>`
+      +(m.scores?`<div class="note">${L.scoreProb}</div><div class="sc">${m.scores.map((x,i)=>`<span class="${i?'':'top'}">${x[0]}-${x[1]} · ${pc(x[2])} %</span>`).join('')}</div><div>${esc(L.decisive(pc(m.decisive)))}</div>`:'')
       +(m.n_h!=null?`<div class="note">${esc(L.suivis(m.n_h.toLocaleString(lang),m.n_a.toLocaleString(lang)))}</div>`:'')
       +(m.epreuve==='double dames'?`<div class="note">${esc(L.ddames)}</div>`:''):'')
     +(m.statut==='a_venir'?`<div class="note">${esc(L.prog)}</div>`:'')+suivre+'</div>';
@@ -268,7 +275,9 @@ function bilan(){const L=T[lang],B=(D.bilan||{})[onglet];let h=`<h2>${L.bilanT}$
   if(!B){return h+`<p class="vide">${L.rienBilan}</p></div>`;}
   h+=`<p class="note">${L.depuis(jourCourt(D.depuis))}</p><div class="chiffres">`
    +`<div><b>${B.matchs.toLocaleString(lang)}</b><small>${L.matchs}</small></div>`
-   +`<div><b>${B.bons_pct} %</b><small>${L.bons} · ${L.annonceMoy} ${B.annonce_pct} %</small></div></div>`;
+   +`<div><b>${B.bons_pct} %</b><small>${L.bons} · ${L.annonceMoy} ${B.annonce_pct} %</small></div>`
+   +(B.avec_score?`<div><b>${B.scores_trouves_pct} %</b><small>${L.scores}</small></div>`:'')+'</div>'
+   +(B.avec_score?`<p class="note">${L.dec(B.decisive_annoncee_pct,B.decisive_reelle_pct)}</p>`:'');
   if(B.matchs<30)h+=`<p class="note">${L.tot}</p>`;
   if((B.tranches||[]).length){h+=`<table><tr><th>${L.tranche}</th><th>${L.matchs}</th><th>${L.annonceCol}</th><th>${L.reel}</th></tr>`;
     B.tranches.forEach(t=>{h+=`<tr><td>${t.de}–${t.de===80?100:t.de+10} %</td><td>${t.matchs}</td><td>${t.annonce_pct} %</td><td>${t.reel_pct} %</td></tr>`;});
