@@ -84,6 +84,12 @@ class T(unittest.TestCase):
             if not m.get('offert'):
                 self.assertTrue(m['verrou'])
                 self.assertNotIn('p_h', m)
+                self.assertNotIn('scores', m)                           # 527 : le score reste réservé
+        for m in plein['matchs']:                                       # 527 : le score en manches, 4 issues
+            self.assertEqual(len(m['scores']), 4)
+            self.assertAlmostEqual(sum(x[2] for x in m['scores']), 1.0, places=3)
+            self.assertAlmostEqual(sum(x[2] for x in m['scores'] if x[0] == 2), m['p_h'], delta=0.03)
+            self.assertTrue(0 < m['decisive'] < 1)
         p1 = self.lire(P.CLE_ETAT)['matchs']['1']['p_h']
         # 2e passage : 1 commencé (figé), 2 terminé (jugé), 3 abandon (ni bilan ni verdict)
         T1 = T0 + dt.timedelta(hours=6)
@@ -96,6 +102,9 @@ class T(unittest.TestCase):
         x2 = e['matchs']['2']
         self.assertTrue(x2['juge'])
         self.assertEqual(x2['bon'], x2['p_h'] < 0.5)
+        self.assertEqual(x2['decisive_reelle'], True)
+        self.assertEqual(x2['score_trouve'], x2['scores'][0][:2] == [1, 2])
+        self.assertEqual(e['bilan']['tout']['avec_score'], 1)
         self.assertEqual(e['matchs']['3']['statut'], 'annule')
         self.assertEqual(e['bilan']['tout']['matchs'], 1)
         self.assertEqual(e['bilan']['double messieurs']['matchs'], 1)
@@ -142,6 +151,8 @@ class T(unittest.TestCase):
         t = int(dt.datetime(2026, 11, 28, 9, tzinfo=dt.timezone.utc).timestamp())
         m = {'id': 1, 't': t, 'tournoi': 'Welsh International Open, MS', 'epreuve': 'simple messieurs', 'h': 'A', 'a': 'B',
              'statut': 'a_venir', 'p_h': 0.37, 'offert': True}
+        avec = P.post_du_jour({'matchs': [dict(m, scores=[[0, 2, 0.41], [1, 2, 0.22], [2, 1, 0.2], [2, 0, 0.17]])]}, None)
+        self.assertIn("L'algo : B gagnant à 63 % · score le plus probable 0-2 (41 %)", avec)
         txt = P.post_du_jour({'matchs': [m, dict(m, id=2, offert=False, p_h=0.9)]}, {'matchs': 40, 'bons_pct': 72.5, 'annonce_pct': 70.0})
         self.assertIn('🏸 Badminton', txt)
         self.assertIn('Welsh International Open · Simple messieurs · 10 h 00', txt)
