@@ -88,6 +88,18 @@ jobs:
           if [ -z "$BREVO_API_KEY" ]; then echo "::warning::Secret BREVO_CLE_SITE absent : aucun e-mail de compte ne part."; exit 0; fi
           printf '%s' "$BREVO_API_KEY" | npx --yes wrangler@4 secret put BREVO_API_KEY > /dev/null && echo "Clé Brevo posée."
 
+      # 28/11/2026 (paquet 532) : adresse où partent AUSSI par e-mail les alertes à traiter (demandes d'abonnement,
+      # annulations, accès immédiat demandé, virements reçus). Secret GitHub ADMIN_EMAIL, facultatif : absent, Telegram seul.
+      - name: Adresse des alertes par e-mail (si elle existe)
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: workers/algo
+        run: |
+          if [ -z "$ADMIN_EMAIL" ]; then echo "Secret ADMIN_EMAIL absent : alertes sur Telegram seulement."; exit 0; fi
+          printf '%s' "$ADMIN_EMAIL" | npx --yes wrangler@4 secret put ADMIN_EMAIL > /dev/null && echo "Adresse des alertes posée."
+
       # 23/11/2026 (paquet 385) : alertes des comptes (nouveau compte, adresse confirmée, place fondateur, code utilisé)
       # sur le Telegram privé, avec les secrets GitHub TELEGRAM_TOKEN et TELEGRAM_CHAT_ID déjà utilisés par les rapports.
       - name: Telegram des alertes de comptes (s'il existe)
