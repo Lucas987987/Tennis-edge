@@ -9,7 +9,10 @@ Ce que l'algo annonce, et d'où cela vient (rien d'autre n'entre) :
     jugement 2023 → 26/11/2026 : 71,2 % de bons vainqueurs, log loss 0,548, pente 1,09) — a = 400, c = 0,3, la cible
     est la part des points gagnés (w = 1, s = 32), et en double chaque JOUEUR a sa note (la paire = la moyenne des deux) ;
     rejoué sur tout l'historique collecté (historique/badminton/), puis sur les matchs du jour déjà terminés ;
-  • rien d'autre : pas de score en manches (aucune étude ne l'a encore jugé au badminton).
+  • le score en manches (paquet 527, Lucas : « fais le » après l'étude du score, etude_score_badminton.py : S1 retenu,
+    part des matchs en 3 manches annoncée 29,7 % pour 30,4 % réels sur 2023 → 2026) : manches indépendantes ancrées
+    sur le %, la part des matchs en 3 manches recalée par épreuve et tranche de 5 points du favori sur tout
+    l'historique (rétrécie vers le modèle sans recalage, poids 50 matchs). Le % ne dépend jamais du score.
 Aucune cote n'est lue, nulle part.
 
 La sonde du 27/11 (paquet 518) : les matchs apparaissent 3 à 24 h avant, avec les deux camps connus, quand le tour
@@ -56,7 +59,7 @@ A_VENIR, EN_COURS, TERMINE, ANNULE = 'a_venir', 'en_cours', 'termine', 'annule'
 STATUTS = {'notstarted': A_VENIR, 'inprogress': EN_COURS, 'interrupted': EN_COURS, 'willcontinue': EN_COURS,
            'finished': TERMINE}
 AFFICHE = ('id', 't', 'tournoi', 'tour', 'epreuve', 'h', 'a', 'statut', 'manches')
-PRONOSTIC = ('p_h', 'n_h', 'n_a', 'maj', 'g', 'bon')
+PRONOSTIC = ('p_h', 'n_h', 'n_a', 'maj', 'g', 'bon', 'scores', 'decisive', 'score_trouve', 'decisive_reelle')
 try:
     from zoneinfo import ZoneInfo
     PARIS = ZoneInfo('Europe/Paris')
@@ -90,6 +93,7 @@ class Modele:
         self.a, self.c, self.w, self.s = reglage
         self.R, self.N = {}, {}
         self.matchs = 0
+        self.P = []                                   # 527 : le % d'avant match de chaque match rejoué (table des scores)
         self.ajouter(M)
 
     def note(self, cs):
@@ -104,6 +108,7 @@ class Modele:
             ch, cb = camps(m)
             rh, rb = self.note(ch), self.note(cb)
             p = 1.0 / (1.0 + 10 ** (-(rh - rb) / 400.0))
+            self.P.append(p)
             y, sp = m[5], m[6]
             cible = (1 - self.w) * y + self.w * (1.0 / (1.0 + math.exp(-(sp - 0.5) * self.s))) if self.w else y
             d = cible - p
@@ -117,6 +122,22 @@ class Modele:
         rh, rb = self.note(ch), self.note(cb)
         return {'p_h': round(1.0 / (1.0 + 10 ** (-(rh - rb) / 400.0)), 4), 'n_h': self.experience(ch),
                 'n_a': self.experience(cb), 'elo_somme': round(rh + rb, 1)}
+
+
+# ------------------------------------------------------------------ 527 : le score en manches (étude du score, S1)
+def table_scores(H, P):
+    """La table S1 apprise sur tout l'historique (sans la série hors circuits) : {(épreuve, tranche): [n, en 3, S0]}."""
+    import etude_score_badminton as SC
+    idx = [i for i, m in enumerate(H) if len(m) > 10 and not m[7]]
+    return SC.apprendre(H, P, idx)
+
+
+def scores_de(p, epreuve, T):
+    """[[manches h, manches a, probabilité]] du plus probable au moins probable, et la chance d'une 3e manche."""
+    import etude_score_badminton as SC
+    d = SC.s1(p, epreuve, T) if T else SC.s0(p)
+    L = sorted([[2, 0, d['h20']], [2, 1, d['h21']], [1, 2, d['a21']], [0, 2, d['a20']]], key=lambda x: -x[2])
+    return [[a, b, round(q, 4)] for a, b, q in L], round(d['h21'] + d['a21'], 4)
 
 
 # ------------------------------------------------------------------ lecture des matchs (même format que l'historique)
@@ -196,7 +217,7 @@ def statut(r):
 
 
 # ------------------------------------------------------------------ passage
-def mettre_a_jour(etat, lignes, mod, connues, maintenant):
+def mettre_a_jour(etat, lignes, mod, connues, maintenant, table=None):
     ts = int(maintenant.timestamp())
     M = etat.setdefault('matchs', {})
     archives = []
@@ -220,6 +241,7 @@ def mettre_a_jour(etat, lignes, mod, connues, maintenant):
         if s == A_VENIR and int(r['t']) > ts and not x.get('fige'):
             ch, cb = camps(tuple_de(comme_termine(r), ep))
             x.update(mod.predire(ch, cb), maj=ts)
+            x['scores'], x['decisive'] = scores_de(x['p_h'], ep, table)      # 527
         if s in (EN_COURS, TERMINE):
             x['manches'] = r.get('manches') or []
         if s == TERMINE and 'p_h' in x and not x.get('juge'):
@@ -228,6 +250,11 @@ def mettre_a_jour(etat, lignes, mod, connues, maintenant):
                 continue
             x['g'] = r['g']
             x['bon'] = (r['g'] == 1) == (x['p_h'] >= 0.5)
+            mh = sum(1 for a_, b_ in x.get('manches') or [] if a_ > b_)
+            ma = sum(1 for a_, b_ in x.get('manches') or [] if b_ > a_)
+            if x.get('scores'):                                          # 527
+                x['score_trouve'] = [mh, ma] == x['scores'][0][:2]
+                x['decisive_reelle'] = min(mh, ma) == 1
             x['juge'] = True
             compter(etat, x)
             archives.append(dict(x))
@@ -240,6 +267,11 @@ def mettre_a_jour(etat, lignes, mod, connues, maintenant):
 def compter(etat, x):
     for cle in ('tout', x['epreuve']):
         B = etat.setdefault('bilan', {}).setdefault(cle, {'matchs': 0, 'bons': 0, 'somme_p_favori': 0.0, 'tranches': {}})
+        if 'scores' in x and 'score_trouve' in x:                       # 527 : le score, depuis qu'il est annoncé
+            B['avec_score'] = B.get('avec_score', 0) + 1
+            B['scores_trouves'] = B.get('scores_trouves', 0) + int(x['score_trouve'])
+            B['somme_decisive'] = round(B.get('somme_decisive', 0.0) + x['decisive'], 4)
+            B['decisives_reelles'] = B.get('decisives_reelles', 0) + int(x['decisive_reelle'])
         pf = max(x['p_h'], 1 - x['p_h'])
         B['matchs'] += 1
         B['bons'] += int(x['bon'])
@@ -291,6 +323,11 @@ def bilan_public(etat):
                     'tranches': [{'de': int(k), 'matchs': t[0], 'annonce_pct': round(100 * t[1] / t[0], 1),
                                   'reel_pct': round(100 * t[2] / t[0], 1)}
                                  for k, t in sorted(B['tranches'].items(), key=lambda kv: int(kv[0])) if t[0]]}
+        ns = B.get('avec_score', 0)
+        if ns:                                                          # 527
+            out[cle].update(avec_score=ns, scores_trouves_pct=round(100 * B['scores_trouves'] / ns, 1),
+                            decisive_annoncee_pct=round(100 * B['somme_decisive'] / ns, 1),
+                            decisive_reelle_pct=round(100 * B['decisives_reelles'] / ns, 1))
     return out
 
 
@@ -327,7 +364,8 @@ def post_du_jour(complet, veille):
     for m in sorted(offerts, key=lambda m: m['t']):
         fav, pf = (m['h'], m['p_h']) if m['p_h'] >= 0.5 else (m['a'], 1 - m['p_h'])
         L += ['', f"{_tournoi_court(m.get('tournoi'))} · {str(m.get('epreuve') or '').capitalize()} · {_heure_fr(m['t'])} (heure du programme)",
-              f"{m['h']} – {m['a']}", f"L'algo : {fav} gagnant à {round(100 * pf)} %"]
+              f"{m['h']} – {m['a']}", f"L'algo : {fav} gagnant à {round(100 * pf)} %"
+              + (f" · score le plus probable {m['scores'][0][0]}-{m['scores'][0][1]} ({round(100 * m['scores'][0][2])} %)" if m.get('scores') else '')]
     if veille and veille['matchs'] >= 30:
         L += ['', f"Hier : {veille['matchs']} matchs jugés, {str(veille['bons_pct']).replace('.', ',')} % de vainqueurs trouvés "
                   f"(annoncé en moyenne {str(veille['annonce_pct']).replace('.', ',')} %)."]
@@ -443,7 +481,12 @@ def passage(racine, client, cf, maintenant=None, journal=print):
             if m:
                 nouveaux.append(m)
     mod = Modele(H + nouveaux)
-    archives = mettre_a_jour(etat, lignes, mod, connues, maintenant)
+    try:
+        table = table_scores(H, mod.P[:len(H)])                        # 527 : la table du score, sur tout l'historique
+    except Exception as ex:  # noqa: BLE001 — sans table, le score suit le modèle sans recalage
+        journal(f'  score : table indisponible ({type(ex).__name__}), modèle sans recalage')
+        table = None
+    archives = mettre_a_jour(etat, lignes, mod, connues, maintenant, table)
     complet, libre = site(etat, maintenant)
     jour = maintenant.astimezone(PARIS).date().isoformat()
     if complet.get('post_du_jour') and maintenant.astimezone(PARIS).hour >= HEURE_POST and etat.get('post_envoye') != jour:
