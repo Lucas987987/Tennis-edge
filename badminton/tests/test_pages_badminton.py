@@ -62,6 +62,10 @@ class T(unittest.TestCase):
                     self.assertNotIn(w, bas, (k, w))
         E = json.loads(cf.d[P.CLE_ETAT])
         self.assertEqual(E['joueurs']['chen-q']['n'], 3)
+        U = []                                                                            # 529 : IndexNow
+        P.publier(Coffre(), L, NOW, None, journal=lambda *_: None, signaler=U.extend)
+        self.assertIn('https://gamesetalgo.com/badminton/match/22', U)
+        self.assertIn('https://gamesetalgo.com/badminton/joueur/jia-y-f', U)
         P.publier(cf, L, NOW, None, journal=lambda *_: None)                     # rien deux fois
         self.assertEqual(json.loads(cf.d[P.CLE_ETAT])['joueurs']['chen-q']['n'], 3)
 

@@ -34,6 +34,7 @@ jobs:
             /scripts/allsports.py
             /scripts/collecte_tennis_de_table.py
             /scripts/r2_io.py
+            /scripts/indexnow.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -49,6 +50,7 @@ jobs:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          INDEXNOW_ACTIF: '1'
           ALLSPORTS_PAUSE: '0.35'
           ALLSPORTS_RESERVE: '10'
         run: |
