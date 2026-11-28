@@ -24,7 +24,7 @@ def test_workflow_telegram_et_pages():
         assert '${{ secrets.%s }}' % s in y
     p = lire('badminton', 'pronostics_badminton.py')
     assert 'pages_badminton.publier(cf, archives, maintenant, CLE_ARCHIVE, journal' in p   # 529 : + signaler
-    assert "etat.get('post_envoye') != jour" in p
+    assert "etat.get('post_envoye') == jour" in p   # 530 : envoyer_post
 
 
 def test_worker_notifs_et_routes():
