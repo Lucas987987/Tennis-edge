@@ -385,15 +385,15 @@ def pre(L):
 
 
 # 25/11/2026 (paquet 441, Lucas : « la fiche des joueurs est sombre, on devrait pouvoir choisir clair ou sombre ») —
-# mêmes réglages que la page d'accueil (Auto, Clair, Sombre ; sombre par défaut), même mémoire sur l'appareil (te_theme) :
+# mêmes réglages que la page d'accueil (Auto, Clair, Sombre ; clair par défaut depuis le paquet 534), même mémoire sur l'appareil (te_theme) :
 # un choix fait sur l'accueil vaut pour les pages des joueurs, des matchs, des tournois et des bilans, et inversement.
-THEME_TETE = ("(function(){try{var v=localStorage.getItem('te_theme')||'dark';var d=v==='auto'?(matchMedia('(prefers-color-scheme: dark)')"
+THEME_TETE = ("(function(){try{var v=localStorage.getItem('te_theme')||'light';var d=v==='auto'?(matchMedia('(prefers-color-scheme: dark)')"
               ".matches?'dark':'light'):v;document.documentElement.setAttribute('data-theme',d==='light'?'light':'dark');}catch(e){}})();")
 THEME_BASCULE = ("(function(){var b=document.querySelectorAll('.th button');function app(v){var d=v==='auto'?(window.matchMedia&&matchMedia("
                  "'(prefers-color-scheme: dark)').matches?'dark':'light'):v;document.documentElement.setAttribute('data-theme',d==='light'?'light':'dark');"
                  "var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d==='light'?'#F4F2FB':'#0E0A24');"
                  "for(var i=0;i<b.length;i++)b[i].setAttribute('aria-pressed',String(b[i].getAttribute('data-th')===v));}"
-                 "var v='dark';try{v=localStorage.getItem('te_theme')||'dark';}catch(e){}app(v);"
+                 "var v='light';try{v=localStorage.getItem('te_theme')||'light';}catch(e){}app(v);"
                  "for(var i=0;i<b.length;i++)b[i].addEventListener('click',function(){v=this.getAttribute('data-th');"
                  "try{localStorage.setItem('te_theme',v);}catch(e){}app(v);});"
                  "if(window.matchMedia){var q=matchMedia('(prefers-color-scheme: dark)');if(q.addEventListener)q.addEventListener('change',function(){if(v==='auto')app(v);});}})();")
