@@ -163,7 +163,13 @@ class T(unittest.TestCase):
         for interdit in ('cote', 'value', 'marché', 'pari'):
             self.assertNotIn(interdit, txt.lower())
         self.assertNotIn('Hier', P.post_du_jour({'matchs': [m]}, {'matchs': 29, 'bons_pct': 1, 'annonce_pct': 1}))
-        self.assertIsNone(P.post_du_jour({'matchs': [dict(m, statut='en_cours')]}, None))
+        # 530 : le match offert déjà commencé ou terminé reste dans le post (le % d'avant match, puis le résultat)
+        self.assertIn("En cours · l'algo donnait B gagnant à 63 % avant le match", P.post_du_jour({'matchs': [dict(m, statut='en_cours')]}, None))
+        fini = P.post_du_jour({'matchs': [dict(m, statut='termine', g=2, bon=True, manches=[[15, 21], [21, 19], [18, 21]])]}, None)
+        self.assertIn("Résultat : B gagne 2-1 · l'algo donnait B à 63 % ✅", fini)
+        seul = P.post_du_jour({'matchs': []}, {'matchs': 40, 'bons_pct': 72.5, 'annonce_pct': 70.0})
+        self.assertTrue(seul.startswith("🏸 Badminton · le bilan d'hier") and 'Hier : 40 matchs jugés' in seul)
+        self.assertIsNone(P.post_du_jour({'matchs': []}, {'matchs': 12, 'bons_pct': 50, 'annonce_pct': 60}))
 
     def test_bilan_veille_521(self):
         e = {}
