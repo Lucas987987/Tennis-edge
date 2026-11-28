@@ -1,66 +1,66 @@
 {
- "genere_le": "2026-11-28T09:23:45Z",
+ "genere_le": "2026-11-28T09:44:39Z",
  "pronostiques": 2772,
- "joues_avec_resultat": 138,
+ "joues_avec_resultat": 142,
  "tous": {
   "combinaison": {
-   "n": 133,
-   "reussite_pct": 66.9,
-   "log_loss": 0.6588,
-   "score_sets_juste_pct": 45.9,
-   "n_sets": 133
+   "n": 137,
+   "reussite_pct": 67.2,
+   "log_loss": 0.6572,
+   "score_sets_juste_pct": 45.3,
+   "n_sets": 137
   },
   "simulation": {
-   "n": 133,
-   "reussite_pct": 62.4,
-   "log_loss": 0.6547,
-   "score_sets_juste_pct": 42.9,
-   "n_sets": 133
+   "n": 137,
+   "reussite_pct": 62.8,
+   "log_loss": 0.6512,
+   "score_sets_juste_pct": 42.3,
+   "n_sets": 137
   },
   "stats_seules": {
-   "n": 138,
-   "reussite_pct": 67.4,
-   "log_loss": 0.6434,
-   "score_sets_juste_pct": 44.9,
-   "n_sets": 138
+   "n": 142,
+   "reussite_pct": 67.6,
+   "log_loss": 0.6409,
+   "score_sets_juste_pct": 44.4,
+   "n_sets": 142
   }
  },
  "7_derniers_jours": {
   "combinaison": {
-   "n": 37,
-   "reussite_pct": 59.5,
-   "log_loss": 0.715,
-   "score_sets_juste_pct": 40.5,
-   "n_sets": 37
+   "n": 41,
+   "reussite_pct": 61.0,
+   "log_loss": 0.7042,
+   "score_sets_juste_pct": 39.0,
+   "n_sets": 41
   },
   "simulation": {
-   "n": 37,
-   "reussite_pct": 59.5,
-   "log_loss": 0.719,
-   "score_sets_juste_pct": 40.5,
-   "n_sets": 37
+   "n": 41,
+   "reussite_pct": 61.0,
+   "log_loss": 0.701,
+   "score_sets_juste_pct": 39.0,
+   "n_sets": 41
   },
   "stats_seules": {
-   "n": 37,
-   "reussite_pct": 62.2,
-   "log_loss": 0.6569,
-   "score_sets_juste_pct": 40.5,
-   "n_sets": 37
+   "n": 41,
+   "reussite_pct": 63.4,
+   "log_loss": 0.6469,
+   "score_sets_juste_pct": 39.0,
+   "n_sets": 41
   }
  },
  "calibration": {
   "combinaison": [
    {
     "tranche": "50–60 %",
-    "n": 54,
-    "prevu": 55.1,
-    "reel": 70.4
+    "n": 56,
+    "prevu": 55.2,
+    "reel": 71.4
    },
    {
     "tranche": "60–70 %",
-    "n": 34,
-    "prevu": 64.1,
-    "reel": 64.7
+    "n": 35,
+    "prevu": 64.2,
+    "reel": 62.9
    },
    {
     "tranche": "70–80 %",
@@ -70,9 +70,9 @@
    },
    {
     "tranche": "80–90 %",
-    "n": 18,
-    "prevu": 85.1,
-    "reel": 72.2
+    "n": 19,
+    "prevu": 84.8,
+    "reel": 73.7
    },
    {
     "tranche": "90–100 %",
@@ -84,15 +84,15 @@
   "simulation": [
    {
     "tranche": "50–60 %",
-    "n": 47,
-    "prevu": 55.0,
-    "reel": 55.3
+    "n": 48,
+    "prevu": 55.1,
+    "reel": 56.2
    },
    {
     "tranche": "60–70 %",
-    "n": 44,
-    "prevu": 65.0,
-    "reel": 63.6
+    "n": 46,
+    "prevu": 65.1,
+    "reel": 63.0
    },
    {
     "tranche": "70–80 %",
@@ -102,9 +102,9 @@
    },
    {
     "tranche": "80–90 %",
-    "n": 10,
-    "prevu": 84.6,
-    "reel": 80.0
+    "n": 11,
+    "prevu": 84.5,
+    "reel": 81.8
    },
    {
     "tranche": "90–100 %",
@@ -116,15 +116,15 @@
   "stats_seules": [
    {
     "tranche": "50–60 %",
-    "n": 67,
+    "n": 68,
     "prevu": 54.8,
-    "reel": 70.1
+    "reel": 70.6
    },
    {
     "tranche": "60–70 %",
-    "n": 34,
+    "n": 36,
     "prevu": 64.7,
-    "reel": 55.9
+    "reel": 55.6
    },
    {
     "tranche": "70–80 %",
@@ -134,9 +134,9 @@
    },
    {
     "tranche": "80–90 %",
-    "n": 13,
-    "prevu": 83.8,
-    "reel": 76.9
+    "n": 14,
+    "prevu": 83.9,
+    "reel": 78.6
    },
    {
     "tranche": "90–100 %",
@@ -195,65 +195,29 @@
   },
   "CH": {
    "combinaison": {
-    "n": 105,
-    "reussite_pct": 65.7,
-    "log_loss": 0.6823,
-    "score_sets_juste_pct": 43.8,
-    "n_sets": 105
+    "n": 109,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6794,
+    "score_sets_juste_pct": 43.1,
+    "n_sets": 109
    },
    "simulation": {
-    "n": 105,
-    "reussite_pct": 60.0,
-    "log_loss": 0.6793,
-    "score_sets_juste_pct": 41.0,
-    "n_sets": 105
+    "n": 109,
+    "reussite_pct": 60.6,
+    "log_loss": 0.674,
+    "score_sets_juste_pct": 40.4,
+    "n_sets": 109
    },
    "stats_seules": {
-    "n": 107,
-    "reussite_pct": 65.4,
-    "log_loss": 0.6564,
-    "score_sets_juste_pct": 43.9,
-    "n_sets": 107
+    "n": 111,
+    "reussite_pct": 65.8,
+    "log_loss": 0.6527,
+    "score_sets_juste_pct": 43.2,
+    "n_sets": 111
    }
   }
  },
  "derniers": [
-  {
-   "debut": "2026-11-23T00:05",
-   "home": "Chen Dong",
-   "away": "Herman Hoeyeraal",
-   "gagnant": "home",
-   "combinaison": 0.2089,
-   "simulation": 0.3336,
-   "stats": 0.3152
-  },
-  {
-   "debut": "2026-11-23T00:40",
-   "home": "Mustafa Ege Sik",
-   "away": "Zane Stevens",
-   "gagnant": "away",
-   "combinaison": 0.2862,
-   "simulation": 0.4409,
-   "stats": 0.4446
-  },
-  {
-   "debut": "2026-11-23T00:40",
-   "home": "Harrison Satara",
-   "away": "Stefan Vujic",
-   "gagnant": "home",
-   "combinaison": 0.3999,
-   "simulation": 0.3953,
-   "stats": 0.481
-  },
-  {
-   "debut": "2026-11-23T01:00",
-   "home": "Ryuki Matsuda",
-   "away": "Yusuke Takahashi",
-   "gagnant": "away",
-   "combinaison": 0.4744,
-   "simulation": 0.4037,
-   "stats": 0.5391
-  },
   {
    "debut": "2026-11-23T01:00",
    "home": "Yun Seong Chung",
@@ -487,6 +451,42 @@
    "combinaison": 0.5213,
    "simulation": 0.467,
    "stats": 0.5066
+  },
+  {
+   "debut": "2026-11-27T13:00",
+   "home": "Eduardo Ribeiro",
+   "away": "Franco Roncadelli",
+   "gagnant": "home",
+   "combinaison": 0.328,
+   "simulation": 0.3537,
+   "stats": 0.3626
+  },
+  {
+   "debut": "2026-11-27T18:00",
+   "home": "Lucas Andrade Da Silva",
+   "away": "Luciano Emanuel Ambrogi",
+   "gagnant": "home",
+   "combinaison": 0.5793,
+   "simulation": 0.5787,
+   "stats": 0.661
+  },
+  {
+   "debut": "2026-11-27T19:30",
+   "home": "Timo Legout",
+   "away": "Samuel Heredia",
+   "gagnant": "home",
+   "combinaison": 0.8064,
+   "simulation": 0.8346,
+   "stats": 0.8479
+  },
+  {
+   "debut": "2026-11-28T02:00",
+   "home": "Omar Jasika",
+   "away": "Tristan Schoolkate",
+   "gagnant": "away",
+   "combinaison": 0.4188,
+   "simulation": 0.3088,
+   "stats": 0.4655
   }
  ],
  "match_simule_contre_feuille": {
