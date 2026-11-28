@@ -114,8 +114,13 @@ class T(unittest.TestCase):
 
     def test_l_algo_ne_lit_pas_ce_dossier(self):
         import glob
+        # 531 : seul simulateur/feuilles.py connaît ce dossier, et ne le lit que sur demande (archive=True : les bilans
+        # descriptifs) ou avec FE_ARCHIVE=1 (l'étude) — voir tests/test_archive_feuilles_531.py
         for p in glob.glob(os.path.join(R, 'simulateur', '*.py')):
-            self.assertNotIn('archive_feuilles', open(p, encoding='utf-8').read(), p)
+            if os.path.basename(p) not in ('feuilles.py', 'etude_nos_donnees_2023.py'):   # 531 : l'étude seule en plus
+                self.assertNotIn('archive_feuilles', open(p, encoding='utf-8').read(), p)
+        f = open(os.path.join(R, 'simulateur', 'feuilles.py'), encoding='utf-8').read()
+        self.assertIn("os.environ.get('FE_ARCHIVE') == '1'", f)
         w = open(os.path.join(R, '.github', 'workflows', 'collecte_feuilles_anciennes.yml'), encoding='utf-8').read()
         self.assertIn("ALLSPORTS_RESERVE: '60'", w)
         self.assertIn('git pull --rebase origin main', w)

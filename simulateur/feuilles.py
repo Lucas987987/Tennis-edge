@@ -210,10 +210,39 @@ def en_match(r, jeux=None):
             'sol_brut': r.get('surface') or ''}
 
 
-def charger(racine, depuis=None, jusqu_au=None):
-    """Matchs (format donnees.charger) des feuilles collectées, triés par date."""
+def lire_archive(racine, depuis=None, jusqu_au=None):
+    """531 : les feuilles ANCIENNES (historique/archive_feuilles/AAAA/AAAA-MM-JJ.jsonl.gz, collecte_feuilles_anciennes.py,
+    paquet 493 : ATP et WTA depuis 2023, Challenger depuis 2024, jusqu'au 31/05/2026), au même format que lire() — avec en
+    plus « jeux », leur point par point compact."""
+    out = []
+    for p in sorted(glob.glob(os.path.join(racine, 'historique', 'archive_feuilles', '20*', '20*.jsonl.gz'))):
+        jour = os.path.basename(p)[:10]
+        if (depuis and jour < depuis) or (jusqu_au and jour > jusqu_au):
+            continue
+        try:
+            with gzip.open(p, 'rt', encoding='utf-8') as f:
+                out.extend(json.loads(l) for l in f if l.strip())
+        except (OSError, ValueError):
+            continue
+    return out
+
+
+def archive_active(archive=None):
+    """531 : les feuilles anciennes entrent-elles ? Oui si on le demande (archive=True) ou avec FE_ARCHIVE=1.
+    Aucun fichier de l'algo ne le demande : l'étude etude_nos_donnees_2023.py lit l'archive elle-même. L'algo ne les lit PAS
+    tant que l'étude ne les a pas validées (règle de Lucas : rien n'entre dans le % sans étude)."""
+    return bool(archive) if archive is not None else os.environ.get('FE_ARCHIVE') == '1'
+
+
+def charger(racine, depuis=None, jusqu_au=None, archive=None):
+    """Matchs (format donnees.charger) des feuilles collectées, triés par date.
+    531 : archive (voir archive_active) ajoute les feuilles anciennes ; une feuille récente l'emporte sur l'ancienne."""
     P = points(racine)
     out = [m for m in (en_match(r, P.get(r.get('id'))) for r in lire(racine, depuis, jusqu_au)) if m]
+    if archive_active(archive):
+        vus = {m['id'] for m in out if m.get('id') is not None}
+        out += [m for m in (en_match(r, r.get('jeux') or P.get(r.get('id'))) for r in lire_archive(racine, depuis, jusqu_au))
+                if m and m.get('id') not in vus]
     out.sort(key=lambda m: (m['date'], m['id'] or 0))
     return out
 
