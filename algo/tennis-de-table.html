@@ -103,6 +103,11 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
 .comp td.p,.comp th.p{background:rgba(var(--wv),.05)}.comp .oui{color:var(--ok);text-align:center}.comp .non{color:var(--dim);text-align:center}
 .comp td,.comp th{text-align:center;white-space:normal}.comp td:first-child,.comp th:first-child{text-align:left;width:50%}.comp small{font-size:.78rem}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn.go{background:var(--ball);color:#0E0A24;border-color:var(--ball)}
+/* 535 : « Demande à l'algo » */
+.qa-z{margin:10px 0 4px}.qa-q{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.qa-q button{font:inherit;font-size:.82rem;padding:6px 10px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--ink);cursor:pointer;text-align:left}
+.qa-q button[aria-pressed="true"]{border-color:var(--ball);color:var(--ball);font-weight:600}
+.qa-r{margin:0;padding:8px 10px;border-left:3px solid var(--ball);background:rgba(var(--wv),.05);border-radius:0 8px 8px 0;font-size:.9rem;line-height:1.45}
 </style>
 </head>
 <body>
@@ -249,6 +254,74 @@ function dateLongue(iso){try{return new Date(iso).toLocaleString(lang==='fr'?'fr
 function jourCourt(j){try{return new Date(j+'T12:00:00').toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',year:'numeric'});}catch(e){return j;}}
 function scoreDe(m){const M=m.manches||[];let a=0,b=0;M.forEach(x=>{if(x[0]>x[1])a++;else if(x[1]>x[0])b++;});return [a,b];}
 
+const QA_SPORT={dec:{fr:'la manche décisive',en:'the deciding game'},bilan:m=>(D&&D.bilan||{})[m.ligue],groupe:m=>(T[lang].ligue||{})[m.ligue]||m.ligue};
+// 535 (Lucas : « Demande à l'algo » sur les pages ping-pong et badminton, comme au tennis) — des questions toutes
+// faites ; chaque réponse est tirée SEULEMENT de ce que la page montre déjà pour ce match (un match verrouillé n'a pas
+// de bouton, rien de plus n'est envoyé). Rien ici ne change le %.
+const QA_T={
+ fr:{b:'💬 Demande à l’algo',fermer:'Fermer',
+  qFav:'Qui est favori ?',rFav:(f,p,o,q)=>p<=52?`Match très serré : ${f} ${p} %, ${o} ${q} %.`:`${f}, à ${p} % selon l’algo, contre ${q} % pour ${o}.`,
+  qOut:o=>`Quelle chance de surprise pour ${o} ?`,rOut:(o,q,u)=>`L’algo donne ${q} % à ${o}, soit environ ${q} victoires sur 100 matchs comme celui-ci.`+(u!=null?` Gagner au moins une manche : ${u} %.`:''),
+  qScore:'Quel score est le plus probable ?',rScore:(a,b)=>`${a}`+(b?`, puis ${b}.`:'.'),
+  qDec:`Le match ira-t-il jusqu’à ${QA_SPORT.dec.fr} ?`,rDec:p=>`${p} % de chances`+(p<30?' : plutôt non.':p<45?' : possible, sans être le plus probable.':p<=55?' : à peu près une chance sur deux.':' : plutôt oui.'),
+  qNet:f=>`Quelle chance que ${f} gagne sans perdre de manche ?`,rNet:(f,p)=>`${p} % de chances que ${f} gagne sans perdre une manche.`,
+  qConn:'Sur combien de matchs repose le % ?',rConn:(a,x,b,y)=>`${a} : ${x} matchs suivis par l’algo ; ${b} : ${y}. Chaque note se met à jour après chaque match.`,
+  qH2h:'Se sont-ils déjà affrontés ?',
+  qFiable:p=>`L’algo voit-il juste quand il annonce ${p} % ?`,
+  rFiable:(lo,hi,n,a,r,g)=>`Quand l’algo donne ${lo}–${hi} % au favori${g?' ('+g+')':''}, le favori a gagné ${r} % des ${n} matchs déjà jugés (annoncé en moyenne ${a} %).`+(Number(String(n).replace(/\D/g,''))<30?' Moins de 30 matchs : trop tôt pour conclure.':''),
+  rFiableVide:'Aucun match encore jugé à ce niveau de % : le bilan se remplit match après match.',
+  qLive:'Le % change-t-il pendant le match ?',rLive:'Non : c’est le % d’avant le match, figé au premier point. C’est lui qui est jugé dans le bilan.',
+  qRes:'L’algo avait-il vu juste ?',
+  rResOui:(f,p,s)=>`Oui : ${f}, annoncé favori à ${p} %, a gagné`+(s?`, et sur le score le plus probable (${s}).`:'.'),
+  rResNon:(f,p,g,q)=>`Non : ${f} était favori à ${p} %, mais ${g} a gagné. À ce %, l’algo s’attend à environ ${q} surprises sur 100 matchs.`},
+ en:{b:'💬 Ask the algorithm',fermer:'Close',
+  qFav:'Who is the favourite?',rFav:(f,p,o,q)=>p<=52?`Very close match: ${f} ${p}%, ${o} ${q}%.`:`${f}, at ${p}% for the algorithm, against ${q}% for ${o}.`,
+  qOut:o=>`Can ${o} pull off the upset?`,rOut:(o,q,u)=>`The algorithm gives ${o} ${q}%, about ${q} wins in 100 matches like this one.`+(u!=null?` Winning at least one game: ${u}%.`:''),
+  qScore:'What is the most likely score?',rScore:(a,b)=>`${a}`+(b?`, then ${b}.`:'.'),
+  qDec:`Will the match go to ${QA_SPORT.dec.en}?`,rDec:p=>`${p}% chance`+(p<30?': rather not.':p<45?': possible, but not the most likely.':p<=55?': about one in two.':': rather yes.'),
+  qNet:f=>`Can ${f} win without dropping a game?`,rNet:(f,p)=>`${p}% chance that ${f} wins without dropping a game.`,
+  qConn:'How many matches is the % based on?',rConn:(a,x,b,y)=>`${a}: ${x} matches tracked by the algorithm; ${b}: ${y}. Each rating is updated after every match.`,
+  qH2h:'Have they met before?',
+  qFiable:p=>`Is the algorithm right when it says ${p}%?`,
+  rFiable:(lo,hi,n,a,r,g)=>`When the algorithm gives the favourite ${lo}–${hi}%${g?' ('+g+')':''}, the favourite won ${r}% of the ${n} matches judged so far (predicted on average ${a}%).`+(Number(String(n).replace(/\D/g,''))<30?' Fewer than 30 matches: too early to conclude.':''),
+  rFiableVide:'No match judged yet at this % level: the record fills up match after match.',
+  qLive:'Does the % change during the match?',rLive:'No: it is the pre-match %, frozen at the first point. That is the one judged in the record.',
+  qRes:'Did the algorithm get it right?',
+  rResOui:(f,p,s)=>`Yes: ${f}, predicted favourite at ${p}%, won`+(s?`, with the most likely score (${s}).`:'.'),
+  rResNon:(f,p,g,q)=>`No: ${f} was the favourite at ${p}%, but ${g} won. At this %, the algorithm expects about ${q} upsets in 100 matches.`}};
+const qaChoix=new Map(),qaOuverts=new Set();
+function qaListe(m){
+  const Q=QA_T[lang],out=[];if(!('p_h' in m))return out;
+  const fh=m.p_h>=.5,f=fh?m.h:m.a,o=fh?m.a:m.h,pf=Math.max(m.p_h,1-m.p_h),P=pc(pf),q=100-P,S=m.scores||[];
+  const n=S.length?Math.max(...S.map(s=>Math.max(s[0],s[1]))):null;
+  const net=S.find(s=>fh?(s[0]===n&&s[1]===0):(s[1]===n&&s[0]===0)),pNet=net?net[2]:null;
+  out.push([Q.qFav,Q.rFav(f,P,o,q)]);
+  if(m.statut==='termine'&&'bon' in m){const g=m.g===1?m.h:m.a,top=S[0]?`${m.h} ${S[0][0]}-${S[0][1]} ${m.a}`:'';
+    out.push([Q.qRes,m.bon?Q.rResOui(f,P,m.score_trouve?top:''):Q.rResNon(f,P,g,q)]);}
+  if(m.statut==='en_cours')out.push([Q.qLive,Q.rLive]);
+  out.push([Q.qOut(o),Q.rOut(o,q,pNet!=null?pc(1-pNet):null)]);
+  if(S.length){const t=s=>`${m.h} ${s[0]}-${s[1]} ${m.a} (${pc(s[2])} %)`;
+    out.push([Q.qScore,Q.rScore(t(S[0]),S[1]?t(S[1]):'')]);
+    if(m.decisive!=null)out.push([Q.qDec,Q.rDec(pc(m.decisive))]);
+    if(pNet!=null)out.push([Q.qNet(f),Q.rNet(f,pc(pNet))]);}
+  if(m.n_h!=null)out.push([Q.qConn,Q.rConn(m.h,m.n_h.toLocaleString(lang),m.a,m.n_a.toLocaleString(lang))]);
+  if(m.rencontres!=null)out.push([Q.qH2h,T[lang].rencontres(m.rencontres)]);
+  const B=QA_SPORT.bilan(m),lo=pf<.6?50:pf<.7?60:pf<.8?70:80,tr=B&&(B.tranches||[]).find(x=>x.de===lo);
+  const nb=x=>Number(x).toLocaleString(lang);
+  out.push([Q.qFiable(P),tr?Q.rFiable(lo,lo===80?100:lo+10,nb(tr.matchs),nb(tr.annonce_pct),nb(tr.reel_pct),QA_SPORT.groupe(m)):Q.rFiableVide]);
+  return out;}
+function qaBloc(m){
+  if(!('p_h' in m))return '';const Q=QA_T[lang],id=String(m.id),ouvert=qaOuverts.has(id);
+  let h=`<div class="qa-z"><button class="btn qa-b" type="button" data-qa-ouvrir="${esc(id)}" aria-expanded="${ouvert}">${esc(ouvert?Q.fermer:Q.b)}</button>`;
+  if(ouvert){const L_=qaListe(m),i=Math.min(qaChoix.get(id)||0,L_.length-1);
+    h+=`<div class="qa-q">`+L_.map((x,k)=>`<button type="button" data-qa-c="${esc(id)}" data-qa-i="${k}" aria-pressed="${k===i}">${esc(x[0])}</button>`).join('')+'</div>'
+      +`<p class="qa-r" role="status">${esc(L_[i][1])}</p>`;}
+  return h+'</div>';}
+function qaClic(e){
+  const b=e.target.closest('[data-qa-ouvrir]');if(b){e.stopPropagation();const id=b.dataset.qaOuvrir;qaOuverts.has(id)?qaOuverts.delete(id):qaOuverts.add(id);rendre();return true;}
+  const c=e.target.closest('[data-qa-c]');if(c){e.stopPropagation();qaChoix.set(c.dataset.qaC,Number(c.dataset.qaI)||0);rendre();return true;}
+  return false;}
+
 function ligneMatch(m){
   const L=T[lang],verrou=m.verrou,a_p='p_h' in m;
   const fm=FAV.m.has(km(m.id));
@@ -267,7 +340,7 @@ function ligneMatch(m){
       +(m.score_trouve?` · ${L.scoreTrouve}`:'')+'</div>';}
   const suivre=`<div class="suivre">`+[m.h,m.a].map(n=>{const on=FAV.j.has(kj(n));
     return `<button class="btn" type="button" data-fav="joueur" data-cle="${esc(kj(n))}" aria-pressed="${on}">${esc(on?L.suivi(n):L.suivre(n))}</button>`;}).join('')+'</div>';
-  h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}>`+(m.scores?detail(m):'')+suivre+'</div>';
+  h+=`<div class="det" ${ouverts.has(String(m.id))?'':'hidden'}>`+(m.scores?detail(m):'')+qaBloc(m)+suivre+'</div>';
   return h+'</div>';}
 
 function detail(m){const L=T[lang],fh=m.p_h>=.5,n=m.format||3;
@@ -359,6 +432,7 @@ function charger(){fetch('/tt.json',{credentials:'same-origin',cache:'no-store'}
   .then(d=>{D=d;rendre();}).catch(()=>{if(!D)$('contenu').innerHTML=`<p class="vide">${T[lang].erreur}</p>`;});}
 
 document.addEventListener('click',e=>{
+  if(qaClic(e))return;                               // 535
   const f=e.target.closest('[data-fav]');if(f){e.stopPropagation();basculerFav(f.dataset.fav,f.dataset.cle);return;}
   if(e.target.closest('#b-fav')){FILTRE=!FILTRE;$('fav-msg').textContent='';rendre();return;}
   const o=e.target.closest('[data-l]');if(o){ligue=o.dataset.l;rendre();return;}
