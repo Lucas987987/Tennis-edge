@@ -1,0 +1,67 @@
+name: Étude nos données à la place de Sackmann depuis 2023 (paquet 531)
+
+# À lancer UNE fois, quand « Collecte feuilles anciennes » a fini (le script refuse de juger avant).
+# Règle écrite le 28/11/2026 dans l'en-tête de simulateur/etude_nos_donnees_2023.py, avant tout calcul.
+# Le journal n'affiche que des comptes et des log loss.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+concurrency:
+  group: etude-nos-donnees-2023
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /feuilles/
+            /feuilles_points/
+            /historique/archive_feuilles/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Étude
+        run: |
+          set -euo pipefail
+          python simulateur/etude_nos_donnees_2023.py /tmp/sackmann . | tee /tmp/nos_donnees.log
+          { echo '### Nos données à la place de Sackmann depuis 2023'; sed 's/^/    /' /tmp/nos_donnees.log; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f simulateur/rapport_nos_donnees_2023.json ]; then cp simulateur/rapport_nos_donnees_2023.json /tmp/rapport.json; fi
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          if [ ! -f /tmp/rapport.json ]; then echo 'Pas de rapport (collecte pas finie).'; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport.json simulateur/rapport_nos_donnees_2023.json
+            git add -- simulateur/rapport_nos_donnees_2023.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 531 - nos données à la place de Sackmann depuis 2023 (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
