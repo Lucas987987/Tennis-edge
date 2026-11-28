@@ -57,6 +57,13 @@ jobs:
           python badminton/etude_etape4_badminton.py . | tee /tmp/etape4_badminton.log
           cp badminton/rapport_etape4_badminton.json /tmp/rapport_etape4_badminton.json
           { echo '### Badminton, étape 4'; sed 's/^/    /' /tmp/etape4_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Étape 5 (l'Elo après une surprise) et score en manches
+        run: |
+          set -euo pipefail
+          python badminton/etude_etape5_badminton.py . | tee /tmp/etape5_badminton.log
+          python badminton/etude_score_badminton.py . | tee /tmp/score_badminton.log
+          cp badminton/rapport_etape5_badminton.json badminton/rapport_score_badminton.json /tmp/
+          { echo '### Badminton, étape 5'; sed 's/^/    /' /tmp/etape5_badminton.log; echo '### Badminton, score en manches'; sed 's/^/    /' /tmp/score_badminton.log; } >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport
         run: |
           set -euo pipefail
@@ -69,6 +76,7 @@ jobs:
             cp /tmp/rapport_etape2_badminton.json badminton/rapport_etape2_badminton.json
             cp /tmp/rapport_etape3_badminton.json badminton/rapport_etape3_badminton.json
             cp /tmp/rapport_etape4_badminton.json badminton/rapport_etape4_badminton.json
+            cp /tmp/rapport_etape5_badminton.json /tmp/rapport_score_badminton.json badminton/
             git add -- badminton/rapport_*_badminton.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
             git commit -q -m 'Études Elo badminton (rapports)'
