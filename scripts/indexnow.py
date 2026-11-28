@@ -29,6 +29,8 @@ def url_de(rel):
         return SITE + '/'
     if rel in ('algo/apropos.html', 'algo/methode.html'):
         return SITE + '/' + rel[len('algo/'):]
+    if rel in ('algo/tennis-de-table.html', 'algo/badminton.html'):        # 529 : les pages du ping et du badminton
+        return SITE + '/' + rel[len('algo/'):-len('.html')]
     m = _PAGES.match(rel)
     if not m:
         return None

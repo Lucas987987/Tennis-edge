@@ -583,6 +583,23 @@ def archiver(cf, archives, maintenant):
             cf.put(cle, avant + b''.join(_json(x) + b'\n' for x in L), content_type='application/x-ndjson')
 
 
+def signaler_indexnow(journal=print):
+    """529 (Lucas : « il faut que l'on référence les pages ») : les pages nouvelles ou modifiées sont signalées à
+    IndexNow (Bing, Yandex, Seznam, Naver…) par scripts/indexnow.py, comme les pages du tennis ; Google lit le plan
+    du site. Seulement dans le workflow (INDEXNOW_ACTIF=1) : jamais depuis les tests."""
+    if os.environ.get('INDEXNOW_ACTIF') != '1':
+        return None
+    try:
+        import indexnow
+    except ImportError:
+        return None
+
+    def signaler(urls):
+        codes = indexnow.envoyer(urls)
+        journal(f"  IndexNow : {len(set(urls))} adresse(s) signalée(s) · réponses {codes}")
+    return signaler
+
+
 def passage(racine, client, cf, maintenant=None, journal=print):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     brut = cf.get(CLE_ETAT)
@@ -617,7 +634,7 @@ def passage(racine, client, cf, maintenant=None, journal=print):
     archiver(cf, archives, maintenant)
     try:                                              # 514 : pages de référencement (matchs terminés, joueurs)
         import pages_tt
-        pages_tt.publier(cf, archives, maintenant, CLE_ARCHIVE, journal)
+        pages_tt.publier(cf, archives, maintenant, CLE_ARCHIVE, journal, signaler=signaler_indexnow(journal))
     except Exception as ex:  # noqa: BLE001 — les pages ne doivent jamais bloquer les pronostics
         journal(f'  pages : non publiées ce passage ({type(ex).__name__})')
     cf.put(CLE_ETAT, _json(etat), content_type='application/json')

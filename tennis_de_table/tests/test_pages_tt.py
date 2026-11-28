@@ -70,6 +70,13 @@ class TestPagesTT(unittest.TestCase):
                 self.assertNotRegex(bas, r'\b(?:pari conseillé|à parier)\b')
         etat = json.loads(cf.d[P.CLE_ETAT])
         self.assertEqual(etat['joueurs']['jan-kowalski']['n'], 4)
+        self.assertEqual(etat['joueurs']['jan-kowalski']['maj'], '2026-11-27')          # 529 : vraie date dans le plan
+        U = []                                                                            # 529 : IndexNow
+        P.publier(Coffre(), L, MAINTENANT, None, journal=lambda *_: None, signaler=U.extend)
+        self.assertIn('https://gamesetalgo.com/tennis-de-table/match/103', U)
+        self.assertIn('https://gamesetalgo.com/tennis-de-table/joueur/jan-kowalski', U)
+        self.assertIn('https://gamesetalgo.com/tennis-de-table/matchs', U)
+        P.publier(Coffre(), L, MAINTENANT, None, journal=lambda *_: None, signaler=lambda u: 1 / 0)   # jamais bloquant
 
     def test_pas_deux_fois_et_pas_de_match_non_juge(self):
         cf = Coffre()
