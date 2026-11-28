@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E0A24">
-<script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
+<script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"light";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Game Set Algo — l'algorithme du tennis : % de victoire de chaque match</title>
@@ -754,7 +754,8 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .list .finished-group > details > .list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
 .list .finished-group > details > .list > li{border-top:1px solid var(--line)}
 /* Arena : bouton visible dans la barre du haut, y compris sur mobile */
-.tt-nav{background:var(--panel)!important;color:var(--ink)!important;border:1px solid var(--ball)!important;box-shadow:none!important}   /* 509 : lien vers le tennis de table */
+.arena-nav.tt-nav{background:var(--panel)!important;color:var(--ink)!important;border:1px solid var(--ball)!important;box-shadow:none!important}   /* 534 : .arena-nav.tt-nav, sinon le texte sombre de .arena-nav l'emportait (illisible en sombre) */
+.arena-nav.tt-nav:hover,.arena-nav.tt-nav:focus-visible{background:var(--bg2)!important}   /* 509 : lien vers le tennis de table */
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
 /* 24/11/2026 (paquet 408, Lucas) : l'Arena est en développement — le bouton le dit et ne mène plus nulle part */
 button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inline-flex}
@@ -840,8 +841,8 @@ button.arena-nav{border:0;cursor:pointer}.arena-w{position:relative;display:inli
       </div></div>
       <div class="mr-l"><span data-t="mr_theme"></span><div class="seg" role="group" aria-label="Thème / Theme" id="seg-theme">
         <button type="button" data-theme-v="auto" data-t="th_auto" aria-pressed="false"></button>
-        <button type="button" data-theme-v="light" data-t="th_clair" aria-pressed="false"></button>
-        <button type="button" data-theme-v="dark" data-t="th_sombre" aria-pressed="true"></button>
+        <button type="button" data-theme-v="light" data-t="th_clair" aria-pressed="true"></button>
+        <button type="button" data-theme-v="dark" data-t="th_sombre" aria-pressed="false"></button>
       </div></div>
       </div>
     </div>
@@ -8957,8 +8958,9 @@ function rendTout(){
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
   L=b.dataset.lang; try{ localStorage.setItem('te_lang',L); }catch(e){} rendTout(); }));
-// 07/11/2026 (paquet 217) — thème : auto (réglage de l'appareil), clair ou sombre ; mémorisé sur l'appareil. Sombre par défaut.
-let TH = 'dark'; try { TH = localStorage.getItem('te_theme') || 'dark'; } catch(e){}
+// 07/11/2026 (paquet 217) — thème : auto (réglage de l'appareil), clair ou sombre ; mémorisé sur l'appareil.
+// 534 (Lucas : « mieux arriver sur la page claire ») : CLAIR par défaut ; un choix déjà fait sur l'appareil reste.
+let TH = 'light'; try { TH = localStorage.getItem('te_theme') || 'light'; } catch(e){}
 const MQ_SOMBRE = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 function appliqueTheme(){
   if (Q.get('video') || Q.get('carte') || Q.get('bilan') || Q.get('semaine') || Q.get('projections')) return;

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E0A24">
-<script>(function(){try{var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
+<script>(function(){try{var v=localStorage.getItem("te_theme")||"light";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <title>Notre projet — Game Set Algo</title>
 <meta name="description" content="Game Set Algo, projet indépendant né en France : un algorithme de tennis qui publie chaque % avant le match et tout son bilan, erreurs comprises. Pas de ticket sûr, pas de promesse de gain.">
 <link rel="canonical" href="https://gamesetalgo.com/apropos.html"><meta property="og:url" content="https://gamesetalgo.com/apropos.html"><meta property="og:site_name" content="Game Set Algo">
@@ -272,7 +272,7 @@ document.getElementById('page').innerHTML = `
     document.documentElement.setAttribute('data-theme', d === 'light' ? 'light' : 'dark');
     const m = document.querySelector('meta[name=theme-color]'); if (m) m.setAttribute('content', d === 'light' ? '#F4F2FB' : '#0E0A24');
     b.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.th === v))); };
-  let v = 'dark'; try { v = localStorage.getItem('te_theme') || 'dark'; } catch (e) {}
+  let v = 'light'; try { v = localStorage.getItem('te_theme') || 'light'; } catch (e) {}
   app(v);
   b.forEach(x => x.addEventListener('click', () => { v = x.dataset.th; try { localStorage.setItem('te_theme', v); } catch (e) {} app(v); }));
 })();
