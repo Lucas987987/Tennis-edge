@@ -1,0 +1,42 @@
+name: Bilan en direct tennis de table et badminton (paquet 535)
+
+# LECTURE SEULE : l'archive privée des matchs jugés (R2) est lue, rien n'est modifié ni publié dans le dépôt.
+# Règle écrite le 28/11/2026 dans l'en-tête de scripts/bilan_direct_tt_badminton.py, avant d'avoir vu les matchs.
+# Le journal n'affiche que des comptes, des % et des log loss. À lancer vers le 04/12.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  bilan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/r2_io.py
+            /scripts/bilan_direct_tt_badminton.py
+            /tennis_de_table/rapport_etape2_tt.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Bilan
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          python scripts/bilan_direct_tt_badminton.py . | tee /tmp/bilan.log
+          { echo '### Bilan en direct, tennis de table et badminton'; sed 's/^/    /' /tmp/bilan.log; } >> "$GITHUB_STEP_SUMMARY"
