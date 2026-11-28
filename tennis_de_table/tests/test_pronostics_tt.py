@@ -269,7 +269,12 @@ class T(unittest.TestCase):
         t = PT.post_du_jour({'matchs': [m]}, b)
         self.assertIn("L'algo : B à 60 % · score le plus probable 1-3 (21 %)", t)
         self.assertIn('Hier : 50 matchs jugés, 68,0 % de vainqueurs trouvés (annoncé en moyenne 62,6 %).', t)
-        self.assertIsNone(PT.post_du_jour({'matchs': [dict(m, statut='termine')]}, b))
+        # 530 : le match offert terminé reste dans le post, avec son résultat et le verdict
+        fini = PT.post_du_jour({'matchs': [dict(m, statut='termine', g=2, bon=True, manches=[[5, 11], [11, 9], [7, 11], [8, 11]])]}, b)
+        self.assertIn("Résultat : B gagne 3-1 · l'algo donnait B à 60 % ✅", fini)
+        self.assertIn('Hier : 50 matchs jugés', fini)
+        self.assertTrue(PT.post_du_jour({'matchs': []}, b).startswith("🏓 Tennis de table · le bilan d'hier"))
+        self.assertIsNone(PT.post_du_jour({'matchs': []}, None))
 
     def test_ligue_muette_rien_publie(self):
         r = PT.passage(self.dir, Client([ev(1, 'Poland', 3, 4, T0 + dt.timedelta(hours=2))], ok=False), self.cf,
