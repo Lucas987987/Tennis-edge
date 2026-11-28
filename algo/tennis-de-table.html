@@ -39,7 +39,7 @@ a{color:var(--p1)}
 header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .marque{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-size:.95rem}
 .marque i{width:22px;height:22px;border-radius:50%;background:var(--ball);display:inline-block;box-shadow:0 0 12px var(--ball)}
-.reg{margin-left:auto;display:flex;gap:6px}
+.reg{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .btn{font:600 .85rem var(--cond);letter-spacing:.03em;color:var(--ink);background:var(--panel);border:1px solid var(--line2);
   border-radius:999px;padding:6px 12px;cursor:pointer;text-decoration:none}
 h1{font-family:var(--disp);font-weight:400;font-size:1.7rem;line-height:1.1;margin:18px 0 6px}
@@ -111,6 +111,7 @@ footer{color:var(--dim);font-size:.8rem;margin-top:24px}
   <a class="marque" href="/"><i></i>Game Set Algo</a>
   <div class="reg">
     <a class="btn" href="/" id="l-tennis">Tennis</a>
+    <a class="btn" href="/badminton" id="l-bad">Badminton</a>
     <button class="btn" id="b-lang" type="button">EN</button>
     <button class="btn" id="b-theme" type="button" aria-label="Thème">◐</button>
   </div>
@@ -158,13 +159,13 @@ const T={
   favNotif:'Abonné Plus ? Active les notifications dans ton compte (page du tennis, bouton du compte) : le matin, le début et le résultat de tes favoris.',
   suivre:n=>`☆ Suivre ${n}`,suivi:n=>`⭐ ${n} suivi`,etoileM:'Suivre ce match',favErr:'Impossible pour l’instant, réessaie.',
   plusT:'Accès Plus',
-  plusTexte:"Un seul accès, tout compris : le tennis et le tennis de table. Un match offert par ligue, chaque jour.",
+  plusTexte:"Un seul accès, tout compris : le tennis, le tennis de table et le badminton. Un match offert par ligue, chaque jour.",
   prix:(t,e)=>`<b>${e(t.mois)} par mois</b> · ${e(t.trimestre)} les 3 mois · ${e(t.annee)} l’année · ${e(t.semaine)} la semaine<br><span class="fd">Fondateurs : <b>9,99 € par mois, à vie</b>, pour les 100 premiers comptes confirmés.</span>`,
   preuve:(n,b)=>`Aujourd'hui : <b>${n} matchs</b> analysés, dont deux offerts.`+(b?` Depuis le ${b.d} : <b>${b.p} % de vainqueurs trouvés</b> sur ${b.n} matchs, toutes les erreurs comprises.`:''),
   compTete:['','Gratuit','Plus'],
   comp:[['Le match offert du jour (un par ligue), en entier',true,true],['% de victoire de tous les matchs',['une fois le match commencé'],['avant le match']],
     ['Score le plus probable et manche décisive',false,true],['Rencontres précédentes entre les joueurs (Pologne)',false,true],
-    ['Tout l’accès Plus du tennis (ATP, WTA, Challenger)',false,true],['Bilan public, toutes les erreurs comprises',true,true]],
+    ['Tout l’accès Plus du tennis (ATP, WTA, Challenger) et du badminton',false,true],['Bilan public, toutes les erreurs comprises',true,true]],
   fdT:'Offre fondateurs',
   fd:"Les 100 premiers comptes confirmés sont fondateurs, automatiquement : l'accès Plus à 9,99 € par mois, à vie, tant que chaque mois est renouvelé au plus tard 7 jours après la fin du précédent. Rien à réserver : crée ton compte et confirme ton adresse.",
   creer:'Créer un compte',connexion:'Se connecter',abonner:"S'abonner",
@@ -201,13 +202,13 @@ const T={
   favNotif:'Plus member? Turn on notifications in your account (tennis page, account button): the morning list, the start and the result of your favourites.',
   suivre:n=>`☆ Follow ${n}`,suivi:n=>`⭐ Following ${n}`,etoileM:'Follow this match',favErr:'Not possible right now, try again.',
   plusT:'Plus access',
-  plusTexte:'One access, everything included: tennis and table tennis. One free match per league, every day.',
+  plusTexte:'One access, everything included: tennis, table tennis and badminton. One free match per league, every day.',
   prix:(t,e)=>`<b>${e(t.mois)} a month</b> · ${e(t.trimestre)} for 3 months · ${e(t.annee)} a year · ${e(t.semaine)} a week<br><span class="fd">Founders: <b>€9.99 a month, for life</b>, for the first 100 confirmed accounts.</span>`,
   preuve:(n,b)=>`Today: <b>${n} matches</b> analysed, two of them free.`+(b?` Since ${b.d}: <b>${b.p}% of winners found</b> across ${b.n} matches, every miss included.`:''),
   compTete:['','Free','Plus'],
   comp:[['The free match of the day (one per league), in full',true,true],['Win % for every match',['once the match has started'],['before the match']],
     ['Most likely score and deciding game',false,true],['Previous meetings between the players (Poland)',false,true],
-    ['All of Plus for tennis (ATP, WTA, Challenger)',false,true],['Public record, every miss included',true,true]],
+    ['All of Plus for tennis (ATP, WTA, Challenger) and badminton',false,true],['Public record, every miss included',true,true]],
   fdT:'Founders offer',
   fd:"The first 100 confirmed accounts are founders, automatically: Plus access at €9.99 a month, for life, as long as each month is renewed no later than 7 days after the previous one ends. Nothing to reserve: create your account and confirm your address.",
   creer:'Create an account',connexion:'Log in',abonner:'Subscribe',
